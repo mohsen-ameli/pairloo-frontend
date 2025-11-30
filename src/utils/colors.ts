@@ -1,0 +1,17 @@
+export const colors = {
+  purple: "#5c37cbff",
+  lightPurple: "#8b6ffeff",
+  darkPurple: "#3a1d8bff",
+  background: "#f2f2f7ff",
+  lightBackground: "#ffffffcc",
+  darkBackground: "#c7c7ccff",
+  dark: "#000000ff",
+  light: "#ffffffff",
+  gray: "#8e8e93ff",
+  textSecondary: "#3c3c4399",
+  errorRed: "#ff3b30ff",
+  successGreen: "#34c759ff",
+  warningYellow: "#ffcc00ff",
+  borderGray: "#d1d1d6ff",
+  niceBlue: "#0095ffff",
+};
