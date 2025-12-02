@@ -39,17 +39,20 @@ export const signUpErrorsAtom = atom(newUserErrors);
 
 // user atom
 const user = {
+  id: "",
   username: "",
   firstName: "",
   lastName: "",
+  picture: "",
   email: "",
   phoneNumber: "",
   country: "",
   city: "",
-  id: "",
   isAuthenticated: false,
-  token: "",
+  accessToken: "",
+  refreshToken: "",
 };
+export type UserType = typeof user;
 const userSecureStorage = createJSONStorage<typeof user>(() => ({
   getItem: async (key: string) => {
     return await SecureStore.getItemAsync(key);
@@ -104,18 +107,6 @@ export const signUpAtom = atom(null, async (get, set) => {
     return false;
   }
 });
-
-// Log in function atom
-export const logInAtom = atom(
-  null,
-  (get, set, username: string, password: string) => {
-    if (!username || !password) {
-      return false;
-    }
-    // set(userAtom, { id: "1", username });
-    return true;
-  }
-);
 
 // Log out function atom
 export const logOutAtom = atom(null, (get, set) => {

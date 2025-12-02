@@ -1,10 +1,12 @@
 import CustomButton from "@/src/components/CustomButton";
 import CustomLink from "@/src/components/CustomLink";
 import { colors } from "@/src/utils/colors";
+import { getUserInfoAtom } from "@/src/utils/get-user";
 import { logOutAtom, userAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useEffect } from "react";
 import { ScrollView, Text, View } from "react-native";
 
 const posts = [
@@ -27,6 +29,11 @@ export default function index() {
   const user = useAtomValue(userAtom);
   const logout = useSetAtom(logOutAtom);
   const router = useRouter();
+  const getUserInfo = useAtom(getUserInfoAtom)[1];
+
+  useEffect(() => {
+    getUserInfo();
+  }, []);
 
   return (
     <ScrollView
@@ -37,17 +44,34 @@ export default function index() {
         margin: 20,
       }}
     >
-      <Text
-        style={{
-          fontSize: 32,
-          fontWeight: "bold",
-        }}
-      >
-        Welcome, {user.username}
-      </Text>
+      <View style={{ alignItems: "center", gap: 10 }}>
+        <Image
+          source={user.picture}
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 50,
+            backgroundColor: "#0553",
+          }}
+        />
+        <Text
+          style={{
+            fontSize: 32,
+            fontWeight: "bold",
+          }}
+        >
+          Welcome, {user.username}
+        </Text>
+      </View>
 
       <CustomButton text="Logout" onPress={logout} />
       <CustomLink text="Create new post" href="/select" />
+      <CustomButton
+        text="Print current user"
+        onPress={() => {
+          console.log(user);
+        }}
+      />
 
       <Text
         style={{
