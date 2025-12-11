@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { Platform, View } from "react-native";
 import CustomButton from "../components/CustomButton";
 import { userAtom } from "../utils/store";
+import { BASE_URL } from "../utils/constants";
 
 const config: AuthRequestConfig = {
   clientId: "google",
@@ -18,8 +19,8 @@ const config: AuthRequestConfig = {
 };
 
 const discovery: DiscoveryDocument = {
-  authorizationEndpoint: `${process.env.EXPO_PUBLIC_SERVER_URL}/api/auth/authorize`,
-  tokenEndpoint: `${process.env.EXPO_PUBLIC_SERVER_URL}/api/auth/token`,
+  authorizationEndpoint: `${BASE_URL}/api/auth/authorize`,
+  tokenEndpoint: `${BASE_URL}/api/auth/token`,
 };
 
 export default function LoginWithGoogle({
@@ -37,19 +38,16 @@ export default function LoginWithGoogle({
       return;
     }
 
-    const tokenRes = await fetch(
-      `${process.env.EXPO_PUBLIC_SERVER_URL}/api/auth/token`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          code: response.params.code,
-          platform: Platform.OS === "web" ? "web" : "native",
-        }),
-      }
-    );
+    const tokenRes = await fetch(`${BASE_URL}/api/auth/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: response.params.code,
+        platform: Platform.OS === "web" ? "web" : "native",
+      }),
+    });
     const tokenResponse = await tokenRes.json();
 
     setUser({

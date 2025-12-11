@@ -4,9 +4,12 @@ import { Link } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
 import LoginWithGoogle from "./login-with-google";
 import { useState } from "react";
+import { useAtomValue } from "jotai";
+import { userAtom } from "../utils/store";
 
 export default function Landing() {
   const [loading, setLoading] = useState(false);
+  const user = useAtomValue(userAtom);
 
   return (
     <>

@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { CountryCode } from "react-native-country-picker-modal";
+import { BASE_URL } from "./constants";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,7 +40,7 @@ export const signUpErrorsAtom = atom(newUserErrors);
 
 // user atom
 const user = {
-  id: "",
+  _id: "",
   username: "",
   firstName: "",
   lastName: "",
@@ -79,17 +80,16 @@ export const signUpAtom = atom(null, async (get, set) => {
       country: userData.country,
       city: userData.city,
     };
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_SERVER_URL}/api/auth/signup`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+
+    const res = await fetch(`${BASE_URL}/api/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
     const data = await res.json();
+
     if (!res.ok) {
       set(signUpErrorsAtom, data.errors);
       return false;

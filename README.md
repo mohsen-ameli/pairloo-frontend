@@ -19,12 +19,6 @@ npx expo prebuild
 4. You can run the app in several ways.
 
 ```bash
-npm run dev
-```
-
-or
-
-```bash
 npx expo run:android
 ```
 
@@ -32,6 +26,13 @@ or
 
 ```bash
 npx expo run:ios
+```
+
+or when doing the following, make sure you are using "development build" mode and not "expo go".
+You can switch between them by pressing "s".
+
+```bash
+npm run dev
 ```
 
 If you want to refresh the cache use
