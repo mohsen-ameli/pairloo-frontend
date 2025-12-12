@@ -11,14 +11,13 @@ import {
 } from "react-native";
 import CustomButton from "../components/CustomButton";
 import { colors } from "../utils/colors";
-import { logInAtom, userAtom } from "../utils/store";
+import { loginAtom, userAtom } from "../utils/store";
 
 export default function LoginPage() {
-  const login = useSetAtom(logInAtom);
+  const login = useSetAtom(loginAtom);
   const router = useRouter();
   const user = useAtomValue(userAtom);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -34,31 +33,24 @@ export default function LoginPage() {
           Log In
         </Text>
         <CustomInput
-          placeholder="Email or username"
-          onChangeText={setUsername}
+          placeholder="Email"
+          onChangeText={setEmail}
           textContentType="username"
           autoComplete="username"
         />
-        <CustomInput
-          placeholder="Password"
-          onChangeText={setPassword}
-          textContentType="newPassword"
-          autoComplete="new-password"
-          secureTextEntry
-        />
         <CustomButton
           text="Continue"
-          disabled={!username || !password}
-          onPress={() => {
-            const success = login(username, password);
-            if (!username || !password) {
-              Alert.alert("Error", "Please enter both username and password");
+          disabled={!email}
+          onPress={async () => {
+            if (!email) {
+              Alert.alert("Error", "Please enter your email");
               return;
             }
 
-            if (success) {
-              router.replace("/(protected)/(post)");
-            } else {
+            try {
+              await login(email);
+              router.replace("/");
+            } catch {
               Alert.alert("Login Failed", "Invalid username or password");
             }
           }}

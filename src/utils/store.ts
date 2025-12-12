@@ -108,6 +108,26 @@ export const signUpAtom = atom(null, async (get, set) => {
   }
 });
 
+export const loginAtom = atom(null, async (get, set, email) => {
+  const res = await fetch(`${BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: email
+    }),
+  });
+  const data = await res.json();
+
+  set(userAtom, {
+    ...data,
+    isAuthenticated: true,
+  });
+
+  return true
+});
+
 // Log out function atom
 export const logOutAtom = atom(null, (get, set) => {
   set(userAtom, user);
