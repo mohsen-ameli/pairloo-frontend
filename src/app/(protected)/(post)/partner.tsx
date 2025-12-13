@@ -1,37 +1,86 @@
+import CustomInput from "@/src/components/CustomInput";
+import useCustomPager from "@/src/components/CustomPager";
+import { colors } from "@/src/utils/colors";
 import { useLocalSearchParams } from "expo-router";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
 export default function Job() {
   const params = useLocalSearchParams<{ action?: string; category?: string }>();
+  const { setCurrPage, setPage, Pager } = useCustomPager({ pageCount: 2 });
 
   return (
-    <ScrollView>
-      <View
-        style={{
-          gap: 10,
-          margin: 20,
-        }}
-      >
-        <Text>
-          I {params.action} a {params.category}
-        </Text>
-        <Text>Part 1: About You</Text>
+    <Pager>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View
+          style={{
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
+            alignItems: "center",
+          }}
+          key="1"
+        >
+          <Text
+            style={{
+              fontSize: 30,
+              fontWeight: "bold",
+            }}
+          >
+            About You
+          </Text>
 
-        <View>
-          <Text>Personal Information</Text>
-          <Text>Photo Upload Area</Text>
-          <TextInput placeholder="First Name" />
-          <TextInput placeholder="Last Name" />
-          <TextInput placeholder="Phone Number" />
-          <TextInput placeholder="Height" />
-          <TextInput placeholder="Weight" />
-          <TextInput placeholder="Gender" />
-          <TextInput placeholder="Sexual Orientation" />
-          <TextInput placeholder="Hobbies" />
-          <TextInput placeholder="Education" />
-          <TextInput placeholder="Work" />
+          <CustomInput placeholder="Photo Upload Area" />
+          <CustomInput placeholder="Height" />
+          <CustomInput placeholder="Weight" />
+          <CustomInput placeholder="Gender" />
+          <CustomInput placeholder="Sexual Orientation" />
+          <CustomInput placeholder="Hobbies" />
+          <CustomInput placeholder="Education" />
+          <CustomInput placeholder="Work" />
         </View>
-      </View>
-    </ScrollView>
+      </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View
+          style={{
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
+            alignItems: "center",
+          }}
+          key="2"
+        >
+          <Text
+            style={{
+              fontSize: 30,
+              fontWeight: "bold",
+            }}
+          >
+            About Your Partner
+          </Text>
+
+          <CustomInput placeholder="Photo Upload Area" />
+          <CustomInput placeholder="Height" />
+          <CustomInput placeholder="Weight" />
+          <CustomInput placeholder="Gender" />
+          <CustomInput placeholder="Sexual Orientation" />
+          <CustomInput placeholder="Hobbies" />
+          <CustomInput placeholder="Education" />
+          <CustomInput placeholder="Work" />
+        </View>
+      </TouchableWithoutFeedback>
+    </Pager>
   );
 }
