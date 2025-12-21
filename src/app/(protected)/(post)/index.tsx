@@ -1,8 +1,10 @@
 import CustomLink from "@/src/components/CustomLink";
+import { PostType } from "@/src/types/post.type";
+import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { colors } from "@/src/utils/colors";
 import { getUserInfoAtom } from "@/src/utils/get-user";
 import { logOutAtom, userAtom } from "@/src/utils/store";
-import { authFetchAtom } from "@/src/utils/auth-fetch";
+
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useRouter } from "expo-router";
@@ -14,15 +16,23 @@ import { styles } from "./_styles/index.styles";
 export default function index() {
   const user = useAtomValue(userAtom);
   const logout = useSetAtom(logOutAtom);
-  const router = useRouter();
   const getUserInfo = useAtom(getUserInfoAtom)[1];
-  const [, authFetch] = useAtom(authFetchAtom);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showLogoutMenu, setShowLogoutMenu] = useState(false);
+  const authFetch = useSetAtom(authFetchAtom);
+  const router = useRouter();
+  const [posts, setPosts] = useState<PostType[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function fetchPosts() {
+    const res = await authFetch("/api/posts/all-posts");
+    if (res.ok) {
+      const data = await res.json();
+      setPosts(data);
+    }
+  }
 
   useEffect(() => {
     getUserInfo();
+    fetchPosts();
   }, []);
 
   useEffect(() => {
@@ -76,7 +86,7 @@ export default function index() {
           style={styles.profileButton}
         >
           <Image
-            source={user.picture}
+            source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png" }}
             style={styles.profileImage}
           />
         </TouchableOpacity>
@@ -95,6 +105,7 @@ export default function index() {
             <TouchableOpacity
               key={index}
               style={[styles.postCard, styles.postCardShadow]}
+              onPress={() => router.push(`/(post)/${post._id}`)}
             >
               <View style={styles.postCardContent}>
                 <View style={[styles.postImage, styles.postImageBackground]}>
@@ -114,7 +125,7 @@ export default function index() {
                     {post.productName}
                   </Text>
                   <Text style={styles.postCategory}>
-                    {post.action === "need" ? "Looking for" : "Selling"}
+                    {post.type === "need" ? "Looking for" : "Selling"}
                   </Text>
                   <Text style={styles.postPrice}>
                     {post.price}
@@ -130,7 +141,7 @@ export default function index() {
       <Link push href="/select" asChild>
         <TouchableOpacity style={styles.fabContainer}>
           <View style={styles.fabButton}>
-            <Text style={styles.fabText}>Search or Post Item</Text>
+            <Text style={styles.fabText}>Make a New Post</Text>
           </View>
         </TouchableOpacity>
       </Link>

@@ -12,7 +12,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { Dropdown } from 'react-native-element-dropdown';
 import { styles } from "./_styles/product.styles";
 import { useAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
@@ -148,47 +148,36 @@ function Need() {
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Price Range</Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ fontSize: 16, fontWeight: "600", marginRight: 8 }}>
-                    $
-                  </Text>
-                  <CustomInput
-                    placeholder="e.g., 500 - 1000"
-                    value={formData.priceRange}
-                    onChangeText={(text) =>
-                      handleInputChange("priceRange", text)
-                    }
-                    style={{ flex: 1 }}
-                  />
-                </View>
+                <CustomInput
+                  placeholder="e.g., 500"
+                  value={formData.priceRange}
+                  onChangeText={(text) => handleInputChange("priceRange", text)}
+                  keyboardType="numeric"
+                  inputMode="numeric"
+                  returnKeyType="done"
+                  maxLength={8}
+                />
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Condition</Text>
-                <View
+                <Dropdown
                   style={{
                     borderWidth: 1,
-                    borderColor: "#e0e0e0",
+                    borderColor: '#e0e0e0',
                     borderRadius: 8,
-                    backgroundColor: "#f9f9f9",
-                    paddingHorizontal: 0,
+                    backgroundColor: '#f9f9f9',
+                    paddingHorizontal: 12,
+                    height: 50,
                   }}
-                >
-                  <Picker
-                    selectedValue={formData.condition}
-                    onValueChange={(itemValue: string) =>
-                      handleInputChange("condition", itemValue)
-                    }
-                    style={{
-                      height: 50,
-                      color: "#000",
-                    }}
-                  >
-                    <Picker.Item label="Select Condition" value="" />
-                    {CONDITIONS.map((condition) => (
-                      <Picker.Item key={condition} label={condition} value={condition} />
-                    ))}
-                  </Picker>
-                </View>
+                  placeholderStyle={{ color: '#888' }}
+                  selectedTextStyle={{ color: '#000' }}
+                  data={CONDITIONS.map((c) => ({ label: c, value: c }))}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Condition"
+                  value={formData.condition}
+                  onChange={item => handleInputChange('condition', item.value)}
+                />
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Preferred Color/Model</Text>
@@ -359,45 +348,36 @@ function Provide() {
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Price *</Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ fontSize: 16, fontWeight: "600", marginRight: 8 }}>
-                    $
-                  </Text>
-                  <CustomInput
-                    placeholder="e.g., 800"
-                    value={formData.price}
-                    onChangeText={(text) => handleInputChange("price", text)}
-                    style={{ flex: 1 }}
-                  />
-                </View>
+                <CustomInput
+                  placeholder="e.g., 800"
+                  value={formData.price}
+                  onChangeText={(text) => handleInputChange("price", text)}
+                  keyboardType="numeric"
+                  inputMode="numeric"
+                  returnKeyType="done"
+                  maxLength={8}
+                />
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Condition *</Text>
-                <View
+                <Dropdown
                   style={{
                     borderWidth: 1,
-                    borderColor: "#e0e0e0",
+                    borderColor: '#e0e0e0',
                     borderRadius: 8,
-                    backgroundColor: "#f9f9f9",
-                    paddingHorizontal: 0,
+                    backgroundColor: '#f9f9f9',
+                    paddingHorizontal: 12,
+                    height: 50,
                   }}
-                >
-                  <Picker
-                    selectedValue={formData.condition}
-                    onValueChange={(itemValue: string) =>
-                      handleInputChange("condition", itemValue)
-                    }
-                    style={{
-                      height: 50,
-                      color: "#000",
-                    }}
-                  >
-                    <Picker.Item label="Select Condition" value="" />
-                    {CONDITIONS.map((condition) => (
-                      <Picker.Item key={condition} label={condition} value={condition} />
-                    ))}
-                  </Picker>
-                </View>
+                  placeholderStyle={{ color: '#888' }}
+                  selectedTextStyle={{ color: '#000' }}
+                  data={CONDITIONS.map((c) => ({ label: c, value: c }))}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Condition"
+                  value={formData.condition}
+                  onChange={item => handleInputChange('condition', item.value)}
+                />
               </View>
             </View>
 
@@ -437,31 +417,24 @@ function Provide() {
             <View style={styles.formContent}>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Shipping Available? *</Text>
-                <View
+                <Dropdown
                   style={{
                     borderWidth: 1,
-                    borderColor: "#e0e0e0",
+                    borderColor: '#e0e0e0',
                     borderRadius: 8,
-                    backgroundColor: "#f9f9f9",
-                    paddingHorizontal: 0,
+                    backgroundColor: '#f9f9f9',
+                    paddingHorizontal: 12,
+                    height: 50,
                   }}
-                >
-                  <Picker
-                    selectedValue={formData.shipping}
-                    onValueChange={(itemValue: string) =>
-                      handleInputChange("shipping", itemValue)
-                    }
-                    style={{
-                      height: 50,
-                      color: "#000",
-                    }}
-                  >
-                    <Picker.Item label="Select Shipping Option" value="" />
-                    {SHIPPING_OPTIONS.map((option) => (
-                      <Picker.Item key={option} label={option} value={option} />
-                    ))}
-                  </Picker>
-                </View>
+                  placeholderStyle={{ color: '#888' }}
+                  selectedTextStyle={{ color: '#000' }}
+                  data={SHIPPING_OPTIONS.map((o) => ({ label: o, value: o }))}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Shipping Option"
+                  value={formData.shipping}
+                  onChange={item => handleInputChange('shipping', item.value)}
+                />
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Location *</Text>
