@@ -4,6 +4,7 @@ export default function Layout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ title: "Home" }} />
+      <Stack.Screen name="[id]" options={{ title: "Post" }} />
       <Stack.Screen name="select" options={{ title: "Select" }} />
       <Stack.Screen name="category" options={{ title: "Category" }} />
       <Stack.Screen name="job" options={{ title: "Job" }} />
