@@ -1,51 +1,30 @@
 import CustomInput from "@/src/components/CustomInput";
 import { useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
 import { Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
-import PagerView, { usePagerView } from "react-native-pager-view";
-import { SafeAreaView } from "react-native-safe-area-context";
 import SubmitButton from "./submit";
+import useCustomPager from "@/src/components/CustomPager";
+import { colors } from "@/src/utils/colors";
 
 export default function Job() {
   const params = useLocalSearchParams<{ action?: string; category?: string }>();
 
-  return (
-    <>
-      {params.action == "need" ? <Need /> : <Provide />}
-      {/* <View>
-        <Button
-          title="Go next"
-          onPress={() => {
-            // setPage(1);
-          }}
-        ></Button>
-        <Text>Current page: {}</Text>
-      </View> */}
-    </>
-  );
+  return <>{params.action == "need" ? <Need /> : <Provide />}</>;
 }
 
 function Need() {
-  const { AnimatedPagerView, ref, setPage, activePage, ...rest } = usePagerView(
-    {
-      pagesAmount: 5,
-    }
-  );
+  const { setCurrPage, setPage, Pager } = useCustomPager({ pageCount: 5 });
 
   return (
-    <PagerView
-      ref={ref}
-      style={{
-        flex: 1,
-        backgroundColor: "#e0e0e0",
-      }}
-      initialPage={0}
-    >
+    <Pager>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View
           style={{
-            gap: 30,
-            margin: 20,
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
             alignItems: "center",
           }}
           key="1"
@@ -67,8 +46,12 @@ function Need() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View
           style={{
-            gap: 30,
-            margin: 20,
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
             alignItems: "center",
           }}
           key="2"
@@ -89,8 +72,12 @@ function Need() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View
           style={{
-            gap: 30,
-            margin: 20,
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
             alignItems: "center",
           }}
           key="3"
@@ -112,8 +99,12 @@ function Need() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View
           style={{
-            gap: 30,
-            margin: 20,
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
             alignItems: "center",
           }}
           key="4"
@@ -135,8 +126,12 @@ function Need() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View
           style={{
-            gap: 30,
-            margin: 20,
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
             alignItems: "center",
           }}
           key="5"
@@ -158,76 +153,71 @@ function Need() {
           <SubmitButton />
         </View>
       </TouchableWithoutFeedback>
-    </PagerView>
+    </Pager>
   );
 }
 
 function Provide() {
-  return (
-    <>
-      <View>
-        <Text>Information</Text>
-        <CustomInput placeholder="Company Name" />
-        <CustomInput placeholder="Last Name" />
-        <CustomInput placeholder="Email Address" />
-        <CustomInput placeholder="Phone Number" />
-      </View>
-    </>
-  );
-}
-
-export function PagerHookExample() {
-  const { AnimatedPagerView, ref, ...rest } = usePagerView({ pagesAmount: 10 });
+  const { setCurrPage, setPage, Pager } = useCustomPager({ pageCount: 2 });
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        padding: 50,
-        backgroundColor: "red",
-      }}
-    >
-      <AnimatedPagerView
-        testID="pager-view"
-        ref={ref}
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-        initialPage={0}
-        layoutDirection="ltr"
-        overdrag={rest.overdragEnabled}
-        scrollEnabled={rest.scrollEnabled}
-        onPageScroll={rest.onPageScroll}
-        onPageSelected={rest.onPageSelected}
-        onPageScrollStateChanged={rest.onPageScrollStateChanged}
-        pageMargin={10}
-        orientation="horizontal"
-      >
-        {useMemo(
-          () =>
-            rest.pages.map((_, index) => (
-              <View
-                testID="pager-view-content"
-                key={index}
-                style={{
-                  flex: 1,
-                  backgroundColor: "#fdc08e",
-                  alignItems: "center",
-                  padding: 20,
-                }}
-                collapsable={false}
-              >
-                {/* <LikeCount /> */}
-                <Text testID={`pageNumber${index}`}>
-                  {`page number ${index}`}
-                </Text>
-              </View>
-            )),
-          [rest.pages]
-        )}
-      </AnimatedPagerView>
-      {/* <NavigationPanel {...rest} /> */}
-    </SafeAreaView>
+    <Pager>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View
+          style={{
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
+            alignItems: "center",
+          }}
+          key="1"
+        >
+          <Text
+            style={{
+              fontSize: 30,
+              fontWeight: "bold",
+            }}
+          >
+            About the Company
+          </Text>
+
+          <CustomInput placeholder="Company Name" />
+          <CustomInput placeholder="Last Name" />
+          <CustomInput placeholder="Email Address" />
+          <CustomInput placeholder="Phone Number" />
+        </View>
+      </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View
+          style={{
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 100,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
+            alignItems: "center",
+          }}
+          key="2"
+        >
+          <Text
+            style={{
+              fontSize: 30,
+              fontWeight: "bold",
+            }}
+          >
+            About the Candidate
+          </Text>
+
+          <CustomInput placeholder="Education" />
+          <CustomInput placeholder="Work background" />
+          <CustomInput placeholder="University/College" />
+          <CustomInput placeholder="Veteran Status" />
+        </View>
+      </TouchableWithoutFeedback>
+    </Pager>
   );
 }
