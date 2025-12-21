@@ -1,152 +1,139 @@
-import CustomButton from "@/src/components/CustomButton";
 import CustomLink from "@/src/components/CustomLink";
 import { colors } from "@/src/utils/colors";
 import { getUserInfoAtom } from "@/src/utils/get-user";
 import { logOutAtom, userAtom } from "@/src/utils/store";
+import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { Image } from "expo-image";
+import { Link } from "expo-router";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect } from "react";
-import { ScrollView, Text, View } from "react-native";
-
-const posts = [
-  {
-    title: "Micka for sale",
-    category: "pet",
-    price: "$200",
-    image: "https://images.dog.ceo/breeds/poodle-standard/n02113799_1922.jpg",
-  },
-  {
-    title: "iPhone 12 Pro",
-    category: "product",
-    price: "$600",
-    image:
-      "https://i.insider.com/5fad82d9343ad40018a93811?width=800&format=jpeg&auto=webp",
-  },
-];
+import { useEffect, useState } from "react";
+import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
+import { styles } from "./_styles/index.styles";
 
 export default function index() {
   const user = useAtomValue(userAtom);
   const logout = useSetAtom(logOutAtom);
   const router = useRouter();
   const getUserInfo = useAtom(getUserInfoAtom)[1];
+  const [, authFetch] = useAtom(authFetchAtom);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showLogoutMenu, setShowLogoutMenu] = useState(false);
 
   useEffect(() => {
     getUserInfo();
   }, []);
 
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const response = await authFetch("/api/products/my-products", {
+          method: "GET",
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.products) {
+          setPosts(data.products);
+        } else {
+          console.error("Failed to fetch posts:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [authFetch]);
+
+  const handleLogoutPress = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: logout,
+      },
+    ]);
+  };
+
   return (
-    <ScrollView
-      contentContainerStyle={{
-        flex: 1,
-        alignItems: "center",
-        gap: 10,
-        margin: 20,
-      }}
-    >
-      <View style={{ alignItems: "center", gap: 10 }}>
-        <Image
-          source={user.picture}
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 50,
-            backgroundColor: "#0553",
-          }}
-        />
-        <Text
-          style={{
-            fontSize: 32,
-            fontWeight: "bold",
-          }}
-        >
-          Welcome, {user.username}
-        </Text>
-      </View>
-
-      <CustomButton text="Logout" onPress={logout} />
-      <CustomLink text="Create new post" href="/select" />
-      <CustomButton
-        text="Print current user"
-        onPress={() => {
-          console.log(user);
-        }}
-      />
-
-      <Text
-        style={{
-          fontSize: 24,
-          fontWeight: "bold",
-          marginTop: 20,
-        }}
-      >
-        Your Posts
-      </Text>
-      {posts.map((post, index) => (
-        <View
-          key={index}
-          style={{
-            width: "100%",
-            height: 100,
-            backgroundColor: "rgba(193, 253, 255, 1)",
-            borderRadius: 10,
-            padding: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 10,
-              backgroundColor: colors.borderGray,
-              overflow: "hidden",
-            }}
-          >
-            <Image
-              source={post.image}
-              style={{
-                width: "100%",
-                height: "100%",
-              }}
-              contentFit="cover"
-            />
-          </View>
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "bold",
-              }}
-            >
-              {post.title}
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                color: "#666",
-              }}
-            >
-              {post.category}
-            </Text>
-          </View>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "bold",
-            }}
-          >
-            {post.price}
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Posts</Text>
+          <Text style={styles.headerSubtitle}>
+            Welcome back, {user.firstName}
           </Text>
         </View>
-      ))}
-    </ScrollView>
+        <TouchableOpacity
+          onPress={handleLogoutPress}
+          style={styles.profileButton}
+        >
+          <Image
+            source={user.picture}
+            style={styles.profileImage}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Posts List */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {posts.length === 0 ? (
+          <View style={styles.emptyStateContainer}>
+            <Text style={styles.emptyStateText}>
+              No posts yet. Create one to get started!
+            </Text>
+          </View>
+        ) : (
+          posts.map((post, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[styles.postCard, styles.postCardShadow]}
+            >
+              <View style={styles.postCardContent}>
+                <View style={[styles.postImage, styles.postImageBackground]}>
+                  <Image
+                    source={{
+                      uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTvGPEc8bhcT2Zl66lisGIPqVJ3PhKD8Xvzw&s",
+                    }}
+                    style={styles.postImageFill}
+                    contentFit="cover"
+                  />
+                </View>
+                <View style={styles.postTextContainer}>
+                  <Text
+                    style={styles.postTitle}
+                    numberOfLines={1}
+                  >
+                    {post.productName}
+                  </Text>
+                  <Text style={styles.postCategory}>
+                    {post.action === "need" ? "Looking for" : "Selling"}
+                  </Text>
+                  <Text style={styles.postPrice}>
+                    {post.price}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
+      </ScrollView>
+
+      {/* Floating Action Button */}
+      <Link push href="/select" asChild>
+        <TouchableOpacity style={styles.fabContainer}>
+          <View style={styles.fabButton}>
+            <Text style={styles.fabText}>Search or Post Item</Text>
+          </View>
+        </TouchableOpacity>
+      </Link>
+    </View>
   );
 }
