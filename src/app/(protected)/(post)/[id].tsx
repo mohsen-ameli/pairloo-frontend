@@ -6,9 +6,6 @@ import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 
-
-
-
 export default function PostDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();

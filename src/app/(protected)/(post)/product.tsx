@@ -43,12 +43,10 @@ function Need() {
   const handleInputChange = (field: string, value: string) => {
     let processedValue = value;
 
-    // Validate quantity - only numbers
     if (field === "quantity") {
       processedValue = value.replace(/[^0-9]/g, "");
     }
 
-    // Validate price - only numbers (will add $ prefix on display)
     if (field === "priceRange") {
       processedValue = value.replace(/[^0-9]/g, "");
     }
@@ -112,7 +110,6 @@ function Need() {
         <Text style={styles.headerSubtitle}>Tell us what you're searching for</Text>
       </View>
 
-      {/* Content */}
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
@@ -200,7 +197,6 @@ function Need() {
         </TouchableWithoutFeedback>
       </ScrollView>
 
-      {/* Footer */}
       <View style={styles.footerContainer}>
         <TouchableOpacity
           style={[styles.button, styles.backButton]}
@@ -244,12 +240,10 @@ function Provide() {
   const handleInputChange = (field: string, value: string) => {
     let processedValue = value;
 
-    // Validate quantity - only numbers
     if (field === "quantity") {
       processedValue = value.replace(/[^0-9]/g, "");
     }
 
-    // Validate price - only numbers (will add $ prefix on display)
     if (field === "price") {
       processedValue = value.replace(/[^0-9]/g, "");
     }
@@ -310,13 +304,11 @@ function Provide() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Sell a Product</Text>
         <Text style={styles.headerSubtitle}>List your item for sale</Text>
       </View>
 
-      {/* Content */}
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
@@ -449,7 +441,6 @@ function Provide() {
         </TouchableWithoutFeedback>
       </ScrollView>
 
-      {/* Footer */}
       <View style={styles.footerContainer}>
         <TouchableOpacity
           style={[styles.button, styles.backButton]}

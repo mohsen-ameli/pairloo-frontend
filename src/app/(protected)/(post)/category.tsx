@@ -86,10 +86,11 @@ export default function Category() {
               key={category.id}
               push
               href={{
-                pathname: `/${category.id}`,
+                pathname: "/[id]",
                 params: {
                   action: params.action,
                   category: category.id,
+                  id: category.id,
                 },
               }}
               asChild

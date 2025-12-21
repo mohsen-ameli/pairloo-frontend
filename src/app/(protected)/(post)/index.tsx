@@ -1,10 +1,7 @@
-import CustomLink from "@/src/components/CustomLink";
 import { PostType } from "@/src/types/post.type";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { colors } from "@/src/utils/colors";
 import { getUserInfoAtom } from "@/src/utils/get-user";
 import { logOutAtom, userAtom } from "@/src/utils/store";
-
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useRouter } from "expo-router";
@@ -137,7 +134,6 @@ export default function index() {
         )}
       </ScrollView>
 
-      {/* Floating Action Button */}
       <Link push href="/select" asChild>
         <TouchableOpacity style={styles.fabContainer}>
           <View style={styles.fabButton}>

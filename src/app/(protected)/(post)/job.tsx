@@ -1,7 +1,7 @@
 import CustomInput from "@/src/components/CustomInput";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Keyboard,
   Text,
@@ -89,7 +89,6 @@ function Need() {
 
   const handleNextPage = () => {
     if (isLastPage) {
-      // Handle submit
       router.push("/");
     } else {
       const nextPage = currentPageIndex + 1;
@@ -110,7 +109,6 @@ function Need() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Find Your Dream Job</Text>
         <View style={styles.progressContainer}>
@@ -128,7 +126,6 @@ function Need() {
         </View>
       </View>
 
-      {/* Pages */}
       <PagerView
         ref={ref}
         style={styles.container}
@@ -166,7 +163,6 @@ function Need() {
         ))}
       </PagerView>
 
-      {/* Footer Navigation */}
       <View style={styles.footerContainer}>
         <TouchableOpacity
           style={[styles.button, styles.backButton]}
@@ -196,7 +192,6 @@ function Provide() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Post a Job</Text>
         <Text style={styles.pageDescription}>
@@ -204,7 +199,6 @@ function Provide() {
         </Text>
       </View>
 
-      {/* Content */}
       <ScrollView style={styles.singlePageContainer}>
         <View>
           <Text style={styles.sectionTitle}>Company Information</Text>
@@ -249,7 +243,6 @@ function Provide() {
         </View>
       </ScrollView>
 
-      {/* Footer */}
       <View style={styles.footerContainer}>
         <TouchableOpacity
           style={[styles.button, styles.backButton]}
@@ -260,7 +253,6 @@ function Provide() {
         <TouchableOpacity
           style={[styles.button, styles.submitButton]}
           onPress={() => {
-            // Handle submit
             router.push("/");
           }}
         >

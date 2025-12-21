@@ -5,7 +5,7 @@ import { styles } from "./_styles/select.styles";
 export default function Select() {
   return (
     <View style={styles.container}>
-      {/* Header */}
+      
       <View style={styles.header}>
         <Text style={styles.headerTitle}>What do you want?</Text>
         <Text style={styles.headerSubtitle}>
@@ -13,9 +13,7 @@ export default function Select() {
         </Text>
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
-        {/* Need Card */}
         <Link
           push
           href={{
@@ -39,7 +37,6 @@ export default function Select() {
           </TouchableOpacity>
         </Link>
 
-        {/* Provide Card */}
         <Link
           push
           href={{
