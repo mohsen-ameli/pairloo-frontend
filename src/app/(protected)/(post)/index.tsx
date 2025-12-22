@@ -6,7 +6,14 @@ import { Link } from "expo-router";
 import { useRouter } from "expo-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  RefreshControl,
+} from "react-native";
 import { styles } from "@/src/styles/index.styles";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 
@@ -17,6 +24,7 @@ export default function index() {
   const router = useRouter();
   const [posts, setPosts] = useState<PostType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   async function fetchPosts() {
     setLoading(true);
@@ -24,9 +32,15 @@ export default function index() {
     if (res.ok) {
       const data = await res.json();
       setPosts(data);
-      setLoading(false);
     }
+    setLoading(false);
   }
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPosts();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     fetchPosts();
@@ -69,7 +83,12 @@ export default function index() {
       <LoadingIndicator loading={loading} />
 
       {/* Posts List */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {posts.length === 0 ? (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>
