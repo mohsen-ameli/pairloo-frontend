@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
-import { styles } from "./_styles/select.styles";
+import { styles } from "../../../styles/select.styles";
 import Feather from '@expo/vector-icons/Feather';
 
 export default function Select() {

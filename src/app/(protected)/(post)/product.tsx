@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Dropdown } from 'react-native-element-dropdown';
-import { styles } from "./_styles/product.styles";
+import { styles } from "../../../styles/product.styles";
 import { useAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 

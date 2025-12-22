@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
-import { styles } from "./_styles/index.styles";
+import { styles } from "../../../styles/index.styles";
 
 export default function index() {
   const user = useAtomValue(userAtom);

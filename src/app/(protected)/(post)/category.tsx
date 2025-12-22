@@ -1,7 +1,7 @@
 import { Link } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { Text, View, TouchableOpacity, ScrollView } from "react-native";
-import { styles } from "./_styles/category.styles";
+import { styles } from "../../../styles/category.styles";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
