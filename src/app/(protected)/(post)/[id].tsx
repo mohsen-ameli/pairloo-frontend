@@ -1,35 +1,39 @@
 
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from "react-native";
-import styles from "./[id].styles";
+import styles from "./id.styles";
 import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
+import { PostType } from "@/src/types/post.type";
 
 export default function PostDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [, authFetch] = useAtom(authFetchAtom);
-  const [post, setPost] = useState<any>(null);
+  const [post, setPost] = useState<PostType>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [closestProducts, setClosestProducts] = useState<PostType[]>([]);
+
+  async function fetchPostData(postId: string) {
+    const res = await authFetch(`/api/posts/${postId}`);
+    if (res.ok) {
+      const data = await res.json();
+      setPost(data);
+
+      for (const productId of data.closestProducts || []) {
+        const productRes = await authFetch(`/api/posts/${productId}`);
+        if (productRes.ok) {
+          const productData = await productRes.json();
+          setClosestProducts((prev) => [...prev, productData]);
+        }
+      }
+    }
+  }
 
   useEffect(() => {
-    if (!id) return;
-    const fetchPost = async () => {
-      try {
-        setLoading(true);
-        const res = await authFetch(`/api/products/${id}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch post");
-        setPost(data);
-      } catch (e: any) {
-        setError(e.message || "Error loading post");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPost();
+    fetchPostData(id);
   }, [id]);
 
   if (loading) {
@@ -59,38 +63,26 @@ export default function PostDetails() {
           style={styles.productImage}
           resizeMode="cover"
         />
-        <Text style={styles.title}>{post.productName || post.name}</Text>
-        <Text style={styles.subtitle}>{post.action === "need" ? "Looking for" : "Offering"}</Text>
+        <Text style={styles.title}>{post.name || post.name}</Text>
+        <Text style={styles.subtitle}>{post.type === "need" ? "Looking for" : "Offering"}</Text>
 
         {post.quantity !== undefined && (
           <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>quantity:</Text> {post.quantity}</Text>
         )}
-        {(post.price || post.priceRange) && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>price:</Text> {post.price || post.priceRange}</Text>
+        {post.price && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>price:</Text> {post.price}</Text>
         )}
-        {post.condition && (
+        {/* {post.condition && (
           <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>condition:</Text> {post.condition}</Text>
-        )}
-        {post.colorModel && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>color/model:</Text> {post.colorModel}</Text>
         )}
         {post.description && (
           <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>description:</Text> {post.description}</Text>
         )}
-        {post.specifications && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>specifications:</Text> {post.specifications}</Text>
-        )}
-        {post.notes && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>notes:</Text> {post.notes}</Text>
-        )}
-        {post.reason && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>reason:</Text> {post.reason}</Text>
-        )}
         {post.shipping && (
           <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>shipping:</Text> {post.shipping}</Text>
-        )}
-        {post.location && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>location:</Text> {post.location}</Text>
+        )} */}
+        {post.region && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>location:</Text> {post.region}</Text>
         )}
         <View style={{ height: 90 }} />
       </ScrollView>

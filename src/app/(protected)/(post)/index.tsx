@@ -33,27 +33,11 @@ export default function index() {
   }, []);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        const response = await authFetch("/api/products/my-products", {
-          method: "GET",
-        });
+    getUserInfo();
+    fetchPosts();
+  }, []);
 
-        const data = await response.json();
-
-        if (response.ok && data.products) {
-          setPosts(data.products);
-        } else {
-          console.error("Failed to fetch posts:", data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  useEffect(() => {
     fetchPosts();
   }, [authFetch]);
 
@@ -119,7 +103,7 @@ export default function index() {
                     style={styles.postTitle}
                     numberOfLines={1}
                   >
-                    {post.productName}
+                    {post.name}
                   </Text>
                   <Text style={styles.postCategory}>
                     {post.type === "need" ? "Looking for" : "Selling"}

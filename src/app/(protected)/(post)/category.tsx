@@ -1,28 +1,21 @@
-import { Link, useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { Text, View, TouchableOpacity, ScrollView } from "react-native";
 import { styles } from "./_styles/category.styles";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 const categoryIcons = {
-  job: "💼",
-  partner: "🤝",
-  product: "📦",
-  pet: "🐾",
-  something: "❓",
-};
-
-const categoryDescriptions = {
-  job: "Find or offer jobs",
-  partner: "Find or become a partner",
-  product: "Buy or sell products",
-  pet: "Find or adopt pets",
-  something: "Browse other items",
+  job: (color: string, size: number) => <AntDesign name="solution" size={size} color={color} />,
+  partner: (color: string, size: number) => <MaterialCommunityIcons name="handshake" size={size} color={color} />,
+  product: (color: string, size: number) => <FontAwesome5 name="box-open" size={size} color={color} />,
+  pet: (color: string, size: number) => <MaterialCommunityIcons name="dog" size={size} color={color} />,
+  something: (color: string, size: number) => <AntDesign name="question-circle" size={size} color={color} />,
 };
 
 export default function Category() {
   const params = useLocalSearchParams<{ action?: string }>();
-  const router = useRouter();
-
   const actionText =
     params.action === "need" ? "I need a" : "I provide a";
 
@@ -31,7 +24,7 @@ export default function Category() {
       id: "job",
       label: "Job",
       icon: categoryIcons.job,
-      description: categoryDescriptions.job,
+      description: "Find or offer jobs",
       color: "#FFF3E0",
     },
     ...(params.action === "need"
@@ -40,7 +33,7 @@ export default function Category() {
             id: "partner",
             label: "Partner",
             icon: categoryIcons.partner,
-            description: categoryDescriptions.partner,
+            description: "Find or become a partner",
             color: "#FCE4EC",
           },
         ]
@@ -49,21 +42,21 @@ export default function Category() {
       id: "product",
       label: "Product",
       icon: categoryIcons.product,
-      description: categoryDescriptions.product,
+      description: "Buy or sell products",
       color: "#E3F2FD",
     },
     {
       id: "pet",
       label: "Pet",
       icon: categoryIcons.pet,
-      description: categoryDescriptions.pet,
+      description: "Find or adopt pets",
       color: "#F1F8E9",
     },
     {
       id: "something",
       label: "Something else",
       icon: categoryIcons.something,
-      description: categoryDescriptions.something,
+      description: "Browse other items",
       color: "#EDE7F6",
     },
   ];
@@ -103,7 +96,7 @@ export default function Category() {
                   ]}
                 >
                   <View style={styles.cardContent}>
-                    <Text style={styles.cardIcon}>{category.icon}</Text>
+                    <View style={styles.cardIcon}>{category.icon('#333', 32)}</View>
                     <View style={styles.cardTextContainer}>
                       <Text style={styles.cardTitle}>{category.label}</Text>
                       <Text style={styles.cardSubtitle}>

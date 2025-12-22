@@ -3,8 +3,7 @@ export type PostType = {
   type: "need" | "provide";
   userId: string;
   image?: string;
-  productName: string;
-  name?: string; // for legacy or future compatibility
+  name?: string;
   category?: string;
   quantity?: string;
   price?: string;
