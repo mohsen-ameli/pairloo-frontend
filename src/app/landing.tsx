@@ -1,35 +1,17 @@
 import CustomLink from "@/src/components/CustomLink";
 import { colors } from "@/src/utils/colors";
 import { Link } from "expo-router";
-import { ActivityIndicator, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import LoginWithGoogle from "./login-with-google";
 import { useState } from "react";
-import { useAtomValue } from "jotai";
-import { userAtom } from "../utils/store";
+import LoadingIndicator from "../components/LoadingIndicator";
 
 export default function Landing() {
   const [loading, setLoading] = useState(false);
-  const user = useAtomValue(userAtom);
 
   return (
     <>
-      {loading && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.3)",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 10,
-          }}
-        >
-          <ActivityIndicator size="large" color="#fff" />
-        </View>
-      )}
+      <LoadingIndicator loading={loading} />
       <View
         style={{
           flex: 1,

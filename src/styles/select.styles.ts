@@ -9,10 +9,7 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 24,
     backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   headerBackButton: {
     width: 40,
@@ -37,8 +34,8 @@ export const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 24,
-    justifyContent: "center",
-    gap: 16,
+    justifyContent: "space-evenly",
+    alignItems: "center",
   },
   optionCard: {
     borderRadius: 16,
@@ -49,7 +46,6 @@ export const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
     width: "80%",
-    alignSelf: "center",
   },
   needCard: {
     backgroundColor: "#F0E7FF",
@@ -61,10 +57,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 28,
     paddingHorizontal: 20,
     alignItems: "center",
-  },
-  cardIcon: {
-    fontSize: 48,
-    marginBottom: 12,
   },
   cardTitle: {
     fontSize: 22,

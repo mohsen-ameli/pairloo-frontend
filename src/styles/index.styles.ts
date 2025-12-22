@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { colors } from "../utils/colors";
 
 export const styles = StyleSheet.create({
   container: {
@@ -10,8 +11,6 @@ export const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 16,
     backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -39,8 +38,8 @@ export const styles = StyleSheet.create({
     overflow: "hidden",
   },
   profileImage: {
-    width: "100%",
-    height: "100%",
+    width: 50,
+    height: 50,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -108,7 +107,7 @@ export const styles = StyleSheet.create({
   postPrice: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#007AFF",
+    color: colors.dark,
   },
   fabContainer: {
     position: "absolute",
