@@ -1,19 +1,19 @@
-
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from "react-native";
-import styles from "./id.styles";
+import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
+import styles from "@/src/styles/id.styles";
 import { useEffect, useState } from "react";
-import { useAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { PostType } from "@/src/types/post.type";
+import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function PostDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [, authFetch] = useAtom(authFetchAtom);
+  const authFetch = useSetAtom(authFetchAtom);
   const [post, setPost] = useState<PostType>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [closestProducts, setClosestProducts] = useState<PostType[]>([]);
 
   async function fetchPostData(postId: string) {
@@ -29,6 +29,7 @@ export default function PostDetails() {
           setClosestProducts((prev) => [...prev, productData]);
         }
       }
+      setLoading(false);
     }
   }
 
@@ -36,18 +37,16 @@ export default function PostDetails() {
     fetchPostData(id);
   }, [id]);
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
+  if (loading) return <LoadingIndicator loading={loading} />;
+
   if (error) {
     return (
       <View style={styles.centered}>
         <Text style={styles.error}>{error}</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -57,20 +56,31 @@ export default function PostDetails() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
         <Image
-          source={{ uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcFI6hTmgUtdxQTZktMt5KgEbySf4mtRgfQ&s" }}
+          source={{
+            uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcFI6hTmgUtdxQTZktMt5KgEbySf4mtRgfQ&s",
+          }}
           style={styles.productImage}
           resizeMode="cover"
         />
         <Text style={styles.title}>{post.name || post.name}</Text>
-        <Text style={styles.subtitle}>{post.type === "need" ? "Looking for" : "Offering"}</Text>
+        <Text style={styles.subtitle}>
+          {post.type === "need" ? "Looking for" : "Offering"}
+        </Text>
 
         {post.quantity !== undefined && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>quantity:</Text> {post.quantity}</Text>
+          <Text style={styles.fieldLine}>
+            <Text style={styles.fieldLabel}>quantity:</Text> {post.quantity}
+          </Text>
         )}
         {post.price && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>price:</Text> {post.price}</Text>
+          <Text style={styles.fieldLine}>
+            <Text style={styles.fieldLabel}>price:</Text> {post.price}
+          </Text>
         )}
         {/* {post.condition && (
           <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>condition:</Text> {post.condition}</Text>
@@ -82,11 +92,22 @@ export default function PostDetails() {
           <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>shipping:</Text> {post.shipping}</Text>
         )} */}
         {post.region && (
-          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>location:</Text> {post.region}</Text>
+          <Text style={styles.fieldLine}>
+            <Text style={styles.fieldLabel}>location:</Text> {post.region}
+          </Text>
         )}
         <View style={{ height: 90 }} />
       </ScrollView>
-      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#fff', padding: 16 }}>
+      <View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "#fff",
+          padding: 16,
+        }}
+      >
         <TouchableOpacity style={styles.contactButton} onPress={() => {}}>
           <Text style={styles.contactButtonText}>Contact Post Owner</Text>
         </TouchableOpacity>
@@ -94,5 +115,3 @@ export default function PostDetails() {
     </View>
   );
 }
-
-

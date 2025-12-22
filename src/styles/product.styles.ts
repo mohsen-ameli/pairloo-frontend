@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { colors } from "../utils/colors";
 
 export const styles = StyleSheet.create({
   container: {
@@ -8,10 +9,7 @@ export const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 20,
     backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   headerBackButton: {
     width: 40,
@@ -26,11 +24,6 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     color: "#000",
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: "#999",
-    marginTop: 4,
   },
   content: {
     flex: 1,
@@ -77,8 +70,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     paddingBottom: 24,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
     flexDirection: "row",
     gap: 12,
   },
@@ -98,7 +89,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
   },
   submitButton: {
-    backgroundColor: "#34C759",
+    backgroundColor: colors.lightPurple,
   },
   submitButtonText: {
     color: "#fff",

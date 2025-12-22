@@ -1,45 +1,50 @@
 import { PostType } from "@/src/types/post.type";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { getUserInfoAtom } from "@/src/utils/get-user";
 import { logOutAtom, userAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useRouter } from "expo-router";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View, TouchableOpacity, Alert } from "react-native";
-import { styles } from "../../../styles/index.styles";
+import {
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  RefreshControl,
+} from "react-native";
+import { styles } from "@/src/styles/index.styles";
+import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function index() {
   const user = useAtomValue(userAtom);
   const logout = useSetAtom(logOutAtom);
-  const getUserInfo = useAtom(getUserInfoAtom)[1];
   const authFetch = useSetAtom(authFetchAtom);
   const router = useRouter();
   const [posts, setPosts] = useState<PostType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   async function fetchPosts() {
+    setLoading(true);
     const res = await authFetch("/api/posts/all-posts");
     if (res.ok) {
       const data = await res.json();
       setPosts(data);
     }
+    setLoading(false);
   }
 
-  useEffect(() => {
-    getUserInfo();
-    fetchPosts();
-  }, []);
-
-  useEffect(() => {
-    getUserInfo();
-    fetchPosts();
-  }, []);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPosts();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     fetchPosts();
-  }, [authFetch]);
+  }, []);
 
   const handleLogoutPress = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -67,14 +72,23 @@ export default function index() {
           style={styles.profileButton}
         >
           <Image
-            source={{ uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png" }}
+            source={{
+              uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png",
+            }}
             style={styles.profileImage}
           />
         </TouchableOpacity>
       </View>
 
+      <LoadingIndicator loading={loading} />
+
       {/* Posts List */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {posts.length === 0 ? (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>
@@ -86,7 +100,7 @@ export default function index() {
             <TouchableOpacity
               key={index}
               style={[styles.postCard, styles.postCardShadow]}
-              onPress={() => router.push(`/(post)/${post._id}`)}
+              onPress={() => router.push(`/${post._id}`)}
             >
               <View style={styles.postCardContent}>
                 <View style={[styles.postImage, styles.postImageBackground]}>
@@ -99,18 +113,13 @@ export default function index() {
                   />
                 </View>
                 <View style={styles.postTextContainer}>
-                  <Text
-                    style={styles.postTitle}
-                    numberOfLines={1}
-                  >
+                  <Text style={styles.postTitle} numberOfLines={1}>
                     {post.name}
                   </Text>
                   <Text style={styles.postCategory}>
                     {post.type === "need" ? "Looking for" : "Selling"}
                   </Text>
-                  <Text style={styles.postPrice}>
-                    {post.price}
-                  </Text>
+                  <Text style={styles.postPrice}>${post.price}</Text>
                 </View>
               </View>
             </TouchableOpacity>

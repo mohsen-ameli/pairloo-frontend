@@ -18,6 +18,7 @@ export default function useCustomPager({ pageCount }: { pageCount: number }) {
   const Pager = useCallback(
     ({ children }: { children: React.ReactNode }) => {
       const [currPage, setCurrPage] = useAtom(currPageAtom);
+
       return (
         <>
           {/* Dots */}
@@ -141,10 +142,7 @@ export default function useCustomPager({ pageCount }: { pageCount: number }) {
           {/* Pages */}
           <PagerView
             ref={ref}
-            style={{
-              flex: 1,
-              backgroundColor: "#e0e0e0",
-            }}
+            style={{ flex: 1, backgroundColor: colors.light }}
             initialPage={0}
             onPageScroll={(e) => {
               // e.nativeEvent.offset is 0-1 between pages, position is the left page index
