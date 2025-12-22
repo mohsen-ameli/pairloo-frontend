@@ -150,7 +150,7 @@ function Need() {
           <CustomInput placeholder="Preferred Location" />
           <CustomInput placeholder="Job Type" />
           <CustomInput placeholder="Availability" />
-          <SubmitButton />
+          <SubmitButton text="Submit Preferences" />
         </View>
       </TouchableWithoutFeedback>
     </Pager>

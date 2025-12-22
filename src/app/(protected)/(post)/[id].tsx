@@ -1,15 +1,19 @@
-import { PostType } from "@/src/types/post.type";
-import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { colors } from "@/src/utils/colors";
-import { useLocalSearchParams } from "expo-router";
-import { useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
 
-export default function Post() {
-  const id = useLocalSearchParams<{ id: string }>().id;
-  const authFetch = useSetAtom(authFetchAtom);
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from "react-native";
+import styles from "./id.styles";
+import { useEffect, useState } from "react";
+import { useAtom } from "jotai";
+import { authFetchAtom } from "@/src/utils/auth-fetch";
+import { PostType } from "@/src/types/post.type";
+
+export default function PostDetails() {
+  const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [, authFetch] = useAtom(authFetchAtom);
   const [post, setPost] = useState<PostType>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [closestProducts, setClosestProducts] = useState<PostType[]>([]);
 
   async function fetchPostData(postId: string) {
@@ -32,64 +36,63 @@ export default function Post() {
     fetchPostData(id);
   }, [id]);
 
-  if (!post) {
+  if (loading) {
     return (
-      <View>
-        <Text>Loading...</Text>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.error}>{error}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  if (!post) return null;
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        padding: 20,
-        gap: 20,
-      }}
-    >
-      <View
-        style={{
-          padding: 20,
-          gap: 10,
-          backgroundColor: colors.niceBlue,
-        }}
-      >
-        <Text style={{ fontSize: 30 }}>My Post</Text>
-        <Text>Name: {post.name}</Text>
-        <Text>Category: {post.category}</Text>
-        <Text>Region: {post.region}</Text>
-        <Text>Quantity: {post.quantity}</Text>
-        <Text>Price: ${post.price}</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Image
+          source={{ uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcFI6hTmgUtdxQTZktMt5KgEbySf4mtRgfQ&s" }}
+          style={styles.productImage}
+          resizeMode="cover"
+        />
+        <Text style={styles.title}>{post.name || post.name}</Text>
+        <Text style={styles.subtitle}>{post.type === "need" ? "Looking for" : "Offering"}</Text>
+
+        {post.quantity !== undefined && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>quantity:</Text> {post.quantity}</Text>
+        )}
+        {post.price && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>price:</Text> {post.price}</Text>
+        )}
+        {/* {post.condition && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>condition:</Text> {post.condition}</Text>
+        )}
+        {post.description && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>description:</Text> {post.description}</Text>
+        )}
+        {post.shipping && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>shipping:</Text> {post.shipping}</Text>
+        )} */}
+        {post.region && (
+          <Text style={styles.fieldLine}><Text style={styles.fieldLabel}>location:</Text> {post.region}</Text>
+        )}
+        <View style={{ height: 90 }} />
+      </ScrollView>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#fff', padding: 16 }}>
+        <TouchableOpacity style={styles.contactButton} onPress={() => {}}>
+          <Text style={styles.contactButtonText}>Contact Post Owner</Text>
+        </TouchableOpacity>
       </View>
-      {closestProducts && closestProducts.length > 0 && (
-        <View
-          style={{
-            padding: 20,
-            gap: 10,
-            backgroundColor: colors.niceBlue,
-          }}
-        >
-          <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-            Closest Products:
-          </Text>
-          {closestProducts.map((product) => (
-            <View
-              key={product._id}
-              style={{
-                padding: 10,
-                backgroundColor: colors.lightPurple,
-              }}
-            >
-              <Text>Name: {product.name}</Text>
-              <Text>Category: {product.category}</Text>
-              <Text>Region: {product.region}</Text>
-              <Text>Quantity: {product.quantity}</Text>
-              <Text>Price: ${product.price}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </ScrollView>
+    </View>
   );
 }
+
+
