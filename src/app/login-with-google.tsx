@@ -78,7 +78,7 @@ export default function LoginWithGoogle({
 
   return (
     <View>
-      <CustomButton text="Login With Google" onPress={signInWithGoogle} />
+      <CustomButton onPress={signInWithGoogle}>Login With Google</CustomButton>
     </View>
   );
 }

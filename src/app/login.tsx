@@ -39,7 +39,6 @@ export default function LoginPage() {
           autoComplete="username"
         />
         <CustomButton
-          text="Continue"
           disabled={!email}
           onPress={async () => {
             if (!email) {
@@ -54,7 +53,9 @@ export default function LoginPage() {
               Alert.alert("Login Failed", "Invalid username or password");
             }
           }}
-        />
+        >
+          Continue
+        </CustomButton>
         <Link push href="/forgot-password" style={{ color: colors.purple }}>
           Forgot password?
         </Link>

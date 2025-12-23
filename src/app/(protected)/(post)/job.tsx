@@ -1,9 +1,9 @@
 import CustomInput from "@/src/components/CustomInput";
 import { useLocalSearchParams } from "expo-router";
 import { Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
-import SubmitButton from "./submit";
 import useCustomPager from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
+import CustomButton from "@/src/components/CustomButton";
 
 export default function Job() {
   const params = useLocalSearchParams<{ action?: string; category?: string }>();
@@ -150,7 +150,7 @@ function Need() {
           <CustomInput placeholder="Preferred Location" />
           <CustomInput placeholder="Job Type" />
           <CustomInput placeholder="Availability" />
-          <SubmitButton text="Submit Preferences" />
+          <CustomButton>Submit</CustomButton>
         </View>
       </TouchableWithoutFeedback>
     </Pager>
@@ -216,6 +216,7 @@ function Provide() {
           <CustomInput placeholder="Work background" />
           <CustomInput placeholder="University/College" />
           <CustomInput placeholder="Veteran Status" />
+          <CustomButton>Submit</CustomButton>
         </View>
       </TouchableWithoutFeedback>
     </Pager>
