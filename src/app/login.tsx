@@ -1,10 +1,11 @@
 import CustomInput from "@/src/components/CustomInput";
 import { Link, useRouter } from "expo-router";
 import { useSetAtom } from "jotai";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Alert,
   Keyboard,
+  Pressable,
   Text,
   TouchableWithoutFeedback,
   View,
@@ -15,8 +16,10 @@ import { BASE_URL } from "../utils/constants";
 import useCustomPager from "../components/CustomPager";
 import { userAtom } from "../utils/store";
 
+const REMAINING_TIME = 60; // seconds
+
 export default function LoginPage() {
-  const email = useRef<string | null>(null);
+  const email = useRef<string | null>("mohsen.ameli83@gmail.com");
   const verificationCode = useRef<string | null>(null);
   const { setCurrPage, setPage, setLocks, Pager } = useCustomPager({
     pageCount: 2,
@@ -25,14 +28,16 @@ export default function LoginPage() {
   const requested = useRef(false);
   const setUser = useSetAtom(userAtom);
   const router = useRouter();
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  async function handleRequest() {
+  async function handleRequest(resending: boolean) {
     if (email.current === null) {
       Alert.alert("Error", "Please enter your email");
       return;
     }
-
     requested.current = true;
+    setLoading(true);
 
     try {
       const res = await fetch(
@@ -50,11 +55,26 @@ export default function LoginPage() {
       setLocks([false, false]);
       setCurrPage(1);
       setPage(1);
-      requested.current = false;
-      if (!res.ok) {
+
+      setTimeRemaining(REMAINING_TIME);
+
+      let intervalId: number | null = null;
+      intervalId = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            if (intervalId) clearInterval(intervalId);
+            requested.current = false;
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      setLoading(false);
+      if (res.ok && resending) {
         Alert.alert(
           "Note",
-          "You have already requested a code. Please check your email."
+          "Please check your email for the verification code"
         );
       }
     } catch {
@@ -110,14 +130,25 @@ export default function LoginPage() {
           </Text>
           <CustomInput
             placeholder="Email"
-            onChangeText={(text) => (email.current = text)}
+            // value={email.current!}
+            onChangeText={(text) => {
+              email.current = text;
+              requested.current = false;
+              timeRemaining > 0 && setTimeRemaining(0);
+              loading && setLoading(false);
+            }}
             textContentType="username"
             autoComplete="username"
           />
           <CustomButton
-            text="Continue"
-            disabled={!email || requested.current}
-            onPress={handleRequest}
+            text={loading ? "Sending..." : "Continue"}
+            color={
+              loading || requested.current || timeRemaining > 0
+                ? colors.gray
+                : colors.purple
+            }
+            disabled={loading || requested.current || timeRemaining > 0}
+            onPress={() => handleRequest(false)}
           />
           <Link push href="/forgot-email" style={{ color: colors.purple }}>
             Forgot email?
@@ -145,9 +176,31 @@ export default function LoginPage() {
             keyboardType="numeric"
             maxLength={6}
           />
+          <Text style={{ color: "#666", fontSize: 12, marginBottom: 10 }}>
+            Please check your email for the verification code.
+          </Text>
+          <Pressable
+            onPress={() => handleRequest(true)}
+            disabled={requested.current || timeRemaining > 0}
+          >
+            <Text
+              style={{
+                color:
+                  requested.current || timeRemaining > 0
+                    ? colors.gray
+                    : colors.purple,
+                marginBottom: 20,
+              }}
+            >
+              {timeRemaining > 0
+                ? `Resend Code in ${timeRemaining} seconds`
+                : "Resend Code"}
+            </Text>
+          </Pressable>
           <CustomButton
-            text="Log In"
-            disabled={!verificationCode}
+            text={loading ? "Sending..." : "Log In"}
+            color={loading ? colors.gray : colors.purple}
+            disabled={loading}
             onPress={handleVerification}
           />
         </View>
