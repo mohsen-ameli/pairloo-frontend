@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { styles } from "@/src/styles/login.styles";
 import CustomButton from "../components/CustomButton";
 import { colors } from "../utils/colors";
 import { BASE_URL } from "../utils/constants";
@@ -19,7 +20,7 @@ import { userAtom } from "../utils/store";
 const REMAINING_TIME = 60; // seconds
 
 export default function LoginPage() {
-  const email = useRef<string | null>("mohsen.ameli83@gmail.com");
+  const email = useRef<string | null>(null);
   const verificationCode = useRef<string | null>(null);
   const { setCurrPage, setPage, setLocks, Pager } = useCustomPager({
     pageCount: 2,
@@ -115,22 +116,10 @@ export default function LoginPage() {
   return (
     <Pager>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View
-          style={{ padding: 20, gap: 10, flex: 1, justifyContent: "center" }}
-        >
-          <Text
-            style={{
-              fontSize: 30,
-              marginBottom: 20,
-              fontWeight: "bold",
-              alignSelf: "center",
-            }}
-          >
-            Log In
-          </Text>
+        <View style={styles.pageContainer}>
+          <Text style={styles.title}>Log In</Text>
           <CustomInput
             placeholder="Email"
-            // value={email.current!}
             onChangeText={(text) => {
               email.current = text;
               requested.current = false;
@@ -150,33 +139,22 @@ export default function LoginPage() {
             disabled={loading || requested.current || timeRemaining > 0}
             onPress={() => handleRequest(false)}
           />
-          <Link push href="/forgot-email" style={{ color: colors.purple }}>
+          <Link push href="/forgot-email" style={styles.forgotLink}>
             Forgot email?
           </Link>
         </View>
       </TouchableWithoutFeedback>
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View
-          style={{ padding: 20, gap: 10, flex: 1, justifyContent: "center" }}
-        >
-          <Text
-            style={{
-              fontSize: 30,
-              marginBottom: 20,
-              fontWeight: "bold",
-              alignSelf: "center",
-            }}
-          >
-            Enter Verification Code
-          </Text>
+        <View style={styles.pageContainer}>
+          <Text style={styles.title}>Enter Verification Code</Text>
           <CustomInput
             placeholder="6-digit code"
             onChangeText={(text) => (verificationCode.current = text)}
             keyboardType="numeric"
             maxLength={6}
           />
-          <Text style={{ color: "#666", fontSize: 12, marginBottom: 10 }}>
+          <Text style={styles.verificationInfo}>
             Please check your email for the verification code.
           </Text>
           <Pressable
@@ -184,13 +162,15 @@ export default function LoginPage() {
             disabled={requested.current || timeRemaining > 0}
           >
             <Text
-              style={{
-                color:
-                  requested.current || timeRemaining > 0
-                    ? colors.gray
-                    : colors.purple,
-                marginBottom: 20,
-              }}
+              style={[
+                styles.resendText,
+                {
+                  color:
+                    requested.current || timeRemaining > 0
+                      ? colors.gray
+                      : colors.purple,
+                },
+              ]}
             >
               {timeRemaining > 0
                 ? `Resend Code in ${timeRemaining} seconds`
