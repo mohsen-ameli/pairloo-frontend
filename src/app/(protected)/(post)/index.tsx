@@ -18,7 +18,7 @@ import { styles } from "@/src/styles/index.styles";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function index() {
-  const user = useAtomValue(userAtom);
+  const user = useAtomValue(userAtom)!;
   const logout = useSetAtom(logOutAtom);
   const authFetch = useSetAtom(authFetchAtom);
   const router = useRouter();

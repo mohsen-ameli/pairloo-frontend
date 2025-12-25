@@ -1,13 +1,21 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import PagerView, { usePagerView } from "react-native-pager-view";
 import { colors } from "../utils/colors";
-import { atom, useAtom, useSetAtom } from "jotai";
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 
 const currPageAtom = atom(0);
+const locksAtom = atom<boolean[]>([]);
 
-export default function useCustomPager({ pageCount }: { pageCount: number }) {
+export default function useCustomPager({
+  pageCount,
+  pageLocks,
+}: {
+  pageCount: number;
+  pageLocks?: boolean[];
+}) {
   const setCurrPage = useSetAtom(currPageAtom);
+  const setLocks = useSetAtom(locksAtom);
   const scrollOffset = useRef(new Animated.Value(0)).current;
   const { AnimatedPagerView, ref, setPage, activePage, ...rest } = usePagerView(
     {
@@ -15,9 +23,18 @@ export default function useCustomPager({ pageCount }: { pageCount: number }) {
     }
   );
 
+  useEffect(() => {
+    if (pageLocks) {
+      setLocks(pageLocks);
+    } else {
+      setLocks(new Array(pageCount).fill(false));
+    }
+  }, []);
+
   const Pager = useCallback(
     ({ children }: { children: React.ReactNode }) => {
       const [currPage, setCurrPage] = useAtom(currPageAtom);
+      const locks = useAtomValue(locksAtom);
 
       return (
         <>
@@ -109,7 +126,7 @@ export default function useCustomPager({ pageCount }: { pageCount: number }) {
             ) : (
               <View />
             )}
-            {currPage < pageCount - 1 ? (
+            {currPage < pageCount - 1 && !locks[currPage + 1] ? (
               <Pressable
                 style={{
                   width: 70,
@@ -148,6 +165,18 @@ export default function useCustomPager({ pageCount }: { pageCount: number }) {
               // e.nativeEvent.offset is 0-1 between pages, position is the left page index
               const position = e.nativeEvent.position;
               const offset = e.nativeEvent.offset;
+
+              if (locks[position]) {
+                // If the current page is locked, prevent scrolling forward
+                setPage(position - 1);
+                return;
+              }
+              if (locks[position + 1]) {
+                // If the next page is locked and user is trying to scroll to it, prevent scrolling
+                setPage(position);
+                return;
+              }
+
               // Animate scrollOffset to current page + offset
               Animated.timing(scrollOffset, {
                 toValue: position + offset,
@@ -156,7 +185,14 @@ export default function useCustomPager({ pageCount }: { pageCount: number }) {
               }).start();
             }}
             onPageSelected={(e) => {
-              setCurrPage(e.nativeEvent.position);
+              const position = e.nativeEvent.position;
+
+              if (locks[position]) {
+                // If the selected page is locked, revert to previous page
+                setPage(currPage);
+                return;
+              }
+              setCurrPage(position);
             }}
           >
             {children}
@@ -167,5 +203,5 @@ export default function useCustomPager({ pageCount }: { pageCount: number }) {
     [pageCount]
   );
 
-  return { setCurrPage, setPage, Pager };
+  return { setCurrPage, setPage, setLocks, Pager };
 }
