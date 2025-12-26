@@ -260,7 +260,7 @@ export default function Register() {
                 {errors.city}
               </Text>
             )}
-            <CustomButton text="Create account" onPress={signUpHandler} />
+            <CustomButton onPress={signUpHandler}>Create account</CustomButton>
           </View>
         </TouchableWithoutFeedback>
       </Pager>

@@ -50,7 +50,7 @@ export default function Landing() {
         </View>
 
         <View style={{ width: "100%", gap: 20 }}>
-          <CustomLink text="Create account" href="/register" />
+          <CustomLink href="/register">Create account</CustomLink>
           <Link href="/login">
             <Text
               style={{
