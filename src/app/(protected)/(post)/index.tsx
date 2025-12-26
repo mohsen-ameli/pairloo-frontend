@@ -18,7 +18,7 @@ import { styles } from "@/src/styles/index.styles";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function index() {
-  const user = useAtomValue(userAtom);
+  const user = useAtomValue(userAtom)!;
   const logout = useSetAtom(logOutAtom);
   const authFetch = useSetAtom(authFetchAtom);
   const router = useRouter();
@@ -36,17 +36,17 @@ export default function index() {
     setLoading(false);
   }
 
-  const onRefresh = async () => {
+  async function onRefresh() {
     setRefreshing(true);
     await fetchPosts();
     setRefreshing(false);
-  };
+  }
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  const handleLogoutPress = () => {
+  function handleLogoutPress() {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -55,7 +55,7 @@ export default function index() {
         onPress: logout,
       },
     ]);
-  };
+  }
 
   return (
     <View style={styles.container}>

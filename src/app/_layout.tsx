@@ -11,10 +11,10 @@ export default function RootLayout() {
     <>
       <StatusBar style="auto" />
       <Stack>
-        <Stack.Protected guard={user.isAuthenticated}>
+        <Stack.Protected guard={user !== null}>
           <Stack.Screen name="(protected)" options={{ headerShown: false }} />
         </Stack.Protected>
-        <Stack.Protected guard={!user.isAuthenticated}>
+        <Stack.Protected guard={user === null}>
           <Stack.Screen name="landing" options={{ headerShown: false }} />
           <Stack.Screen name="register" />
           <Stack.Screen name="login" />

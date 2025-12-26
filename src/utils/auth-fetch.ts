@@ -18,10 +18,13 @@ export const authFetchAtom = atom(
 
     const user = await get(userAtom);
 
+    if (!user) {
+      throw new Error("User is not authenticated");
+    }
+
     let res = await fetchWithToken(user.accessToken);
 
     if (res.status === 401 || res.status === 403) {
-      console.log("Refreshing token");
       // Try to refresh token
       const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh-token`, {
         method: "POST",
@@ -37,6 +40,7 @@ export const authFetchAtom = atom(
         res = await fetchWithToken(accessToken);
       } else {
         // Refresh failed, log out user
+        set(userAtom, null);
         throw new Error("Session expired. Please log in again.");
       }
     }

@@ -49,12 +49,11 @@ const user = {
   phoneNumber: "",
   country: "",
   city: "",
-  isAuthenticated: false,
   accessToken: "",
   refreshToken: "",
 };
-export type UserType = typeof user;
-const userSecureStorage = createJSONStorage<typeof user>(() => ({
+export type UserType = typeof user | null;
+const userSecureStorage = createJSONStorage<UserType>(() => ({
   getItem: async (key: string) => {
     return await SecureStore.getItemAsync(key);
   },
@@ -65,7 +64,7 @@ const userSecureStorage = createJSONStorage<typeof user>(() => ({
     await SecureStore.deleteItemAsync(key);
   },
 }));
-export const userAtom = atomWithStorage("user", user, userSecureStorage);
+export const userAtom = atomWithStorage("user", null, userSecureStorage);
 
 // Sign up function atom
 export const signUpAtom = atom(null, async (get, set) => {
@@ -115,7 +114,7 @@ export const loginAtom = atom(null, async (get, set, email) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      email: email
+      email: email,
     }),
   });
   const data = await res.json();
@@ -125,10 +124,10 @@ export const loginAtom = atom(null, async (get, set, email) => {
     isAuthenticated: true,
   });
 
-  return true
+  return true;
 });
 
 // Log out function atom
 export const logOutAtom = atom(null, (get, set) => {
-  set(userAtom, user);
+  set(userAtom, null);
 });

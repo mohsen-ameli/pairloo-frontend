@@ -5,7 +5,7 @@ import {
   useAuthRequest,
 } from "expo-auth-session";
 import { useRouter } from "expo-router";
-import { useAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { Platform, View } from "react-native";
 import CustomButton from "../components/CustomButton";
@@ -28,9 +28,9 @@ export default function LoginWithGoogle({
 }: {
   setLoading: (loading: boolean) => void;
 }) {
-  const [user, setUser] = useAtom(userAtom);
+  const setUser = useSetAtom(userAtom);
   const [request, response, promptAsync] = useAuthRequest(config, discovery);
-  const redirect = useRouter();
+  const router = useRouter();
 
   async function handleResponse() {
     if (!response || response.type !== "success") {
@@ -48,16 +48,11 @@ export default function LoginWithGoogle({
         platform: Platform.OS === "web" ? "web" : "native",
       }),
     });
-    const tokenResponse = await tokenRes.json();
+    const userData = await tokenRes.json();
 
-    setUser({
-      ...user,
-      refreshToken: tokenResponse.refreshToken,
-      accessToken: tokenResponse.accessToken,
-      isAuthenticated: true,
-    });
+    setUser(userData);
 
-    redirect.replace("/");
+    router.replace("/");
   }
 
   useEffect(() => {
