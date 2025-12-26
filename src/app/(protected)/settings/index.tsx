@@ -1,11 +1,11 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
-import { userAtom, logOutAtom } from "../../../utils/store";
-import { styles } from "../../../styles/settings.styles";
-import CustomButton from "../../../components/CustomButton";
-import CustomInput from "../../../components/CustomInput";
-import { colors } from "../../../utils/colors";
+import { userAtom, logOutAtom } from "@/src/utils/store";
+import { styles } from "@/src/styles/settings.styles";
+import CustomButton from "@/src/components/CustomButton";
+import CustomInput from "@/src/components/CustomInput";
+import { colors } from "@/src/utils/colors";
 import { useState } from "react";
 import { authFetchAtom } from "../../../utils/auth-fetch";
 import Feather from "@expo/vector-icons/Feather";
@@ -23,12 +23,32 @@ export default function SettingsScreen() {
   });
   const setUser = useSetAtom(userAtom);
 
-  function handleLogoutPress() {
-    logout();
-  }
-
-  function handleEditProfile() {
-    setEditMode(true);
+  const authFetch = useSetAtom(authFetchAtom);
+  async function handleSaveEdit() {
+    if (!user) return;
+    try {
+      const response = await authFetch("/api/auth/update-profile", {
+        method: "PATCH",
+        body: JSON.stringify(editFields),
+      });
+      if (!response.ok) {
+        let errorMessage = "Failed to update profile";
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch {}
+        Alert.alert("Update Failed", errorMessage);
+        return;
+      }
+      const updatedUser = await response.json();
+      setUser({ ...user, ...updatedUser });
+      setEditMode(false);
+      Alert.alert("Profile Updated", "Your changes have been saved.");
+    } catch (err: any) {
+      Alert.alert("Update Failed", err?.message || "An unexpected error occurred.");
+    }
   }
 
   function handleCancelEdit() {
@@ -40,27 +60,6 @@ export default function SettingsScreen() {
       city: user?.city || "",
     });
     setEditMode(false);
-  }
-
-  const authFetch = useSetAtom(authFetchAtom);
-  async function handleSaveEdit() {
-    if (!user) return;
-    try {
-      const response = await authFetch("/api/auth/update-profile", {
-        method: "PATCH",
-        body: JSON.stringify(editFields),
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to update profile");
-      }
-      const updatedUser = await response.json();
-      setUser({ ...user, ...updatedUser });
-      setEditMode(false);
-      Alert.alert("Profile Updated", "Your changes have been saved.");
-    } catch (err: any) {
-      Alert.alert("Update Failed", err.message);
-    }
   }
 
   return (
@@ -90,7 +89,7 @@ export default function SettingsScreen() {
                   {!editMode && (
                     <TouchableOpacity
                       style={{ flexDirection: "row", alignItems: "center", paddingLeft: 12, paddingVertical: 2 }}
-                      onPress={handleEditProfile}
+                      onPress={() => setEditMode(true)}
                       accessibilityLabel="Edit profile"
                     >
                       <Feather name="edit-2" size={18} color={colors.purple} />
@@ -130,6 +129,7 @@ export default function SettingsScreen() {
                     />
                   </View>
                 </View>
+                {/*
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Phone</Text>
                   <View style={styles.editInputContainer}>
@@ -141,6 +141,7 @@ export default function SettingsScreen() {
                     />
                   </View>
                 </View>
+                */}
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Country</Text>
                   <View style={styles.editInputContainer}>
@@ -200,7 +201,7 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
-        <CustomButton text="Log Out" color={colors.errorRed} onPress={handleLogoutPress} />
+        <CustomButton text="Log Out" color={colors.errorRed} onPress={() => {logout()}} />
       </View>
     </View>
   );
