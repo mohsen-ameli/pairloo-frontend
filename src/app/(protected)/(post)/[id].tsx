@@ -6,6 +6,7 @@ import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { PostType } from "@/src/types/post.type";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
+import imageNotAvailable from "../../../../assets/images/image-not-available.png";
 
 export default function PostDetails() {
   const router = useRouter();
@@ -61,9 +62,7 @@ export default function PostDetails() {
         contentContainerStyle={styles.content}
       >
         <Image
-          source={{
-            uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTcFI6hTmgUtdxQTZktMt5KgEbySf4mtRgfQ&s",
-          }}
+          source={imageNotAvailable}
           style={styles.productImage}
           resizeMode="cover"
         />
