@@ -3,11 +3,11 @@ import React from "react";
 import { Pressable, PressableProps, Text } from "react-native";
 
 type CustomProps = PressableProps & {
-  text: string;
+  children: React.ReactNode;
   color?: string;
 };
 
-export default function ({ text, color, ...rest }: CustomProps) {
+export default function ({ color, children, ...rest }: CustomProps) {
   return (
     <Pressable
       style={{
@@ -16,16 +16,23 @@ export default function ({ text, color, ...rest }: CustomProps) {
         backgroundColor: color ? color : colors.purple,
         borderRadius: 10,
         alignItems: "center",
+        shadowColor: color ? color : colors.purple,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 2,
       }}
       {...rest}
     >
       <Text
         style={{
           color: colors.light,
-          fontSize: 20,
+          fontWeight: "bold",
+          fontSize: 18,
+          letterSpacing: 0.5,
         }}
       >
-        {text}
+        {children}
       </Text>
     </Pressable>
   );

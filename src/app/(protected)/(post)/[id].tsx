@@ -7,6 +7,7 @@ import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { PostType } from "@/src/types/post.type";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import imageNotAvailable from "../../../../assets/images/image-not-available.png";
+import CustomButton from "@/src/components/CustomButton";
 
 export default function PostDetails() {
   const router = useRouter();
@@ -107,9 +108,7 @@ export default function PostDetails() {
           padding: 16,
         }}
       >
-        <TouchableOpacity style={styles.contactButton} onPress={() => {}}>
-          <Text style={styles.contactButtonText}>Contact Post Owner</Text>
-        </TouchableOpacity>
+        <CustomButton onPress={() => {}}>Contact Post Owner</CustomButton>
       </View>
     </View>
   );
