@@ -51,7 +51,7 @@ export default function LoginPage() {
           body: JSON.stringify({
             email: email.current,
           }),
-        }
+        },
       );
       setLocks([false, false]);
       setCurrPage(1);
@@ -75,7 +75,7 @@ export default function LoginPage() {
       if (res.ok && resending) {
         Alert.alert(
           "Note",
-          "Please check your email for the verification code"
+          "Please check your email for the verification code",
         );
       }
     } catch {
@@ -130,7 +130,6 @@ export default function LoginPage() {
             autoComplete="username"
           />
           <CustomButton
-            text={loading ? "Sending..." : "Continue"}
             color={
               loading || requested.current || timeRemaining > 0
                 ? colors.gray
@@ -138,7 +137,9 @@ export default function LoginPage() {
             }
             disabled={loading || requested.current || timeRemaining > 0}
             onPress={() => handleRequest(false)}
-          />
+          >
+            {loading ? "Sending..." : "Continue"}
+          </CustomButton>
           <Link push href="/forgot-email" style={styles.forgotLink}>
             Forgot email?
           </Link>
@@ -178,11 +179,12 @@ export default function LoginPage() {
             </Text>
           </Pressable>
           <CustomButton
-            text={loading ? "Sending..." : "Log In"}
             color={loading ? colors.gray : colors.purple}
             disabled={loading}
             onPress={handleVerification}
-          />
+          >
+            {loading ? "Sending..." : "Log In"}
+          </CustomButton>
         </View>
       </TouchableWithoutFeedback>
     </Pager>
