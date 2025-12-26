@@ -6,7 +6,8 @@ import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { PostType } from "@/src/types/post.type";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
-import imageNotAvailable from "../../../../assets/images/image-not-available.png";
+// @ts-ignore
+import imageNotAvailable from "@/assets/images/image-not-available.png";
 
 export default function PostDetails() {
   const router = useRouter();

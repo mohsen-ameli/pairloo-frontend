@@ -15,8 +15,10 @@ import {
   RefreshControl,
 } from "react-native";
 import { styles } from "@/src/styles/index.styles";
-import imageNotAvailable from "../../../../assets/images/image-not-available.png";
-import defaultProfilePicture from "../../../../assets/images/default-pfp.png";
+// @ts-ignore
+import imageNotAvailable from "@/assets/images/image-not-available.png";
+// @ts-ignore
+import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function index() {
