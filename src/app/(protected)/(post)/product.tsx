@@ -1,6 +1,5 @@
 import CustomInput from "@/src/components/CustomInput";
-import { useRouter } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useRef, useState } from "react";
 import {
   Keyboard,
