@@ -8,5 +8,8 @@ export type PostType = {
   quantity?: string;
   price?: string;
   region?: string;
-  closestProducts?: string[];
+  closestProducts?: {
+    score: string;
+    item: string;
+  }[];
 };

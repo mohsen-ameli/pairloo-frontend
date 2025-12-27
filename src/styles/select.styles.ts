@@ -6,35 +6,20 @@ export const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   header: {
-    marginTop: 10,
+    marginTop: 60,
     paddingHorizontal: 16,
-    paddingTop: 12,
     backgroundColor: "#fff",
-  },
-  headerBackButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
   },
   headerTitle: {
     fontSize: 32,
     fontWeight: "700",
     color: "#000",
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#999",
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    justifyContent: "space-evenly",
+    gap: 24,
+    justifyContent: "center",
     alignItems: "center",
   },
   optionCard: {
@@ -81,7 +66,5 @@ export const styles = StyleSheet.create({
   provideCardDescription: {
     color: "#10B981",
   },
-  touchableWrapper: {
-    flex: 1,
-  },
+  touchableWrapper: {},
 });

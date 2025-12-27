@@ -2,10 +2,10 @@ import { PostType } from "@/src/types/post.type";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { logOutAtom, userAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
-import { Link } from "expo-router";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import {
   ScrollView,
   Text,
@@ -17,7 +17,7 @@ import {
 import { styles } from "@/src/styles/index.styles";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 
-export default function index() {
+export default function Index() {
   const user = useAtomValue(userAtom)!;
   const logout = useSetAtom(logOutAtom);
   const authFetch = useSetAtom(authFetchAtom);
@@ -42,9 +42,11 @@ export default function index() {
     setRefreshing(false);
   }
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();
+    }, [])
+  );
 
   function handleLogoutPress() {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -117,7 +119,7 @@ export default function index() {
                     {post.name}
                   </Text>
                   <Text style={styles.postCategory}>
-                    {post.type === "need" ? "Looking for" : "Selling"}
+                    {post.type === "need" ? "Looking for" : "Offering"}
                   </Text>
                   <Text style={styles.postPrice}>${post.price}</Text>
                 </View>

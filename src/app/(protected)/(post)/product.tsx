@@ -6,15 +6,14 @@ import {
   Text,
   TouchableWithoutFeedback,
   View,
-  TouchableOpacity,
   ScrollView,
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
 import { styles } from "@/src/styles/product.styles";
 import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
+import CustomButton from "@/src/components/CustomButton";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair"];
 const SHIPPING_OPTIONS = ["Yes", "No", "Local Pickup Only"];
@@ -85,7 +84,7 @@ function Need() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>
-          Tell us what you're searching for
+          What product are you looking for?
         </Text>
       </View>
 
@@ -144,17 +143,13 @@ function Need() {
       </ScrollView>
 
       <View style={styles.footerContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.submitButton]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
+        <CustomButton onPress={handleSubmit} disabled={loading}>
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.submitButtonText}>Submit</Text>
+            <>Submit</>
           )}
-        </TouchableOpacity>
+        </CustomButton>
       </View>
     </View>
   );
@@ -273,17 +268,13 @@ function Provide() {
       </ScrollView>
 
       <View style={styles.footerContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.submitButton]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
+        <CustomButton onPress={handleSubmit} disabled={loading}>
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.submitButtonText}>Submit</Text>
+            <>Submit</>
           )}
-        </TouchableOpacity>
+        </CustomButton>
       </View>
     </View>
   );
