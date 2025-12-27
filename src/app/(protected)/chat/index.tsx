@@ -24,7 +24,7 @@ export default function index() {
     <View>
       <Text>start chatting NOW</Text>
       <Text>{JSON.stringify(data)}</Text>
-      <CustomButton text="Start Chat" onPress={() => startChat()} />
+      <CustomButton onPress={() => startChat()}>Start Chat</CustomButton>
     </View>
   );
 }

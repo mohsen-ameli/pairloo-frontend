@@ -1,3 +1,4 @@
+import CustomButton from "@/src/components/CustomButton";
 import CustomInput from "@/src/components/CustomInput";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -7,7 +8,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import SubmitButton from "./submit";
 
 export default function Pet() {
   const params = useLocalSearchParams<{ action?: string; category?: string }>();
@@ -43,7 +43,7 @@ function Need() {
       <CustomInput placeholder="Price Range" />
       <CustomInput placeholder="Age" />
       <CustomInput placeholder="Vaccinated or something?" />
-      <SubmitButton />
+      <CustomButton>Submit</CustomButton>
     </ScrollView>
   );
 }
@@ -74,7 +74,7 @@ function Provide() {
         <CustomInput placeholder="Price Range" />
         <CustomInput placeholder="Age" />
         <CustomInput placeholder="Vaccinated or something?" />
-        <SubmitButton />
+        <CustomButton>Submit</CustomButton>
       </View>
     </TouchableWithoutFeedback>
   );

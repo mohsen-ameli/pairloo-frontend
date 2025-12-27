@@ -15,6 +15,10 @@ import {
   RefreshControl,
 } from "react-native";
 import { styles } from "@/src/styles/index.styles";
+// @ts-ignore
+import imageNotAvailable from "@/assets/images/image-not-available.png";
+// @ts-ignore
+import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function index() {
@@ -72,9 +76,7 @@ export default function index() {
           style={styles.profileButton}
         >
           <Image
-            source={{
-              uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png",
-            }}
+            source={user.picture ? { uri: user.picture } : defaultProfilePicture}
             style={styles.profileImage}
           />
         </TouchableOpacity>
@@ -105,9 +107,7 @@ export default function index() {
               <View style={styles.postCardContent}>
                 <View style={[styles.postImage, styles.postImageBackground]}>
                   <Image
-                    source={{
-                      uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTvGPEc8bhcT2Zl66lisGIPqVJ3PhKD8Xvzw&s",
-                    }}
+                    source={imageNotAvailable}
                     style={styles.postImageFill}
                     contentFit="cover"
                   />
