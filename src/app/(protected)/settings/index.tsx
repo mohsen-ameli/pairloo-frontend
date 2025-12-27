@@ -27,7 +27,7 @@ export default function SettingsScreen() {
   async function handleSaveEdit() {
     if (!user) return;
     try {
-      const response = await authFetch("/api/auth/update-profile", {
+      const response = await authFetch("/api/settings/update-profile", {
         method: "PATCH",
         body: JSON.stringify(editFields),
       });
@@ -164,11 +164,11 @@ export default function SettingsScreen() {
                 </View>
                 <View style={styles.actionsRow}>
                   <View style={{ flex: 1 }}>
-                    <CustomButton text="Save Changes" onPress={handleSaveEdit} color={colors.purple} />
+                    <CustomButton onPress={handleSaveEdit} color={colors.purple}>Save Changes</CustomButton>
                   </View>
                   <View style={{ width: 12 }} />
                   <View style={{ flex: 1 }}>
-                    <CustomButton text="Cancel" onPress={handleCancelEdit} color={colors.gray} />
+                    <CustomButton onPress={handleCancelEdit} color={colors.gray}>Cancel</CustomButton>
                   </View>
                 </View>
               </>
@@ -201,7 +201,7 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
-        <CustomButton text="Log Out" color={colors.errorRed} onPress={() => {logout()}} />
+        <CustomButton color={colors.errorRed} onPress={() => {logout()}}>Log Out</CustomButton>
       </View>
     </View>
   );
