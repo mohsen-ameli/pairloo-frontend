@@ -29,7 +29,7 @@ export default function SettingsScreen() {
   async function handleSaveEdit() {
     if (!user) return;
     try {
-      const response = await authFetch("/api/auth/update-profile", {
+      const response = await authFetch("/api/settings/update-profile", {
         method: "PATCH",
         body: JSON.stringify(editFields),
       });
