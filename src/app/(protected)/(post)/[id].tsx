@@ -98,16 +98,7 @@ export default function PostDetails() {
         )}
         <View style={{ height: 90 }} />
       </ScrollView>
-      <View
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "#fff",
-          padding: 16,
-        }}
-      >
+      <View style={styles.bottomBar}>
         <TouchableOpacity style={styles.contactButton} onPress={() => {}}>
           <Text style={styles.contactButtonText}>Contact Post Owner</Text>
         </TouchableOpacity>

@@ -4,26 +4,17 @@ import { colors } from "../utils/colors";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.light,
   },
   header: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    backgroundColor: "#fff",
-  },
-  headerBackButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
+    backgroundColor: colors.light,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#000",
+    color: colors.dark,
   },
   content: {
     flex: 1,
@@ -33,24 +24,13 @@ export const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 24,
   },
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#000",
-    marginBottom: 8,
-  },
-  pageDescription: {
-    fontSize: 13,
-    color: "#999",
-    marginBottom: 24,
-  },
   formContent: {
     gap: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#000",
+    color: colors.dark,
     marginBottom: 16,
     marginTop: 24,
   },
@@ -60,11 +40,11 @@ export const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000",
+    color: colors.dark,
   },
   inputDescription: {
     fontSize: 12,
-    color: "#999",
+    color: colors.muted,
   },
   footerContainer: {
     paddingHorizontal: 16,
@@ -80,19 +60,11 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  backButton: {
-    backgroundColor: "#f0f0f0",
-  },
-  backButtonText: {
-    color: "#000",
-    fontWeight: "600",
-    fontSize: 14,
-  },
   submitButton: {
     backgroundColor: colors.lightPurple,
   },
   submitButtonText: {
-    color: "#fff",
+    color: colors.light,
     fontWeight: "600",
     fontSize: 14,
   },

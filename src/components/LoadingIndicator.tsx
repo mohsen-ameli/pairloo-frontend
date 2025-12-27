@@ -18,7 +18,7 @@ export default function LoadingIndicator({ loading }: { loading: boolean }) {
         zIndex: 10,
       }}
     >
-      <ActivityIndicator size="large" color={colors.niceBlue} />
+      <ActivityIndicator size="large" color={colors.blue} />
     </View>
   );
 }
