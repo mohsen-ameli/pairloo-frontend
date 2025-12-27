@@ -17,7 +17,7 @@ export default function SettingsScreen() {
   const [editFields, setEditFields] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
-    phoneNumber: user?.phoneNumber || "",
+    // phoneNumber: user?.phoneNumber || "",
     country: user?.country || "",
     city: user?.city || "",
   });
@@ -55,7 +55,7 @@ export default function SettingsScreen() {
     setEditFields({
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      phoneNumber: user?.phoneNumber || "",
+      // phoneNumber: user?.phoneNumber || "",
       country: user?.country || "",
       city: user?.city || "",
     });
