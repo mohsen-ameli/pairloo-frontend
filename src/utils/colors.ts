@@ -8,6 +8,7 @@ export const colors = {
   dark: "#000000ff",
   light: "#ffffffff",
   gray: "#8e8e93ff",
+  lightGray: "#f5f5f7ff",
   textSecondary: "#3c3c4399",
   errorRed: "#ff3b30ff",
   successGreen: "#34c759ff",
