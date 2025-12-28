@@ -1,20 +1,26 @@
 import { StyleSheet } from "react-native";
+import { colors } from "../utils/colors";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.light,
   },
   header: {
     marginTop: 60,
     paddingHorizontal: 16,
-    backgroundColor: "#fff",
-    alignItems: "center",
+    paddingTop: 12,
+    backgroundColor: colors.light,
   },
   headerTitle: {
     fontSize: 32,
     fontWeight: "700",
-    color: "#000",
+    color: colors.dark,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: colors.muted,
   },
   content: {
     flex: 1,
@@ -26,17 +32,17 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     elevation: 3,
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
     width: "80%",
   },
   needCard: {
-    backgroundColor: "#F0E7FF",
+    backgroundColor: colors.lightBlue,
   },
   provideCard: {
-    backgroundColor: "#E7F5ED",
+    backgroundColor: colors.lightGreen,
   },
   cardContent: {
     paddingVertical: 28,
@@ -49,22 +55,12 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "center",
   },
-  needCardTitle: {
-    color: "#6B46C1",
-  },
-  provideCardTitle: {
-    color: "#059669",
-  },
   cardDescription: {
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
   },
-  needCardDescription: {
-    color: "#7C3AED",
+  touchableWrapper: {
+    flex: 1,
   },
-  provideCardDescription: {
-    color: "#10B981",
-  },
-  touchableWrapper: {},
 });

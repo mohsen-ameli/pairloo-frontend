@@ -192,6 +192,11 @@ export default function PostDetails() {
 
         <View style={{ height: 20 }} />
       </ScrollView>
+      <View style={styles.bottomBar}>
+        <TouchableOpacity style={styles.contactButton} onPress={() => {}}>
+          <Text style={styles.contactButtonText}>Contact Post Owner</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

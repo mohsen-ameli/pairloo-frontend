@@ -16,7 +16,6 @@ export default function Category() {
       label: "Job",
       icon: <AntDesign name="solution" size={32} color="#333" />,
       description: params.action === "need" ? "Get hired" : "Find talent",
-      color: "#FFF3E0",
     },
     ...(params.action === "need"
       ? [
@@ -27,7 +26,6 @@ export default function Category() {
               <MaterialCommunityIcons name="handshake" size={32} color="#333" />
             ),
             description: "Find a partner",
-            color: "#FCE4EC",
           },
         ]
       : []),
@@ -36,21 +34,18 @@ export default function Category() {
       label: "Product",
       icon: <FontAwesome5 name="box-open" size={32} color="#333" />,
       description: params.action === "need" ? "Buy products" : "Sell products",
-      color: "#E3F2FD",
     },
     {
       id: "pet",
       label: "Pet",
       icon: <MaterialCommunityIcons name="dog" size={32} color="#333" />,
       description: params.action === "need" ? "Adopt a pet" : "Find a home",
-      color: "#F1F8E9",
     },
     {
       id: "something",
       label: "Something else",
       icon: <AntDesign name="question-circle" size={32} color="#333" />,
       description: "General request",
-      color: "#EDE7F6",
     },
   ];
 
@@ -82,12 +77,7 @@ export default function Category() {
               asChild
             >
               <TouchableOpacity style={styles.touchableWrapper}>
-                <View
-                  style={[
-                    styles.categoryCard,
-                    { backgroundColor: category.color },
-                  ]}
-                >
+                <View style={styles.categoryCard}>
                   <View style={styles.cardContent}>
                     <View style={styles.cardIcon}>{category.icon}</View>
                     <View style={styles.cardTextContainer}>
