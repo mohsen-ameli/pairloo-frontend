@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.light,
   },
   header: {
-    marginTop: 10,
+    marginTop: 60,
     paddingHorizontal: 16,
     paddingTop: 12,
     backgroundColor: colors.light,
@@ -24,9 +24,8 @@ export const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    justifyContent: "space-evenly",
+    gap: 24,
+    justifyContent: "center",
     alignItems: "center",
   },
   optionCard: {

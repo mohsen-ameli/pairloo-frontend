@@ -1,5 +1,4 @@
-import { Link } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { Text, View, TouchableOpacity, ScrollView } from "react-native";
 import { styles } from "@/src/styles/category.styles";
 import AntDesign from "@expo/vector-icons/AntDesign";

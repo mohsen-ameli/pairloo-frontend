@@ -90,6 +90,77 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light,
     padding: 16,
   },
+  closestProductsContainer: {
+    marginTop: 28,
+    borderRadius: 10,
+  },
+  closestProduct: {
+    // make this look like a card
+    backgroundColor: colors.lightGray,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  closestProductsTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+  },
+  closestProductScore: {
+    fontSize: 14,
+    color: colors.purple,
+    fontWeight: "600",
+    marginLeft: 8,
+    flexShrink: 0,
+    flexGrow: 0,
+    textAlign: "right",
+  },
+  closestProductItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  closestProductName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#222",
+    flexShrink: 1,
+    flexGrow: 1,
+    marginRight: 8,
+  },
+  closestProductType: {
+    fontSize: 14,
+    color: "#007AFF",
+    marginBottom: 4,
+  },
+  closestProductImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: "#eee",
+  },
+  closestProductPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: "#ddd",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closestProductDetails: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 2,
+    marginBottom: 6,
+  },
 });
 
 export default styles;
