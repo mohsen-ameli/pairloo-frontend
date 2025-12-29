@@ -122,7 +122,7 @@ export default function Product() {
                   keyboardType="numeric"
                   inputMode="numeric"
                   returnKeyType="done"
-                  maxLength={8}
+                  maxLength={20}
                 />
               </View>
               <View style={styles.inputGroup}>
