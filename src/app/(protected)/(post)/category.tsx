@@ -5,6 +5,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { colors } from "@/src/utils/colors";
 
 export default function Category() {
   const params = useLocalSearchParams<{ action?: string }>();
@@ -14,7 +15,7 @@ export default function Category() {
     {
       id: "job",
       label: "Job",
-      icon: <AntDesign name="solution" size={32} color="#333" />,
+      icon: <AntDesign name="solution" size={32} color={colors.dark} />,
       description: params.action === "need" ? "Get hired" : "Find talent",
     },
     ...(params.action === "need"
@@ -23,7 +24,11 @@ export default function Category() {
             id: "partner",
             label: "Partner",
             icon: (
-              <MaterialCommunityIcons name="handshake" size={32} color="#333" />
+              <MaterialCommunityIcons
+                name="handshake"
+                size={32}
+                color={colors.dark}
+              />
             ),
             description: "Find a partner",
           },
@@ -32,19 +37,19 @@ export default function Category() {
     {
       id: "product",
       label: "Product",
-      icon: <FontAwesome5 name="box-open" size={32} color="#333" />,
+      icon: <FontAwesome5 name="box-open" size={32} color={colors.dark} />,
       description: params.action === "need" ? "Buy products" : "Sell products",
     },
     {
       id: "pet",
       label: "Pet",
-      icon: <MaterialCommunityIcons name="dog" size={32} color="#333" />,
+      icon: <MaterialCommunityIcons name="dog" size={32} color={colors.dark} />,
       description: params.action === "need" ? "Adopt a pet" : "Find a home",
     },
     {
       id: "something",
       label: "Something else",
-      icon: <AntDesign name="question-circle" size={32} color="#333" />,
+      icon: <AntDesign name="question-circle" size={32} color={colors.dark} />,
       description: "General request",
     },
   ];

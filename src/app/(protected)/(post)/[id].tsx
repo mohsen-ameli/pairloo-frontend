@@ -31,6 +31,8 @@ export default function PostDetails() {
   >([]);
 
   async function fetchPostData(postId: string) {
+    if (post || closestProducts.length > 0) return;
+
     const res = await authFetch(`/api/posts/${postId}`);
     if (!res.ok) {
       Alert.alert("Error", "Could not fetch post data");
@@ -192,11 +194,6 @@ export default function PostDetails() {
 
         <View style={{ height: 20 }} />
       </ScrollView>
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.contactButton} onPress={() => {}}>
-          <Text style={styles.contactButtonText}>Contact Post Owner</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
