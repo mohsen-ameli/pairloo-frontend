@@ -1,6 +1,6 @@
 import { PostType } from "@/src/types/post.type";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { logOutAtom, userAtom } from "@/src/utils/store";
+import { userAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
 import { Link, Stack, useRouter } from "expo-router";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -11,7 +11,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Alert,
   RefreshControl,
 } from "react-native";
 import { styles } from "@/src/styles/index.styles";
@@ -23,7 +22,6 @@ import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function Index() {
   const user = useAtomValue(userAtom)!;
-  const logout = useSetAtom(logOutAtom);
   const authFetch = useSetAtom(authFetchAtom);
   const router = useRouter();
   const [posts, setPosts] = useState<PostType[]>([]);
@@ -46,13 +44,13 @@ export default function Index() {
     setRefreshing(false);
   }
 
+  function handleProfilePress() {}
+
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
     }, [])
   );
-
-  function handleProfilePress() {}
 
   return (
     <View style={styles.container}>
