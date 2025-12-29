@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 import { userAtom, logOutAtom } from "@/src/utils/store";
@@ -19,13 +19,12 @@ export default function SettingsScreen() {
   const [editFields, setEditFields] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
-    // phoneNumber: user?.phoneNumber || "",
     country: user?.country || "",
     city: user?.city || "",
   });
   const setUser = useSetAtom(userAtom);
-
   const authFetch = useSetAtom(authFetchAtom);
+
   async function handleSaveEdit() {
     if (!user) return;
     try {
@@ -49,7 +48,10 @@ export default function SettingsScreen() {
       setEditMode(false);
       Alert.alert("Profile Updated", "Your changes have been saved.");
     } catch (err: any) {
-      Alert.alert("Update Failed", err?.message || "An unexpected error occurred.");
+      Alert.alert(
+        "Update Failed",
+        err?.message || "An unexpected error occurred."
+      );
     }
   }
 
@@ -57,17 +59,26 @@ export default function SettingsScreen() {
     setEditFields({
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      // phoneNumber: user?.phoneNumber || "",
       country: user?.country || "",
       city: user?.city || "",
     });
     setEditMode(false);
   }
 
+  function handleLogout() {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: logout,
+      },
+    ]);
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           <View style={styles.card}>
@@ -75,27 +86,45 @@ export default function SettingsScreen() {
               <View style={styles.avatarContainer}>
                 <Image
                   source={{
-                    uri:
-                      user?.picture ||
-                      default_pfp
+                    uri: user?.picture || default_pfp,
                   }}
                   style={styles.avatar}
                   contentFit="cover"
                 />
               </View>
               <View style={styles.profileTextContainer}>
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Text style={styles.profileName} numberOfLines={1}>
                     {user ? `${user.firstName} ${user.lastName}` : "—"}
                   </Text>
                   {!editMode && (
                     <TouchableOpacity
-                      style={{ flexDirection: "row", alignItems: "center", paddingLeft: 12, paddingVertical: 2 }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingLeft: 12,
+                        paddingVertical: 2,
+                      }}
                       onPress={() => setEditMode(true)}
                       accessibilityLabel="Edit profile"
                     >
                       <Feather name="edit-2" size={18} color={colors.purple} />
-                      <Text style={{ color: colors.purple, fontWeight: "600", marginLeft: 4, fontSize: 15 }}>Edit</Text>
+                      <Text
+                        style={{
+                          color: colors.purple,
+                          fontWeight: "600",
+                          marginLeft: 4,
+                          fontSize: 15,
+                        }}
+                      >
+                        Edit
+                      </Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -116,7 +145,9 @@ export default function SettingsScreen() {
                   <View style={styles.editInputContainer}>
                     <CustomInput
                       defaultValue={editFields.firstName}
-                      onChangeText={(text: string) => setEditFields(f => ({ ...f, firstName: text }))}
+                      onChangeText={(text: string) =>
+                        setEditFields((f) => ({ ...f, firstName: text }))
+                      }
                       style={styles.editInput}
                     />
                   </View>
@@ -126,30 +157,21 @@ export default function SettingsScreen() {
                   <View style={styles.editInputContainer}>
                     <CustomInput
                       defaultValue={editFields.lastName}
-                      onChangeText={(text: string) => setEditFields(f => ({ ...f, lastName: text }))}
+                      onChangeText={(text: string) =>
+                        setEditFields((f) => ({ ...f, lastName: text }))
+                      }
                       style={styles.editInput}
                     />
                   </View>
                 </View>
-                {/*
-                <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Phone</Text>
-                  <View style={styles.editInputContainer}>
-                    <CustomInput
-                      defaultValue={editFields.phoneNumber}
-                      onChangeText={(text: string) => setEditFields(f => ({ ...f, phoneNumber: text }))}
-                      style={styles.editInput}
-                      keyboardType="phone-pad"
-                    />
-                  </View>
-                </View>
-                */}
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Country</Text>
                   <View style={styles.editInputContainer}>
                     <CustomInput
                       defaultValue={editFields.country}
-                      onChangeText={(text: string) => setEditFields(f => ({ ...f, country: text }))}
+                      onChangeText={(text: string) =>
+                        setEditFields((f) => ({ ...f, country: text }))
+                      }
                       style={styles.editInput}
                     />
                   </View>
@@ -159,18 +181,30 @@ export default function SettingsScreen() {
                   <View style={styles.editInputContainer}>
                     <CustomInput
                       defaultValue={editFields.city}
-                      onChangeText={(text: string) => setEditFields(f => ({ ...f, city: text }))}
+                      onChangeText={(text: string) =>
+                        setEditFields((f) => ({ ...f, city: text }))
+                      }
                       style={styles.editInput}
                     />
                   </View>
                 </View>
                 <View style={styles.actionsRow}>
                   <View style={{ flex: 1 }}>
-                    <CustomButton onPress={handleSaveEdit} color={colors.purple}>Save Changes</CustomButton>
+                    <CustomButton
+                      onPress={handleSaveEdit}
+                      color={colors.purple}
+                    >
+                      Save Changes
+                    </CustomButton>
                   </View>
                   <View style={{ width: 12 }} />
                   <View style={{ flex: 1 }}>
-                    <CustomButton onPress={handleCancelEdit} color={colors.gray}>Cancel</CustomButton>
+                    <CustomButton
+                      onPress={handleCancelEdit}
+                      color={colors.gray}
+                    >
+                      Cancel
+                    </CustomButton>
                   </View>
                 </View>
               </>
@@ -178,7 +212,9 @@ export default function SettingsScreen() {
               <>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>First Name</Text>
-                  <Text style={styles.fieldValue}>{user?.firstName || "—"}</Text>
+                  <Text style={styles.fieldValue}>
+                    {user?.firstName || "—"}
+                  </Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Last Name</Text>
@@ -186,7 +222,9 @@ export default function SettingsScreen() {
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Phone</Text>
-                  <Text style={styles.fieldValue}>{user?.phoneNumber || "—"}</Text>
+                  <Text style={styles.fieldValue}>
+                    {user?.phoneNumber || "—"}
+                  </Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Country</Text>
@@ -203,7 +241,9 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
-        <CustomButton onPress={() => {logout()}} color={colors.errorRed}>Log Out</CustomButton>
+        <CustomButton onPress={handleLogout} color={colors.errorRed}>
+          Log Out
+        </CustomButton>
       </View>
     </View>
   );
