@@ -23,15 +23,15 @@ export default function Product() {
   const type = params.action === "need" ? "need" : "provide";
 
   const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const authFetch = useSetAtom(authFetchAtom);
-    const formData = useRef<{
-      category?: string;
-      name?: string;
-      region?: string;
-      quantity?: string;
-      price?: string;
-    }>({});
+  const [loading, setLoading] = useState(false);
+  const authFetch = useSetAtom(authFetchAtom);
+  const formData = useRef<{
+    category?: string;
+    name?: string;
+    region?: string;
+    quantity?: string;
+    price?: string;
+  }>({});
 
   async function handleSubmit() {
     try {
