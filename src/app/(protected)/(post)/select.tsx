@@ -19,16 +19,14 @@ export default function Select() {
           }}
           asChild
         >
-          <TouchableOpacity style={styles.touchableWrapper}>
+          <TouchableOpacity>
             <View style={[styles.optionCard, styles.needCard]}>
               <View style={styles.cardContent}>
                 <Feather name="search" size={45} color="#7C3AED" />
-                <Text style={styles.cardTitle}>
+                <Text style={[styles.cardTitle, styles.needCardTitle]}>
                   I need something
                 </Text>
-                <Text
-                  style={styles.cardDescription}
-                >
+                <Text style={[styles.cardDescription, styles.needCardTitle]}>
                   Looking for products or services? Browse and find what you
                   need.
                 </Text>
@@ -45,15 +43,14 @@ export default function Select() {
           }}
           asChild
         >
-          <TouchableOpacity style={styles.touchableWrapper}>
+          <TouchableOpacity>
             <View style={[styles.optionCard, styles.provideCard]}>
               <View style={styles.cardContent}>
                 <Feather name="gift" size={45} color="#10B981" />
-                <Text style={styles.cardTitle}>
+                <Text style={[styles.cardTitle, styles.provideCardTitle]}>
                   I provide something
                 </Text>
-                <Text
-                  style={styles.cardDescription}>
+                <Text style={[styles.cardDescription, styles.provideCardTitle]}>
                   Offer your products or services to the community.
                 </Text>
               </View>

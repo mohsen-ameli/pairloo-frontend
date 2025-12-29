@@ -1,5 +1,5 @@
 export const colors = {
-  purple: "#5c37cbff",
+  purple: "#6B46C1",
   lightPurple: "#8b6ffeff",
   darkPurple: "#3a1d8bff",
   background: "#f2f2f7ff",
@@ -12,6 +12,7 @@ export const colors = {
   lightGray: "#eeeeee",
   textSecondary: "#3c3c4399",
   errorRed: "#ff3b30ff",
+  green: "#059669",
   successGreen: "#34c759ff",
   lightGreen: "#E7F5ED",
   warningYellow: "#ffcc00ff",

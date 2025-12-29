@@ -16,11 +16,6 @@ export const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "700",
     color: colors.dark,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: colors.muted,
   },
   content: {
     flex: 1,
@@ -55,12 +50,15 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "center",
   },
+  needCardTitle: {
+    color: colors.purple,
+  },
+  provideCardTitle: {
+    color: colors.green,
+  },
   cardDescription: {
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
-  },
-  touchableWrapper: {
-    flex: 1,
   },
 });
