@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from "@/src/styles/select.styles";
 import Feather from "@expo/vector-icons/Feather";
+import { colors } from "@/src/utils/colors";
 
 export default function Select() {
   return (
@@ -22,7 +23,7 @@ export default function Select() {
           <TouchableOpacity>
             <View style={[styles.optionCard, styles.needCard]}>
               <View style={styles.cardContent}>
-                <Feather name="search" size={45} color="#7C3AED" />
+                <Feather name="search" size={45} color={colors.purple} />
                 <Text style={[styles.cardTitle, styles.needCardTitle]}>
                   I need something
                 </Text>
@@ -46,7 +47,7 @@ export default function Select() {
           <TouchableOpacity>
             <View style={[styles.optionCard, styles.provideCard]}>
               <View style={styles.cardContent}>
-                <Feather name="gift" size={45} color="#10B981" />
+                <Feather name="gift" size={45} color={colors.green} />
                 <Text style={[styles.cardTitle, styles.provideCardTitle]}>
                   I provide something
                 </Text>

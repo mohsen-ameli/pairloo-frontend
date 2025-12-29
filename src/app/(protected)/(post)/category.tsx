@@ -91,11 +91,11 @@ export default function Category() {
                         {category.description}
                       </Text>
                     </View>
-                    <Text style={{ fontSize: 20, color: "#ccc" }}>
+                    <Text style={{ fontSize: 20, color: colors.dark }}>
                       <MaterialIcons
                         name="navigate-next"
                         size={24}
-                        color="black"
+                        color={colors.dark}
                       />
                     </Text>
                   </View>
