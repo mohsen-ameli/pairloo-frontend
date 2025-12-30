@@ -38,6 +38,7 @@ export default function ProtectedLayout() {
         name="chat"
         options={{
           title: "Chat",
+          headerShown: false,
           tabBarBadge: 2,
           tabBarBadgeStyle: {
             backgroundColor: "tomato",
@@ -52,6 +53,7 @@ export default function ProtectedLayout() {
         name="settings"
         options={{
           title: "Settings",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="settings" size={size} color={color} />
           ),

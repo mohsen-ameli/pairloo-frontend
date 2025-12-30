@@ -11,6 +11,7 @@ import { authFetchAtom } from "../../../utils/auth-fetch";
 import Feather from "@expo/vector-icons/Feather";
 // @ts-ignore
 import default_pfp from "@/assets/images/default_pfp.png";
+import CustomHeader from "@/src/components/CustomHeader";
 
 export default function SettingsScreen() {
   const user = useAtomValue(userAtom);
@@ -78,6 +79,8 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
+      <CustomHeader title="Settings" />
+
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>

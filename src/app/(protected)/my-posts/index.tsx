@@ -1,8 +1,8 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { postsAtom, userAtom } from "@/src/utils/store";
+import { postsAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
-import { Stack, useRouter } from "expo-router";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useRouter } from "expo-router";
+import { useAtom, useSetAtom } from "jotai";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import {
@@ -15,13 +15,11 @@ import {
 import { styles } from "@/src/styles/index.styles";
 // @ts-ignore
 import imageNotAvailable from "@/assets/images/image-not-available.png";
-// @ts-ignore
-import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
+import CustomHeader from "@/src/components/CustomHeader";
 
 export default function Index() {
   const router = useRouter();
-  const user = useAtomValue(userAtom)!;
   const authFetch = useSetAtom(authFetchAtom);
   const [posts, setPosts] = useAtom(postsAtom);
   const [loading, setLoading] = useState(false);
@@ -45,8 +43,6 @@ export default function Index() {
     setRefreshing(false);
   }
 
-  function handleProfilePress() {}
-
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
@@ -55,32 +51,7 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <Stack.Screen
-        options={{
-          headerTitle: () => (
-            <View style={styles.header}>
-              <View style={styles.headerContent}>
-                <Text style={styles.headerTitle}>Posts</Text>
-                <Text style={styles.headerSubtitle}>
-                  Welcome back, {user.firstName}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={handleProfilePress}
-                style={styles.profileButton}
-              >
-                <Image
-                  source={
-                    user.picture ? { uri: user.picture } : defaultProfilePicture
-                  }
-                  style={styles.profileImage}
-                />
-              </TouchableOpacity>
-            </View>
-          ),
-        }}
-      />
+      <CustomHeader title="My Posts" />
 
       <LoadingIndicator loading={loading} />
 
