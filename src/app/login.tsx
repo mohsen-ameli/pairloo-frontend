@@ -1,6 +1,7 @@
 import CustomInput from "@/src/components/CustomInput";
 import { Link, useRouter } from "expo-router";
 import { useSetAtom } from "jotai";
+import { z } from "zod";
 import { useRef, useState } from "react";
 import {
   Alert,
@@ -33,8 +34,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   async function handleRequest(resending: boolean) {
-    if (email.current === null) {
-      Alert.alert("Error", "Please enter your email");
+    const emailSchema = z.email();
+    if (!email.current || !emailSchema.safeParse(email.current).success) {
+      Alert.alert("Error", "Please enter a valid email address");
       return;
     }
     requested.current = true;
@@ -51,8 +53,14 @@ export default function LoginPage() {
           body: JSON.stringify({
             email: email.current,
           }),
-        },
+        }
       );
+      if (!res.ok) {
+        Alert.alert("Error", "This email is not registered.");
+        setLoading(false);
+        requested.current = false;
+        return;
+      }
       setLocks([false, false]);
       setCurrPage(1);
       setPage(1);
@@ -75,7 +83,7 @@ export default function LoginPage() {
       if (res.ok && resending) {
         Alert.alert(
           "Note",
-          "Please check your email for the verification code",
+          "Please check your email for the verification code"
         );
       }
     } catch {
