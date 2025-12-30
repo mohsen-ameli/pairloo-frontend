@@ -5,8 +5,8 @@ export const styles = StyleSheet.create({
   editInputContainer: {
     flex: 1,
     marginLeft: 12,
-    },
-    editInput: {
+  },
+  editInput: {
     borderWidth: 1,
     borderColor: colors.borderGray,
     padding: 8,
@@ -26,14 +26,14 @@ export const styles = StyleSheet.create({
     pointerEvents: "box-none",
   },
   fabButton: {
-    backgroundColor: "#f74949ff",
+    backgroundColor: colors.errorRed,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 28,
     width: 150,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#007AFF",
+    shadowColor: colors.shadow,
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -82,7 +82,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     padding: 12,
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOpacity: 0.06,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },

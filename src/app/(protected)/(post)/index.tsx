@@ -1,8 +1,8 @@
 import { PostType } from "@/src/types/post.type";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { logOutAtom, userAtom } from "@/src/utils/store";
+import { userAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
-import { Link, useRouter } from "expo-router";
+import { Link, Stack, useRouter } from "expo-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
@@ -11,7 +11,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Alert,
   RefreshControl,
 } from "react-native";
 import { styles } from "@/src/styles/index.styles";
@@ -23,7 +22,6 @@ import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function Index() {
   const user = useAtomValue(userAtom)!;
-  const logout = useSetAtom(logOutAtom);
   const authFetch = useSetAtom(authFetchAtom);
   const router = useRouter();
   const [posts, setPosts] = useState<PostType[]>([]);
@@ -46,43 +44,42 @@ export default function Index() {
     setRefreshing(false);
   }
 
+  function handleProfilePress() {}
+
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
     }, [])
   );
 
-  function handleLogoutPress() {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: logout,
-      },
-    ]);
-  }
-
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Posts</Text>
-          <Text style={styles.headerSubtitle}>
-            Welcome back, {user.firstName}
-          </Text>
-        </View>
-        <TouchableOpacity
-          onPress={handleLogoutPress}
-          style={styles.profileButton}
-        >
-          <Image
-            source={user.picture ? { uri: user.picture } : defaultProfilePicture}
-            style={styles.profileImage}
-          />
-        </TouchableOpacity>
-      </View>
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <View style={styles.header}>
+              <View style={styles.headerContent}>
+                <Text style={styles.headerTitle}>Posts</Text>
+                <Text style={styles.headerSubtitle}>
+                  Welcome back, {user.firstName}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleProfilePress}
+                style={styles.profileButton}
+              >
+                <Image
+                  source={
+                    user.picture ? { uri: user.picture } : defaultProfilePicture
+                  }
+                  style={styles.profileImage}
+                />
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
+      />
 
       <LoadingIndicator loading={loading} />
 

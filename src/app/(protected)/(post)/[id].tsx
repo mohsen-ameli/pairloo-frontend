@@ -1,12 +1,5 @@
 import { useRouter, useLocalSearchParams } from "expo-router";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Alert,
-} from "react-native";
+import { View, Text, ScrollView, Image, Alert } from "react-native";
 import styles from "@/src/styles/id.styles";
 import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
@@ -22,7 +15,6 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom);
   const [post, setPost] = useState<PostType>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [closestProducts, setClosestProducts] = useState<
     {
       product: PostType;
@@ -31,6 +23,8 @@ export default function PostDetails() {
   >([]);
 
   async function fetchPostData(postId: string) {
+    if (post || closestProducts.length > 0) return;
+
     const res = await authFetch(`/api/posts/${postId}`);
     if (!res.ok) {
       Alert.alert("Error", "Could not fetch post data");
@@ -68,25 +62,11 @@ export default function PostDetails() {
       router.back();
     } else {
       setLoading(false);
-      setError("Could not remove post. Please try again.");
+      Alert.alert("Error", "Could not remove post. Please try again later.");
     }
   }
 
   if (loading) return <LoadingIndicator loading={loading} />;
-
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.error}>{error}</Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
   if (!post) return null;
 
   return (
@@ -192,11 +172,6 @@ export default function PostDetails() {
 
         <View style={{ height: 20 }} />
       </ScrollView>
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.contactButton} onPress={() => {}}>
-          <Text style={styles.contactButtonText}>Contact Post Owner</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }

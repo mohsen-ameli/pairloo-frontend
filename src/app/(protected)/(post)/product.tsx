@@ -14,6 +14,7 @@ import { styles } from "@/src/styles/product.styles";
 import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import CustomButton from "@/src/components/CustomButton";
+import { colors } from "@/src/utils/colors";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair"];
 const SHIPPING_OPTIONS = ["Yes", "No", "Local Pickup Only"];
@@ -80,7 +81,9 @@ export default function Product() {
       {/* Header */}
       <View style={styles.header}>
         {type === "need" ? (
-          <Text style={styles.headerTitle}>What product are you looking for?</Text>
+          <Text style={styles.headerTitle}>
+            What product are you looking for?
+          </Text>
         ) : (
           <Text style={styles.headerTitle}>List your item for sale</Text>
         )}
@@ -141,7 +144,7 @@ export default function Product() {
       <View style={styles.footerContainer}>
         <CustomButton onPress={handleSubmit} disabled={loading}>
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.light} />
           ) : (
             <>Submit</>
           )}
