@@ -15,6 +15,26 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
+        name="my-posts"
+        options={{
+          title: "My Posts",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="file-text" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="new-post"
+        options={{
+          title: "Create Post",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="plus-circle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="chat"
         options={{
           title: "Chat",
