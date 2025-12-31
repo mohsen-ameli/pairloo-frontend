@@ -25,7 +25,7 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
-        name="new-post"
+        name="create-post"
         options={{
           title: "Create Post",
           headerShown: false,

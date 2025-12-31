@@ -13,7 +13,9 @@ import {
 
 export default function Job() {
   const params = useLocalSearchParams<{ action?: string; category?: string }>();
-  const { setCurrPage, setPage, Pager } = useCustomPager({ pageCount: 2 });
+  const { setCurrPage, setPage, Pager } = useCustomPager({
+    initialPageCount: 2,
+  });
 
   return (
     <Pager>

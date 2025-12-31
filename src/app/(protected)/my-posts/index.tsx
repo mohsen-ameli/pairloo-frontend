@@ -29,7 +29,7 @@ export default function Index() {
     let firstFetch = false;
     if (posts.length === 0) firstFetch = true;
     firstFetch && setLoading(true);
-    const res = await authFetch("/api/posts/all-posts");
+    const res = await authFetch("/api/posts/my-posts");
     if (res.ok) {
       const data = await res.json();
       setPosts(data);

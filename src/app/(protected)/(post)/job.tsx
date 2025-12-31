@@ -12,7 +12,9 @@ export default function Job() {
 }
 
 function Need() {
-  const { setCurrPage, setPage, Pager } = useCustomPager({ pageCount: 5 });
+  const { setCurrPage, setPage, Pager } = useCustomPager({
+    initialPageCount: 5,
+  });
 
   return (
     <Pager>
@@ -158,7 +160,9 @@ function Need() {
 }
 
 function Provide() {
-  const { setCurrPage, setPage, Pager } = useCustomPager({ pageCount: 2 });
+  const { setCurrPage, setPage, Pager } = useCustomPager({
+    initialPageCount: 2,
+  });
 
   return (
     <Pager>
