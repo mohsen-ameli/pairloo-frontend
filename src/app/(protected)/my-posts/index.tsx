@@ -1,9 +1,9 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { postsAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtom, useSetAtom } from "jotai";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import {
   ScrollView,
@@ -20,10 +20,17 @@ import CustomHeader from "@/src/components/CustomHeader";
 
 export default function Index() {
   const router = useRouter();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const authFetch = useSetAtom(authFetchAtom);
   const [posts, setPosts] = useAtom(postsAtom);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (redirect) {
+      router.push(redirect as any);
+    }
+  }, [redirect]);
 
   async function fetchPosts() {
     let firstFetch = false;
@@ -46,7 +53,7 @@ export default function Index() {
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
-    }, [posts])
+    }, [])
   );
 
   return (
@@ -85,12 +92,8 @@ export default function Index() {
                 </View>
                 <View style={styles.postTextContainer}>
                   <Text style={styles.postTitle} numberOfLines={1}>
-                    {post.name}
+                    {post.content}
                   </Text>
-                  <Text style={styles.postCategory}>
-                    {post.type === "need" ? "Looking for" : "Offering"}
-                  </Text>
-                  <Text style={styles.postPrice}>${post.price}</Text>
                 </View>
               </View>
             </TouchableOpacity>

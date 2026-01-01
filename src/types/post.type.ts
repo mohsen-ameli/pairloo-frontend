@@ -1,14 +1,10 @@
 export type PostType = {
   _id: string;
-  type: "need" | "provide";
   userId: string;
+  content: string;
+  summary: string;
   image?: string;
-  name?: string;
-  category?: string;
-  quantity?: string;
-  price?: string;
-  region?: string;
-  closestProducts?: {
+  closestPosts?: {
     score: string;
     item: string;
   }[];

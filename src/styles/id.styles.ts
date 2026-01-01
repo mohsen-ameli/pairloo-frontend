@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     color: colors.blue,
     marginBottom: 16,
   },
-  productImage: {
+  postImage: {
     width: "100%",
     height: 200,
     borderRadius: 12,
@@ -39,11 +39,11 @@ const styles = StyleSheet.create({
     color: colors.darkGray,
     textTransform: "capitalize",
   },
-  closestProductsContainer: {
+  closestPostsContainer: {
     marginTop: 28,
     borderRadius: 10,
   },
-  closestProduct: {
+  closestPost: {
     backgroundColor: colors.lightGray,
     borderRadius: 8,
     padding: 12,
@@ -53,13 +53,13 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
   },
-  closestProductsTitle: {
+  closestPostsTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: colors.darkGray,
     marginBottom: 10,
   },
-  closestProductScore: {
+  closestPostScore: {
     fontSize: 14,
     color: colors.purple,
     fontWeight: "600",
@@ -68,13 +68,13 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     textAlign: "right",
   },
-  closestProductItem: {
+  closestPostItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
   },
-  closestProductName: {
+  closestPostName: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.darkGray,
@@ -82,14 +82,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     marginRight: 8,
   },
-  closestProductImage: {
+  closestPostImage: {
     width: 48,
     height: 48,
     borderRadius: 8,
     marginRight: 12,
     backgroundColor: colors.lightGray,
   },
-  closestProductPlaceholder: {
+  closestPostPlaceholder: {
     width: 48,
     height: 48,
     borderRadius: 8,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  closestProductDetails: {
+  closestPostDetails: {
     fontSize: 14,
     color: colors.gray,
     marginTop: 2,
