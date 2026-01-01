@@ -1,11 +1,10 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import { colors } from "../utils/colors";
 
 export const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 6,
-    paddingTop: 12,
-    paddingBottom: 12,
+    ...(Platform.OS === 'android' ? { paddingTop: 12, paddingBottom: 12 } : {}),
     backgroundColor: colors.light,
     flexDirection: "row",
     justifyContent: "space-between",
