@@ -15,9 +15,30 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
+        name="my-posts"
+        options={{
+          title: "My Posts",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="file-text" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="create-post"
+        options={{
+          title: "Create Post",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="plus-circle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="chat"
         options={{
           title: "Chat",
+          headerShown: false,
           tabBarBadge: 2,
           tabBarBadgeStyle: {
             backgroundColor: "tomato",
@@ -32,6 +53,7 @@ export default function ProtectedLayout() {
         name="settings"
         options={{
           title: "Settings",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="settings" size={size} color={color} />
           ),

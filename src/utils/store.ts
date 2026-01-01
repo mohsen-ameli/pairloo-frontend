@@ -1,11 +1,11 @@
 import { atom } from "jotai";
-// import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { CountryCode } from "react-native-country-picker-modal";
 import { BASE_URL } from "./constants";
+import { PostType } from "@/src/types/post.type";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -131,3 +131,6 @@ export const loginAtom = atom(null, async (get, set, email) => {
 export const logOutAtom = atom(null, (get, set) => {
   set(userAtom, null);
 });
+
+// Posts cache atom
+export const postsAtom = atom<PostType[]>([]);

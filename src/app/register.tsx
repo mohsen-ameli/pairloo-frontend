@@ -15,7 +15,9 @@ import { newUserAtom, signUpAtom, signUpErrorsAtom } from "../utils/store";
 import useCustomPager from "../components/CustomPager";
 
 export default function Register() {
-  const { setCurrPage, setPage, Pager } = useCustomPager({ pageCount: 4 });
+  const { setCurrPage, setPage, Pager } = useCustomPager({
+    initialPageCount: 4,
+  });
   const [newUser, setNewUser] = useAtom(newUserAtom);
   const [errors, setErrors] = useAtom(signUpErrorsAtom);
   const signUp = useAtom(signUpAtom)[1];

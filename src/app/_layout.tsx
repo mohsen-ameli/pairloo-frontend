@@ -18,12 +18,7 @@ export default function RootLayout() {
           <Stack.Screen name="landing" options={{ headerShown: false }} />
           <Stack.Screen name="register" />
           <Stack.Screen name="login" />
-          <Stack.Screen
-            name="modal"
-            options={{
-              presentation: "modal",
-            }}
-          />
+          <Stack.Screen name="forgot-email" options={{ headerShown: false }} />
         </Stack.Protected>
       </Stack>
     </>

@@ -1,10 +1,11 @@
 import { atom } from "jotai";
 import { userAtom } from "./store";
 import { BASE_URL } from "./constants";
+import { fetch, FetchRequestInit } from "expo/fetch";
 
 export const authFetchAtom = atom(
   null,
-  async (get, set, url: string, options: RequestInit = {}) => {
+  async (get, set, url: string, options: FetchRequestInit = {}) => {
     // Attach access token
     const fetchWithToken = (token: string) =>
       fetch(`${BASE_URL}${url}`, {

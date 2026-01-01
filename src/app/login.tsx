@@ -24,7 +24,7 @@ export default function LoginPage() {
   const email = useRef<string | null>(null);
   const verificationCode = useRef<string | null>(null);
   const { setCurrPage, setPage, setLocks, Pager } = useCustomPager({
-    pageCount: 2,
+    initialPageCount: 2,
     pageLocks: [false, true],
   });
   const requested = useRef(false);

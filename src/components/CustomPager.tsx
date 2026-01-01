@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 import PagerView, { usePagerView } from "react-native-pager-view";
 import { colors } from "../utils/colors";
@@ -7,13 +7,22 @@ import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 const currPageAtom = atom(0);
 const locksAtom = atom<boolean[]>([]);
 
+/**
+ * Allows for creating a pager with multiple pages, navigation dots, and next/back buttons.
+ * You can pass a locks param to lock certain pages from being accessed until unlocked.
+ * You can also set the page count dynamically.
+ * NOTE: When using setCurrPage, use setPage to sync the pager view.
+ */
 export default function useCustomPager({
-  pageCount,
+  initialPageCount,
   pageLocks,
+  forwardNBackwardButtons = true,
 }: {
-  pageCount: number;
+  initialPageCount: number;
   pageLocks?: boolean[];
+  forwardNBackwardButtons?: boolean;
 }) {
+  const [pageCount, setPageCount] = useState(initialPageCount);
   const setCurrPage = useSetAtom(currPageAtom);
   const setLocks = useSetAtom(locksAtom);
   const scrollOffset = useRef(new Animated.Value(0)).current;
@@ -26,8 +35,6 @@ export default function useCustomPager({
   useEffect(() => {
     if (pageLocks) {
       setLocks(pageLocks);
-    } else {
-      setLocks(new Array(pageCount).fill(false));
     }
   }, []);
 
@@ -87,80 +94,82 @@ export default function useCustomPager({
           </View>
 
           {/* Forward and Backward */}
-          <View
-            style={{
-              position: "absolute",
-              bottom: 50,
-              left: 20,
-              right: 20,
-              flexDirection: "row",
-              justifyContent: "space-between",
-              zIndex: 1,
-            }}
-          >
-            {currPage > 0 ? (
-              <Pressable
-                style={{
-                  width: 70,
-                  height: 70,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: colors.purple,
-                  borderRadius: "50%",
-                }}
-                onPress={() => {
-                  setCurrPage(currPage - 1);
-                  setPage(currPage - 1);
-                }}
-              >
-                <Text
+          {forwardNBackwardButtons && (
+            <View
+              style={{
+                position: "absolute",
+                bottom: 50,
+                left: 20,
+                right: 20,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                zIndex: 1,
+              }}
+            >
+              {currPage > 0 ? (
+                <Pressable
                   style={{
-                    color: colors.light,
-                    fontSize: 16,
+                    width: 70,
+                    height: 70,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.purple,
+                    borderRadius: "50%",
+                  }}
+                  onPress={() => {
+                    setCurrPage(currPage - 1);
+                    setPage(currPage - 1);
                   }}
                 >
-                  Back
-                </Text>
-                {/* <Feather name="arrow-left" size={30} color={colors.light} /> */}
-              </Pressable>
-            ) : (
-              <View />
-            )}
-            {currPage < pageCount - 1 && !locks[currPage + 1] ? (
-              <Pressable
-                style={{
-                  width: 70,
-                  height: 70,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: colors.purple,
-                  borderRadius: "50%",
-                }}
-                onPress={() => {
-                  setCurrPage(currPage + 1);
-                  setPage(currPage + 1);
-                }}
-              >
-                <Text
+                  <Text
+                    style={{
+                      color: colors.light,
+                      fontSize: 16,
+                    }}
+                  >
+                    Back
+                  </Text>
+                  {/* <Feather name="arrow-left" size={30} color={colors.light} /> */}
+                </Pressable>
+              ) : (
+                <View />
+              )}
+              {currPage < pageCount - 1 && !locks[currPage + 1] ? (
+                <Pressable
                   style={{
-                    color: colors.light,
-                    fontSize: 16,
+                    width: 70,
+                    height: 70,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.purple,
+                    borderRadius: "50%",
+                  }}
+                  onPress={() => {
+                    setCurrPage(currPage + 1);
+                    setPage(currPage + 1);
                   }}
                 >
-                  Next
-                </Text>
-                {/* <Feather name="arrow-right" size={30} color={colors.light} /> */}
-              </Pressable>
-            ) : (
-              <View />
-            )}
-          </View>
+                  <Text
+                    style={{
+                      color: colors.light,
+                      fontSize: 16,
+                    }}
+                  >
+                    Next
+                  </Text>
+                  {/* <Feather name="arrow-right" size={30} color={colors.light} /> */}
+                </Pressable>
+              ) : (
+                <View />
+              )}
+            </View>
+          )}
 
           {/* Pages */}
           <PagerView
             ref={ref}
             style={{ flex: 1, backgroundColor: colors.light }}
-            initialPage={0}
+            initialPage={currPage}
             onPageScroll={(e) => {
               // e.nativeEvent.offset is 0-1 between pages, position is the left page index
               const position = e.nativeEvent.position;
@@ -181,7 +190,7 @@ export default function useCustomPager({
               Animated.timing(scrollOffset, {
                 toValue: position + offset,
                 duration: 0,
-                useNativeDriver: false,
+                useNativeDriver: true,
               }).start();
             }}
             onPageSelected={(e) => {
@@ -203,5 +212,5 @@ export default function useCustomPager({
     [pageCount]
   );
 
-  return { setCurrPage, setPage, setLocks, Pager };
+  return { setCurrPage, setPage, setLocks, setPageCount, Pager };
 }

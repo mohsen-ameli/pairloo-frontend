@@ -6,41 +6,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.light,
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
-    backgroundColor: colors.light,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: colors.dark,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  profileButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.accentOrange,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  profileImage: {
-    width: 50,
-    height: 50,
-  },
   scrollContent: {
     paddingHorizontal: 16,
     paddingVertical: 12,

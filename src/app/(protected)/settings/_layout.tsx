@@ -1,5 +1,9 @@
 import { Stack } from "expo-router";
 
-export default function PostLayout() {
-  return <Stack screenOptions={{ headerShown: false }}></Stack>;
+export default function Layout() {
+  return (
+    <Stack>
+      <Stack.Screen name="index" />
+    </Stack>
+  );
 }

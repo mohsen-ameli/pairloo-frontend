@@ -1,4 +1,5 @@
 import CustomButton from "@/src/components/CustomButton";
+import CustomHeader from "@/src/components/CustomHeader";
 import { BASE_URL } from "@/src/utils/constants";
 import { useState } from "react";
 import { Text, View } from "react-native";
@@ -22,6 +23,8 @@ export default function index() {
 
   return (
     <View>
+      <CustomHeader title="Chat" />
+
       <Text>start chatting NOW</Text>
       <Text>{JSON.stringify(data)}</Text>
       <CustomButton onPress={() => startChat()}>Start Chat</CustomButton>
