@@ -63,14 +63,16 @@ export default function Index() {
     });
 
     socket?.on("finished", (postId: string) => {
-      router.replace("/my-posts");
-      router.push(`/my-posts/${postId}`);
       setPages([""]);
       setCurrPage(0);
       setPage(0);
       setPageCount(1);
       setQuestions([""]);
       inputRefs.current = [""];
+      router.navigate({
+        pathname: "/my-posts",
+        params: { redirect: `/my-posts/${postId}` },
+      });
     });
   }, [socket]);
 
