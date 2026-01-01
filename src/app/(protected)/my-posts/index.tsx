@@ -46,7 +46,7 @@ export default function Index() {
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
-    }, [posts])
+    }, [])
   );
 
   return (
@@ -85,12 +85,8 @@ export default function Index() {
                 </View>
                 <View style={styles.postTextContainer}>
                   <Text style={styles.postTitle} numberOfLines={1}>
-                    {post.name}
+                    {post.content}
                   </Text>
-                  <Text style={styles.postCategory}>
-                    {post.type === "need" ? "Looking for" : "Offering"}
-                  </Text>
-                  <Text style={styles.postPrice}>${post.price}</Text>
                 </View>
               </View>
             </TouchableOpacity>

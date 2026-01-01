@@ -15,15 +15,15 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom);
   const [post, setPost] = useState<PostType>();
   const [loading, setLoading] = useState(true);
-  const [closestProducts, setClosestProducts] = useState<
+  const [closestPosts, setClosestPosts] = useState<
     {
-      product: PostType;
+      post: PostType;
       score: string;
     }[]
   >([]);
 
   async function fetchPostData(postId: string) {
-    if (post || closestProducts.length > 0) return;
+    if (post || closestPosts.length > 0) return;
 
     const res = await authFetch(`/api/posts/${postId}`);
     if (!res.ok) {
@@ -35,13 +35,13 @@ export default function PostDetails() {
     const data: PostType = await res.json();
     setPost(data);
 
-    for (const closeProduct of data.closestProducts || []) {
-      const productRes = await authFetch(`/api/posts/${closeProduct.item}`);
-      if (productRes.ok) {
-        const productData: PostType = await productRes.json();
-        setClosestProducts((prev) => [
+    for (const closePost of data.closestPosts || []) {
+      const postRes = await authFetch(`/api/posts/${closePost.item}`);
+      if (postRes.ok) {
+        const postData: PostType = await postRes.json();
+        setClosestPosts((prev) => [
           ...prev,
-          { product: productData, score: closeProduct.score },
+          { post: postData, score: closePost.score },
         ]);
       }
     }
@@ -78,30 +78,13 @@ export default function PostDetails() {
         {post.image && (
           <Image
             source={{ uri: post.image }}
-            style={styles.productImage}
+            style={styles.postImage}
             resizeMode="cover"
           />
         )}
-        <Text style={styles.title}>{post.name || post.name}</Text>
-        <Text style={styles.subtitle}>
-          {post.type === "need" ? "Looking for" : "Offering"}
-        </Text>
+        <Text style={styles.title}>{post.content}</Text>
+        <Text style={styles.subtitle}>{post.summary}</Text>
 
-        {post.quantity !== undefined && (
-          <Text style={styles.fieldLine}>
-            <Text style={styles.fieldLabel}>quantity:</Text> {post.quantity}
-          </Text>
-        )}
-        {post.price && (
-          <Text style={styles.fieldLine}>
-            <Text style={styles.fieldLabel}>price:</Text> {post.price}
-          </Text>
-        )}
-        {post.region && (
-          <Text style={styles.fieldLine}>
-            <Text style={styles.fieldLabel}>location:</Text> {post.region}
-          </Text>
-        )}
         <CustomButton
           color={colors.errorRed}
           onPress={() => {
@@ -123,43 +106,32 @@ export default function PostDetails() {
         </CustomButton>
 
         {/* Closest posts */}
-        {closestProducts.length > 0 && (
-          <View style={styles.closestProductsContainer}>
-            <Text style={styles.closestProductsTitle}>Similar Posts:</Text>
-            {closestProducts.map((product) => (
-              <View key={product.product._id} style={styles.closestProduct}>
-                <View style={styles.closestProductItem}>
-                  {product.product.image ? (
+        {closestPosts.length > 0 && (
+          <View style={styles.closestPostsContainer}>
+            <Text style={styles.closestPostsTitle}>Similar Posts:</Text>
+            {closestPosts.map((post) => (
+              <View key={post.post._id} style={styles.closestPost}>
+                <View style={styles.closestPostItem}>
+                  {post.post.image ? (
                     <Image
-                      source={{ uri: product.product.image }}
-                      style={styles.closestProductImage}
+                      source={{ uri: post.post.image }}
+                      style={styles.closestPostImage}
                     />
                   ) : (
-                    <View style={styles.closestProductPlaceholder} />
+                    <View style={styles.closestPostPlaceholder} />
                   )}
-                  <Text style={styles.closestProductName}>
-                    {product.product.name}
+                  <Text style={styles.closestPostName}>
+                    {post.post.content}
                   </Text>
-                  <Text style={styles.closestProductScore}>
-                    {Math.round(parseFloat(product.score) * 100)}% match
+                  <Text style={styles.closestPostScore}>
+                    {Math.round(parseFloat(post.score) * 100)}% match
                   </Text>
                 </View>
-                <Text style={styles.closestProductDetails}>
-                  {product.product.quantity
-                    ? `Quantity: ${product.product.quantity} | `
-                    : ""}
-                  {product.product.price
-                    ? `Price: ${product.product.price}`
-                    : ""}
-                </Text>
-                <Text style={styles.closestProductDetails}>
-                  {product.product.region || "Unknown location"}
-                </Text>
                 <CustomButton
                   onPress={() => {
                     Alert.alert(
                       "Contact",
-                      `Contact user for post: ${product.product.name}`
+                      `Contact user for post: ${post.post._id}`
                     );
                   }}
                 >

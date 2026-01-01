@@ -3,32 +3,86 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   Keyboard,
+  Text,
 } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CustomHeader from "@/src/components/CustomHeader";
 import useCustomPager from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
 import { styles } from "@/src/styles/index.styles";
+import io from "socket.io-client";
+import { useAtomValue } from "jotai";
+import { userAtom } from "@/src/utils/store";
+import { WS_BASE_URL } from "@/src/utils/constants";
+import { useRouter } from "expo-router";
 
 export default function Index() {
+  const user = useAtomValue(userAtom);
   const [pages, setPages] = useState([""]);
+  const [questions, setQuestions] = useState<string[]>([""]);
+  const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
   const inputRefs = useRef<string[]>([""]);
-  const { setPageCount, Pager } = useCustomPager({
-    initialPageCount: 1,
-    forwardNBackwardButtons: false,
-  });
+  const { currPage, setPageCount, setPage, setCurrPage, Pager } =
+    useCustomPager({
+      initialPageCount: 1,
+      forwardNBackwardButtons: false,
+    });
+  const router = useRouter();
 
   function forward() {
-    // fetch question, if no question then show summary and ask for "how many related posts to show?"
-    // and "Is this a public or private post?"
-    setPages((prev) => [...prev, ""]);
-    setPageCount(pages.length + 1);
+    socket?.emit("chat", inputRefs.current[currPage]);
   }
 
   function updatePageText(index: number, text: string) {
     inputRefs.current[index] = text;
   }
+
+  function initConnection() {
+    if (!user) return;
+    // initialize socket connection to backend
+    // send initial data if needed
+
+    setSocket(
+      io(WS_BASE_URL + "/create-post", {
+        auth: {
+          token: user.accessToken,
+        },
+      })
+    );
+  }
+
+  useEffect(() => {
+    socket?.on("connect", () => {
+      console.log("Connected to WebSocket server for interactive embedding");
+    });
+
+    socket?.on("question", (question: string) => {
+      setQuestions((prevQuestions) => [...prevQuestions, question]);
+      setPages((prevPages) => [...prevPages, ""]);
+    });
+
+    socket?.on("finished", (postId: string) => {
+      router.replace("/my-posts");
+      router.push(`/my-posts/${postId}`);
+      setPages([""]);
+      setCurrPage(0);
+      setPage(0);
+      setPageCount(1);
+      setQuestions([""]);
+      inputRefs.current = [""];
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    initConnection();
+  }, [user]);
+
+  useEffect(() => {
+    setPageCount(pages.length);
+    setPage(pages.length - 1);
+    setCurrPage(pages.length - 1);
+  }, [pages.length]);
 
   return (
     <>
@@ -52,6 +106,17 @@ export default function Index() {
                   borderRightWidth: 1,
                 }}
               >
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "600",
+                    marginBottom: 10,
+                  }}
+                >
+                  {questions[i]
+                    ? `Question: ${questions[i]}`
+                    : "Start by describing what you want to post about."}
+                </Text>
                 <TextInput
                   style={{
                     flex: 1,
@@ -63,9 +128,11 @@ export default function Index() {
                     textAlignVertical: "top",
                     borderRadius: 5,
                   }}
-                  value={pageText}
+                  defaultValue={pageText}
                   onChangeText={(text) => updatePageText(i, text)}
-                  placeholder={`Write your post for page ${i + 1}...`}
+                  placeholder={
+                    "Write as little or as much details as you want..."
+                  }
                 />
               </View>
             </TouchableWithoutFeedback>

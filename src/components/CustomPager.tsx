@@ -23,7 +23,7 @@ export default function useCustomPager({
   forwardNBackwardButtons?: boolean;
 }) {
   const [pageCount, setPageCount] = useState(initialPageCount);
-  const setCurrPage = useSetAtom(currPageAtom);
+  const [currPage, setCurrPage] = useAtom(currPageAtom);
   const setLocks = useSetAtom(locksAtom);
   const scrollOffset = useRef(new Animated.Value(0)).current;
   const { AnimatedPagerView, ref, setPage, activePage, ...rest } = usePagerView(
@@ -37,6 +37,15 @@ export default function useCustomPager({
       setLocks(pageLocks);
     }
   }, []);
+
+  // Animate scrollOffset when currPage changes (for dots)
+  useEffect(() => {
+    Animated.timing(scrollOffset, {
+      toValue: currPage,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
+  }, [currPage]);
 
   const Pager = useCallback(
     ({ children }: { children: React.ReactNode }) => {
@@ -209,8 +218,8 @@ export default function useCustomPager({
         </>
       );
     },
-    [pageCount]
+    [pageCount, currPage]
   );
 
-  return { setCurrPage, setPage, setLocks, setPageCount, Pager };
+  return { currPage, setCurrPage, setPage, setLocks, setPageCount, Pager };
 }

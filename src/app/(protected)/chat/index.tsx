@@ -1,17 +1,16 @@
 import CustomButton from "@/src/components/CustomButton";
 import CustomHeader from "@/src/components/CustomHeader";
-import { BASE_URL } from "@/src/utils/constants";
+import { WS_BASE_URL } from "@/src/utils/constants";
 import { useState } from "react";
 import { Text, View } from "react-native";
-import { connect } from "socket.io-client";
+import io from "socket.io-client";
 
 export default function index() {
   const [data, setData] = useState([]);
 
   function startChat() {
     console.log("attempting ");
-    // const ws = io(process.env.EXPO_PUBLIC_WS_SERVER_URL!);
-    const socket = connect(BASE_URL);
+    const socket = io(WS_BASE_URL);
     socket.on("connect", () => {
       console.log("Connected to WebSocket server");
       // ws.emit("message", "Hello Server!");
