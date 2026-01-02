@@ -31,7 +31,11 @@ export default function Index() {
   const router = useRouter();
 
   function forward() {
-    socket?.emit("chat", inputRefs.current[currPage]);
+    if (!socket) {
+      console.warn("[forward] Socket is not initialized!");
+      return;
+    }
+    socket.emit("chat", inputRefs.current[currPage]);
   }
 
   function updatePageText(index: number, text: string) {
@@ -40,9 +44,6 @@ export default function Index() {
 
   function initConnection() {
     if (!user) return;
-    // initialize socket connection to backend
-    // send initial data if needed
-
     setSocket(
       io(WS_BASE_URL + "/create-post", {
         auth: {
@@ -55,6 +56,10 @@ export default function Index() {
   useEffect(() => {
     socket?.on("connect", () => {
       console.log("Connected to WebSocket server for interactive embedding");
+    });
+
+    socket?.on("error", (err: any) => {
+      console.error("WebSocket error event:", err);
     });
 
     socket?.on("question", (question: string) => {
