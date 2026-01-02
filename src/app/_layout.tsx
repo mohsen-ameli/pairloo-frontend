@@ -3,6 +3,9 @@ import { StatusBar } from "expo-status-bar";
 import { useAtomValue } from "jotai";
 import React from "react";
 import { userAtom } from "../utils/store";
+import { LogBox } from "react-native";
+
+LogBox.ignoreAllLogs();
 
 export default function RootLayout() {
   const user = useAtomValue(userAtom);
