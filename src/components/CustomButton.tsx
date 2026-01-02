@@ -7,21 +7,29 @@ type CustomProps = PressableProps & {
   color?: string;
 };
 
-export default function ({ color, children, ...rest }: CustomProps) {
+export default function ({ color, children, disabled, ...rest }: CustomProps) {
+  const backgroundColor = disabled
+    ? colors.borderGray
+    : color || colors.purple;
+  const shadowColor = disabled
+    ? colors.borderGray
+    : color || colors.purple;
   return (
     <Pressable
       style={{
         width: "100%",
         paddingVertical: 16,
-        backgroundColor: color ? color : colors.purple,
+        backgroundColor,
         borderRadius: 10,
         alignItems: "center",
-        shadowColor: color ? color : colors.purple,
+        shadowColor,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
         shadowRadius: 4,
         elevation: 2,
+        opacity: disabled ? 0.7 : 1,
       }}
+      disabled={disabled}
       {...rest}
     >
       <Text

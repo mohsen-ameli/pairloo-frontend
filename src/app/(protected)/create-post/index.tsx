@@ -10,6 +10,7 @@ import CustomHeader from "@/src/components/CustomHeader";
 import useCustomPager from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
+import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { styles } from "@/src/styles/index.styles";
 import io from "socket.io-client";
 import { useAtomValue } from "jotai";
@@ -22,6 +23,7 @@ export default function Index() {
   const [pages, setPages] = useState([""]);
   const [questions, setQuestions] = useState<string[]>([""]);
   const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
+  const [loading, setLoading] = useState(false);
   const inputRefs = useRef<string[]>([""]);
   const { currPage, setPageCount, setPage, setCurrPage, Pager } =
     useCustomPager({
@@ -35,6 +37,7 @@ export default function Index() {
       console.warn("[forward] Socket is not initialized!");
       return;
     }
+    setLoading(true);
     socket.emit("chat", inputRefs.current[currPage]);
   }
 
@@ -65,6 +68,7 @@ export default function Index() {
     socket?.on("question", (question: string) => {
       setQuestions((prevQuestions) => [...prevQuestions, question]);
       setPages((prevPages) => [...prevPages, ""]);
+      setLoading(false);
     });
 
     socket?.on("finished", (postId: string) => {
@@ -74,6 +78,7 @@ export default function Index() {
       setPageCount(1);
       setQuestions([""]);
       inputRefs.current = [""];
+      setLoading(false);
       router.navigate({
         pathname: "/my-posts",
         params: { redirect: `/my-posts/${postId}` },
@@ -140,6 +145,10 @@ export default function Index() {
                   placeholder={
                     "Write as little or as much details as you want..."
                   }
+                  editable={!loading}
+                  multiline
+                  textAlignVertical="top"
+                  scrollEnabled
                 />
               </View>
             </TouchableWithoutFeedback>
@@ -147,8 +156,11 @@ export default function Index() {
         </Pager>
 
         <View style={{ margin: 20 }}>
-          <CustomButton onPress={forward}>Continue</CustomButton>
+          <CustomButton onPress={forward} disabled={loading}>
+            Continue
+          </CustomButton>
         </View>
+        <LoadingIndicator loading={loading} />
       </View>
     </>
   );
