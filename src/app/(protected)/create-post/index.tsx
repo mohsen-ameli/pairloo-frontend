@@ -12,10 +12,11 @@ import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
 import { styles } from "@/src/styles/index.styles";
 import io from "socket.io-client";
-import { useAtomValue } from "jotai";
-import { userAtom } from "@/src/utils/store";
+import { useAtomValue, useSetAtom } from "jotai";
+import { logOutAtom, userAtom } from "@/src/utils/store";
 import { WS_BASE_URL } from "@/src/utils/constants";
 import { useRouter } from "expo-router";
+import { refreshAccessToken } from "@/src/utils/refresh-access-token";
 
 export default function Index() {
   const user = useAtomValue(userAtom);
@@ -23,6 +24,7 @@ export default function Index() {
   const [questions, setQuestions] = useState<string[]>([""]);
   const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
   const inputRefs = useRef<string[]>([""]);
+  const logout = useSetAtom(logOutAtom);
   const { currPage, setPageCount, setPage, setCurrPage, Pager } =
     useCustomPager({
       initialPageCount: 1,
@@ -42,32 +44,45 @@ export default function Index() {
     inputRefs.current[index] = text;
   }
 
-  function initConnection() {
+  async function initConnection(accessToken: string) {
     if (!user) return;
+
     setSocket(
       io(WS_BASE_URL + "/create-post", {
         auth: {
-          token: user.accessToken,
+          token: accessToken,
         },
       })
     );
   }
 
   useEffect(() => {
-    socket?.on("connect", () => {
+    if (!user || !socket) return;
+
+    socket.on("connect", () => {
       console.log("Connected to WebSocket server for interactive embedding");
     });
 
-    socket?.on("error", (err: any) => {
+    socket.on("error", (err: any) => {
       console.error("WebSocket error event:", err);
     });
 
-    socket?.on("question", (question: string) => {
+    socket.on("not-authorized", async (err: any) => {
+      const accessToken = await refreshAccessToken(user.refreshToken);
+      if (accessToken === null) {
+        socket.disconnect();
+        logout();
+        return;
+      }
+      initConnection(accessToken);
+    });
+
+    socket.on("question", (question: string) => {
       setQuestions((prevQuestions) => [...prevQuestions, question]);
       setPages((prevPages) => [...prevPages, ""]);
     });
 
-    socket?.on("finished", (postId: string) => {
+    socket.on("finished", (postId: string) => {
       setPages([""]);
       setCurrPage(0);
       setPage(0);
@@ -82,7 +97,9 @@ export default function Index() {
   }, [socket]);
 
   useEffect(() => {
-    initConnection();
+    if (!user) return;
+
+    initConnection(user.accessToken);
   }, [user]);
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { atom } from "jotai";
 import { userAtom } from "./store";
 import { BASE_URL } from "./constants";
 import { fetch, FetchRequestInit } from "expo/fetch";
+import { refreshAccessToken } from "./refresh-access-token";
 
 export const authFetchAtom = atom(
   null,
@@ -26,21 +27,12 @@ export const authFetchAtom = atom(
     let res = await fetchWithToken(user.accessToken);
 
     if (res.status === 401 || res.status === 403) {
-      // Try to refresh token
-      const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh-token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: user.refreshToken }),
-      });
+      const accessToken = await refreshAccessToken(user.refreshToken);
 
-      if (refreshRes.ok) {
-        const { accessToken } = await refreshRes.json();
-        // Update user
+      if (accessToken !== null) {
         set(userAtom, { ...user, accessToken });
-        // Retry original request
         res = await fetchWithToken(accessToken);
       } else {
-        // Refresh failed, log out user
         set(userAtom, null);
         throw new Error("Session expired. Please log in again.");
       }
