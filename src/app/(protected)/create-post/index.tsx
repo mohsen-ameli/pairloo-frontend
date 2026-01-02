@@ -67,7 +67,7 @@ export default function Index() {
       console.error("WebSocket error event:", err);
     });
 
-    socket.on("not-authorized", async (err: any) => {
+    socket.on("connect_error", async () => {
       const accessToken = await refreshAccessToken(user.refreshToken);
       if (accessToken === null) {
         socket.disconnect();
@@ -99,7 +99,7 @@ export default function Index() {
   useEffect(() => {
     if (!user) return;
 
-    initConnection(user.accessToken);
+    initConnection("user.accessToken");
   }, [user]);
 
   useEffect(() => {
