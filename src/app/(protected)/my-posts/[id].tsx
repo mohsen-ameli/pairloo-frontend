@@ -6,18 +6,18 @@ import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
-import { PostType } from "@/src/types/post.type";
+import { MyPostType } from "@/src/types/post.type";
 import { colors } from "@/src/utils/colors";
 
 export default function PostDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const authFetch = useSetAtom(authFetchAtom);
-  const [post, setPost] = useState<PostType>();
+  const [post, setPost] = useState<MyPostType>();
   const [loading, setLoading] = useState(true);
   const [closestPosts, setClosestPosts] = useState<
     {
-      post: PostType;
+      post: MyPostType;
       score: string;
     }[]
   >([]);
@@ -32,13 +32,13 @@ export default function PostDetails() {
       return;
     }
 
-    const data: PostType = await res.json();
+    const data: MyPostType = await res.json();
     setPost(data);
 
     for (const closePost of data.closestPosts || []) {
       const postRes = await authFetch(`/api/posts/${closePost.item}`);
       if (postRes.ok) {
-        const postData: PostType = await postRes.json();
+        const postData: MyPostType = await postRes.json();
         setClosestPosts((prev) => [
           ...prev,
           { post: postData, score: closePost.score },

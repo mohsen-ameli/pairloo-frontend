@@ -1,8 +1,7 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { postsAtom } from "@/src/utils/store";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAtom, useSetAtom } from "jotai";
+import { atom, useAtom, useSetAtom } from "jotai";
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import {
@@ -17,6 +16,9 @@ import { styles } from "@/src/styles/index.styles";
 import imageNotAvailable from "@/assets/images/image-not-available.png";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomHeader from "@/src/components/CustomHeader";
+import { MyPostType } from "@/src/types/post.type";
+
+const postsAtom = atom<MyPostType[]>([]);
 
 export default function Index() {
   const router = useRouter();

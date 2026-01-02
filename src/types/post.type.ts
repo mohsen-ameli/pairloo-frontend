@@ -1,4 +1,4 @@
-export type PostType = {
+export type MyPostType = {
   _id: string;
   userId: string;
   content: string;
@@ -8,4 +8,14 @@ export type PostType = {
     score: string;
     item: string;
   }[];
+};
+
+export type FeedPostType = {
+  _id: string;
+  userId: string;
+  username: string;
+  content: string;
+  summary: string;
+  image?: string;
+  picture: string;
 };
