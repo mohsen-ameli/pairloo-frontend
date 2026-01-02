@@ -43,11 +43,7 @@ export default function Index() {
   }
 
   function initConnection() {
-    if (!user) {
-      console.warn("[initConnection] No user found, skipping socket init");
-      return;
-    }
-
+    if (!user) return;
     setSocket(
       io(WS_BASE_URL + "/create-post", {
         auth: {
