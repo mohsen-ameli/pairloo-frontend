@@ -62,10 +62,6 @@ export default function Index() {
       console.log("Connected to WebSocket server for interactive embedding");
     });
 
-    socket?.on("connection_error", (err: any) => {
-      console.error("WebSocket connection error:", err);
-    });
-
     socket?.on("error", (err: any) => {
       console.error("WebSocket error event:", err);
     });
