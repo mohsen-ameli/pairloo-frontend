@@ -29,7 +29,6 @@ export default function ({ color, children, disabled, ...rest }: CustomProps) {
         elevation: 2,
         opacity: disabled ? 0.7 : 1,
       }}
-      disabled={disabled}
       {...rest}
     >
       <Text

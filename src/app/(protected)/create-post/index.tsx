@@ -99,6 +99,7 @@ export default function Index() {
   return (
     <>
       <CustomHeader title="Create Post" />
+      <LoadingIndicator loading={loading} />
 
       <View style={styles.container}>
         <Pager>
@@ -160,7 +161,6 @@ export default function Index() {
             Continue
           </CustomButton>
         </View>
-        <LoadingIndicator loading={loading} />
       </View>
     </>
   );
