@@ -8,6 +8,7 @@ import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
 import { MyPostType } from "@/src/types/post.type";
 import { colors } from "@/src/utils/colors";
+import ImageCarousel from "@/src/components/ImageCarousel";
 
 export default function PostDetails() {
   const router = useRouter();
@@ -75,13 +76,7 @@ export default function PostDetails() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        {post.image && (
-          <Image
-            source={{ uri: post.image }}
-            style={styles.postImage}
-            resizeMode="cover"
-          />
-        )}
+        {post.images && <ImageCarousel images={post.images} />}
         <Text style={styles.title}>{post.content}</Text>
         <Text style={styles.subtitle}>{post.summary}</Text>
 
@@ -112,11 +107,8 @@ export default function PostDetails() {
             {closestPosts.map((post) => (
               <View key={post.post._id} style={styles.closestPost}>
                 <View style={styles.closestPostItem}>
-                  {post.post.image ? (
-                    <Image
-                      source={{ uri: post.post.image }}
-                      style={styles.closestPostImage}
-                    />
+                  {post.post.images ? (
+                    <ImageCarousel images={post.post.images} />
                   ) : (
                     <View style={styles.closestPostPlaceholder} />
                   )}

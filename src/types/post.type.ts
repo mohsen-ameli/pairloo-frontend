@@ -3,7 +3,7 @@ export type MyPostType = {
   userId: string;
   content: string;
   summary: string;
-  image?: string;
+  images?: string[];
   closestPosts?: {
     score: string;
     item: string;
@@ -16,6 +16,6 @@ export type FeedPostType = {
   username: string;
   content: string;
   summary: string;
-  image?: string;
+  images?: string[];
   picture: string;
 };
