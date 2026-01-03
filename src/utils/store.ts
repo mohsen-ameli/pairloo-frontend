@@ -15,6 +15,7 @@ const newUser = {
   firstName: "",
   lastName: "",
   email: "",
+  picture: "",
   emailVerified: false,
   phoneNumber: "",
   phoneVerified: false,

@@ -86,7 +86,9 @@ export default function Register() {
                 {errors.phoneNumber}
               </Text>
             )}
-            <Text>We'll send you a verification code.</Text>
+            {!newUser.phoneVerified && (
+              <Text>We will send you a verification code.</Text>
+            )}
           </View>
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -128,7 +130,9 @@ export default function Register() {
                 {errors.email}
               </Text>
             )}
-            <Text>We'll send you a verification code.</Text>
+            {!newUser.emailVerified && (
+              <Text>We'll send you a verification code.</Text>
+            )}
           </View>
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>

@@ -5,11 +5,11 @@ import {
   useAuthRequest,
 } from "expo-auth-session";
 import { useRouter } from "expo-router";
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { Platform, View } from "react-native";
 import CustomButton from "../components/CustomButton";
-import { userAtom } from "../utils/store";
+import { newUserAtom, userAtom } from "../utils/store";
 import { BASE_URL } from "../utils/constants";
 
 const config: AuthRequestConfig = {
@@ -23,12 +23,13 @@ const discovery: DiscoveryDocument = {
   tokenEndpoint: `${BASE_URL}/api/auth/token`,
 };
 
-export default function LoginWithGoogle({
+export default function ContinueWithGoogle({
   setLoading,
 }: {
   setLoading: (loading: boolean) => void;
 }) {
   const setUser = useSetAtom(userAtom);
+  const [newUser, setNewUser] = useAtom(newUserAtom);
   const [request, response, promptAsync] = useAuthRequest(config, discovery);
   const router = useRouter();
 
@@ -38,7 +39,7 @@ export default function LoginWithGoogle({
       return;
     }
 
-    const tokenRes = await fetch(`${BASE_URL}/api/auth/token`, {
+    const res = await fetch(`${BASE_URL}/api/auth/token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -48,7 +49,17 @@ export default function LoginWithGoogle({
         platform: Platform.OS === "web" ? "web" : "native",
       }),
     });
-    const userData = await tokenRes.json();
+
+    // If user not found, redirect to registration with prefilled data
+    if (res.status === 409) {
+      const userData = await res.json();
+      setLoading(false);
+      setNewUser({ ...newUser, ...userData });
+      router.replace("/register");
+      return;
+    }
+
+    const userData = await res.json();
 
     setUser(userData);
 
@@ -59,7 +70,7 @@ export default function LoginWithGoogle({
     handleResponse();
   }, [response]);
 
-  async function signInWithGoogle() {
+  async function continueWithGoogle() {
     try {
       if (request) {
         setLoading(true);
@@ -73,7 +84,9 @@ export default function LoginWithGoogle({
 
   return (
     <View>
-      <CustomButton onPress={signInWithGoogle}>Login With Google</CustomButton>
+      <CustomButton onPress={continueWithGoogle}>
+        Continue With Google
+      </CustomButton>
     </View>
   );
 }
