@@ -2,7 +2,7 @@ import CustomLink from "@/src/components/CustomLink";
 import { colors } from "@/src/utils/colors";
 import { Link } from "expo-router";
 import { Text, View } from "react-native";
-import LoginWithGoogle from "./login-with-google";
+import ContinueWithGoogle from "./continue-with-google";
 import { useState } from "react";
 import LoadingIndicator from "../components/LoadingIndicator";
 
@@ -62,7 +62,7 @@ export default function Landing() {
               Log in
             </Text>
           </Link>
-          <LoginWithGoogle setLoading={setLoading} />
+          <ContinueWithGoogle setLoading={setLoading} />
         </View>
       </View>
     </>
