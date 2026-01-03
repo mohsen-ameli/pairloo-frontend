@@ -24,7 +24,12 @@ export const authFetchAtom = atom(
       throw new Error("User is not authenticated");
     }
 
-    let res = await fetchWithToken(user.accessToken);
+    let res;
+    try {
+      res = await fetchWithToken(user.accessToken);
+    } catch (error) {
+      throw new Error("Network error occurred");
+    }
 
     if (res.status === 401 || res.status === 403) {
       const accessToken = await refreshAccessToken(user.refreshToken);
