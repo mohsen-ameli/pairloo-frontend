@@ -25,6 +25,7 @@ export default function Index() {
   const [questions, setQuestions] = useState<string[]>([""]);
   const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
   const inputRefs = useRef<string[]>([""]);
   const logout = useSetAtom(logOutAtom);
   const { currPage, setPageCount, setPage, setCurrPage, Pager } =
@@ -111,6 +112,14 @@ export default function Index() {
     setPageCount(pages.length);
     setPage(pages.length - 1);
     setCurrPage(pages.length - 1);
+    setMcqAnswers((prev) => {
+      if (pages.length > prev.length) {
+        return [...prev, ...Array(pages.length - prev.length).fill("")];
+      } else if (pages.length < prev.length) {
+        return prev.slice(0, pages.length);
+      }
+      return prev;
+    });
   }, [pages.length]);
 
   return (
@@ -120,57 +129,122 @@ export default function Index() {
 
       <View style={styles.container}>
         <Pager>
-          {pages.map((pageText, i) => (
-            <TouchableWithoutFeedback
-              onPress={Keyboard.dismiss}
-              accessible={false}
-              key={i}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  gap: 10,
-                  padding: 20,
-                  paddingTop: 70,
-                  borderColor: colors.borderGray,
-                  borderRightWidth: 1,
-                }}
+
+          {pages.map((pageText, i) => {
+            let response = null;
+            try {
+              response = questions[i] && questions[i].trim() !== "" ? JSON.parse(questions[i].replace(/```json|```/g, "").trim()) : null;
+            } catch (e) {
+              response = null;
+            }
+            const type = response?.type;
+            const questionText = response?.question;
+            const options = response?.options || [];
+
+            console.log(questions[i]);
+            
+
+            // For multiple choice, store selected option in inputRefs.current[i] and mcqAnswers
+            const handleOptionSelect = (option: string) => {
+              updatePageText(i, option);
+              setMcqAnswers((prev) => {
+                const updated = [...prev];
+                updated[i] = option;
+                return updated;
+              });
+            };
+
+            return (
+              <TouchableWithoutFeedback
+                onPress={Keyboard.dismiss}
+                accessible={false}
+                key={i}
               >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "600",
-                    marginBottom: 10,
-                  }}
-                >
-                  {questions[i]
-                    ? `Question: ${questions[i]}`
-                    : "Start by describing what you want to post about."}
-                </Text>
-                <TextInput
+                <View
                   style={{
                     flex: 1,
-                    borderColor: "gray",
-                    borderWidth: 1,
-                    margin: 10,
-                    marginBottom: 120,
-                    padding: 10,
-                    textAlignVertical: "top",
-                    borderRadius: 5,
+                    gap: 10,
+                    padding: 20,
+                    paddingTop: 70,
+                    borderColor: colors.borderGray,
+                    borderRightWidth: 1,
                   }}
-                  defaultValue={pageText}
-                  onChangeText={(text) => updatePageText(i, text)}
-                  placeholder={
-                    "Write as little or as much details as you want..."
-                  }
-                  editable={!loading}
-                  multiline
-                  textAlignVertical="top"
-                  scrollEnabled
-                />
-              </View>
-            </TouchableWithoutFeedback>
-          ))}
+                >
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: "600",
+                      marginBottom: 10,
+                    }}
+                  >
+                    {response && questionText
+                      ? `Question: ${questionText}`
+                      : "Start by describing what you want to post about."}
+                  </Text>
+                  {type === "multiple_choice" && options.length > 0 ? (
+                    <View style={{ marginVertical: 10 }}>
+                      {options.map((option: string, idx: number) => (
+                        <TouchableWithoutFeedback
+                          key={option}
+                          onPress={() => handleOptionSelect(option)}
+                        >
+                          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                            <View
+                              style={{
+                                height: 22,
+                                width: 22,
+                                borderRadius: 11,
+                                borderWidth: 2,
+                                borderColor: colors.blue || "#007AFF",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                marginRight: 10,
+                              }}
+                            >
+                              {mcqAnswers[i] === option && (
+                                <View
+                                  style={{
+                                    height: 12,
+                                    width: 12,
+                                    borderRadius: 6,
+                                    backgroundColor: colors.blue || "#007AFF",
+                                  }}
+                                />
+                              )}
+                            </View>
+                            <Text style={{ fontSize: 16 }}>{option}</Text>
+                          </View>
+                        </TouchableWithoutFeedback>
+                      ))}
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={{
+                        flex: 1,
+                        borderColor: "gray",
+                        borderWidth: 1,
+                        margin: 10,
+                        marginBottom: 120,
+                        padding: 10,
+                        textAlignVertical: "top",
+                        borderRadius: 5,
+                      }}
+                      defaultValue={pageText}
+                      onChangeText={(text) => updatePageText(i, text)}
+                      placeholder={
+                        "Write as little or as much details as you want..."
+                      }
+                      editable={!loading}
+                      multiline={type !== "multiple_choice"}
+                      textAlignVertical="top"
+                      scrollEnabled
+                    />
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
+            );
+          })}
+          
         </Pager>
 
         <View style={{ margin: 20 }}>
