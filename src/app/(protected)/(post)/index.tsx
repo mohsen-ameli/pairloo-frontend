@@ -23,7 +23,6 @@ export default function Index() {
     const res = await authFetch("/api/posts/my-feed");
     if (res.ok) {
       const data = (await res.json()) as FeedPostType[];
-      console.log(data);
 
       // Masonry logic
       const numColumns = 2;
