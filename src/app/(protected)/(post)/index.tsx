@@ -4,9 +4,9 @@ import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import { Text, View, Image, ScrollView, RefreshControl } from "react-native";
 import CustomHeader from "@/src/components/CustomHeader";
-import { colors } from "@/src/utils/colors";
 import { FeedPostType } from "@/src/types/post.type";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
+import { styles } from "@/src/styles/feed.styles";
 
 const postsAtom = atom<FeedPostType[][]>([[]]);
 
@@ -57,67 +57,25 @@ export default function Index() {
       <LoadingIndicator loading={loading} />
 
       <ScrollView
-        contentContainerStyle={{
-          flex: 1,
-          backgroundColor: colors.light,
-          padding: 8,
-          flexDirection: "row",
-          alignItems: "flex-start",
-        }}
+        contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         {posts.map((col, colIdx) => (
-          <View key={colIdx} style={{ flex: 1, marginHorizontal: 4 }}>
+          <View key={colIdx} style={styles.column}>
             {col.map((post, idx) => (
-              <View
-                key={post._id || idx}
-                style={{
-                  marginBottom: 8,
-                  backgroundColor: "#fff",
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  elevation: 2,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    padding: 8,
-                  }}
-                >
+              <View key={post._id || idx} style={styles.postCard}>
+                <View style={styles.postHeader}>
                   {post.picture && (
                     <Image
                       source={{ uri: post.picture }}
-                      style={{
-                        width: 40,
-                        borderRadius: 25,
-                        aspectRatio: 1,
-                        resizeMode: "cover",
-                      }}
+                      style={styles.postHeaderImage}
                     />
                   )}
-                  <Text style={{ padding: 8, fontSize: 14, color: "#555" }}>
-                    @{post.username}
-                  </Text>
+                  <Text style={styles.postHeaderText}>@{post.username}</Text>
                 </View>
-                {post.image && (
-                  <Image
-                    source={{ uri: post.image }}
-                    style={{
-                      width: "100%",
-                      aspectRatio: 1,
-                      resizeMode: "cover",
-                    }}
-                  />
-                )}
-                <View style={{ padding: 8 }}>
-                  <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                    {post.content}
-                  </Text>
-                </View>
+                <Text style={styles.postContent}>{post.content}</Text>
               </View>
             ))}
           </View>

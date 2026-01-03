@@ -1,0 +1,33 @@
+import { StyleSheet } from "react-native";
+import { colors } from "../utils/colors";
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.light,
+    padding: 8,
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  column: { flex: 1, marginHorizontal: 4 },
+  postCard: {
+    marginBottom: 8,
+    backgroundColor: colors.light,
+    borderRadius: 8,
+    overflow: "hidden",
+    elevation: 2,
+  },
+  postHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+  },
+  postHeaderImage: {
+    width: 40,
+    borderRadius: 25,
+    aspectRatio: 1,
+    resizeMode: "cover",
+  },
+  postHeaderText: { padding: 8, fontSize: 14, color: colors.darkGray },
+  postContent: { padding: 8, fontWeight: "bold", fontSize: 16 },
+});
