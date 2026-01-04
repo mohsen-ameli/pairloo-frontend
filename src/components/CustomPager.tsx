@@ -17,10 +17,12 @@ export default function useCustomPager({
   initialPageCount,
   pageLocks,
   forwardNBackwardButtons = true,
+  scrollEnabled = true,
 }: {
   initialPageCount: number;
   pageLocks?: boolean[];
   forwardNBackwardButtons?: boolean;
+  scrollEnabled?: boolean;
 }) {
   const [pageCount, setPageCount] = useState(initialPageCount);
   const [currPage, setCurrPage] = useAtom(currPageAtom);
@@ -179,6 +181,7 @@ export default function useCustomPager({
             ref={ref}
             style={{ flex: 1, backgroundColor: colors.light }}
             initialPage={currPage}
+            scrollEnabled={scrollEnabled}
             onPageScroll={(e) => {
               // e.nativeEvent.offset is 0-1 between pages, position is the left page index
               const position = e.nativeEvent.position;
