@@ -52,6 +52,7 @@ export default function Index() {
       console.warn("[forward] Socket is not initialized!");
       return;
     }
+
     setLoading(true);
     if (currPage == pagesLengthRef.current) {
       socket.emit("submit", {
@@ -59,6 +60,16 @@ export default function Index() {
         publicPost,
         images,
       });
+    } else if (
+      !inputRefs.current[currPage] ||
+      inputRefs.current[currPage].trim() === ""
+    ) {
+      Alert.alert(
+        "Input required",
+        "Please enter some text before continuing."
+      );
+      setLoading(false);
+      return;
     } else {
       socket.emit("chat", inputRefs.current[currPage]);
     }
