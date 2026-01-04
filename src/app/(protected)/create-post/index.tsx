@@ -12,6 +12,7 @@ import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { styles } from "@/src/styles/index.styles";
+import { createPostStyles } from "@/src/styles/create_post.styles";
 import io from "socket.io-client";
 import { useAtomValue, useSetAtom } from "jotai";
 import { logOutAtom, userAtom } from "@/src/utils/store";
@@ -126,24 +127,14 @@ export default function Index() {
     <>
       <CustomHeader title="Create Post" />
       <LoadingIndicator loading={loading} />
-
       <View style={styles.container}>
         <Pager>
-
           {pages.map((pageText, i) => {
-            let response = null;
-            try {
-              response = questions[i] && questions[i].trim() !== "" ? JSON.parse(questions[i].replace(/```json|```/g, "").trim()) : null;
-            } catch (e) {
-              response = null;
-            }
+            let response = questions[i] ? JSON.parse(questions[i].replace(/```json|```/g, "").trim()) : null;
             const type = response?.type;
             const questionText = response?.question;
             const options = response?.options || [];
-
-            console.log(questions[i]);
-            
-
+      
             // For multiple choice, store selected option in inputRefs.current[i] and mcqAnswers
             const handleOptionSelect = (option: string) => {
               updatePageText(i, option);
@@ -160,75 +151,42 @@ export default function Index() {
                 accessible={false}
                 key={i}
               >
-                <View
-                  style={{
-                    flex: 1,
-                    gap: 10,
-                    padding: 20,
-                    paddingTop: 70,
-                    borderColor: colors.borderGray,
-                    borderRightWidth: 1,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: "600",
-                      marginBottom: 10,
-                    }}
-                  >
+                <View style={createPostStyles.container}>
+                  <Text style={createPostStyles.questionText}>
                     {response && questionText
                       ? `Question: ${questionText}`
                       : "Start by describing what you want to post about."}
                   </Text>
                   {type === "multiple_choice" && options.length > 0 ? (
                     <View style={{ marginVertical: 10 }}>
-                      {options.map((option: string, idx: number) => (
-                        <TouchableWithoutFeedback
-                          key={option}
-                          onPress={() => handleOptionSelect(option)}
-                        >
-                          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+                      {options.map((option: string, idx: number) => {
+                        const isSelected = mcqAnswers[i] === option;
+                        return (
+                          <TouchableWithoutFeedback
+                            key={option}
+                            onPress={() => handleOptionSelect(option)}
+                          >
                             <View
-                              style={{
-                                height: 22,
-                                width: 22,
-                                borderRadius: 11,
-                                borderWidth: 2,
-                                borderColor: colors.blue || "#007AFF",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                marginRight: 10,
-                              }}
+                              style={[
+                                createPostStyles.mcqOption,
+                                {
+                                  borderColor: isSelected ? (colors.purple) : (colors.lightGray),
+                                  backgroundColor: isSelected ? colors.lightBlue : colors.lightGray
+                                },
+                              ]}
                             >
-                              {mcqAnswers[i] === option && (
-                                <View
-                                  style={{
-                                    height: 12,
-                                    width: 12,
-                                    borderRadius: 6,
-                                    backgroundColor: colors.blue || "#007AFF",
-                                  }}
-                                />
-                              )}
+                              <Text style={[
+                                createPostStyles.mcqOptionText,
+                                { color: isSelected ? (colors.purple) : (colors.dark) },
+                              ]}>{option}</Text>
                             </View>
-                            <Text style={{ fontSize: 16 }}>{option}</Text>
-                          </View>
-                        </TouchableWithoutFeedback>
-                      ))}
+                          </TouchableWithoutFeedback>
+                        );
+                      })}
                     </View>
                   ) : (
                     <TextInput
-                      style={{
-                        flex: 1,
-                        borderColor: "gray",
-                        borderWidth: 1,
-                        margin: 10,
-                        marginBottom: 120,
-                        padding: 10,
-                        textAlignVertical: "top",
-                        borderRadius: 5,
-                      }}
+                      style={createPostStyles.textInput}
                       defaultValue={pageText}
                       onChangeText={(text) => updatePageText(i, text)}
                       placeholder={
@@ -244,9 +202,7 @@ export default function Index() {
               </TouchableWithoutFeedback>
             );
           })}
-          
         </Pager>
-
         <View style={{ margin: 20 }}>
           <CustomButton onPress={forward} disabled={loading}>
             Continue
