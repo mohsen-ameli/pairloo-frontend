@@ -112,6 +112,15 @@ export default function Index() {
     }
   }
 
+  const handleOptionSelect = (i: number, option: string) => {
+    inputRefs.current[i] = option;
+    setMcqAnswers((prev) => {
+      const updated = [...prev];
+      updated[i] = option;
+      return updated;
+    });
+  };
+
   useEffect(() => {
     if (!user || !socket) return;
 
@@ -200,16 +209,6 @@ export default function Index() {
             const questionText = response?.question;
             const options = response?.options || [];
 
-            // For multiple choice, store selected option in inputRefs.current[i] and mcqAnswers
-            const handleOptionSelect = (option: string) => {
-              inputRefs.current[i] = option;
-              setMcqAnswers((prev) => {
-                const updated = [...prev];
-                updated[i] = option;
-                return updated;
-              });
-            };
-
             return (
               <TouchableWithoutFeedback
                 onPress={Keyboard.dismiss}
@@ -229,7 +228,7 @@ export default function Index() {
                         return (
                           <TouchableWithoutFeedback
                             key={option}
-                            onPress={() => handleOptionSelect(option)}
+                            onPress={() => handleOptionSelect(i, option)}
                           >
                             <View
                               style={[
