@@ -1,8 +1,15 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { atom, useAtom, useSetAtom } from "jotai";
 import { useCallback, useState } from "react";
-import { useFocusEffect } from "expo-router";
-import { Text, View, Image, ScrollView, RefreshControl } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import {
+  Text,
+  View,
+  Image,
+  ScrollView,
+  RefreshControl,
+  Pressable,
+} from "react-native";
 import CustomHeader from "@/src/components/CustomHeader";
 import { FeedPostType } from "@/src/types/post.type";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
@@ -11,6 +18,7 @@ import { styles } from "@/src/styles/feed.styles";
 const postsAtom = atom<FeedPostType[][]>([[]]);
 
 export default function Index() {
+  const router = useRouter();
   const authFetch = useSetAtom(authFetchAtom);
   const [posts, setPosts] = useAtom(postsAtom);
   const [loading, setLoading] = useState(false);
@@ -64,8 +72,14 @@ export default function Index() {
       >
         {posts.map((col, colIdx) => (
           <View key={colIdx} style={styles.column}>
-            {col.map((post, idx) => (
-              <View key={post._id || idx} style={styles.postCard}>
+            {col.map((post) => (
+              <Pressable
+                key={post._id}
+                style={styles.postCard}
+                onPress={() => {
+                  router.push(`/${post._id}`);
+                }}
+              >
                 <View style={styles.postHeader}>
                   {post.picture && (
                     <Image
@@ -76,7 +90,7 @@ export default function Index() {
                   <Text style={styles.postHeaderText}>@{post.username}</Text>
                 </View>
                 <Text style={styles.postContent}>{post.content}</Text>
-              </View>
+              </Pressable>
             ))}
           </View>
         ))}
