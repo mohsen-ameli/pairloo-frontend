@@ -1,5 +1,5 @@
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { View, Text, ScrollView, Image, Alert } from "react-native";
+import { View, Text, ScrollView, Alert } from "react-native";
 import styles from "@/src/styles/id.styles";
 import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
@@ -76,7 +76,7 @@ export default function PostDetails() {
         style={styles.container}
         contentContainerStyle={styles.content}
       >
-        {post.images && <ImageCarousel images={post.images} />}
+        {post.images.length != 0 && <ImageCarousel images={post.images} />}
         <Text style={styles.title}>{post.content}</Text>
         <Text style={styles.subtitle}>{post.summary}</Text>
 

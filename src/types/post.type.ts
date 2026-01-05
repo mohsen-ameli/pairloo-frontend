@@ -3,7 +3,7 @@ export type MyPostType = {
   userId: string;
   content: string;
   summary: string;
-  images?: string[];
+  images: string[];
   closestPosts?: {
     score: string;
     item: string;
