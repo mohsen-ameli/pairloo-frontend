@@ -106,12 +106,12 @@ export default function PostDetails() {
             <Text style={styles.closestPostsTitle}>Similar Posts:</Text>
             {closestPosts.map((post) => (
               <View key={post.post._id} style={styles.closestPost}>
-                <View style={styles.closestPostItem}>
-                  {post.post.images ? (
-                    <ImageCarousel images={post.post.images} />
-                  ) : (
-                    <View style={styles.closestPostPlaceholder} />
+                <View style={styles.closestPostImage}>
+                  {post.post.images.length != 0 && (
+                    <ImageCarousel images={post.post.images} widthOffset={70} />
                   )}
+                </View>
+                <View style={styles.closestPostItem}>
                   <Text style={styles.closestPostName}>
                     {post.post.content}
                   </Text>
@@ -121,13 +121,10 @@ export default function PostDetails() {
                 </View>
                 <CustomButton
                   onPress={() => {
-                    Alert.alert(
-                      "Contact",
-                      `Contact user for post: ${post.post._id}`
-                    );
+                    router.push(`/${post.post._id}`);
                   }}
                 >
-                  Contact
+                  View Post
                 </CustomButton>
               </View>
             ))}

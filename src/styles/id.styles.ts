@@ -73,6 +73,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
+    maxHeight: 275,
+    marginBottom: 8,
   },
   closestPostName: {
     fontSize: 16,
@@ -83,11 +85,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   closestPostImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    marginRight: 12,
-    backgroundColor: colors.lightGray,
+    marginBottom: 12,
   },
   closestPostPlaceholder: {
     width: 48,
