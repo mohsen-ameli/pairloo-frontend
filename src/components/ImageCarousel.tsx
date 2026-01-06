@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Dimensions, View } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 import Carousel, {
@@ -6,18 +5,27 @@ import Carousel, {
   Pagination,
 } from "react-native-reanimated-carousel";
 import { SlideItem } from "./SlideItem";
-
-const width = Dimensions.get("window").width - 40;
+import { Dispatch, useEffect, useRef, useState } from "react";
+import { SetStateAction } from "jotai";
 
 export default function ImageCarousel({
   images,
   setImages,
+  widthOffset = 40,
 }: {
   images: string[];
-  setImages?: React.Dispatch<React.SetStateAction<string[]>>;
+  setImages?: Dispatch<SetStateAction<string[]>>;
+  widthOffset?: number;
 }) {
-  const ref = React.useRef<ICarouselInstance>(null);
+  const ref = useRef<ICarouselInstance>(null);
   const progress = useSharedValue<number>(0);
+  const [width, setWidth] = useState(
+    Dimensions.get("window").width - widthOffset
+  );
+
+  useEffect(() => {
+    setWidth(Dimensions.get("window").width - widthOffset);
+  }, [widthOffset]);
 
   const onPressPagination = (index: number) => {
     ref.current?.scrollTo({
@@ -41,7 +49,7 @@ export default function ImageCarousel({
   }
 
   return (
-    <View id="carousel-component">
+    <View>
       <Carousel
         autoPlayInterval={2000}
         data={images}

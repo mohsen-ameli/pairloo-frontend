@@ -17,7 +17,6 @@ interface Props extends AnimatedProps<ViewProps> {
   style?: StyleProp<ImageStyle>;
   index: number;
   source: ImageSourcePropType;
-  testID?: string;
   setImages?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
@@ -25,12 +24,11 @@ export function SlideItem({
   style,
   index,
   source,
-  testID,
   setImages,
   ...animatedViewProps
 }: Props) {
   return (
-    <Animated.View testID={testID} {...animatedViewProps}>
+    <Animated.View {...animatedViewProps}>
       <Animated.Image style={[style, styles.container]} source={source} />
       {setImages && (
         <View style={styles.removeOverlay}>
