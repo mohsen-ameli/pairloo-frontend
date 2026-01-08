@@ -6,9 +6,10 @@ import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
-import { GeneralPostType, MyPostType } from "@/src/types/post.type";
+import { MyPostType } from "@/src/types/post.type";
 import { colors } from "@/src/utils/colors";
 import ImageCarousel from "@/src/components/ImageCarousel";
+import { getScoreColor } from "@/src/utils/lerp-color";
 import { Image } from "expo-image";
 
 export default function PostDetails() {
@@ -116,7 +117,19 @@ export default function PostDetails() {
                 </View>
                 <View style={styles.closestPostItem}>
                   <Text style={styles.closestPostName}>{post.content}</Text>
-                  <Text style={styles.closestPostScore}>
+                  <Text
+                    style={[
+                      styles.closestPostScore,
+                      {
+                        color: getScoreColor(
+                          colors.errorRed,
+                          colors.yellow,
+                          colors.successGreen,
+                          parseFloat(post.score)
+                        ),
+                      },
+                    ]}
+                  >
                     {Math.round(parseFloat(post.score) * 100)}% match
                   </Text>
                 </View>

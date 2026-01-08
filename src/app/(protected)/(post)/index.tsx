@@ -59,7 +59,7 @@ export default function Index() {
   );
 
   return (
-    <>
+    <View style={styles.container}>
       <CustomHeader title="Posts" />
 
       <LoadingIndicator loading={loading} />
@@ -87,7 +87,12 @@ export default function Index() {
                       style={styles.postHeaderImage}
                     />
                   )}
-                  <Text style={styles.postHeaderText}>@{post.username}</Text>
+                  <View style={styles.postHeaderTextContainer}>
+                    <Text style={styles.postHeaderName}>
+                      {post.firstName} {post.lastName}
+                    </Text>
+                    <Text style={styles.postUsername}>@{post.username}</Text>
+                  </View>
                 </View>
                 <Text style={styles.postContent}>{post.content}</Text>
               </Pressable>
@@ -95,6 +100,6 @@ export default function Index() {
           </View>
         ))}
       </ScrollView>
-    </>
+    </View>
   );
 }

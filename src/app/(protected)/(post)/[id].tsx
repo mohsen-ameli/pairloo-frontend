@@ -7,7 +7,6 @@ import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
 import { GeneralPostType } from "@/src/types/post.type";
-import { colors } from "@/src/utils/colors";
 import ImageCarousel from "@/src/components/ImageCarousel";
 
 export default function PostDetails() {
@@ -41,28 +40,25 @@ export default function PostDetails() {
   if (!post) return null;
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
         {post.images && post.images.length != 0 && (
           <ImageCarousel images={post.images} />
         )}
         <Text style={styles.title}>{post.content}</Text>
         <Text style={styles.subtitle}>{post.summary}</Text>
 
+        <View style={{ height: 20 }} />
+      </ScrollView>
+      <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
         <CustomButton
-          color={colors.green}
           onPress={() => {
             console.log("Should redirect to a chat with the poster");
           }}
         >
           Contact Poster
         </CustomButton>
-
-        <View style={{ height: 20 }} />
-      </ScrollView>
+      </View>
     </View>
   );
 }

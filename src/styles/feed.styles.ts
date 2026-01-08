@@ -27,6 +27,8 @@ export const styles = StyleSheet.create({
     aspectRatio: 1,
     resizeMode: "cover",
   },
-  postHeaderText: { padding: 8, fontSize: 14, color: colors.darkGray },
+  postHeaderName: { fontSize: 14, color: colors.darkGray },
+  postUsername: { fontSize: 12, color: colors.gray },
+  postHeaderTextContainer: { marginLeft: 8 },
   postContent: { padding: 8, fontWeight: "bold", fontSize: 16 },
 });
