@@ -7,9 +7,10 @@ export type GeneralPostType = {
   summary: string;
   picture: string;
   images?: string[] | null | undefined;
+  createdAt: string;
 };
 
-export type ClosestPostType = GeneralPostType & { score: string };
+export type ClosestPostType = GeneralPostType & { item: string; score: string };
 
 export type MyPostType = GeneralPostType & {
   closestPosts?: ClosestPostType[];
