@@ -1,43 +1,55 @@
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { View, Text, ScrollView, Alert } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { View, Text, ScrollView, Pressable } from "react-native";
 import styles from "@/src/styles/id.styles";
-import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
 import { GeneralPostType } from "@/src/types/post.type";
 import ImageCarousel from "@/src/components/ImageCarousel";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorStyles } from "@/src/styles/error.styles";
 
 export default function PostDetails() {
-  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const authFetch = useSetAtom(authFetchAtom);
-  const [post, setPost] = useState<GeneralPostType>();
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: post,
+    isError,
+    isPending,
+  } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost });
 
-  async function fetchPostData(postId: string) {
-    if (post) return;
-
-    const res = await authFetch(`/api/posts/${postId}`);
-    const data = await res.json();
-    if (!res.ok) {
-      Alert.alert("Error", "Could not fetch post data");
-      router.back();
-      return;
-    }
-
-    // const data: GeneralPostType = await res.json();
-    setPost(data);
-    setLoading(false);
+  async function fetchPost() {
+    const res = await authFetch(`/api/posts/${id}`);
+    const data: GeneralPostType = await res.json();
+    return data;
   }
 
-  useEffect(() => {
-    fetchPostData(id);
-  }, [id]);
+  async function refresh() {
+    queryClient.invalidateQueries({ queryKey: [`post-${id}`] });
+  }
 
-  if (loading) return <LoadingIndicator loading={loading} />;
-  if (!post) return null;
+  if (isPending) {
+    return (
+      <View style={styles.container}>
+        <LoadingIndicator loading={true} />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <Text style={errorStyles.errorText}>
+          Error loading posts. Please try again.
+        </Text>
+        <Pressable style={errorStyles.retryButton} onPress={refresh}>
+          <Text style={errorStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
