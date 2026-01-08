@@ -28,6 +28,9 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     backgroundColor: colors.lightGray,
   },
+  postContainer: {
+    marginBottom: 20,
+  },
   fieldLine: {
     fontSize: 16,
     color: colors.darkGray,
@@ -101,6 +104,29 @@ const styles = StyleSheet.create({
     color: colors.gray,
     marginTop: 2,
     marginBottom: 6,
+  },
+  closestPostAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: "hidden",
+    marginRight: 12,
+  },
+  closestPostAvatarImage: {
+    width: "100%",
+    height: "100%",
+  },
+  closestPostHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  closestPostUsername: {
+    fontSize: 14,
+    color: colors.gray,
+  },
+  closestPostUserInfo: {
+    flexDirection: "column",
   },
 });
 

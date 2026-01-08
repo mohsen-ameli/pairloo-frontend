@@ -6,9 +6,10 @@ import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
-import { MyPostType } from "@/src/types/post.type";
+import { GeneralPostType, MyPostType } from "@/src/types/post.type";
 import { colors } from "@/src/utils/colors";
 import ImageCarousel from "@/src/components/ImageCarousel";
+import { Image } from "expo-image";
 
 export default function PostDetails() {
   const router = useRouter();
@@ -16,17 +17,11 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom);
   const [post, setPost] = useState<MyPostType>();
   const [loading, setLoading] = useState(true);
-  const [closestPosts, setClosestPosts] = useState<
-    {
-      post: MyPostType;
-      score: string;
-    }[]
-  >([]);
 
   async function fetchPostData(postId: string) {
-    if (post || closestPosts.length > 0) return;
+    if (post) return;
 
-    const res = await authFetch(`/api/posts/${postId}`);
+    const res = await authFetch(`/api/posts/my-posts/${postId}`);
     if (!res.ok) {
       Alert.alert("Error", "Could not fetch post data");
       router.back();
@@ -35,17 +30,6 @@ export default function PostDetails() {
 
     const data: MyPostType = await res.json();
     setPost(data);
-
-    for (const closePost of data.closestPosts || []) {
-      const postRes = await authFetch(`/api/posts/${closePost.item}`);
-      if (postRes.ok) {
-        const postData: MyPostType = await postRes.json();
-        setClosestPosts((prev) => [
-          ...prev,
-          { post: postData, score: closePost.score },
-        ]);
-      }
-    }
     setLoading(false);
   }
 
@@ -71,14 +55,15 @@ export default function PostDetails() {
   if (!post) return null;
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
-        {post.images.length != 0 && <ImageCarousel images={post.images} />}
-        <Text style={styles.title}>{post.content}</Text>
-        <Text style={styles.subtitle}>{post.summary}</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.postContainer}>
+          {post.images && post.images.length != 0 && (
+            <ImageCarousel images={post.images} />
+          )}
+          <Text style={styles.title}>{post.content}</Text>
+          <Text style={styles.subtitle}>{post.summary}</Text>
+        </View>
 
         <CustomButton
           color={colors.errorRed}
@@ -101,27 +86,43 @@ export default function PostDetails() {
         </CustomButton>
 
         {/* Closest posts */}
-        {closestPosts.length > 0 && (
+        {post.closestPosts && post.closestPosts.length > 0 && (
           <View style={styles.closestPostsContainer}>
             <Text style={styles.closestPostsTitle}>Similar Posts:</Text>
-            {closestPosts.map((post) => (
-              <View key={post.post._id} style={styles.closestPost}>
+            {post.closestPosts.map((post) => (
+              <View key={post._id} style={styles.closestPost}>
+                <View style={styles.closestPostHeader}>
+                  {post.picture && (
+                    <View style={styles.closestPostAvatar}>
+                      <Image
+                        source={{ uri: post.picture }}
+                        style={styles.closestPostAvatarImage}
+                      />
+                    </View>
+                  )}
+                  <View style={styles.closestPostUserInfo}>
+                    <Text style={styles.closestPostName}>
+                      {post.firstName} {post.lastName}
+                    </Text>
+                    <Text style={styles.closestPostUsername}>
+                      @{post.username}
+                    </Text>
+                  </View>
+                </View>
                 <View style={styles.closestPostImage}>
-                  {post.post.images.length != 0 && (
-                    <ImageCarousel images={post.post.images} widthOffset={70} />
+                  {post.images && post.images.length != 0 && (
+                    <ImageCarousel images={post.images} widthOffset={70} />
                   )}
                 </View>
                 <View style={styles.closestPostItem}>
-                  <Text style={styles.closestPostName}>
-                    {post.post.content}
-                  </Text>
+                  <Text style={styles.closestPostName}>{post.content}</Text>
                   <Text style={styles.closestPostScore}>
                     {Math.round(parseFloat(post.score) * 100)}% match
                   </Text>
                 </View>
                 <CustomButton
                   onPress={() => {
-                    router.push(`/${post.post._id}`);
+                    router.push(`/${post._id}`);
                   }}
                 >
                   View Post
