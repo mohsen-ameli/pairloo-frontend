@@ -23,11 +23,13 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { refreshAccessToken } from "@/src/utils/refresh-access-token";
 import * as ImagePicker from "expo-image-picker";
 import ImageCarousel from "@/src/components/ImageCarousel";
+import { useQueryClient } from "@tanstack/react-query";
 
 const INITIAL_PAGE_COUNT = 2;
 
 export default function Index() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAtomValue(userAtom);
   const logout = useSetAtom(logOutAtom);
   const [pages, setPages] = useState([""]);
@@ -171,6 +173,7 @@ export default function Index() {
         pathname: "/my-posts",
         params: { redirect: `/my-posts/${postId}` },
       });
+      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
     });
   }, [socket]);
 

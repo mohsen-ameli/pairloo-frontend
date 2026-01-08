@@ -1,7 +1,6 @@
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { View, Text, ScrollView, Alert } from "react-native";
+import { View, Text, ScrollView, Alert, Pressable } from "react-native";
 import styles from "@/src/styles/id.styles";
-import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
@@ -10,45 +9,43 @@ import { MyPostType } from "@/src/types/post.type";
 import { colors } from "@/src/utils/colors";
 import ImageCarousel from "@/src/components/ImageCarousel";
 import { Image } from "expo-image";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorStyles } from "@/src/styles/error.styles";
 
 export default function PostDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const authFetch = useSetAtom(authFetchAtom);
-  const [post, setPost] = useState<MyPostType>();
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const {
+    data: post,
+    isError,
+    isPending,
+  } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost });
+  const { mutate, isPending: isPendingMutation } = useMutation({
+    mutationFn: removePost,
+  });
 
-  async function fetchPostData(postId: string) {
-    if (post) return;
-
-    const res = await authFetch(`/api/posts/my-posts/${postId}`);
-    if (!res.ok) {
-      Alert.alert("Error", "Could not fetch post data");
-      router.back();
-      return;
-    }
-
+  async function fetchPost() {
+    const res = await authFetch(`/api/posts/my-posts/${id}`);
     const data: MyPostType = await res.json();
-    setPost(data);
-    setLoading(false);
+    return data;
   }
 
-  useEffect(() => {
-    fetchPostData(id);
-  }, [id]);
-
   async function removePost() {
-    if (!post) return;
-    setLoading(true);
-    const res = await authFetch(`/api/posts/${post._id}`, {
+    const res = await authFetch(`/api/posts/${id}`, {
       method: "DELETE",
     });
     if (res.ok) {
       router.back();
+      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
     } else {
-      setLoading(false);
       Alert.alert("Error", "Could not remove post. Please try again later.");
     }
+  }
+
+  async function refresh() {
+    queryClient.invalidateQueries({ queryKey: [`post-${id}`] });
   }
 
   function getScoreColor(score: number) {
@@ -61,8 +58,26 @@ export default function PostDetails() {
     }
   }
 
-  if (loading) return <LoadingIndicator loading={loading} />;
-  if (!post) return null;
+  if (isPending || isPendingMutation) {
+    return (
+      <View style={styles.container}>
+        <LoadingIndicator loading={true} />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <Text style={errorStyles.errorText}>
+          Error loading posts. Please try again.
+        </Text>
+        <Pressable style={errorStyles.retryButton} onPress={refresh}>
+          <Text style={errorStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -86,7 +101,7 @@ export default function PostDetails() {
                 {
                   text: "Remove",
                   style: "destructive",
-                  onPress: removePost,
+                  onPress: () => mutate(),
                 },
               ]
             );
