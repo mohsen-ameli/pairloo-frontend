@@ -9,7 +9,6 @@ import CustomButton from "@/src/components/CustomButton";
 import { MyPostType } from "@/src/types/post.type";
 import { colors } from "@/src/utils/colors";
 import ImageCarousel from "@/src/components/ImageCarousel";
-import { getScoreColor } from "@/src/utils/lerp-color";
 
 export default function PostDetails() {
   const router = useRouter();
@@ -68,6 +67,16 @@ export default function PostDetails() {
     }
   }
 
+  function getScoreColor(score: number) {
+    if (score < 0.25) {
+      return colors.errorRed;
+    } else if (score < 0.75) {
+      return colors.yellow;
+    } else {
+      return colors.successGreen;
+    }
+  }
+
   if (loading) return <LoadingIndicator loading={loading} />;
   if (!post) return null;
 
@@ -119,14 +128,7 @@ export default function PostDetails() {
                   <Text
                     style={[
                       styles.closestPostScore,
-                      {
-                        color: getScoreColor(
-                          colors.errorRed,
-                          colors.yellow,
-                          colors.successGreen,
-                          parseFloat(post.score)
-                        ),
-                      },
+                      { color: getScoreColor(parseFloat(post.score)) },
                     ]}
                   >
                     {Math.round(parseFloat(post.score) * 100)}% match
