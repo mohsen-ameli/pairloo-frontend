@@ -67,6 +67,16 @@ export default function PostDetails() {
     }
   }
 
+  function getScoreColor(score: number) {
+    if (score < 0.25) {
+      return colors.errorRed;
+    } else if (score < 0.75) {
+      return colors.yellow;
+    } else {
+      return colors.successGreen;
+    }
+  }
+
   if (loading) return <LoadingIndicator loading={loading} />;
   if (!post) return null;
 
@@ -115,7 +125,12 @@ export default function PostDetails() {
                   <Text style={styles.closestPostName}>
                     {post.post.content}
                   </Text>
-                  <Text style={styles.closestPostScore}>
+                  <Text
+                    style={[
+                      styles.closestPostScore,
+                      { color: getScoreColor(parseFloat(post.score)) },
+                    ]}
+                  >
                     {Math.round(parseFloat(post.score) * 100)}% match
                   </Text>
                 </View>

@@ -13,6 +13,8 @@ export type MyPostType = {
 export type FeedPostType = {
   _id: string;
   userId: string;
+  firstName: string;
+  lastName: string;
   username: string;
   content: string;
   summary: string;
