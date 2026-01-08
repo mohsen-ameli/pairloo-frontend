@@ -1,23 +1,17 @@
-export type MyPostType = {
+export type GeneralPostType = {
   _id: string;
-  userId: string;
-  content: string;
-  summary: string;
-  images: string[];
-  closestPosts?: {
-    score: string;
-    item: string;
-  }[];
-};
-
-export type FeedPostType = {
-  _id: string;
-  userId: string;
+  username: string;
   firstName: string;
   lastName: string;
-  username: string;
   content: string;
   summary: string;
-  images?: string[];
   picture: string;
+  images?: string[] | null | undefined;
+  createdAt: string;
+};
+
+export type ClosestPostType = GeneralPostType & { item: string; score: string };
+
+export type MyPostType = GeneralPostType & {
+  closestPosts?: ClosestPostType[];
 };

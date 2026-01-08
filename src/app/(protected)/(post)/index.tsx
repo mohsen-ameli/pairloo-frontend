@@ -11,11 +11,11 @@ import {
   Pressable,
 } from "react-native";
 import CustomHeader from "@/src/components/CustomHeader";
-import { FeedPostType } from "@/src/types/post.type";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { styles } from "@/src/styles/feed.styles";
+import { GeneralPostType } from "@/src/types/post.type";
 
-const postsAtom = atom<FeedPostType[][]>([[]]);
+const postsAtom = atom<GeneralPostType[][]>([[]]);
 
 export default function Index() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function Index() {
     firstFetch && setLoading(true);
     const res = await authFetch("/api/posts/my-feed");
     if (res.ok) {
-      const data = (await res.json()) as FeedPostType[];
+      const data = (await res.json()) as GeneralPostType[];
 
       // Masonry logic
       const numColumns = 2;

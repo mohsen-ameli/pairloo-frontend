@@ -5,6 +5,7 @@ import * as WebBrowser from "expo-web-browser";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { CountryCode } from "react-native-country-picker-modal";
 import { BASE_URL } from "./constants";
+import { UserType } from "../types/user.type";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,20 +40,6 @@ const newUserErrors = {
 export const signUpErrorsAtom = atom(newUserErrors);
 
 // user atom
-const user = {
-  _id: "",
-  username: "",
-  firstName: "",
-  lastName: "",
-  picture: "",
-  email: "",
-  phoneNumber: "",
-  country: "",
-  city: "",
-  accessToken: "",
-  refreshToken: "",
-};
-export type UserType = typeof user | null;
 const userSecureStorage = createJSONStorage<UserType>(() => ({
   getItem: async (key: string) => {
     return await SecureStore.getItemAsync(key);
