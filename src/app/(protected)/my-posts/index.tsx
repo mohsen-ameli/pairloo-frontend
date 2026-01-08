@@ -1,15 +1,15 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { atom, useAtom, useSetAtom } from "jotai";
-import { useCallback, useEffect, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { useSetAtom } from "jotai";
+import { useEffect } from "react";
 import {
   ScrollView,
   Text,
   View,
   TouchableOpacity,
   RefreshControl,
+  Pressable,
 } from "react-native";
 import { styles } from "@/src/styles/index.styles";
 // @ts-ignore
@@ -17,16 +17,19 @@ import imageNotAvailable from "@/assets/images/image-not-available.png";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomHeader from "@/src/components/CustomHeader";
 import { MyPostType } from "@/src/types/post.type";
-
-const postsAtom = atom<MyPostType[]>([]);
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorStyles } from "@/src/styles/error.styles";
 
 export default function Index() {
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const authFetch = useSetAtom(authFetchAtom);
-  const [posts, setPosts] = useAtom(postsAtom);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
+  const {
+    data: posts,
+    isError,
+    isPending,
+  } = useQuery({ queryKey: ["my-posts"], queryFn: fetchPosts });
 
   useEffect(() => {
     if (redirect) {
@@ -35,40 +38,47 @@ export default function Index() {
   }, [redirect]);
 
   async function fetchPosts() {
-    let firstFetch = false;
-    if (posts.length === 0) firstFetch = true;
-    firstFetch && setLoading(true);
     const res = await authFetch("/api/posts/my-posts");
-    if (res.ok) {
-      const data = await res.json();
-      setPosts(data);
-    }
-    firstFetch && setLoading(false);
+    const data: MyPostType[] = await res.json();
+    return data;
   }
 
-  async function onRefresh() {
-    setRefreshing(true);
-    await fetchPosts();
-    setRefreshing(false);
+  async function refresh() {
+    queryClient.invalidateQueries({ queryKey: ["my-posts"] });
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchPosts();
-    }, [])
-  );
+  if (isPending) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader title="My Posts" />
+        <LoadingIndicator loading={true} />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader title="My Posts" />
+        <Text style={errorStyles.errorText}>
+          Error loading posts. Please try again.
+        </Text>
+        <Pressable style={errorStyles.retryButton} onPress={refresh}>
+          <Text style={errorStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <CustomHeader title="My Posts" />
 
-      <LoadingIndicator loading={loading} />
-
       {/* Posts List */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isPending} onRefresh={refresh} />
         }
       >
         {posts.length === 0 ? (

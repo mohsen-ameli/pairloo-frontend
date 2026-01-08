@@ -1,7 +1,6 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { atom, useAtom, useSetAtom } from "jotai";
-import { useCallback, useState } from "react";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useSetAtom } from "jotai";
+import { useRouter } from "expo-router";
 import {
   Text,
   View,
@@ -14,60 +13,70 @@ import CustomHeader from "@/src/components/CustomHeader";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { styles } from "@/src/styles/feed.styles";
 import { GeneralPostType } from "@/src/types/post.type";
-
-const postsAtom = atom<GeneralPostType[][]>([[]]);
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { errorStyles } from "@/src/styles/error.styles";
 
 export default function Index() {
   const router = useRouter();
   const authFetch = useSetAtom(authFetchAtom);
-  const [posts, setPosts] = useAtom(postsAtom);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
+  const {
+    data: posts,
+    isError,
+    isPending,
+  } = useQuery({ queryKey: ["feed"], queryFn: fetchPosts });
 
   async function fetchPosts() {
-    let firstFetch = false;
-    if (posts.length === 0) firstFetch = true;
-    firstFetch && setLoading(true);
     const res = await authFetch("/api/posts/my-feed");
-    if (res.ok) {
-      const data = (await res.json()) as GeneralPostType[];
+    const data: GeneralPostType[] = await res.json();
 
-      // Masonry logic
-      const numColumns = 2;
-      const columns: Array<typeof data> = Array.from(
-        { length: numColumns },
-        () => []
-      );
-      data.forEach((post, idx) => {
-        columns[idx % numColumns].push(post);
-      });
-      setPosts(columns);
-    }
-    firstFetch && setLoading(false);
+    // Masonry logic
+    const numColumns = 2;
+    const columns: Array<typeof data> = Array.from(
+      { length: numColumns },
+      () => []
+    );
+    data.forEach((post, idx) => {
+      columns[idx % numColumns].push(post);
+    });
+    return columns;
   }
 
-  async function onRefresh() {
-    setRefreshing(true);
-    await fetchPosts();
-    setRefreshing(false);
+  async function refresh() {
+    queryClient.invalidateQueries({ queryKey: ["feed"] });
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchPosts();
-    }, [])
-  );
+  if (isPending) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader title="Home" />
+        <LoadingIndicator loading={true} />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <CustomHeader title="Home" />
+        <Text style={errorStyles.errorText}>
+          Error loading posts. Please try again.
+        </Text>
+        <Pressable style={errorStyles.retryButton} onPress={refresh}>
+          <Text style={errorStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Posts" />
-
-      <LoadingIndicator loading={loading} />
+      <CustomHeader title="Home" />
 
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={styles.feedContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isPending} onRefresh={refresh} />
         }
       >
         {posts.map((col, colIdx) => (
