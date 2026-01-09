@@ -17,8 +17,10 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     backgroundColor: colors.light,
     borderRadius: 8,
-    overflow: "hidden",
     elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.20,
+    shadowRadius: 2,
   },
   postHeader: {
     flexDirection: "row",
