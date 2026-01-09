@@ -37,4 +37,13 @@ export const createPostStyles = StyleSheet.create({
     textAlignVertical: "top",
     borderRadius: 5,
   },
+  multiSelect: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: colors.lightGray,
+  }
 });

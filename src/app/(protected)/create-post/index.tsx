@@ -7,6 +7,7 @@ import {
   Switch,
   Alert,
 } from "react-native";
+import BouncyCheckbox from "react-native-bouncy-checkbox";
 import React, { useEffect, useRef, useState } from "react";
 import CustomHeader from "@/src/components/CustomHeader";
 import useCustomPager from "@/src/components/CustomPager";
@@ -37,6 +38,7 @@ export default function Index() {
   const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
   const [loading, setLoading] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
+  const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([[]]);
   const [publicPost, setPublicPost] = useState(true);
   const [images, setImages] = useState<string[]>([]);
   const inputRefs = useRef<string[]>([""]);
@@ -123,6 +125,20 @@ export default function Index() {
     });
   };
 
+  const handleMultiSelectOption = (i: number, option: string) => {
+    setMultiSelectAnswers((prev) => {
+      const updated = [...prev];
+      const selected = updated[i] || [];
+      if (selected.includes(option)) {
+        updated[i] = selected.filter((o) => o !== option);
+      } else {
+        updated[i] = [...selected, option];
+      }
+      inputRefs.current[i] = updated[i].join(", ");
+      return updated;
+    });
+  };
+
   useEffect(() => {
     if (!user || !socket) return;
 
@@ -196,6 +212,14 @@ export default function Index() {
       }
       return prev;
     });
+    setMultiSelectAnswers((prev) => {
+      if (pages.length > prev.length) {
+        return [...prev, ...Array(pages.length - prev.length).fill([])];
+      } else if (pages.length < prev.length) {
+        return prev.slice(0, pages.length);
+      }
+      return prev;
+    });
   }, [pages]);
 
   return (
@@ -234,7 +258,7 @@ export default function Index() {
                             onPress={() => handleOptionSelect(i, option)}
                           >
                             <View
-                              style={[
+                              style={[ 
                                 createPostStyles.mcqOption,
                                 {
                                   borderColor: isSelected
@@ -247,7 +271,7 @@ export default function Index() {
                               ]}
                             >
                               <Text
-                                style={[
+                                style={[ 
                                   createPostStyles.mcqOptionText,
                                   {
                                     color: isSelected
@@ -260,6 +284,42 @@ export default function Index() {
                               </Text>
                             </View>
                           </TouchableWithoutFeedback>
+                        );
+                      })}
+                    </View>
+                  ) : type === "multi_select" && options.length > 0 ? (
+                    <View style={{ marginVertical: 10 }}>
+                      <Text style={{ marginBottom: 10 }}>Select all the options that apply:</Text>
+                      {options.map((option: string, idx: number) => {
+                        const selectedOptions = multiSelectAnswers[i] || [];
+                        const isSelected = selectedOptions.includes(option);
+                        return (
+                          <View
+                            key={option}
+                            style={[ 
+                                createPostStyles.multiSelect,
+                                {
+                                  backgroundColor: isSelected
+                                    ? colors.lightBlue
+                                    : colors.lightGray,
+                                },
+                              ]}
+                          >
+                            <BouncyCheckbox
+                              isChecked={isSelected}
+                              onPress={() => handleMultiSelectOption(i, option)}
+                              fillColor={colors.purple}
+                              iconStyle={{ borderColor: colors.dark, borderRadius: 2 }}
+                              innerIconStyle={{ borderWidth: 2, borderRadius: 5 }}
+                              style={{ marginRight: 5 }}
+                              text={option}
+                              textStyle={{
+                                ...createPostStyles.mcqOptionText,
+                                color: isSelected ? colors.purple : colors.dark,
+                                textDecorationLine: "none",
+                              }}
+                            />
+                          </View>
                         );
                       })}
                     </View>
