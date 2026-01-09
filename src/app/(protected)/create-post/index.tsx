@@ -309,7 +309,7 @@ export default function Index() {
                               isChecked={isSelected}
                               onPress={() => handleMultiSelectOption(i, option)}
                               fillColor={colors.purple}
-                              iconStyle={{ borderColor: colors.purple, borderRadius: 2 }}
+                              iconStyle={{ borderColor: colors.dark, borderRadius: 2 }}
                               innerIconStyle={{ borderWidth: 2, borderRadius: 5 }}
                               style={{ marginRight: 5 }}
                               text={option}
