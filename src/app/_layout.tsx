@@ -15,7 +15,7 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style={Platform.OS === "ios" ? "inverted" : "auto"} />
+      <StatusBar style="auto" />
       <QueryClientProvider client={queryClient}>
         <KeyboardProvider>
           <Stack>
