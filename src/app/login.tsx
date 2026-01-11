@@ -1,37 +1,54 @@
 import CustomInput from "@/src/components/CustomInput";
 import { Link, useRouter } from "expo-router";
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { z } from "zod";
-import { useRef, useState } from "react";
-import {
-  Alert,
-  Keyboard,
-  Pressable,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Alert, Pressable, Text, View } from "react-native";
 import { styles } from "@/src/styles/login.styles";
-import CustomButton from "../components/CustomButton";
 import { colors } from "../utils/colors";
-import { BASE_URL } from "../utils/constants";
-import useCustomPager from "../components/CustomPager";
+import { BASE_URL, VERIFICATION_RESEND_TIME } from "../utils/constants";
+import useCustomPager, { flowAtom } from "../components/CustomPager";
 import { userAtom } from "../utils/store";
 
-const REMAINING_TIME = 60; // seconds
-
 export default function LoginPage() {
-  const email = useRef<string | null>(null);
+  const email = useRef("");
   const verificationCode = useRef<string | null>(null);
-  const { setCurrPage, setPage, setLocks, Pager } = useCustomPager({
+  const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
     initialPageCount: 2,
-    pageLocks: [false, true],
   });
-  const requested = useRef(false);
   const setUser = useSetAtom(userAtom);
+  const [flow, setFlow] = useAtom(flowAtom);
   const router = useRouter();
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setFlow({
+      ...flow,
+      back: () => {
+        if (currPage === 1) {
+          setCurrPage(0);
+          setPage(0);
+        }
+      },
+      next: () => {
+        if (currPage === 0) {
+          handleRequest(false);
+        } else if (currPage === 1) {
+          handleVerification();
+        }
+      },
+    });
+
+    return () => {
+      setFlow({
+        back: null,
+        next: null,
+        backEnabled: true,
+        nextEnabled: true,
+      });
+    };
+  }, [currPage]);
 
   async function handleRequest(resending: boolean) {
     const emailSchema = z.email();
@@ -39,7 +56,7 @@ export default function LoginPage() {
       Alert.alert("Error", "Please enter a valid email address");
       return;
     }
-    requested.current = true;
+    setFlow({ ...flow, nextEnabled: false });
     setLoading(true);
 
     try {
@@ -52,27 +69,26 @@ export default function LoginPage() {
           },
           body: JSON.stringify({
             email: email.current,
+            signUp: false,
           }),
         }
       );
       if (!res.ok) {
         Alert.alert("Error", "This email is not registered.");
         setLoading(false);
-        requested.current = false;
+        setFlow({ ...flow, nextEnabled: true });
         return;
       }
-      setLocks([false, false]);
       setCurrPage(1);
       setPage(1);
-
-      setTimeRemaining(REMAINING_TIME);
+      setTimeRemaining(VERIFICATION_RESEND_TIME);
+      setFlow({ ...flow, nextEnabled: true });
 
       let intervalId: number | null = null;
       intervalId = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             if (intervalId) clearInterval(intervalId);
-            requested.current = false;
             return 0;
           }
           return prev - 1;
@@ -88,6 +104,8 @@ export default function LoginPage() {
       }
     } catch {
       Alert.alert("Login Failed", "Invalid username or password");
+      setLoading(false);
+      setFlow({ ...flow, nextEnabled: true });
     }
   }
 
@@ -106,6 +124,7 @@ export default function LoginPage() {
         body: JSON.stringify({
           email: email.current,
           code: verificationCode.current,
+          signUp: false,
         }),
       });
 
@@ -123,78 +142,61 @@ export default function LoginPage() {
 
   return (
     <Pager>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.pageContainer}>
-          <Text style={styles.title}>Log In</Text>
-          <CustomInput
-            placeholder="Email"
-            onChangeText={(text) => {
-              email.current = text;
-              requested.current = false;
-              timeRemaining > 0 && setTimeRemaining(0);
-              loading && setLoading(false);
-            }}
-            textContentType="username"
-            autoComplete="username"
-          />
-          <CustomButton
-            color={
-              loading || requested.current || timeRemaining > 0
-                ? colors.gray
-                : colors.purple
-            }
-            disabled={loading || requested.current || timeRemaining > 0}
-            onPress={() => handleRequest(false)}
-          >
-            {loading ? "Sending..." : "Continue"}
-          </CustomButton>
-          <Link push href="/forgot-email" style={styles.forgotLink}>
-            Forgot email?
-          </Link>
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={styles.pageContainer} key="0">
+        <Text style={styles.title}>Log In</Text>
+        <CustomInput
+          placeholder="Email"
+          value={email.current}
+          autoFocus
+          onChangeText={(text) => {
+            email.current = text.trim().toLowerCase();
+            setFlow({ ...flow, nextEnabled: true });
+            timeRemaining > 0 && setTimeRemaining(0);
+            loading && setLoading(false);
+          }}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
+        />
+        <Link push href="/forgot-email" style={styles.forgotLink}>
+          Forgot email?
+        </Link>
+      </View>
 
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.pageContainer}>
-          <Text style={styles.title}>Enter Verification Code</Text>
-          <CustomInput
-            placeholder="6-digit code"
-            onChangeText={(text) => (verificationCode.current = text)}
-            keyboardType="numeric"
-            maxLength={6}
-          />
-          <Text style={styles.verificationInfo}>
-            Please check your email for the verification code.
+      <View style={styles.pageContainer} key="1">
+        <Text style={styles.title}>Enter Verification Code</Text>
+        <CustomInput
+          autoFocus
+          placeholder="6-digit code"
+          onChangeText={(text) => (verificationCode.current = text)}
+          keyboardType="numeric"
+          maxLength={6}
+        />
+        <Text style={styles.verificationInfo}>
+          Please check your email for the verification code.
+        </Text>
+        <Pressable
+          onPress={() => handleRequest(true)}
+          disabled={!flow.nextEnabled || timeRemaining > 0}
+        >
+          <Text
+            style={[
+              styles.resendText,
+              {
+                color:
+                  !flow.nextEnabled || timeRemaining > 0
+                    ? colors.gray
+                    : colors.purple,
+              },
+            ]}
+          >
+            {timeRemaining > 0
+              ? `Resend Code in ${timeRemaining} seconds`
+              : "Resend Code"}
           </Text>
-          <Pressable
-            onPress={() => handleRequest(true)}
-            disabled={requested.current || timeRemaining > 0}
-          >
-            <Text
-              style={[
-                styles.resendText,
-                {
-                  color:
-                    requested.current || timeRemaining > 0
-                      ? colors.gray
-                      : colors.purple,
-                },
-              ]}
-            >
-              {timeRemaining > 0
-                ? `Resend Code in ${timeRemaining} seconds`
-                : "Resend Code"}
-            </Text>
-          </Pressable>
-          <CustomButton
-            color={loading ? colors.gray : colors.purple}
-            disabled={loading}
-            onPress={handleVerification}
-          >
-            {loading ? "Sending..." : "Log In"}
-          </CustomButton>
-        </View>
-      </TouchableWithoutFeedback>
+        </Pressable>
+      </View>
     </Pager>
   );
 }

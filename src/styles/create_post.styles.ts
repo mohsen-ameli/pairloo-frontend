@@ -5,8 +5,9 @@ export const createPostStyles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 10,
-    padding: 20,
-    paddingTop: 70,
+    paddingTop: 55,
+    paddingBottom: 100,
+    paddingHorizontal: 20,
     borderColor: colors.borderGray,
     borderRightWidth: 1,
   },
@@ -31,8 +32,6 @@ export const createPostStyles = StyleSheet.create({
     flex: 1,
     borderColor: "gray",
     borderWidth: 1,
-    margin: 10,
-    marginBottom: 120,
     padding: 10,
     textAlignVertical: "top",
     borderRadius: 5,
@@ -45,5 +44,5 @@ export const createPostStyles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     backgroundColor: colors.lightGray,
-  }
+  },
 });

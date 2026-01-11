@@ -3,7 +3,7 @@ import { newUserAtom, signUpErrorsAtom } from "@/src/utils/store";
 import Feather from "@expo/vector-icons/Feather";
 import { useAtom } from "jotai";
 import React, { useEffect, useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { Platform, Pressable, TextInput, View } from "react-native";
 import CountryPicker, { DARK_THEME } from "react-native-country-picker-modal";
 import {
   Country,
@@ -46,7 +46,8 @@ export default function PhoneNumber() {
         style={{
           borderWidth: 1,
           borderColor: colors.borderGray,
-          padding: 10,
+          paddingVertical: Platform.OS === "ios" ? 7 : 14,
+          paddingHorizontal: 10,
           borderRadius: 5,
         }}
       >
@@ -74,8 +75,8 @@ export default function PhoneNumber() {
             onClose: () => setVisible(false),
             onOpen: () => setVisible(true),
             closeButtonImageStyle: {
-              width: 20,
-              height: 20,
+              width: Platform.OS === "ios" ? 40 : 20,
+              height: Platform.OS === "ios" ? 40 : 20,
             },
           }}
         />
@@ -87,11 +88,15 @@ export default function PhoneNumber() {
           borderColor: colors.borderGray,
           padding: 15,
           borderRadius: 5,
+          fontSize: 18,
         }}
+        autoFocus
         placeholder="(123) 456-7890"
         placeholderTextColor={colors.gray}
         textContentType="telephoneNumber"
         autoComplete="tel"
+        keyboardType="phone-pad"
+        maxLength={20}
         defaultValue={newUser.phoneNumber}
         onChangeText={(text) => {
           setNewUser({ ...newUser, phoneNumber: text });
@@ -101,6 +106,9 @@ export default function PhoneNumber() {
       {newUser.phoneNumber && (
         <Pressable
           style={{
+            position: "absolute",
+            right: 10,
+            backgroundColor: colors.lightGray,
             padding: 5,
             borderRadius: 5,
           }}
@@ -108,12 +116,7 @@ export default function PhoneNumber() {
             setNewUser({ ...newUser, phoneNumber: "" });
           }}
         >
-          <Feather
-            name="x"
-            size={24}
-            color={colors.dark}
-            style={{ marginLeft: 5 }}
-          />
+          <Feather name="x" size={24} color={colors.darkGray} />
         </Pressable>
       )}
     </View>
