@@ -39,11 +39,6 @@ export default function Register() {
   });
 
   useEffect(() => {
-    setPage(3);
-    setCurrPage(3);
-  }, []);
-
-  useEffect(() => {
     setFlow({
       ...flow,
       back: () => {
