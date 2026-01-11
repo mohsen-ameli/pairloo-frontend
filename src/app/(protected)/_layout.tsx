@@ -1,9 +1,10 @@
+import { colors } from "@/src/utils/colors";
 import Feather from "@expo/vector-icons/Feather";
 import { Tabs } from "expo-router";
 
 export default function ProtectedLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "limegreen" }}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: colors.purple }}>
       <Tabs.Screen
         name="(post)"
         options={{

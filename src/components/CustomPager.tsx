@@ -1,48 +1,43 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, Pressable, Text, View } from "react-native";
+import { Animated as A, Pressable, Text, View } from "react-native";
 import PagerView, { usePagerView } from "react-native-pager-view";
 import { colors } from "../utils/colors";
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { atom, useAtom, useAtomValue } from "jotai";
+import useGradualAnimation from "../utils/gradual-animation";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
 const currPageAtom = atom(0);
-const locksAtom = atom<boolean[]>([]);
+// Use this to configure what the next and back buttons do
+// And whether they are disabled
+export const flowAtom = atom({
+  back: null as null | (() => void),
+  next: null as null | (() => void),
+  backEnabled: true,
+  nextEnabled: true,
+});
 
 /**
  * Allows for creating a pager with multiple pages, navigation dots, and next/back buttons.
- * You can pass a locks param to lock certain pages from being accessed until unlocked.
  * You can also set the page count dynamically.
- * NOTE: When using setCurrPage, use setPage to sync the pager view.
+ * NOTE: When using setCurrPage, use setPage alongside it to sync the pager view.
  */
 export default function useCustomPager({
   initialPageCount,
-  pageLocks,
-  forwardNBackwardButtons = true,
-  scrollEnabled = true,
 }: {
   initialPageCount: number;
-  pageLocks?: boolean[];
-  forwardNBackwardButtons?: boolean;
-  scrollEnabled?: boolean;
 }) {
   const [pageCount, setPageCount] = useState(initialPageCount);
   const [currPage, setCurrPage] = useAtom(currPageAtom);
-  const setLocks = useSetAtom(locksAtom);
-  const scrollOffset = useRef(new Animated.Value(0)).current;
+  const scrollOffset = useRef(new A.Value(0)).current;
   const { AnimatedPagerView, ref, setPage, activePage, ...rest } = usePagerView(
     {
       pagesAmount: pageCount,
     }
   );
 
-  useEffect(() => {
-    if (pageLocks) {
-      setLocks(pageLocks);
-    }
-  }, []);
-
   // Animate scrollOffset when currPage changes (for dots)
   useEffect(() => {
-    Animated.timing(scrollOffset, {
+    A.timing(scrollOffset, {
       toValue: currPage,
       duration: 100,
       useNativeDriver: true,
@@ -52,18 +47,35 @@ export default function useCustomPager({
   const Pager = useCallback(
     ({ children }: { children: React.ReactNode }) => {
       const [currPage, setCurrPage] = useAtom(currPageAtom);
-      const locks = useAtomValue(locksAtom);
+      const flow = useAtomValue(flowAtom);
+      const { height } = useGradualAnimation();
+
+      // Animate fake view height
+      const fakeView = useAnimatedStyle(() => {
+        return {
+          height: Math.abs(height.value),
+        };
+      }, []);
+
+      // Animate next/back (flow) buttons position
+      const flowButtons = useAnimatedStyle(() => {
+        return {
+          bottom: height.value + 10,
+        };
+      }, []);
 
       return (
-        <>
+        <View
+          style={{
+            flex: 1,
+          }}
+        >
           {/* Dots */}
           <View
             style={{
               position: "absolute",
-              top: 10,
-              left: 10,
-              padding: 30,
-              width: "95%",
+              top: 25,
+              width: "100%",
               zIndex: 1,
             }}
           >
@@ -87,7 +99,7 @@ export default function useCustomPager({
                   extrapolate: "clamp",
                 });
                 return (
-                  <Animated.View
+                  <A.View
                     key={i}
                     style={{
                       width: 10,
@@ -104,125 +116,112 @@ export default function useCustomPager({
             </View>
           </View>
 
-          {/* Forward and Backward */}
-          {forwardNBackwardButtons && (
-            <View
-              style={{
-                position: "absolute",
-                bottom: 50,
-                left: 20,
-                right: 20,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                zIndex: 1,
-              }}
-            >
-              {currPage > 0 ? (
-                <Pressable
-                  style={{
-                    width: 70,
-                    height: 70,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: colors.purple,
-                    borderRadius: "50%",
-                  }}
-                  onPress={() => {
-                    setCurrPage(currPage - 1);
-                    setPage(currPage - 1);
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: colors.light,
-                      fontSize: 16,
-                    }}
-                  >
-                    Back
-                  </Text>
-                  {/* <Feather name="arrow-left" size={30} color={colors.light} /> */}
-                </Pressable>
-              ) : (
-                <View />
-              )}
-              {currPage < pageCount - 1 && !locks[currPage + 1] ? (
-                <Pressable
-                  style={{
-                    width: 70,
-                    height: 70,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: colors.purple,
-                    borderRadius: "50%",
-                  }}
-                  onPress={() => {
-                    setCurrPage(currPage + 1);
-                    setPage(currPage + 1);
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: colors.light,
-                      fontSize: 16,
-                    }}
-                  >
-                    Next
-                  </Text>
-                  {/* <Feather name="arrow-right" size={30} color={colors.light} /> */}
-                </Pressable>
-              ) : (
-                <View />
-              )}
-            </View>
-          )}
-
           {/* Pages */}
           <PagerView
             ref={ref}
             style={{ flex: 1, backgroundColor: colors.light }}
             initialPage={currPage}
-            scrollEnabled={scrollEnabled}
-            onPageScroll={(e) => {
-              // e.nativeEvent.offset is 0-1 between pages, position is the left page index
-              const position = e.nativeEvent.position;
-              const offset = e.nativeEvent.offset;
-
-              if (locks[position]) {
-                // If the current page is locked, prevent scrolling forward
-                setPage(position - 1);
-                return;
-              }
-              if (locks[position + 1]) {
-                // If the next page is locked and user is trying to scroll to it, prevent scrolling
-                setPage(position);
-                return;
-              }
-
-              // Animate scrollOffset to current page + offset
-              Animated.timing(scrollOffset, {
-                toValue: position + offset,
-                duration: 0,
-                useNativeDriver: true,
-              }).start();
-            }}
+            scrollEnabled={false}
             onPageSelected={(e) => {
               const position = e.nativeEvent.position;
-
-              if (locks[position]) {
-                // If the selected page is locked, revert to previous page
-                setPage(currPage);
-                return;
-              }
               setCurrPage(position);
             }}
           >
             {children}
           </PagerView>
-        </>
+
+          {/* Next Button */}
+          <Animated.View
+            style={[
+              flowButtons,
+              {
+                position: "absolute",
+                right: 20,
+                backgroundColor: colors.light,
+                borderRadius: "50%",
+                zIndex: 1,
+              },
+            ]}
+          >
+            <Pressable
+              style={{
+                width: 70,
+                height: 70,
+                marginLeft: "auto",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: !flow.nextEnabled
+                  ? colors.gray
+                  : colors.purple,
+                borderRadius: "50%",
+              }}
+              onPress={() => {
+                flow.next && flow.next();
+              }}
+              disabled={!flow.nextEnabled}
+            >
+              <Text
+                style={{
+                  color: colors.light,
+                  fontSize: 16,
+                }}
+              >
+                Next
+              </Text>
+            </Pressable>
+          </Animated.View>
+
+          {/* Back Button */}
+          {currPage > 0 && (
+            <Animated.View
+              style={[
+                flowButtons,
+                {
+                  position: "absolute",
+                  left: 20,
+                  backgroundColor: colors.light,
+                  borderRadius: "50%",
+                  zIndex: 1,
+                },
+              ]}
+            >
+              <Pressable
+                style={{
+                  width: 70,
+                  height: 70,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: !flow.backEnabled
+                    ? colors.gray
+                    : colors.purple,
+                  borderRadius: "50%",
+                }}
+                onPress={() => {
+                  flow.back && flow.back();
+                }}
+                disabled={!flow.backEnabled}
+              >
+                <Text
+                  style={{
+                    color: colors.light,
+                    fontSize: 16,
+                  }}
+                >
+                  Back
+                </Text>
+                {/* <Feather name="arrow-left" size={30} color={colors.light} /> */}
+              </Pressable>
+            </Animated.View>
+          )}
+
+          <Animated.View
+            style={[fakeView, { backgroundColor: colors.light }]}
+          />
+        </View>
       );
     },
     [pageCount, currPage]
   );
 
-  return { currPage, setCurrPage, setPage, setLocks, setPageCount, Pager };
+  return { currPage, setCurrPage, setPage, setPageCount, Pager };
 }

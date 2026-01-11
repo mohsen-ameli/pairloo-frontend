@@ -3,10 +3,12 @@ import { colors } from "../utils/colors";
 
 export const styles = StyleSheet.create({
   pageContainer: {
-    padding: 20,
-    gap: 10,
     flex: 1,
-    justifyContent: "center",
+    gap: 10,
+    padding: 20,
+    paddingTop: 100,
+    borderColor: colors.borderGray,
+    borderRightWidth: 1,
   },
   title: {
     fontSize: 30,

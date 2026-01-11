@@ -8,25 +8,27 @@ import {
   Alert,
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomHeader from "@/src/components/CustomHeader";
-import useCustomPager from "@/src/components/CustomPager";
+import useCustomPager, { flowAtom } from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
-import { styles } from "@/src/styles/index.styles";
 import { createPostStyles } from "@/src/styles/create_post.styles";
 import io from "socket.io-client";
-import { useAtomValue, useSetAtom } from "jotai";
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { logOutAtom, userAtom } from "@/src/utils/store";
 import { WS_BASE_URL } from "@/src/utils/constants";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { refreshAccessToken } from "@/src/utils/refresh-access-token";
 import * as ImagePicker from "expo-image-picker";
 import ImageCarousel from "@/src/components/ImageCarousel";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomCallback } from "jotai/utils";
 
 const INITIAL_PAGE_COUNT = 2;
+
+const socketAtom = atom<SocketIOClient.Socket | null>(null);
 
 export default function Index() {
   const router = useRouter();
@@ -35,49 +37,76 @@ export default function Index() {
   const logout = useSetAtom(logOutAtom);
   const [pages, setPages] = useState([""]);
   const [questions, setQuestions] = useState<string[]>([""]);
-  const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
+  const [socket, setSocket] = useAtom(socketAtom);
   const [loading, setLoading] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
-  const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([[]]);
+  const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([
+    [],
+  ]);
   const [publicPost, setPublicPost] = useState(true);
   const [images, setImages] = useState<string[]>([]);
   const inputRefs = useRef<string[]>([""]);
   const pagesLengthRef = useRef(pages.length);
   const numMatchesRef = useRef(5);
+  const [flow, setFlow] = useAtom(flowAtom);
   const { currPage, setPageCount, setPage, setCurrPage, Pager } =
-    useCustomPager({
-      initialPageCount: INITIAL_PAGE_COUNT,
-      forwardNBackwardButtons: false,
-      scrollEnabled: false,
+    useCustomPager({ initialPageCount: INITIAL_PAGE_COUNT });
+
+  useEffect(() => {
+    setFlow({
+      ...flow,
+      back: () => {
+        setCurrPage(currPage - 1);
+        setPage(currPage - 1);
+      },
+      next: () => {
+        forward();
+      },
     });
 
-  function forward() {
-    if (!socket) {
-      console.warn("[forward] Socket is not initialized!");
-      return;
-    }
-
-    setLoading(true);
-    if (currPage == pagesLengthRef.current) {
-      socket.emit("submit", {
-        numMatches: numMatchesRef.current,
-        publicPost,
-        images,
+    return () => {
+      setFlow({
+        back: null,
+        next: null,
+        backEnabled: true,
+        nextEnabled: true,
       });
-    } else if (
-      !inputRefs.current[currPage] ||
-      inputRefs.current[currPage].trim() === ""
-    ) {
-      Alert.alert(
-        "Input required",
-        "Please enter some text before continuing."
-      );
-      setLoading(false);
-      return;
-    } else {
-      socket.emit("chat", inputRefs.current[currPage]);
-    }
-  }
+    };
+  }, [currPage]);
+
+  const forward = useAtomCallback(
+    useCallback(
+      (get) => {
+        const s = get(socketAtom);
+        if (!s) {
+          console.warn("[forward] Socket is not initialized!");
+          return;
+        }
+
+        setLoading(true);
+        if (currPage == pagesLengthRef.current) {
+          s.emit("submit", {
+            numMatches: numMatchesRef.current,
+            publicPost,
+            images,
+          });
+        } else if (
+          !inputRefs.current[currPage] ||
+          inputRefs.current[currPage].trim() === ""
+        ) {
+          Alert.alert(
+            "Input required",
+            "Please enter some text before continuing."
+          );
+          setLoading(false);
+          return;
+        } else {
+          s.emit("chat", inputRefs.current[currPage]);
+        }
+      },
+      [currPage, publicPost, images]
+    )
+  );
 
   async function initConnection(accessToken: string) {
     if (!user) return;
@@ -140,7 +169,11 @@ export default function Index() {
   };
 
   useEffect(() => {
-    if (!user || !socket) return;
+    if (!user) return;
+    if (!socket) {
+      initConnection(user.accessToken);
+      return;
+    }
 
     socket.on("connect", () => {
       console.log("Connected to WebSocket server for create-post");
@@ -191,13 +224,7 @@ export default function Index() {
       });
       queryClient.invalidateQueries({ queryKey: ["my-posts"] });
     });
-  }, [socket]);
-
-  useFocusEffect(() => {
-    if (!user) return;
-
-    initConnection(user.accessToken);
-  });
+  }, [socket, user]);
 
   useEffect(() => {
     pagesLengthRef.current = pages.length;
@@ -226,214 +253,214 @@ export default function Index() {
     <>
       <CustomHeader title="Create Post" />
       <LoadingIndicator loading={loading} />
-      <View style={styles.container}>
-        <Pager>
-          {pages.map((pageText, i) => {
-            let response = questions[i]
-              ? JSON.parse(questions[i].replace(/```json|```/g, "").trim())
-              : null;
-            const type = response?.type;
-            const questionText = response?.question;
-            const options = response?.options || [];
+      <Pager>
+        {pages.map((pageText, i) => {
+          let response = questions[i]
+            ? JSON.parse(questions[i].replace(/```json|```/g, "").trim())
+            : null;
+          const type = response?.type;
+          const questionText = response?.question;
+          const options = response?.options || [];
 
-            return (
-              <TouchableWithoutFeedback
-                onPress={Keyboard.dismiss}
-                accessible={false}
-                key={i}
-              >
-                <View style={createPostStyles.container}>
-                  <Text style={createPostStyles.questionText}>
-                    {response && questionText
-                      ? `Question: ${questionText}`
-                      : "Start by describing what you want to post about."}
-                  </Text>
-                  {type === "multiple_choice" && options.length > 0 ? (
-                    <View style={{ marginVertical: 10 }}>
-                      {options.map((option: string, idx: number) => {
-                        const isSelected = mcqAnswers[i] === option;
-                        return (
-                          <TouchableWithoutFeedback
-                            key={option}
-                            onPress={() => handleOptionSelect(i, option)}
+          return (
+            <TouchableWithoutFeedback
+              onPress={Keyboard.dismiss}
+              accessible={false}
+              key={i}
+            >
+              <View style={createPostStyles.container}>
+                <Text style={createPostStyles.questionText}>
+                  {response && questionText
+                    ? `Question: ${questionText}`
+                    : "Start by describing what you want to post about."}
+                </Text>
+                {type === "multiple_choice" && options.length > 0 ? (
+                  <View style={{ marginVertical: 10 }}>
+                    {options.map((option: string, idx: number) => {
+                      const isSelected = mcqAnswers[i] === option;
+                      return (
+                        <TouchableWithoutFeedback
+                          key={option}
+                          onPress={() => handleOptionSelect(i, option)}
+                        >
+                          <View
+                            style={[
+                              createPostStyles.mcqOption,
+                              {
+                                borderColor: isSelected
+                                  ? colors.purple
+                                  : colors.lightGray,
+                                backgroundColor: isSelected
+                                  ? colors.lightBlue
+                                  : colors.lightGray,
+                              },
+                            ]}
                           >
-                            <View
-                              style={[ 
-                                createPostStyles.mcqOption,
+                            <Text
+                              style={[
+                                createPostStyles.mcqOptionText,
                                 {
-                                  borderColor: isSelected
+                                  color: isSelected
                                     ? colors.purple
-                                    : colors.lightGray,
-                                  backgroundColor: isSelected
-                                    ? colors.lightBlue
-                                    : colors.lightGray,
+                                    : colors.dark,
                                 },
                               ]}
                             >
-                              <Text
-                                style={[ 
-                                  createPostStyles.mcqOptionText,
-                                  {
-                                    color: isSelected
-                                      ? colors.purple
-                                      : colors.dark,
-                                  },
-                                ]}
-                              >
-                                {option}
-                              </Text>
-                            </View>
-                          </TouchableWithoutFeedback>
-                        );
-                      })}
-                    </View>
-                  ) : type === "multi_select" && options.length > 0 ? (
-                    <View style={{ marginVertical: 10 }}>
-                      <Text style={{ marginBottom: 10 }}>Select all the options that apply:</Text>
-                      {options.map((option: string, idx: number) => {
-                        const selectedOptions = multiSelectAnswers[i] || [];
-                        const isSelected = selectedOptions.includes(option);
-                        return (
-                          <View
-                            key={option}
-                            style={[ 
-                                createPostStyles.multiSelect,
-                                {
-                                  backgroundColor: isSelected
-                                    ? colors.lightBlue
-                                    : colors.lightGray,
-                                },
-                              ]}
-                          >
-                            <BouncyCheckbox
-                              isChecked={isSelected}
-                              onPress={() => handleMultiSelectOption(i, option)}
-                              fillColor={colors.purple}
-                              iconStyle={{ borderColor: colors.dark, borderRadius: 2 }}
-                              innerIconStyle={{ borderWidth: 2, borderRadius: 5 }}
-                              style={{ marginRight: 5 }}
-                              text={option}
-                              textStyle={{
-                                ...createPostStyles.mcqOptionText,
-                                color: isSelected ? colors.purple : colors.dark,
-                                textDecorationLine: "none",
-                              }}
-                            />
+                              {option}
+                            </Text>
                           </View>
-                        );
-                      })}
-                    </View>
-                  ) : (
-                    <TextInput
-                      style={createPostStyles.textInput}
-                      defaultValue={pageText}
-                      onChangeText={(text) => (inputRefs.current[i] = text)}
-                      placeholder={
-                        "Write as little or as much details as you want..."
-                      }
-                      editable={!loading}
-                      multiline={type !== "multiple_choice"}
-                      textAlignVertical="top"
-                      scrollEnabled
-                    />
-                  )}
-                </View>
-              </TouchableWithoutFeedback>
-            );
-          })}
+                        </TouchableWithoutFeedback>
+                      );
+                    })}
+                  </View>
+                ) : type === "multi_select" && options.length > 0 ? (
+                  <View style={{ marginVertical: 10 }}>
+                    <Text style={{ marginBottom: 10 }}>
+                      Select all the options that apply:
+                    </Text>
+                    {options.map((option: string, idx: number) => {
+                      const selectedOptions = multiSelectAnswers[i] || [];
+                      const isSelected = selectedOptions.includes(option);
+                      return (
+                        <View
+                          key={option}
+                          style={[
+                            createPostStyles.multiSelect,
+                            {
+                              backgroundColor: isSelected
+                                ? colors.lightBlue
+                                : colors.lightGray,
+                            },
+                          ]}
+                        >
+                          <BouncyCheckbox
+                            isChecked={isSelected}
+                            onPress={() => handleMultiSelectOption(i, option)}
+                            fillColor={colors.purple}
+                            iconStyle={{
+                              borderColor: colors.dark,
+                              borderRadius: 2,
+                            }}
+                            innerIconStyle={{
+                              borderWidth: 2,
+                              borderRadius: 5,
+                            }}
+                            style={{ marginRight: 5 }}
+                            text={option}
+                            textStyle={{
+                              ...createPostStyles.mcqOptionText,
+                              color: isSelected ? colors.purple : colors.dark,
+                              textDecorationLine: "none",
+                            }}
+                          />
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <TextInput
+                    style={createPostStyles.textInput}
+                    placeholderTextColor={colors.gray}
+                    defaultValue={pageText}
+                    onChangeText={(text) => (inputRefs.current[i] = text)}
+                    placeholder="Write as little or as much details as you want..."
+                    editable={!loading}
+                    multiline={type !== "multiple_choice"}
+                    textAlignVertical="top"
+                    scrollEnabled
+                  />
+                )}
+              </View>
+            </TouchableWithoutFeedback>
+          );
+        })}
 
-          {/* The last page */}
+        {/* The last page */}
+        <View
+          key={pages.length}
+          style={{
+            flex: 1,
+            gap: 10,
+            padding: 20,
+            paddingTop: 70,
+            borderColor: colors.borderGray,
+            borderRightWidth: 1,
+          }}
+        >
+          <View>
+            <CustomButton onPress={pickImage} disabled={loading}>
+              Choose images (optional)
+            </CustomButton>
+            {images.length != 0 && (
+              <View
+                style={{
+                  marginTop: 10,
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  gap: 10,
+                }}
+              >
+                <ImageCarousel images={images} setImages={setImages} />
+              </View>
+            )}
+          </View>
           <View
-            key={pages.length}
             style={{
-              flex: 1,
-              gap: 10,
-              padding: 20,
-              paddingTop: 70,
-              borderColor: colors.borderGray,
-              borderRightWidth: 1,
+              marginTop: 30,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            <View>
-              <CustomButton onPress={pickImage} disabled={loading}>
-                Choose images (optional)
-              </CustomButton>
-              {images.length != 0 && (
-                <View
-                  style={{
-                    marginTop: 10,
-                    flexDirection: "row",
-                    flexWrap: "wrap",
-                    gap: 10,
-                  }}
-                >
-                  <ImageCarousel images={images} setImages={setImages} />
-                </View>
-              )}
-            </View>
-            <View
+            <Text
               style={{
-                marginTop: 30,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
+                fontSize: 18,
+                fontWeight: "600",
               }}
             >
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "600",
-                }}
-              >
-                Do you want this post to be public?
-              </Text>
-              <Switch
-                trackColor={{ false: "#767577", true: "#81b0ff" }}
-                thumbColor={publicPost ? "#f5dd4b" : "#f4f3f4"}
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={setPublicPost}
-                value={publicPost}
-              />
-            </View>
-            <View
-              style={{
-                marginTop: 30,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "600",
-                  marginBottom: 10,
-                }}
-              >
-                How many related posts do you want to see?
-              </Text>
-              <TextInput
-                style={{
-                  borderColor: "gray",
-                  borderWidth: 1,
-                  padding: 5,
-                  width: 50,
-                  textAlign: "center",
-                  borderRadius: 5,
-                }}
-                defaultValue={"5"}
-                keyboardType="number-pad"
-                editable={!loading}
-                onChangeText={(text) =>
-                  (numMatchesRef.current = parseInt(text) || 0)
-                }
-              />
-            </View>
+              Do you want this post to be public?
+            </Text>
+            <Switch
+              trackColor={{ false: "#767577", true: "#81b0ff" }}
+              thumbColor={publicPost ? "#f5dd4b" : "#f4f3f4"}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={setPublicPost}
+              value={publicPost}
+            />
           </View>
-        </Pager>
-        <View style={{ margin: 20 }}>
-          <CustomButton onPress={forward} disabled={loading}>
-            Continue
-          </CustomButton>
+          <View
+            style={{
+              marginTop: 30,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "600",
+                marginBottom: 10,
+              }}
+            >
+              How many related posts do you want to see?
+            </Text>
+            <TextInput
+              style={{
+                borderColor: "gray",
+                borderWidth: 1,
+                padding: 5,
+                width: 50,
+                textAlign: "center",
+                borderRadius: 5,
+              }}
+              defaultValue={"5"}
+              keyboardType="number-pad"
+              editable={!loading}
+              onChangeText={(text) =>
+                (numMatchesRef.current = parseInt(text) || 0)
+              }
+            />
+          </View>
         </View>
-      </View>
+      </Pager>
     </>
   );
 }
