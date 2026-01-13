@@ -8,11 +8,11 @@ import {
   ViewStyle,
 } from "react-native";
 
-type CustomProps = PressableProps & {
+interface CustomProps extends PressableProps {
   children: React.ReactNode;
   color?: string;
   style?: StyleProp<ViewStyle>;
-};
+}
 
 export default function ({
   color,

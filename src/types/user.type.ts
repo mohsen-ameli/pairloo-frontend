@@ -1,7 +1,7 @@
 import { MyPostType } from "./post.type";
 
 export type UserType = null | {
-  _id: string;
+  id: string;
   username: string;
   firstName: string;
   lastName: string;
@@ -11,6 +11,8 @@ export type UserType = null | {
   email: string;
   posts: MyPostType[];
   picture?: string | undefined;
+  createdAt: Date;
+  updatedAt: Date;
   accessToken: string;
   refreshToken: string;
 };

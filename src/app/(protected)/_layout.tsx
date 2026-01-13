@@ -1,8 +1,17 @@
+import { initChatAtom } from "@/src/utils/chat-store";
 import { colors } from "@/src/utils/colors";
 import Feather from "@expo/vector-icons/Feather";
 import { Tabs } from "expo-router";
+import { useSetAtom } from "jotai";
+import { useEffect } from "react";
 
 export default function ProtectedLayout() {
+  const initChatConnection = useSetAtom(initChatAtom);
+
+  useEffect(() => {
+    initChatConnection();
+  }, []);
+
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: colors.purple }}>
       <Tabs.Screen

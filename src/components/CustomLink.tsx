@@ -3,10 +3,10 @@ import { Link, LinkProps } from "expo-router";
 import React from "react";
 import { Pressable, Text } from "react-native";
 
-type CustomProps = LinkProps & {
+interface CustomProps extends LinkProps {
   children: React.ReactNode;
   color?: string;
-};
+}
 
 export default function CustomLink({ children, color, ...rest }: CustomProps) {
   return (

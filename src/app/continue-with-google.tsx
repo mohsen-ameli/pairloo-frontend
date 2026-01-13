@@ -55,7 +55,7 @@ export default function ContinueWithGoogle({
       const userData = await res.json();
       setLoading(false);
       setNewUser({ ...newUser, ...userData });
-      router.replace("/register");
+      router.push("/register");
       return;
     }
 

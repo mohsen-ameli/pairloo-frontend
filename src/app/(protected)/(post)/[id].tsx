@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import styles from "@/src/styles/id.styles";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
@@ -9,10 +9,14 @@ import { GeneralPostType } from "@/src/types/post.type";
 import ImageCarousel from "@/src/components/ImageCarousel";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
+import { userAtom } from "@/src/utils/store";
+import { chatSocketAtom } from "@/src/utils/chat-store";
 
 export default function PostDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const authFetch = useSetAtom(authFetchAtom);
+  const socket = useAtomValue(chatSocketAtom);
+  const user = useAtomValue(userAtom);
   const queryClient = useQueryClient();
   const {
     data: post,
@@ -28,6 +32,12 @@ export default function PostDetails() {
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: [`post-${id}`] });
+  }
+
+  async function contactPoster() {
+    if (!socket || !user || !post) return;
+    console.log([user.id, post._id]);
+    socket.emit("newConversation", [user.id, post._id]);
   }
 
   if (isPending) {
@@ -63,13 +73,7 @@ export default function PostDetails() {
         <View style={{ height: 20 }} />
       </ScrollView>
       <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
-        <CustomButton
-          onPress={() => {
-            console.log("Should redirect to a chat with the poster");
-          }}
-        >
-          Contact Poster
-        </CustomButton>
+        <CustomButton onPress={contactPoster}>Contact Poster</CustomButton>
       </View>
     </View>
   );

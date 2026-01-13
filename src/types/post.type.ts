@@ -10,8 +10,11 @@ export type GeneralPostType = {
   createdAt: string;
 };
 
-export type ClosestPostType = GeneralPostType & { item: string; score: string };
+export interface ClosestPostType extends GeneralPostType {
+  item: string;
+  score: string;
+}
 
-export type MyPostType = GeneralPostType & {
+export interface MyPostType extends GeneralPostType {
   closestPosts?: ClosestPostType[];
-};
+}
