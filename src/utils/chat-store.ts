@@ -59,14 +59,18 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   // Received a message from the server
   socket.on("message", (message: MessageType) => {
+    let isOptimistic = false;
     set(messagesAtom, (prev) =>
       prev.map((msg) => {
         if (msg.optimistic && msg.content === message.content) {
+          isOptimistic = true;
           return message;
         }
         return msg;
       })
     );
+    // we received a message from other user
+    if (!isOptimistic) set(messagesAtom, (prev) => [...prev, message]);
   });
 });
 

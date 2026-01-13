@@ -7,11 +7,45 @@ import { Image } from "expo-image";
 import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import { userAtom } from "../utils/store";
 import { useAtomValue } from "jotai";
+import { OtherUser } from "../types/chat.type";
 
-export default function CustomHeader({ title }: { title: string }) {
+export default function CustomHeader({
+  title,
+  otherUser,
+}: {
+  title?: string;
+  otherUser?: OtherUser;
+}) {
   const user = useAtomValue(userAtom)!;
 
   function handleProfilePress() {}
+
+  if (otherUser) {
+    return (
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <View style={styles.otherHeader}>
+              <TouchableOpacity
+                onPress={handleProfilePress}
+                style={styles.otherProfileButton}
+              >
+                <Image
+                  source={
+                    otherUser.picture
+                      ? { uri: otherUser.picture }
+                      : defaultProfilePicture
+                  }
+                  style={styles.otherProfileImage}
+                />
+              </TouchableOpacity>
+              <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
+            </View>
+          ),
+        }}
+      />
+    );
+  }
 
   return (
     <Stack.Screen

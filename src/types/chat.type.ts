@@ -23,3 +23,10 @@ export interface ConversationType {
   }[];
   lastMessage?: MessageType;
 }
+
+export type OtherUser = {
+  _id: string;
+  username: string;
+  picture?: string | undefined;
+  email: string;
+};
