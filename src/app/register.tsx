@@ -15,7 +15,11 @@ import { newUserAtom, signUpAtom, signUpErrorsAtom } from "../utils/store";
 import useCustomPager, { flowAtom } from "../components/CustomPager";
 import { styles } from "../styles/register.styles";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BASE_URL, VERIFICATION_RESEND_TIME } from "../utils/constants";
+import {
+  BASE_URL,
+  REGISTER_USERNAME_CHECK_INTERVAL,
+  VERIFICATION_RESEND_TIME,
+} from "../utils/constants";
 import z from "zod";
 import { useAtomCallback } from "jotai/utils";
 
@@ -29,6 +33,7 @@ export default function Register() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [flow, setFlow] = useAtom(flowAtom);
   const [loading, setLoading] = useState(false);
+  const usernameTimeout = useRef<number>(null);
   const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
     initialPageCount: 5,
   });
@@ -95,6 +100,31 @@ export default function Register() {
       }
     }, [])
   );
+
+  async function handleUsername(text: string) {
+    setNewUser({ ...newUser, username: text });
+    setErrors({ ...errors, username: "" });
+    if (usernameTimeout.current) {
+      clearTimeout(usernameTimeout.current);
+    }
+    usernameTimeout.current = setTimeout(async () => {
+      if (text.length > 0) {
+        const res = await fetch(
+          `${BASE_URL}/api/auth/username-available?username=${text}`,
+          {
+            method: "GET",
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          setErrors((prev) => ({
+            ...prev,
+            username: data.errors.username,
+          }));
+        }
+      }
+    }, REGISTER_USERNAME_CHECK_INTERVAL);
+  }
 
   async function signUpHandler() {
     const successful = await signUp();
@@ -344,10 +374,7 @@ export default function Register() {
             Let's get to know you!
           </Text>
           <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, username: text });
-              setErrors({ ...errors, username: "" });
-            }}
+            onChangeText={handleUsername}
             defaultValue={newUser.username}
             autoFocus
             placeholder="Username"
