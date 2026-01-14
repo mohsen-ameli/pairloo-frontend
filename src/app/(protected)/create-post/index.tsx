@@ -252,6 +252,7 @@ export default function Index() {
     <>
       <CustomHeader title="Create Post" />
       <LoadingIndicator loading={loading} />
+
       <Pager>
         {pages.map((pageText, i) => {
           let response = questions[i]
