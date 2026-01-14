@@ -6,6 +6,7 @@ import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { CountryCode } from "react-native-country-picker-modal";
 import { BASE_URL } from "./constants";
 import { UserType } from "../types/user.type";
+import { chatSocketAtom } from "./socket-store";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -117,4 +118,9 @@ export const loginAtom = atom(null, async (get, set, email) => {
 // Log out function atom
 export const logOutAtom = atom(null, (get, set) => {
   set(userAtom, null);
+  set(newUserAtom, newUser);
+  set(signUpErrorsAtom, newUserErrors);
+  const socket = get(chatSocketAtom);
+  socket?.disconnect();
+  set(chatSocketAtom, null);
 });

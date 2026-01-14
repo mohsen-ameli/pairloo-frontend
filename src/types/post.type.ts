@@ -1,5 +1,5 @@
 export type GeneralPostType = {
-  _id: string;
+  _id: string; // userId of the poster
   username: string;
   firstName: string;
   lastName: string;
@@ -10,8 +10,11 @@ export type GeneralPostType = {
   createdAt: string;
 };
 
-export type ClosestPostType = GeneralPostType & { item: string; score: string };
+export interface ClosestPostType extends GeneralPostType {
+  item: string;
+  score: string;
+}
 
-export type MyPostType = GeneralPostType & {
+export interface MyPostType extends GeneralPostType {
   closestPosts?: ClosestPostType[];
-};
+}

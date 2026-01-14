@@ -6,6 +6,7 @@ import { userAtom } from "../utils/store";
 import { LogBox, Platform } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { colors } from "../utils/colors";
 
 LogBox.ignoreAllLogs();
 
@@ -26,12 +27,47 @@ export default function RootLayout() {
               />
             </Stack.Protected>
             <Stack.Protected guard={user === null}>
-              <Stack.Screen name="landing" options={{ headerShown: false }} />
-              <Stack.Screen name="register" />
-              <Stack.Screen name="login" />
+              <Stack.Screen
+                name="landing"
+                options={{
+                  headerShown: false,
+                  headerStyle: {
+                    backgroundColor: colors.lightBackground,
+                  },
+                }}
+              />
+              <Stack.Screen
+                name="register"
+                options={{
+                  title: "Create Account",
+                  headerTitleStyle: {
+                    color: colors.dark,
+                  },
+                  headerStyle: {
+                    backgroundColor: colors.lightBackground,
+                  },
+                }}
+              />
+              <Stack.Screen
+                name="login"
+                options={{
+                  title: "Log In",
+                  headerTitleStyle: {
+                    color: colors.dark,
+                  },
+                  headerStyle: {
+                    backgroundColor: colors.lightBackground,
+                  },
+                }}
+              />
               <Stack.Screen
                 name="forgot-email"
-                options={{ headerShown: false }}
+                options={{
+                  headerShown: false,
+                  headerStyle: {
+                    backgroundColor: colors.lightBackground,
+                  },
+                }}
               />
             </Stack.Protected>
           </Stack>

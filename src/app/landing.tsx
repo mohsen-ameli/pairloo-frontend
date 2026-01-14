@@ -12,13 +12,15 @@ export default function Landing() {
   return (
     <>
       <LoadingIndicator loading={loading} />
+
       <View
         style={{
           flex: 1,
+          backgroundColor: colors.lightBackground,
           justifyContent: "space-between",
           alignItems: "center",
-          marginTop: 120,
-          marginBottom: 30,
+          paddingTop: 120,
+          paddingBottom: 30,
           padding: 20,
         }}
       >
@@ -32,6 +34,7 @@ export default function Landing() {
         >
           <Text
             style={{
+              color: colors.dark,
               fontSize: 50,
               fontWeight: "bold",
             }}
@@ -40,6 +43,7 @@ export default function Landing() {
           </Text>
           <Text
             style={{
+              color: colors.dark,
               fontSize: 20,
               fontWeight: "bold",
               textAlign: "center",

@@ -1,12 +1,14 @@
 import { colors } from "@/src/utils/colors";
 import { Link, LinkProps } from "expo-router";
 import React from "react";
-import { Pressable, Text } from "react-native";
+import { Appearance, Pressable, Text } from "react-native";
 
-type CustomProps = LinkProps & {
+interface CustomProps extends LinkProps {
   children: React.ReactNode;
   color?: string;
-};
+}
+
+const colorScheme = Appearance.getColorScheme();
 
 export default function CustomLink({ children, color, ...rest }: CustomProps) {
   return (
@@ -22,7 +24,7 @@ export default function CustomLink({ children, color, ...rest }: CustomProps) {
       >
         <Text
           style={{
-            color: colors.light,
+            color: colorScheme === "dark" ? colors.dark : colors.light,
             fontWeight: "bold",
             fontSize: 18,
             letterSpacing: 0.5,

@@ -1,7 +1,7 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import styles from "@/src/styles/id.styles";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { authFetchAtom } from "@/src/utils/auth-fetch";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import CustomButton from "@/src/components/CustomButton";
@@ -9,10 +9,17 @@ import { GeneralPostType } from "@/src/types/post.type";
 import ImageCarousel from "@/src/components/ImageCarousel";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
+import { userAtom } from "@/src/utils/store";
+import { ConversationType } from "@/src/types/chat.type";
+import CustomHeader from "@/src/components/CustomHeader";
+import { chatSocketAtom } from "@/src/utils/socket-store";
 
 export default function PostDetails() {
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const authFetch = useSetAtom(authFetchAtom);
+  const socket = useAtomValue(chatSocketAtom);
+  const user = useAtomValue(userAtom);
   const queryClient = useQueryClient();
   const {
     data: post,
@@ -28,6 +35,18 @@ export default function PostDetails() {
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: [`post-${id}`] });
+  }
+
+  async function contactPoster() {
+    if (!socket || !user || !post) return;
+
+    socket.emit("newConversation", [user._id, post._id]);
+    socket.once("conversation", async (conversation: ConversationType) => {
+      router.replace({
+        pathname: "/chat",
+        params: { redirect: `/chat/${conversation._id}` },
+      });
+    });
   }
 
   if (isPending) {
@@ -52,25 +71,23 @@ export default function PostDetails() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {post.images && post.images.length != 0 && (
-          <ImageCarousel images={post.images} />
-        )}
-        <Text style={styles.title}>{post.content}</Text>
-        <Text style={styles.subtitle}>{post.summary}</Text>
+    <>
+      <CustomHeader title="Post Details" />
 
-        <View style={{ height: 20 }} />
-      </ScrollView>
-      <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
-        <CustomButton
-          onPress={() => {
-            console.log("Should redirect to a chat with the poster");
-          }}
-        >
-          Contact Poster
-        </CustomButton>
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.content}>
+          {post.images && post.images.length != 0 && (
+            <ImageCarousel images={post.images} />
+          )}
+          <Text style={styles.title}>{post.content}</Text>
+          <Text style={styles.subtitle}>{post.summary}</Text>
+
+          <View style={{ height: 20 }} />
+        </ScrollView>
+        <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
+          <CustomButton onPress={contactPoster}>Contact Poster</CustomButton>
+        </View>
       </View>
-    </View>
+    </>
   );
 }

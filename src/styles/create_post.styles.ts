@@ -12,6 +12,7 @@ export const createPostStyles = StyleSheet.create({
     borderRightWidth: 1,
   },
   questionText: {
+    color: colors.dark,
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 10,
@@ -30,6 +31,7 @@ export const createPostStyles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
+    color: colors.dark,
     borderColor: "gray",
     borderWidth: 1,
     padding: 10,

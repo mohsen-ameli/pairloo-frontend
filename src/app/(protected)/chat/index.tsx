@@ -1,32 +1,92 @@
-import CustomButton from "@/src/components/CustomButton";
 import CustomHeader from "@/src/components/CustomHeader";
-import { WS_BASE_URL } from "@/src/utils/constants";
-import { useState } from "react";
-import { Text, View } from "react-native";
-import io from "socket.io-client";
+import LoadingIndicator from "@/src/components/LoadingIndicator";
+import { conversationStyles } from "@/src/styles/conversation.style";
+import { conversationsAtom } from "@/src/utils/chat-store";
+import { colors } from "@/src/utils/colors";
+import { sinceNow } from "@/src/utils/format-date";
+import { formatString } from "@/src/utils/format-string";
+import { userAtom } from "@/src/utils/store";
+import { Image } from "expo-image";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useAtomValue } from "jotai";
+import { useEffect } from "react";
+import { Pressable, Text, View } from "react-native";
 
 export default function index() {
-  const [data, setData] = useState([]);
+  const router = useRouter();
+  const conversations = useAtomValue(conversationsAtom);
+  const { redirect } = useLocalSearchParams();
+  const user = useAtomValue(userAtom);
 
-  function startChat() {
-    console.log("attempting ");
-    const socket = io(WS_BASE_URL);
-    socket.on("connect", () => {
-      console.log("Connected to WebSocket server");
-      // ws.emit("message", "Hello Server!");
-    });
-    socket.on("message", (message: string) => {
-      console.log("Received message from server:", message);
-    });
+  useEffect(() => {
+    if (redirect) {
+      router.push(redirect as string);
+      router.setParams({ redirect: undefined });
+    }
+  }, [redirect]);
+
+  if (!user) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.light,
+        }}
+      >
+        <LoadingIndicator loading={!user} />
+      </View>
+    );
   }
 
   return (
-    <View>
+    <>
       <CustomHeader title="Chat" />
 
-      <Text>start chatting NOW</Text>
-      <Text>{JSON.stringify(data)}</Text>
-      <CustomButton onPress={() => startChat()}>Start Chat</CustomButton>
-    </View>
+      <View style={conversationStyles.container}>
+        {conversations.map((conversation) => {
+          let otherPerson;
+          for (const member of conversation.members) {
+            if (member._id !== user?._id) {
+              otherPerson = member;
+              break;
+            }
+          }
+          if (!otherPerson) return null;
+
+          return (
+            <Pressable
+              key={conversation._id}
+              style={conversationStyles.item}
+              onPress={() => {
+                router.push(`/chat/${conversation._id}`);
+              }}
+            >
+              {otherPerson.picture && (
+                <Image
+                  source={{ uri: otherPerson.picture }}
+                  style={conversationStyles.image}
+                />
+              )}
+              <View>
+                <Text style={conversationStyles.itemTitle}>
+                  {otherPerson.username}
+                </Text>
+                {conversation.lastMessage && (
+                  <Text style={conversationStyles.lastMessage}>
+                    {otherPerson._id === conversation.lastMessage?.sender?._id
+                      ? "you"
+                      : conversation.lastMessage?.sender?.username}
+                    : {formatString(conversation.lastMessage?.content, 32)}
+                  </Text>
+                )}
+              </View>
+              <Text style={conversationStyles.timestamp}>
+                {sinceNow(conversation.lastMessage?.updatedAt)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </>
   );
 }

@@ -11,6 +11,7 @@ import ImageCarousel from "@/src/components/ImageCarousel";
 import { Image } from "expo-image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
+import CustomHeader from "@/src/components/CustomHeader";
 
 export default function PostDetails() {
   const router = useRouter();
@@ -80,90 +81,94 @@ export default function PostDetails() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.postContainer}>
-          {post.images && post.images.length != 0 && (
-            <ImageCarousel images={post.images} />
-          )}
-          <Text style={styles.title}>{post.content}</Text>
-          <Text style={styles.subtitle}>{post.summary}</Text>
-        </View>
+    <>
+      <CustomHeader title="Post Details" />
 
-        <CustomButton
-          color={colors.errorRed}
-          onPress={() => {
-            Alert.alert(
-              "Confirm",
-              "Are you sure you want to remove this post?",
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Remove",
-                  style: "destructive",
-                  onPress: () => mutate(),
-                },
-              ]
-            );
-          }}
-        >
-          Remove Post
-        </CustomButton>
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={styles.postContainer}>
+            {post.images && post.images.length != 0 && (
+              <ImageCarousel images={post.images} />
+            )}
+            <Text style={styles.title}>{post.content}</Text>
+            <Text style={styles.subtitle}>{post.summary}</Text>
+          </View>
 
-        {/* Closest posts */}
-        {post.closestPosts && post.closestPosts.length > 0 && (
-          <View style={styles.closestPostsContainer}>
-            <Text style={styles.closestPostsTitle}>Similar Posts:</Text>
-            {post.closestPosts.map((post) => (
-              <View key={post._id} style={styles.closestPost}>
-                <View style={styles.closestPostHeader}>
-                  {post.picture && (
-                    <View style={styles.closestPostAvatar}>
-                      <Image
-                        source={{ uri: post.picture }}
-                        style={styles.closestPostAvatarImage}
-                      />
+          <CustomButton
+            color={colors.errorRed}
+            onPress={() => {
+              Alert.alert(
+                "Confirm",
+                "Are you sure you want to remove this post?",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Remove",
+                    style: "destructive",
+                    onPress: () => mutate(),
+                  },
+                ]
+              );
+            }}
+          >
+            Remove Post
+          </CustomButton>
+
+          {/* Closest posts */}
+          {post.closestPosts && post.closestPosts.length > 0 && (
+            <View style={styles.closestPostsContainer}>
+              <Text style={styles.closestPostsTitle}>Similar Posts:</Text>
+              {post.closestPosts.map((post) => (
+                <View key={post._id} style={styles.closestPost}>
+                  <View style={styles.closestPostHeader}>
+                    {post.picture && (
+                      <View style={styles.closestPostAvatar}>
+                        <Image
+                          source={{ uri: post.picture }}
+                          style={styles.closestPostAvatarImage}
+                        />
+                      </View>
+                    )}
+                    <View style={styles.closestPostUserInfo}>
+                      <Text style={styles.closestPostName}>
+                        {post.firstName} {post.lastName}
+                      </Text>
+                      <Text style={styles.closestPostUsername}>
+                        @{post.username}
+                      </Text>
                     </View>
-                  )}
-                  <View style={styles.closestPostUserInfo}>
-                    <Text style={styles.closestPostName}>
-                      {post.firstName} {post.lastName}
-                    </Text>
-                    <Text style={styles.closestPostUsername}>
-                      @{post.username}
+                  </View>
+                  <View style={styles.closestPostImage}>
+                    {post.images && post.images.length != 0 && (
+                      <ImageCarousel images={post.images} widthOffset={70} />
+                    )}
+                  </View>
+                  <View style={styles.closestPostItem}>
+                    <Text style={styles.closestPostName}>{post.content}</Text>
+                    <Text
+                      style={[
+                        styles.closestPostScore,
+                        { color: getScoreColor(parseFloat(post.score)) },
+                      ]}
+                    >
+                      {Math.round(parseFloat(post.score) * 100)}% match
                     </Text>
                   </View>
-                </View>
-                <View style={styles.closestPostImage}>
-                  {post.images && post.images.length != 0 && (
-                    <ImageCarousel images={post.images} widthOffset={70} />
-                  )}
-                </View>
-                <View style={styles.closestPostItem}>
-                  <Text style={styles.closestPostName}>{post.content}</Text>
-                  <Text
-                    style={[
-                      styles.closestPostScore,
-                      { color: getScoreColor(parseFloat(post.score)) },
-                    ]}
+                  <CustomButton
+                    onPress={() => {
+                      router.push(`/${post._id}`);
+                    }}
                   >
-                    {Math.round(parseFloat(post.score) * 100)}% match
-                  </Text>
+                    View Post
+                  </CustomButton>
                 </View>
-                <CustomButton
-                  onPress={() => {
-                    router.push(`/${post._id}`);
-                  }}
-                >
-                  View Post
-                </CustomButton>
-              </View>
-            ))}
-          </View>
-        )}
+              ))}
+            </View>
+          )}
 
-        <View style={{ height: 20 }} />
-      </ScrollView>
-    </View>
+          <View style={{ height: 20 }} />
+        </ScrollView>
+      </View>
+    </>
   );
 }
