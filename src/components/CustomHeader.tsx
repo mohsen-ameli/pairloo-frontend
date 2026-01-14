@@ -8,6 +8,7 @@ import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import { userAtom } from "../utils/store";
 import { useAtomValue } from "jotai";
 import { OtherUser } from "../types/chat.type";
+import { colors } from "../utils/colors";
 
 export default function CustomHeader({
   title,
@@ -24,6 +25,10 @@ export default function CustomHeader({
     return (
       <Stack.Screen
         options={{
+          title,
+          headerStyle: {
+            backgroundColor: colors.lightBackground,
+          },
           headerTitle: () => (
             <View style={styles.otherHeader}>
               <TouchableOpacity
@@ -50,6 +55,10 @@ export default function CustomHeader({
   return (
     <Stack.Screen
       options={{
+        title,
+        headerStyle: {
+          backgroundColor: colors.lightBackground,
+        },
         headerTitle: () => (
           <View style={styles.header}>
             <View style={styles.headerContent}>

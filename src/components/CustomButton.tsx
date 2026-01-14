@@ -1,6 +1,7 @@
 import { colors } from "@/src/utils/colors";
 import React from "react";
 import {
+  Appearance,
   Pressable,
   PressableProps,
   StyleProp,
@@ -13,6 +14,8 @@ interface CustomProps extends PressableProps {
   color?: string;
   style?: StyleProp<ViewStyle>;
 }
+
+const colorScheme = Appearance.getColorScheme();
 
 export default function ({
   color,
@@ -45,7 +48,7 @@ export default function ({
     >
       <Text
         style={{
-          color: colors.light,
+          color: colorScheme === "dark" ? colors.dark : colors.light,
           fontWeight: "bold",
           fontSize: 18,
           letterSpacing: 0.5,

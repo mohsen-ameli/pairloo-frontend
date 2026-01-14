@@ -15,6 +15,7 @@ export const styles = StyleSheet.create({
     borderRightWidth: 1,
   },
   title: {
+    color: colors.dark,
     fontSize: 30,
     fontWeight: "bold",
     marginBottom: 20,
@@ -22,6 +23,9 @@ export const styles = StyleSheet.create({
   },
   error: {
     color: colors.errorRed,
+  },
+  note: {
+    color: colors.dark,
   },
   verificationInfo: {
     marginTop: 10,

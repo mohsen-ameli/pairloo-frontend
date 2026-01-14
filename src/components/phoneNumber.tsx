@@ -83,6 +83,7 @@ export default function PhoneNumber() {
       </View>
       <TextInput
         style={{
+          color: colors.dark,
           flexGrow: 1,
           borderWidth: 1,
           borderColor: colors.borderGray,

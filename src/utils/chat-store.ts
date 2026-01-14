@@ -1,19 +1,24 @@
 import { atom } from "jotai";
-import { logOutAtom, userAtom } from "./store";
+import { userAtom } from "./store";
 import { WS_BASE_URL } from "./constants";
 import io from "socket.io-client";
 import { refreshAccessToken } from "./refresh-access-token";
 import { ConversationType, MessageType } from "../types/chat.type";
-
-export const chatSocketAtom = atom<SocketIOClient.Socket | null>(null);
+import { chatSocketAtom } from "./socket-store";
 
 export const conversationsAtom = atom<ConversationType[]>([]);
 
 export const messagesAtom = atom<MessageType[]>([]);
 
+// To prevent multiple initializations
+const initializedAtom = atom(false);
+
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom);
   if (!user) return;
+  const initialized = get(initializedAtom);
+  if (initialized) return;
+  set(initializedAtom, true);
 
   const socket = io(WS_BASE_URL + "/chat", {
     auth: {
@@ -23,9 +28,17 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   set(chatSocketAtom, socket);
 
-  socket.on("connected", () => {
+  socket.once("connected", () => {
     console.log("Connected to WebSocket server for chatting");
     socket.emit("getConversations");
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Disconnected from WebSocket server for chatting");
+    set(chatSocketAtom, null);
+    set(conversationsAtom, []);
+    set(messagesAtom, []);
+    set(initializedAtom, false);
   });
 
   socket.on("error", (err: any) => {
@@ -36,21 +49,37 @@ export const initChatAtom = atom(null, async (get, set) => {
     const accessToken = await refreshAccessToken(user.refreshToken);
     if (accessToken === null) {
       socket.disconnect();
-      set(logOutAtom);
+      set(userAtom, null);
       return;
     }
     await set(userAtom, { ...user, accessToken });
     socket.io.opts.auth = { token: accessToken };
     socket.connect();
-    socket.once("connected", () => {
-      socket.emit("getConversations");
-    });
+  });
+
+  // New conversation created
+  socket.on("conversationCreated", (conversation: ConversationType) => {
+    set(conversationsAtom, (prev) => [...prev, conversation]);
   });
 
   // Got all conversations
   socket.on("conversations", (conversations: ConversationType[]) => {
     set(conversationsAtom, conversations);
   });
+
+  socket.on(
+    "lastMessageUpdated",
+    (conversationId: string, lastMessage: MessageType) => {
+      set(conversationsAtom, (prev) =>
+        prev.map((conv) => {
+          if (conv._id === conversationId) {
+            return { ...conv, lastMessage };
+          }
+          return conv;
+        })
+      );
+    }
+  );
 
   // Got all messages for a conversation
   socket.on("messages", (messages: MessageType[]) => {
@@ -62,6 +91,7 @@ export const initChatAtom = atom(null, async (get, set) => {
     let isOptimistic = false;
     set(messagesAtom, (prev) =>
       prev.map((msg) => {
+        // This is our optimistic message, replace it
         if (msg.optimistic && msg.content === message.content) {
           isOptimistic = true;
           return message;
@@ -83,11 +113,11 @@ export const sendMessageAtom = atom(
     if (!socket || !user) return;
 
     const optimisticMessage: MessageType = {
-      id: Math.random().toString(),
+      _id: Math.random().toString(),
       conversationId,
       optimistic: true,
       sender: {
-        id: Math.random().toString(),
+        _id: Math.random().toString(),
         username: user.username,
         picture: user.picture,
       },

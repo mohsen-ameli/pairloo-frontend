@@ -4,10 +4,10 @@ import { colors } from "../utils/colors";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.light,
+    backgroundColor: colors.lightBackground,
   },
   feedContainer: {
-    backgroundColor: colors.light,
+    backgroundColor: colors.lightBackground,
     padding: 8,
     flexDirection: "row",
     alignItems: "flex-start",
@@ -18,8 +18,9 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.light,
     borderRadius: 8,
     elevation: 2,
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 2,
   },
   postHeader: {
@@ -36,5 +37,10 @@ export const styles = StyleSheet.create({
   postHeaderName: { fontSize: 14, color: colors.darkGray },
   postUsername: { fontSize: 12, color: colors.gray },
   postHeaderTextContainer: { marginLeft: 8 },
-  postContent: { padding: 8, fontWeight: "bold", fontSize: 16 },
+  postContent: {
+    padding: 8,
+    fontWeight: "bold",
+    fontSize: 16,
+    color: colors.dark,
+  },
 });

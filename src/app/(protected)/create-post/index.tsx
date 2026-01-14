@@ -16,7 +16,7 @@ import CustomButton from "@/src/components/CustomButton";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { createPostStyles } from "@/src/styles/create_post.styles";
 import io from "socket.io-client";
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { logOutAtom, userAtom } from "@/src/utils/store";
 import { WS_BASE_URL } from "@/src/utils/constants";
 import { useRouter } from "expo-router";
@@ -25,10 +25,9 @@ import * as ImagePicker from "expo-image-picker";
 import ImageCarousel from "@/src/components/ImageCarousel";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomCallback } from "jotai/utils";
+import { createPostSocketAtom } from "@/src/utils/socket-store";
 
 const INITIAL_PAGE_COUNT = 2;
-
-const socketAtom = atom<SocketIOClient.Socket | null>(null);
 
 export default function Index() {
   const router = useRouter();
@@ -37,7 +36,7 @@ export default function Index() {
   const logout = useSetAtom(logOutAtom);
   const [pages, setPages] = useState([""]);
   const [questions, setQuestions] = useState<string[]>([""]);
-  const [socket, setSocket] = useAtom(socketAtom);
+  const [socket, setSocket] = useAtom(createPostSocketAtom);
   const [loading, setLoading] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
   const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([
@@ -77,7 +76,7 @@ export default function Index() {
   const forward = useAtomCallback(
     useCallback(
       (get) => {
-        const s = get(socketAtom);
+        const s = get(createPostSocketAtom);
         if (!s) {
           console.warn("[forward] Socket is not initialized!");
           return;
@@ -414,6 +413,7 @@ export default function Index() {
           >
             <Text
               style={{
+                color: colors.dark,
                 fontSize: 18,
                 fontWeight: "600",
               }}
@@ -421,9 +421,9 @@ export default function Index() {
               Do you want this post to be public?
             </Text>
             <Switch
-              trackColor={{ false: "#767577", true: "#81b0ff" }}
-              thumbColor={publicPost ? "#f5dd4b" : "#f4f3f4"}
-              ios_backgroundColor="#3e3e3e"
+              trackColor={{ false: colors.gray, true: colors.purple }}
+              thumbColor={publicPost ? colors.light : colors.dark}
+              ios_backgroundColor={colors.light}
               onValueChange={setPublicPost}
               value={publicPost}
             />
@@ -435,6 +435,7 @@ export default function Index() {
           >
             <Text
               style={{
+                color: colors.dark,
                 fontSize: 18,
                 fontWeight: "600",
                 marginBottom: 10,
@@ -444,6 +445,7 @@ export default function Index() {
             </Text>
             <TextInput
               style={{
+                color: colors.dark,
                 borderColor: "gray",
                 borderWidth: 1,
                 padding: 5,

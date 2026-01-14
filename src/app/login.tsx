@@ -52,7 +52,8 @@ export default function LoginPage() {
 
   async function handleRequest(resending: boolean) {
     const emailSchema = z.email();
-    if (!email.current || !emailSchema.safeParse(email.current).success) {
+    const emailClean = email.current.trim().toLowerCase();
+    if (!emailSchema.safeParse(emailClean).success) {
       Alert.alert("Error", "Please enter a valid email address");
       return;
     }
@@ -68,7 +69,7 @@ export default function LoginPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: email.current,
+            email: emailClean,
             signUp: false,
           }),
         }

@@ -1,10 +1,9 @@
 import { View, Text, FlatList, Pressable, TextInput } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router/build/hooks";
 import { useAtomValue, useSetAtom } from "jotai";
 import { Image } from "expo-image";
 import {
-  chatSocketAtom,
   conversationsAtom,
   messagesAtom,
   sendMessageAtom,
@@ -19,8 +18,10 @@ import useGradualAnimation from "@/src/utils/gradual-animation";
 import { userAtom } from "@/src/utils/store";
 // @ts-ignore
 import defaultProfilePicture from "@/assets/images/default_pfp.png";
+import { chatStyles } from "@/src/styles/chat.styles";
+import { chatSocketAtom } from "@/src/utils/socket-store";
 
-const ITEM_HEIGHT = 80;
+const ITEM_HEIGHT = 40;
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,9 +30,9 @@ export default function Chat() {
   const messages = useAtomValue(messagesAtom);
   const sendMessage = useSetAtom(sendMessageAtom);
   const user = useAtomValue(userAtom);
-  const conversation = useAtomValue(conversationsAtom).filter(
+  const conversation = useAtomValue(conversationsAtom).find(
     (conv) => conv._id === id
-  )[0];
+  );
   const chatRef = useRef<FlatList>(null!);
   const { height } = useGradualAnimation();
   const [otherUser, setOtherUser] = useState<OtherUser>(null!);
@@ -39,7 +40,7 @@ export default function Chat() {
   useEffect(() => {
     if (!conversation || !user) return;
     setOtherUser(
-      conversation.members.find((member) => member._id !== user.id)!
+      conversation.members.find((member) => member._id !== user._id)!
     );
   }, [conversation, user]);
 
@@ -48,8 +49,10 @@ export default function Chat() {
   }, [socket, id]);
 
   async function handleSendMessage() {
+    const msg = message.trim();
+    if (!msg) return;
     setMessage("");
-    await sendMessage(id, message);
+    await sendMessage(id, msg);
   }
 
   // Animate fake view height
@@ -61,65 +64,45 @@ export default function Chat() {
 
   if (!conversation || !otherUser) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={chatStyles.notFoundContainer}>
         <Text>Conversation not found</Text>
       </View>
     );
   }
 
   return (
-    <View
-      style={{ flex: 1, gap: 10, backgroundColor: colors.light, padding: 10 }}
-    >
+    <View style={chatStyles.container}>
       <CustomHeader otherUser={otherUser} />
 
       <FlatList
         data={messages}
         ref={chatRef}
-        getItemLayout={(data, index) => ({
-          length: ITEM_HEIGHT,
-          offset: ITEM_HEIGHT * index,
-          index,
-        })}
         onContentSizeChange={() =>
           chatRef.current.scrollToEnd({ animated: false })
         }
         keyboardDismissMode="on-drag"
         onLayout={() => chatRef.current.scrollToEnd({ animated: false })}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <MessageItem item={item} />}
+        keyExtractor={(item: MessageType) => item._id}
+        renderItem={({ item }: { item: MessageType }) => (
+          <MemoizedMessageItem item={item} />
+        )}
       />
 
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
+      <View style={chatStyles.inputContainer}>
         <TextInput
-          style={{
-            flex: 1,
-            borderWidth: 2,
-            borderColor: colors.gray,
-            borderRadius: 5,
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-          }}
+          style={chatStyles.input}
           placeholder="Type a message..."
           value={message}
           onChangeText={(text) => setMessage(text)}
         />
         <Pressable
-          style={{
-            position: "absolute",
-            right: 10,
-            padding: 10,
-            display: message.trim() ? "flex" : "none",
-          }}
+          style={[
+            chatStyles.sendButton,
+            { display: message.trim() ? "flex" : "none" },
+          ]}
           onPress={handleSendMessage}
         >
-          <Feather name="send" size={26} color={colors.purple} />
+          <Feather name="send" size={22} color={colors.lightGray} />
         </Pressable>
       </View>
 
@@ -130,39 +113,35 @@ export default function Chat() {
 
 function MessageItem({ item }: { item: MessageType }) {
   return (
-    <View style={{ marginVertical: 10 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Image
-          source={
-            item.sender.picture
-              ? { uri: item.sender.picture }
-              : defaultProfilePicture
-          }
-          style={{ width: 40, height: 40, borderRadius: 20 }}
-        />
-        <View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <Text style={{ fontWeight: "600" }}>{item.sender.username}</Text>
-            <Text style={{ fontSize: 10, color: colors.gray }}>
-              {formatDate(item.createdAt)}
-            </Text>
-          </View>
-          <Text
-            style={{
-              fontSize: 16,
-              color: item.optimistic ? colors.gray : colors.dark,
-            }}
-          >
-            {item.content}
+    <View style={chatStyles.messageItem}>
+      <Image
+        source={
+          item.sender.picture
+            ? { uri: item.sender.picture }
+            : defaultProfilePicture
+        }
+        style={chatStyles.messageImage}
+      />
+      <View>
+        <View style={chatStyles.messageHeader}>
+          <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
+          <Text style={chatStyles.messageDate}>
+            {formatDate(item.createdAt)}
           </Text>
         </View>
+        <Text
+          style={[
+            chatStyles.messageContent,
+            {
+              color: item.optimistic ? colors.gray : colors.dark,
+            },
+          ]}
+        >
+          {item.content}
+        </Text>
       </View>
     </View>
   );
 }
+
+const MemoizedMessageItem = memo(MessageItem);

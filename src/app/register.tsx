@@ -280,7 +280,9 @@ export default function Register() {
             <Text style={styles.error}>{errors.phoneNumber}</Text>
           )}
           {!newUser.phoneVerified && (
-            <Text>We will send you a verification code.</Text>
+            <Text style={styles.note}>
+              We will send you a verification code.
+            </Text>
           )}
         </View>
       </TouchableWithoutFeedback>
@@ -289,6 +291,7 @@ export default function Register() {
         <View style={styles.pageContainer} key="1">
           <Text
             style={{
+              color: colors.dark,
               fontSize: 30,
               fontWeight: "bold",
               marginBottom: 20,
@@ -320,7 +323,7 @@ export default function Register() {
             </Text>
           )}
           {!newUser.emailVerified && (
-            <Text>We'll send you a verification code.</Text>
+            <Text style={styles.note}>We'll send you a verification code.</Text>
           )}
         </View>
       </TouchableWithoutFeedback>
@@ -337,7 +340,9 @@ export default function Register() {
             keyboardType="numeric"
             maxLength={6}
           />
-          <Text>Please check your email for the verification code.</Text>
+          <Text style={styles.note}>
+            Please check your email for the verification code.
+          </Text>
           <Pressable
             onPress={() => handleRequest(true)}
             disabled={requested.current || timeRemaining > 0}
@@ -365,6 +370,7 @@ export default function Register() {
         <View style={styles.pageContainer} key="3">
           <Text
             style={{
+              color: colors.dark,
               fontSize: 30,
               marginBottom: 20,
               fontWeight: "bold",
@@ -429,6 +435,7 @@ export default function Register() {
         <View style={styles.pageContainer} key="4">
           <Text
             style={{
+              color: colors.dark,
               fontSize: 30,
               fontWeight: "bold",
             }}

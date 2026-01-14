@@ -6,6 +6,7 @@ export default function CustomInput({ ...rest }: TextInputProps) {
   return (
     <TextInput
       style={{
+        color: colors.dark,
         borderWidth: 1,
         borderColor: colors.borderGray,
         padding: 10,

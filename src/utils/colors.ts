@@ -1,6 +1,10 @@
-export const colors = {
+import { Appearance } from "react-native";
+
+const colorScheme = Appearance.getColorScheme();
+
+const baseColors = {
   purple: "#6B46C1",
-  lightPurple: "#8b6ffeff",
+  lightPurple: "rgb(167, 145, 255)",
   darkPurple: "#3a1d8bff",
   background: "#f2f2f7ff",
   lightBackground: "#ffffffcc",
@@ -24,3 +28,19 @@ export const colors = {
   muted: "#999999",
   shadow: "#000000",
 };
+
+export const colors = { ...baseColors };
+
+if (colorScheme === "dark") {
+  colors.background = baseColors.darkBackground;
+  colors.textSecondary = baseColors.lightGray;
+  colors.borderGray = baseColors.darkGray;
+  colors.shadow = baseColors.light;
+  colors.light = baseColors.dark;
+  colors.dark = baseColors.light;
+  colors.lightBackground = baseColors.dark;
+  colors.lightGray = baseColors.darkGray;
+  colors.gray = baseColors.lightGray;
+  colors.darkGray = baseColors.lightGray;
+  colors.purple = baseColors.lightPurple;
+}

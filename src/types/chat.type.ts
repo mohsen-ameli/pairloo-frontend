@@ -1,9 +1,9 @@
 export type MessageType = {
-  id: string;
+  _id: string;
   conversationId: string;
   optimistic?: boolean;
   sender: {
-    id: string;
+    _id: string;
     username: string;
     picture?: string;
   };

@@ -13,7 +13,14 @@ export default function ProtectedLayout() {
   }, []);
 
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: colors.purple }}>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: colors.purple,
+        tabBarStyle: {
+          backgroundColor: colors.lightBackground,
+        },
+      }}
+    >
       <Tabs.Screen
         name="(post)"
         options={{
