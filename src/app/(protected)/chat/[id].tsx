@@ -45,7 +45,7 @@ export default function Chat() {
   }, [conversation, user]);
 
   useEffect(() => {
-    socket?.emit("getMessages", { conversationId: id });
+    socket?.emit("getMessages", id);
   }, [socket, id]);
 
   async function handleSendMessage() {

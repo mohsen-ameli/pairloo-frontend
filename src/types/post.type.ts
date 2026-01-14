@@ -1,5 +1,5 @@
 export type GeneralPostType = {
-  _id: string;
+  _id: string; // userId of the poster
   username: string;
   firstName: string;
   lastName: string;

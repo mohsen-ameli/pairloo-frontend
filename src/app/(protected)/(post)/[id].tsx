@@ -10,7 +10,6 @@ import ImageCarousel from "@/src/components/ImageCarousel";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
 import { userAtom } from "@/src/utils/store";
-import { conversationsAtom } from "@/src/utils/chat-store";
 import { ConversationType } from "@/src/types/chat.type";
 import CustomHeader from "@/src/components/CustomHeader";
 import { chatSocketAtom } from "@/src/utils/socket-store";
@@ -27,7 +26,6 @@ export default function PostDetails() {
     isError,
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost });
-  const conversations = useAtomValue(conversationsAtom);
 
   async function fetchPost() {
     const res = await authFetch(`/api/posts/${id}`);
@@ -42,31 +40,13 @@ export default function PostDetails() {
   async function contactPoster() {
     if (!socket || !user || !post) return;
 
-    const existingConversation = conversations.find((conversation) => {
-      return conversation.members
-        .map((member) => member._id)
-        .includes(post._id);
-    });
-
-    if (existingConversation) {
+    socket.emit("newConversation", [user._id, post._id]);
+    socket.once("conversation", async (conversation: ConversationType) => {
       router.replace({
         pathname: "/chat",
-        params: { redirect: `/chat/${existingConversation._id}` },
+        params: { redirect: `/chat/${conversation._id}` },
       });
-      return;
-    }
-
-    socket.emit("newConversation", [user._id, post._id]);
-    socket.once(
-      "conversationCreated",
-      async (conversation: ConversationType) => {
-        // await new Promise((resolve) => setTimeout(resolve, 500)); // wait for 500ms to ensure the conversation is created on the server
-        router.replace({
-          pathname: "/chat",
-          params: { redirect: `/chat/${conversation._id}` },
-        });
-      }
-    );
+    });
   }
 
   if (isPending) {
