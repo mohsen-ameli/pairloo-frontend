@@ -27,8 +27,10 @@ export default function PhoneNumber() {
     setCountryCode(country.cca2);
     setNewUser({
       ...newUser,
+      phoneVerified: false,
       country: country.name.toString(),
       cca2: country.cca2,
+      callingCode: country.callingCode[0],
     });
   }
 
@@ -91,16 +93,20 @@ export default function PhoneNumber() {
           borderRadius: 5,
           fontSize: 18,
         }}
+        value={newUser.phoneNumber}
         autoFocus
-        placeholder="(123) 456-7890"
+        placeholder="4160001234"
         placeholderTextColor={colors.gray}
-        textContentType="telephoneNumber"
-        autoComplete="tel"
-        keyboardType="phone-pad"
-        maxLength={20}
+        autoComplete="off"
+        keyboardType="number-pad"
+        maxLength={14}
         defaultValue={newUser.phoneNumber}
         onChangeText={(text) => {
-          setNewUser({ ...newUser, phoneNumber: text });
+          setNewUser({
+            ...newUser,
+            phoneNumber: text.trim(),
+            phoneVerified: false,
+          });
           setErrors({ ...errors, phoneNumber: "" });
         }}
       />

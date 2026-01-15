@@ -23,6 +23,7 @@ const newUser = {
   country: "Canada",
   city: "",
   cca2: "CA" as CountryCode,
+  callingCode: "1",
 };
 const storage = createJSONStorage<typeof newUser>(() => AsyncStorage);
 export const newUserAtom = atomWithStorage("new-user", newUser, storage);
