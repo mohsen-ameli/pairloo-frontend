@@ -333,16 +333,10 @@ export default function Register() {
         setPage(4);
         setNewUser({ ...newUser, emailVerified: true });
       } else {
-        setErrors({
-          ...errors,
-          emailVerify: "Invalid verification code",
-        });
+        Alert.alert("Login Failed", "Invalid verification code");
       }
     } catch {
-      setErrors({
-        ...errors,
-        emailVerify: "Invalid verification code",
-      });
+      Alert.alert("Login Failed", "Invalid verification code");
     }
   }
 
@@ -411,15 +405,6 @@ export default function Register() {
           keyboardType="numeric"
           maxLength={6}
         />
-        {errors.phoneVerify && (
-          <Text
-            style={{
-              color: "tomato",
-            }}
-          >
-            {errors.phoneVerify}
-          </Text>
-        )}
         <Text style={styles.note}>
           Please check your email for the verification code.
         </Text>
@@ -489,20 +474,79 @@ export default function Register() {
         <CustomInput
           placeholder="6-digit code"
           onChangeText={(text) => {
-            setErrors({ ...errors, emailVerify: "" });
             emailVerificationCode.current = text;
           }}
           autoFocus
           keyboardType="numeric"
           maxLength={6}
         />
-        {errors.emailVerify && (
+        <Text style={styles.note}>
+          Please check your email for the verification code.
+        </Text>
+        <Pressable
+          onPress={() => handleEmailRequest(true)}
+          disabled={requested.current || timeRemaining > 0}
+        >
+          <Text
+            style={[
+              styles.resendText,
+              {
+                color:
+                  requested.current || timeRemaining > 0
+                    ? colors.gray
+                    : colors.purple,
+              },
+            ]}
+          >
+            {timeRemaining > 0
+              ? `Resend Code in ${timeRemaining} seconds`
+              : "Resend Code"}
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.pageContainer} key="4">
+        <Text
+          style={{
+            color: colors.dark,
+            fontSize: 30,
+            marginBottom: 20,
+            fontWeight: "bold",
+            alignSelf: "center",
+          }}
+        >
+          Let's get to know you!
+        </Text>
+        <CustomInput
+          onChangeText={handleUsername}
+          defaultValue={newUser.username}
+          autoFocus
+          placeholder="Username"
+        />
+        {errors.username && (
           <Text
             style={{
               color: "tomato",
             }}
           >
-            {errors.emailVerify}
+            {errors.username}
+          </Text>
+        )}
+        <CustomInput
+          onChangeText={(text) => {
+            setNewUser({ ...newUser, firstName: text });
+            setErrors({ ...errors, firstName: "" });
+          }}
+          defaultValue={newUser.firstName}
+          placeholder="First Name"
+        />
+        {errors.firstName && (
+          <Text
+            style={{
+              color: "tomato",
+            }}
+          >
+            {errors.firstName}
           </Text>
         )}
         <Text style={styles.note}>
