@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { Alert, Pressable, Text, View } from "react-native";
 import CustomInput from "../components/CustomInput";
 import PhoneNumber from "../components/phoneNumber";
@@ -18,20 +18,35 @@ import { useAtomCallback } from "jotai/utils";
 
 export default function Register() {
   const router = useRouter();
-  const signUp = useAtom(signUpAtom)[1];
+  const signUp = useSetAtom(signUpAtom);
   const [newUser, setNewUser] = useAtom(newUserAtom);
   const [errors, setErrors] = useAtom(signUpErrorsAtom);
-  const emailVerificationCode = useRef<string | null>(null);
-  const phoneVerificationCode = useRef<string | null>(null);
+  const emailVerificationCode = useRef("");
+  const phoneVerificationCode = useRef("");
   const requested = useRef(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [flow, setFlow] = useAtom(flowAtom);
   const [loading, setLoading] = useState(false);
   const usernameTimeout = useRef<number>(null);
   const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
-    initialPageCount: 5,
+    initialPageCount: 6,
   });
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      setFlow({
+        back: null,
+        next: null,
+        backEnabled: true,
+        nextEnabled: true,
+      });
+      setPage(0);
+      setCurrPage(0);
+    };
+  }, []);
+
+  // Set next/back functions based on current page
   useEffect(() => {
     setFlow({
       ...flow,
@@ -62,15 +77,6 @@ export default function Register() {
         }
       },
     });
-
-    return () => {
-      setFlow({
-        back: null,
-        next: null,
-        backEnabled: true,
-        nextEnabled: true,
-      });
-    };
   }, [currPage]);
 
   const handleErrors = useAtomCallback(
@@ -136,24 +142,23 @@ export default function Register() {
   const handleEmailRequest = useAtomCallback(
     useCallback(async (get, set, resending: boolean) => {
       const newUser = await get(newUserAtom);
-      const flow = get(flowAtom);
       if (newUser.emailVerified) {
         setCurrPage(4);
         setPage(4);
         setLoading(false);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
         return;
       }
 
       const emailSchema = z.email();
       if (!newUser.email || !emailSchema.safeParse(newUser.email).success) {
         set(signUpErrorsAtom, {
-          ...errors,
+          ...get(signUpErrorsAtom),
           email: "Please enter a valid email address",
         });
         return;
       }
-      set(flowAtom, { ...flow, nextEnabled: false });
+      set(flowAtom, { ...get(flowAtom), nextEnabled: false });
       setLoading(true);
 
       try {
@@ -173,17 +178,17 @@ export default function Register() {
         const data = await res.json();
         if (!res.ok) {
           set(signUpErrorsAtom, {
-            ...errors,
+            ...get(signUpErrorsAtom),
             email: data.error,
           });
           setLoading(false);
-          set(flowAtom, { ...flow, nextEnabled: true });
+          set(flowAtom, { ...get(flowAtom), nextEnabled: true });
           return;
         }
         setCurrPage(3);
         setPage(3);
         setTimeRemaining(VERIFICATION_RESEND_TIME);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
 
         let intervalId: number | null = null;
         intervalId = setInterval(() => {
@@ -205,11 +210,11 @@ export default function Register() {
         }
       } catch {
         set(signUpErrorsAtom, {
-          ...errors,
+          ...get(signUpErrorsAtom),
           email: "Failed to send verification code. Please try again.",
         });
         setLoading(false);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
       }
     }, [])
   );
@@ -217,12 +222,11 @@ export default function Register() {
   const handlePhoneNumberRequest = useAtomCallback(
     useCallback(async (get, set, resending: boolean) => {
       const newUser = await get(newUserAtom);
-      const flow = get(flowAtom);
       if (newUser.phoneVerified) {
         setCurrPage(2);
         setPage(2);
         setLoading(false);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
         return;
       }
 
@@ -232,12 +236,12 @@ export default function Register() {
         !phoneSchema.safeParse(newUser.phoneNumber).success
       ) {
         set(signUpErrorsAtom, {
-          ...errors,
+          ...get(signUpErrorsAtom),
           phoneNumber: "Please enter a valid phone number",
         });
         return;
       }
-      set(flowAtom, { ...flow, nextEnabled: false });
+      set(flowAtom, { ...get(flowAtom), nextEnabled: false });
       setLoading(true);
 
       try {
@@ -258,17 +262,17 @@ export default function Register() {
         const data = await res.json();
         if (!res.ok) {
           set(signUpErrorsAtom, {
-            ...errors,
+            ...get(signUpErrorsAtom),
             phoneNumber: data.error,
           });
           setLoading(false);
-          set(flowAtom, { ...flow, nextEnabled: true });
+          set(flowAtom, { ...get(flowAtom), nextEnabled: true });
           return;
         }
         setCurrPage(1);
         setPage(1);
         setTimeRemaining(VERIFICATION_RESEND_TIME);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
 
         let intervalId: number | null = null;
         intervalId = setInterval(() => {
@@ -290,18 +294,20 @@ export default function Register() {
         }
       } catch {
         set(signUpErrorsAtom, {
-          ...errors,
+          ...get(signUpErrorsAtom),
           phoneNumber: "Failed to send verification code. Please try again.",
         });
         setLoading(false);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
       }
     }, [])
   );
 
   async function handleEmailVerification() {
-    if (emailVerificationCode.current === null) {
-      Alert.alert("Error", "Please enter the verification code");
+    const verifySchema = z.string().min(6).max(6);
+    const codeClean = emailVerificationCode.current.trim();
+    if (!verifySchema.safeParse(codeClean).success) {
+      setErrors({ ...errors, emailVerify: "Invalid verification code" });
       return;
     }
 
@@ -323,16 +329,24 @@ export default function Register() {
         setPage(4);
         setNewUser({ ...newUser, emailVerified: true });
       } else {
-        Alert.alert("Login Failed", "Invalid verification code");
+        setErrors({
+          ...errors,
+          emailVerify: "Invalid verification code",
+        });
       }
     } catch {
-      Alert.alert("Login Failed", "Invalid verification code");
+      setErrors({
+        ...errors,
+        emailVerify: "Invalid verification code",
+      });
     }
   }
 
   async function handlePhoneNumberVerification() {
-    if (phoneVerificationCode.current === null) {
-      Alert.alert("Error", "Please enter the verification code");
+    const verifySchema = z.string().min(6).max(6);
+    const codeClean = phoneVerificationCode.current.trim();
+    if (!verifySchema.safeParse(codeClean).success) {
+      setErrors({ ...errors, phoneNumber: "Invalid verification code" });
       return;
     }
 
@@ -351,14 +365,20 @@ export default function Register() {
       });
 
       if (res.ok) {
-        setCurrPage(3);
-        setPage(3);
+        setCurrPage(2);
+        setPage(2);
         setNewUser({ ...newUser, phoneVerified: true });
       } else {
-        Alert.alert("Login Failed", "Invalid verification code");
+        setErrors({
+          ...errors,
+          phoneVerify: "Invalid verification code",
+        });
       }
     } catch {
-      Alert.alert("Login Failed", "Invalid verification code");
+      setErrors({
+        ...errors,
+        phoneVerify: "Invalid verification code",
+      });
     }
   }
 
@@ -380,12 +400,22 @@ export default function Register() {
         <CustomInput
           placeholder="6-digit code"
           onChangeText={(text) => {
+            setErrors({ ...errors, phoneVerify: "" });
             phoneVerificationCode.current = text;
           }}
           autoFocus
           keyboardType="numeric"
           maxLength={6}
         />
+        {errors.phoneVerify && (
+          <Text
+            style={{
+              color: "tomato",
+            }}
+          >
+            {errors.phoneVerify}
+          </Text>
+        )}
         <Text style={styles.note}>
           Please check your email for the verification code.
         </Text>
@@ -455,12 +485,22 @@ export default function Register() {
         <CustomInput
           placeholder="6-digit code"
           onChangeText={(text) => {
+            setErrors({ ...errors, emailVerify: "" });
             emailVerificationCode.current = text;
           }}
           autoFocus
           keyboardType="numeric"
           maxLength={6}
         />
+        {errors.emailVerify && (
+          <Text
+            style={{
+              color: "tomato",
+            }}
+          >
+            {errors.emailVerify}
+          </Text>
+        )}
         <Text style={styles.note}>
           Please check your email for the verification code.
         </Text>

@@ -34,7 +34,9 @@ const newUserErrors = {
   firstName: "",
   lastName: "",
   email: "",
+  emailVerify: "",
   phoneNumber: "",
+  phoneVerify: "",
   country: "",
   city: "",
   general: "",
@@ -64,7 +66,7 @@ export const signUpAtom = atom(null, async (get, set) => {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      phoneNumber: userData.phoneNumber,
+      phoneNumber: `+${userData.callingCode}${userData.phoneNumber}`,
       country: userData.country,
       city: userData.city,
     };

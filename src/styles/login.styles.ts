@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     gap: 10,
     padding: 20,
-    paddingTop: 100,
+    paddingTop: 70,
     borderColor: colors.borderGray,
     borderRightWidth: 1,
   },
@@ -26,5 +26,8 @@ export const styles = StyleSheet.create({
   },
   resendText: {
     marginBottom: 20,
+  },
+  errorText: {
+    color: colors.errorRed,
   },
 });
