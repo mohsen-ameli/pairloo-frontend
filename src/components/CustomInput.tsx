@@ -7,6 +7,7 @@ export default function CustomInput({ ...rest }: TextInputProps) {
     <TextInput
       style={{
         color: colors.dark,
+        fontSize: 16,
         borderWidth: 1,
         borderColor: colors.borderGray,
         padding: 10,
@@ -14,6 +15,7 @@ export default function CustomInput({ ...rest }: TextInputProps) {
         width: "100%",
       }}
       placeholderTextColor={colors.gray}
+      selectionColor={colors.purple}
       {...rest}
     />
   );
