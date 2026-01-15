@@ -3,6 +3,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { Alert, Pressable, Text, View } from "react-native";
 import CustomInput from "../components/CustomInput";
 import PhoneNumber from "../components/phoneNumber";
+import CountryCitySelector from "../components/CountryCitySelector";
 import { colors } from "../utils/colors";
 import { newUserAtom, signUpAtom, signUpErrorsAtom } from "../utils/store";
 import useCustomPager, { flowAtom } from "../components/CustomPager";
@@ -501,111 +502,17 @@ export default function Register() {
             {errors.emailVerify}
           </Text>
         )}
-        <Text style={styles.note}>
-          Please check your email for the verification code.
-        </Text>
-        <Pressable
-          onPress={() => handleEmailRequest(true)}
-          disabled={requested.current || timeRemaining > 0}
-        >
-          <Text
-            style={[
-              styles.resendText,
-              {
-                color:
-                  requested.current || timeRemaining > 0
-                    ? colors.gray
-                    : colors.purple,
-              },
-            ]}
-          >
-            {timeRemaining > 0
-              ? `Resend Code in ${timeRemaining} seconds`
-              : "Resend Code"}
-          </Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.pageContainer} key="4">
-        <Text
-          style={{
-            color: colors.dark,
-            fontSize: 30,
-            marginBottom: 20,
-            fontWeight: "bold",
-            alignSelf: "center",
-          }}
-        >
-          Let's get to know you!
-        </Text>
-        <CustomInput
-          onChangeText={handleUsername}
-          defaultValue={newUser.username}
-          autoFocus
-          placeholder="Username"
-        />
-        {errors.username && (
-          <Text
-            style={{
-              color: "tomato",
-            }}
-          >
-            {errors.username}
-          </Text>
-        )}
-        <CustomInput
-          onChangeText={(text) => {
-            setNewUser({ ...newUser, firstName: text });
-            setErrors({ ...errors, firstName: "" });
-          }}
-          defaultValue={newUser.firstName}
-          placeholder="First Name"
-        />
-        {errors.firstName && (
-          <Text
-            style={{
-              color: "tomato",
-            }}
-          >
-            {errors.firstName}
-          </Text>
-        )}
-        <CustomInput
-          onChangeText={(text) => {
-            setNewUser({ ...newUser, lastName: text });
-            setErrors({ ...errors, lastName: "" });
-          }}
-          defaultValue={newUser.lastName}
-          placeholder="Last Name"
-        />
-        {errors.lastName && (
-          <Text
-            style={{
-              color: "tomato",
-            }}
-          >
-            {errors.lastName}
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.pageContainer} key="5">
-        <Text
-          style={{
-            color: colors.dark,
-            fontSize: 30,
-            fontWeight: "bold",
-          }}
-        >
-          Where are you based?
-        </Text>
-        <CustomInput
-          onChangeText={(text) => {
-            setNewUser({ ...newUser, country: text });
+        <CountryCitySelector
+          onCountryChange={(country) => {
+            setNewUser({ ...newUser, country });
             setErrors({ ...errors, country: "" });
           }}
-          defaultValue={newUser.country}
-          placeholder="Country"
+          onCityChange={(city) => {
+            setNewUser({ ...newUser, city });
+            setErrors({ ...errors, city: "" });
+          }}
+          selectedCountry={newUser.country}
+          selectedCity={newUser.city}
         />
         {errors.country && (
           <Text
@@ -616,14 +523,6 @@ export default function Register() {
             {errors.country}
           </Text>
         )}
-        <CustomInput
-          onChangeText={(text) => {
-            setNewUser({ ...newUser, city: text });
-            setErrors({ ...errors, city: "" });
-          }}
-          defaultValue={newUser.city}
-          placeholder="City"
-        />
         {errors.city && (
           <Text
             style={{
