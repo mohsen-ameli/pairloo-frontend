@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import CustomInput from "../components/CustomInput";
 import PhoneNumber from "../components/phoneNumber";
+import CountryCitySelector from "../components/CountryCitySelector";
 import { colors } from "../utils/colors";
 import { newUserAtom, signUpAtom, signUpErrorsAtom } from "../utils/store";
 import useCustomPager, { flowAtom } from "../components/CustomPager";
@@ -438,17 +439,22 @@ export default function Register() {
               color: colors.dark,
               fontSize: 30,
               fontWeight: "bold",
+              marginBottom: 20,
             }}
           >
             Where are you based?
           </Text>
-          <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, country: text });
+          <CountryCitySelector
+            onCountryChange={(country) => {
+              setNewUser({ ...newUser, country });
               setErrors({ ...errors, country: "" });
             }}
-            defaultValue={newUser.country}
-            placeholder="Country"
+            onCityChange={(city) => {
+              setNewUser({ ...newUser, city });
+              setErrors({ ...errors, city: "" });
+            }}
+            selectedCountry={newUser.country}
+            selectedCity={newUser.city}
           />
           {errors.country && (
             <Text
@@ -459,14 +465,6 @@ export default function Register() {
               {errors.country}
             </Text>
           )}
-          <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, city: text });
-              setErrors({ ...errors, city: "" });
-            }}
-            defaultValue={newUser.city}
-            placeholder="City"
-          />
           {errors.city && (
             <Text
               style={{
