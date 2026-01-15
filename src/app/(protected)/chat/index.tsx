@@ -1,8 +1,6 @@
 import CustomHeader from "@/src/components/CustomHeader";
-import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { conversationStyles } from "@/src/styles/conversation.style";
 import { conversationsAtom } from "@/src/utils/chat-store";
-import { colors } from "@/src/utils/colors";
 import { sinceNow } from "@/src/utils/format-date";
 import { formatString } from "@/src/utils/format-string";
 import { userAtom } from "@/src/utils/store";
@@ -24,19 +22,6 @@ export default function index() {
       router.setParams({ redirect: undefined });
     }
   }, [redirect]);
-
-  if (!user) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.light,
-        }}
-      >
-        <LoadingIndicator loading={!user} />
-      </View>
-    );
-  }
 
   return (
     <>
