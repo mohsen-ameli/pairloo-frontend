@@ -333,10 +333,16 @@ export default function Register() {
         setPage(4);
         setNewUser({ ...newUser, emailVerified: true });
       } else {
-        Alert.alert("Login Failed", "Invalid verification code");
+        setErrors({
+          ...errors,
+          emailVerify: "Invalid verification code",
+        });
       }
     } catch {
-      Alert.alert("Login Failed", "Invalid verification code");
+      setErrors({
+        ...errors,
+        emailVerify: "Invalid verification code",
+      });
     }
   }
 
@@ -405,6 +411,15 @@ export default function Register() {
           keyboardType="numeric"
           maxLength={6}
         />
+        {errors.phoneVerify && (
+          <Text
+            style={{
+              color: "tomato",
+            }}
+          >
+            {errors.phoneVerify}
+          </Text>
+        )}
         <Text style={styles.note}>
           Please check your email for the verification code.
         </Text>
@@ -474,12 +489,22 @@ export default function Register() {
         <CustomInput
           placeholder="6-digit code"
           onChangeText={(text) => {
+            setErrors({ ...errors, emailVerify: "" });
             emailVerificationCode.current = text;
           }}
           autoFocus
           keyboardType="numeric"
           maxLength={6}
         />
+        {errors.emailVerify && (
+          <Text
+            style={{
+              color: "tomato",
+            }}
+          >
+            {errors.emailVerify}
+          </Text>
+        )}
         <Text style={styles.note}>
           Please check your email for the verification code.
         </Text>
