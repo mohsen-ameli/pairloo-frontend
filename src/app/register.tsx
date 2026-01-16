@@ -3,7 +3,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { Alert, Pressable, Text, View } from "react-native";
 import CustomInput from "../components/CustomInput";
 import PhoneNumber from "../components/phoneNumber";
-import CountryCitySelector from "../components/CountryCitySelector";
+import LocationSelector from "../components/LocationSelector";
 import { colors } from "../utils/colors";
 import { newUserAtom, signUpAtom, signUpErrorsAtom } from "../utils/store";
 import useCustomPager, { flowAtom } from "../components/CustomPager";
@@ -29,6 +29,9 @@ export default function Register() {
   const [flow, setFlow] = useAtom(flowAtom);
   const [loading, setLoading] = useState(false);
   const usernameTimeout = useRef<number>(null);
+  const [displayLocation, setDisplayLocation] = useState(
+    "Select Your Location"
+  );
   const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
     initialPageCount: 6,
   });
@@ -502,27 +505,30 @@ export default function Register() {
             {errors.emailVerify}
           </Text>
         )}
-        <CountryCitySelector
-          onCountryChange={(country) => {
-            setNewUser({ ...newUser, country });
-            setErrors({ ...errors, country: "" });
-          }}
-          onCityChange={(city) => {
-            setNewUser({ ...newUser, city });
+        <LocationSelector
+          onLocationChange={(locationObj) => {
+            if (locationObj && typeof locationObj === "object") {
+              setNewUser({
+                ...newUser,
+                city: locationObj.name,
+                state: locationObj.state_name,
+                country: locationObj.country_name,
+                coordinates: [locationObj.longitude, locationObj.latitude],
+                timezone: locationObj.timezone,
+                locationRef: locationObj._id,
+              });
+              setDisplayLocation(
+                locationObj.name +
+                  ", " +
+                  locationObj.state_name +
+                  ", " +
+                  locationObj.country_name
+              );
+            }
             setErrors({ ...errors, city: "" });
           }}
-          selectedCountry={newUser.country}
-          selectedCity={newUser.city}
+          selectedCity={displayLocation}
         />
-        {errors.country && (
-          <Text
-            style={{
-              color: "tomato",
-            }}
-          >
-            {errors.country}
-          </Text>
-        )}
         {errors.city && (
           <Text
             style={{

@@ -22,6 +22,10 @@ const newUser = {
   phoneVerified: false,
   country: "Canada",
   city: "",
+  state: "",
+  coordinates: [0, 0] as [number, number],
+  timezone: "",
+  locationRef: 0,
   cca2: "CA" as CountryCode,
   callingCode: "1",
 };
@@ -69,6 +73,10 @@ export const signUpAtom = atom(null, async (get, set) => {
       phoneNumber: `+${userData.callingCode}${userData.phoneNumber}`,
       country: userData.country,
       city: userData.city,
+      state: userData.state,
+      coordinates: userData.coordinates,
+      timezone: userData.timezone,
+      locationRef: userData.locationRef,
     };
 
     const res = await fetch(`${BASE_URL}/api/auth/signup`, {
