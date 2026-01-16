@@ -11,7 +11,7 @@ export type UserType = null | {
   state: string;
   coordinates: [number, number]; // [longitude, latitude]
   timezone: string;
-  locationRef: number; // reference to Location _id
+  locationId: number; // reference to Location _id
   email: string;
   posts: MyPostType[];
   picture?: string | undefined;

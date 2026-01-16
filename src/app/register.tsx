@@ -455,7 +455,7 @@ export default function Register() {
                   country: locationObj.country_name,
                   coordinates: [locationObj.longitude, locationObj.latitude],
                   timezone: locationObj.timezone,
-                  locationRef: locationObj._id,
+                  locationId: locationObj._id,
                 });
                 setDisplayLocation(locationObj.name + ", " + locationObj.state_name + ", " + locationObj.country_name);
               }
