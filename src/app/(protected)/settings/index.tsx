@@ -188,13 +188,20 @@ export default function SettingsScreen() {
                             city: locationObj.name,
                             state: locationObj.state_name,
                             country: locationObj.country_name,
-                            coordinates: [locationObj.longitude, locationObj.latitude],
+                            coordinates: [
+                              locationObj.longitude,
+                              locationObj.latitude,
+                            ],
                             timezone: locationObj.timezone,
                             locationId: locationObj._id,
                           }));
                         }
                       }}
-                      selectedCity={editFields.city + (editFields.state ? ", " + editFields.state : "") + (editFields.country ? ", " + editFields.country : "")}
+                      selectedCity={
+                        editFields.city +
+                        (editFields.state ? ", " + editFields.state : "") +
+                        (editFields.country ? ", " + editFields.country : "")
+                      }
                     />
                   </View>
                 </View>
@@ -240,7 +247,9 @@ export default function SettingsScreen() {
                   <Text style={styles.fieldLabel}>Location</Text>
                   <Text style={styles.fieldValue}>
                     {user && (user.city || user.state || user.country)
-                      ? [user.city, user.state, user.country].filter(Boolean).join(", ")
+                      ? [user.city, user.state, user.country]
+                          .filter(Boolean)
+                          .join(", ")
                       : "—"}
                   </Text>
                 </View>
