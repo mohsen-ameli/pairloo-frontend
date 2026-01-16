@@ -26,7 +26,7 @@ export default function SettingsScreen() {
     state: user?.state || "",
     coordinates: user?.coordinates || [0, 0],
     timezone: user?.timezone || "",
-    locationRef: user?.locationRef || 0,
+    locationId: user?.locationId || 0,
   });
   const setUser = useSetAtom(userAtom);
   const authFetch = useSetAtom(authFetchAtom);
@@ -70,7 +70,7 @@ export default function SettingsScreen() {
       state: user?.state || "",
       coordinates: user?.coordinates || [0, 0],
       timezone: user?.timezone || "",
-      locationRef: user?.locationRef || 0,
+      locationId: user?.locationId || 0,
     });
     setEditMode(false);
   }
@@ -190,7 +190,7 @@ export default function SettingsScreen() {
                             country: locationObj.country_name,
                             coordinates: [locationObj.longitude, locationObj.latitude],
                             timezone: locationObj.timezone,
-                            locationRef: locationObj._id,
+                            locationId: locationObj._id,
                           }));
                         }
                       }}
@@ -237,12 +237,12 @@ export default function SettingsScreen() {
                   </Text>
                 </View>
                 <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Country</Text>
-                  <Text style={styles.fieldValue}>{user?.country || "—"}</Text>
-                </View>
-                <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>City</Text>
-                  <Text style={styles.fieldValue}>{user?.city || "—"}</Text>
+                  <Text style={styles.fieldLabel}>Location</Text>
+                  <Text style={styles.fieldValue}>
+                    {user && (user.city || user.state || user.country)
+                      ? [user.city, user.state, user.country].filter(Boolean).join(", ")
+                      : "—"}
+                  </Text>
                 </View>
               </>
             )}

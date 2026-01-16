@@ -25,7 +25,7 @@ const newUser = {
   state: "",
   coordinates: [0, 0] as [number, number],
   timezone: "",
-  locationRef: 0,
+  locationId: 0,
   cca2: "CA" as CountryCode,
   callingCode: "1",
 };
@@ -76,7 +76,7 @@ export const signUpAtom = atom(null, async (get, set) => {
       state: userData.state,
       coordinates: userData.coordinates,
       timezone: userData.timezone,
-      locationRef: userData.locationRef,
+      locationId: userData.locationId,
     };
 
     const res = await fetch(`${BASE_URL}/api/auth/signup`, {
