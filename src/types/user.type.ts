@@ -8,6 +8,10 @@ export type UserType = null | {
   phoneNumber: string;
   country: string;
   city: string;
+  state: string;
+  coordinates: [number, number]; // [longitude, latitude]
+  timezone: string;
+  locationRef: number; // reference to Location _id
   email: string;
   posts: MyPostType[];
   picture?: string | undefined;
