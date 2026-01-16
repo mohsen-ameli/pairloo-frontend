@@ -5,6 +5,7 @@ import { userAtom, logOutAtom } from "@/src/utils/store";
 import { styles } from "@/src/styles/settings.styles";
 import CustomButton from "@/src/components/CustomButton";
 import CustomInput from "@/src/components/CustomInput";
+import LocationSelector from "@/src/components/LocationSelector";
 import { colors } from "@/src/utils/colors";
 import { useState } from "react";
 import { authFetchAtom } from "../../../utils/auth-fetch";
@@ -22,6 +23,10 @@ export default function SettingsScreen() {
     lastName: user?.lastName || "",
     country: user?.country || "",
     city: user?.city || "",
+    state: user?.state || "",
+    coordinates: user?.coordinates || [0, 0],
+    timezone: user?.timezone || "",
+    locationId: user?.locationId || 0,
   });
   const setUser = useSetAtom(userAtom);
   const authFetch = useSetAtom(authFetchAtom);
@@ -62,6 +67,10 @@ export default function SettingsScreen() {
       lastName: user?.lastName || "",
       country: user?.country || "",
       city: user?.city || "",
+      state: user?.state || "",
+      coordinates: user?.coordinates || [0, 0],
+      timezone: user?.timezone || "",
+      locationId: user?.locationId || 0,
     });
     setEditMode(false);
   }
@@ -168,26 +177,24 @@ export default function SettingsScreen() {
                   </View>
                 </View>
                 <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Country</Text>
+                  <Text style={styles.fieldLabel}>Location</Text>
                   <View style={styles.editInputContainer}>
-                    <CustomInput
-                      defaultValue={editFields.country}
-                      onChangeText={(text: string) =>
-                        setEditFields((f) => ({ ...f, country: text }))
-                      }
-                      style={styles.editInput}
-                    />
-                  </View>
-                </View>
-                <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>City</Text>
-                  <View style={styles.editInputContainer}>
-                    <CustomInput
-                      defaultValue={editFields.city}
-                      onChangeText={(text: string) =>
-                        setEditFields((f) => ({ ...f, city: text }))
-                      }
-                      style={styles.editInput}
+                    <LocationSelector
+                      onLocationChange={(locationObj) => {
+                        if (locationObj && typeof locationObj === "object") {
+                          setEditFields((f) => ({
+                            firstName: f.firstName,
+                            lastName: f.lastName,
+                            city: locationObj.name,
+                            state: locationObj.state_name,
+                            country: locationObj.country_name,
+                            coordinates: [locationObj.longitude, locationObj.latitude],
+                            timezone: locationObj.timezone,
+                            locationId: locationObj._id,
+                          }));
+                        }
+                      }}
+                      selectedCity={editFields.city + (editFields.state ? ", " + editFields.state : "") + (editFields.country ? ", " + editFields.country : "")}
                     />
                   </View>
                 </View>
@@ -230,12 +237,12 @@ export default function SettingsScreen() {
                   </Text>
                 </View>
                 <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Country</Text>
-                  <Text style={styles.fieldValue}>{user?.country || "—"}</Text>
-                </View>
-                <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>City</Text>
-                  <Text style={styles.fieldValue}>{user?.city || "—"}</Text>
+                  <Text style={styles.fieldLabel}>Location</Text>
+                  <Text style={styles.fieldValue}>
+                    {user && (user.city || user.state || user.country)
+                      ? [user.city, user.state, user.country].filter(Boolean).join(", ")
+                      : "—"}
+                  </Text>
                 </View>
               </>
             )}

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import CustomInput from "../components/CustomInput";
 import PhoneNumber from "../components/phoneNumber";
+import LocationSelector from "../components/LocationSelector";
 import { colors } from "../utils/colors";
 import { newUserAtom, signUpAtom, signUpErrorsAtom } from "../utils/store";
 import useCustomPager, { flowAtom } from "../components/CustomPager";
@@ -34,6 +35,7 @@ export default function Register() {
   const [flow, setFlow] = useAtom(flowAtom);
   const [loading, setLoading] = useState(false);
   const usernameTimeout = useRef<number>(null);
+  const [displayLocation, setDisplayLocation] = useState("Select Your Location");
   const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
     initialPageCount: 5,
   });
@@ -438,34 +440,28 @@ export default function Register() {
               color: colors.dark,
               fontSize: 30,
               fontWeight: "bold",
+              marginBottom: 20,
             }}
           >
             Where are you based?
           </Text>
-          <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, country: text });
-              setErrors({ ...errors, country: "" });
-            }}
-            defaultValue={newUser.country}
-            placeholder="Country"
-          />
-          {errors.country && (
-            <Text
-              style={{
-                color: "tomato",
-              }}
-            >
-              {errors.country}
-            </Text>
-          )}
-          <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, city: text });
+          <LocationSelector
+            onLocationChange={(locationObj) => {
+              if (locationObj && typeof locationObj === "object") {
+                setNewUser({
+                  ...newUser,
+                  city: locationObj.name,
+                  state: locationObj.state_name,
+                  country: locationObj.country_name,
+                  coordinates: [locationObj.longitude, locationObj.latitude],
+                  timezone: locationObj.timezone,
+                  locationId: locationObj._id,
+                });
+                setDisplayLocation(locationObj.name + ", " + locationObj.state_name + ", " + locationObj.country_name);
+              }
               setErrors({ ...errors, city: "" });
             }}
-            defaultValue={newUser.city}
-            placeholder="City"
+            selectedCity={displayLocation}
           />
           {errors.city && (
             <Text
