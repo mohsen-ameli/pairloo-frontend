@@ -11,6 +11,7 @@ export const styles = StyleSheet.create({
     gap: 10,
     padding: 20,
     paddingTop: 70,
+    paddingBottom: 200,
     borderColor: colors.borderGray,
     borderRightWidth: 1,
   },

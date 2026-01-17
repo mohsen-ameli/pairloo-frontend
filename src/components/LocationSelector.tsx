@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   TextInput,
@@ -11,39 +11,62 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../utils/colors";
 import { BASE_URL } from "../utils/constants";
+import Feather from "@expo/vector-icons/Feather";
+import { userAtom } from "../utils/store";
+import { useAtomValue } from "jotai";
 
 interface City {
   _id: number;
   name: string;
   country_name: string;
-  [key: string]: any;
+  state_name: string;
+  population: number;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  score: number;
 }
 
-interface LocationSelectorProps {
-  onLocationChange: (city: string | City) => void;
-  selectedCity: string;
-}
-
-export default function LocationSelector({ onLocationChange, selectedCity }: LocationSelectorProps) {
-  const [locationInput, setLocationInput] = useState(selectedCity);
-  const [filteredCities, setFilteredCities] = useState<City[]>([]);
+export default function LocationSelector({
+  onLocationChange,
+}: {
+  onLocationChange: (locationObj: City) => void;
+}) {
+  const user = useAtomValue(userAtom);
+  const [locationInput, setLocationInput] = useState("Select Your Location");
+  const [cities, setCities] = useState<City[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [citySearchInput, setCitySearchInput] = useState("");
 
+  useEffect(() => {
+    if (!user) return;
+    setLocationInput(`${user.city} (${user.state}, ${user.country})`);
+  }, [user]);
+
   async function handleCitySearch(text: string) {
     setCitySearchInput(text);
-    if (text.length < 2) {
-      setFilteredCities([]);
+    if (text.length === 0) {
+      setCities([]);
       return;
     }
     try {
-      const url = `${BASE_URL}/api/locations/search?q=${encodeURIComponent(text)}`;
+      const url = `${BASE_URL}/api/locations/search?q=${encodeURIComponent(
+        text
+      )}`;
       const res = await fetch(url);
       const data = await res.json();
-      setFilteredCities(data);
+      setCities(data);
     } catch (error) {
-      setFilteredCities([]);
+      setCities([]);
     }
+  }
+
+  async function handleSelect(city: City) {
+    Keyboard.dismiss();
+    setLocationInput(`${city.name} (${city.state_name}, ${city.country_name})`);
+    setCitySearchInput("");
+    setShowModal(false);
+    onLocationChange(city);
   }
 
   return (
@@ -76,18 +99,28 @@ export default function LocationSelector({ onLocationChange, selectedCity }: Loc
         animationType="slide"
         onRequestClose={() => setShowModal(false)}
       >
-        <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-          <View style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: colors.borderGray }}>
+        <SafeAreaView
+          style={{
+            flex: 1,
+            backgroundColor: colors.lightBackground,
+          }}
+        >
+          <View
+            style={{
+              paddingVertical: 15,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <TouchableOpacity
               onPress={() => {
                 setShowModal(false);
                 setCitySearchInput("");
               }}
-              style={{ marginBottom: 10 }}
+              style={{ padding: 10 }}
             >
-              <Text style={{ color: colors.purple, fontSize: 16, fontWeight: "bold" }}>
-                Close
-              </Text>
+              <Feather name="x" size={20} color={colors.dark} />
             </TouchableOpacity>
             <TextInput
               style={{
@@ -96,6 +129,8 @@ export default function LocationSelector({ onLocationChange, selectedCity }: Loc
                 padding: 10,
                 borderRadius: 5,
                 color: colors.dark,
+                fontSize: 16,
+                flex: 1,
               }}
               placeholder="Search cities..."
               placeholderTextColor={colors.gray}
@@ -104,28 +139,26 @@ export default function LocationSelector({ onLocationChange, selectedCity }: Loc
               autoFocus
             />
           </View>
+
           <FlatList
-            data={filteredCities}
+            data={cities}
             keyExtractor={(item) => item._id.toString()}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="on-drag"
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => {
-                  const fullLocation = [item.name, item.state_name, item.country_name]
-                    .filter(Boolean)
-                    .join(", ");
-                  setLocationInput(fullLocation);
-                  onLocationChange(item);
-                  setShowModal(false);
-                  setCitySearchInput("");
-                  Keyboard.dismiss();
-                }}
+                onPress={() => handleSelect(item)}
                 style={{
                   padding: 15,
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.borderGray,
+                  marginBottom: 5,
                 }}
               >
-                <Text style={{ color: colors.dark, fontSize: 16 }}>{item.name} <Text style={{ color: colors.gray, fontSize: 14 }}>({item.state_name}, {item.country_name})</Text></Text>
+                <Text style={{ color: colors.dark, fontSize: 16 }}>
+                  {item.name}{" "}
+                  <Text style={{ color: colors.gray, fontSize: 14 }}>
+                    ({item.state_name}, {item.country_name})
+                  </Text>
+                </Text>
               </TouchableOpacity>
             )}
           />

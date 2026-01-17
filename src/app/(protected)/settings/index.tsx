@@ -24,7 +24,8 @@ export default function SettingsScreen() {
     country: user?.country || "",
     city: user?.city || "",
     state: user?.state || "",
-    coordinates: user?.coordinates || [0, 0],
+    latitude: user?.latitude || 0,
+    longitude: user?.longitude || 0,
     timezone: user?.timezone || "",
     locationId: user?.locationId || 0,
   });
@@ -68,7 +69,8 @@ export default function SettingsScreen() {
       country: user?.country || "",
       city: user?.city || "",
       state: user?.state || "",
-      coordinates: user?.coordinates || [0, 0],
+      latitude: user?.latitude || 0,
+      longitude: user?.longitude || 0,
       timezone: user?.timezone || "",
       locationId: user?.locationId || 0,
     });
@@ -180,28 +182,18 @@ export default function SettingsScreen() {
                   <Text style={styles.fieldLabel}>Location</Text>
                   <View style={styles.editInputContainer}>
                     <LocationSelector
-                      onLocationChange={(locationObj) => {
-                        if (locationObj && typeof locationObj === "object") {
-                          setEditFields((f) => ({
-                            firstName: f.firstName,
-                            lastName: f.lastName,
-                            city: locationObj.name,
-                            state: locationObj.state_name,
-                            country: locationObj.country_name,
-                            coordinates: [
-                              locationObj.longitude,
-                              locationObj.latitude,
-                            ],
-                            timezone: locationObj.timezone,
-                            locationId: locationObj._id,
-                          }));
-                        }
+                      onLocationChange={(location) => {
+                        setEditFields((f) => ({
+                          ...f,
+                          city: location.name,
+                          state: location.state_name,
+                          country: location.country_name,
+                          latitude: location.latitude,
+                          longitude: location.longitude,
+                          timezone: location.timezone,
+                          locationId: location._id,
+                        }));
                       }}
-                      selectedCity={
-                        editFields.city +
-                        (editFields.state ? ", " + editFields.state : "") +
-                        (editFields.country ? ", " + editFields.country : "")
-                      }
                     />
                   </View>
                 </View>
@@ -246,11 +238,7 @@ export default function SettingsScreen() {
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Location</Text>
                   <Text style={styles.fieldValue}>
-                    {user && (user.city || user.state || user.country)
-                      ? [user.city, user.state, user.country]
-                          .filter(Boolean)
-                          .join(", ")
-                      : "—"}
+                    {user && `${user.city} (${user.state}, ${user.country})`}
                   </Text>
                 </View>
               </>

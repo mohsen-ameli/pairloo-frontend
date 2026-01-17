@@ -46,6 +46,7 @@ export default function useCustomPager({
 
   const Pager = useCallback(
     ({ children }: { children: React.ReactNode }) => {
+      const [scrollEnabled, setScrollEnabled] = useState(true);
       const [currPage, setCurrPage] = useAtom(currPageAtom);
       const flow = useAtomValue(flowAtom);
       const { height } = useGradualAnimation();
@@ -74,9 +75,12 @@ export default function useCustomPager({
           <View
             style={{
               position: "absolute",
-              top: 25,
+              top: 0,
+              paddingTop: 25,
+              paddingBottom: 10,
               width: "100%",
               zIndex: 1,
+              backgroundColor: colors.light,
             }}
           >
             <View
@@ -121,7 +125,8 @@ export default function useCustomPager({
             ref={ref}
             style={{ flex: 1, backgroundColor: colors.light }}
             initialPage={currPage}
-            scrollEnabled={false}
+            scrollEnabled={scrollEnabled}
+            onLayout={() => setScrollEnabled(false)}
             onPageSelected={(e) => {
               const position = e.nativeEvent.position;
               setCurrPage(position);

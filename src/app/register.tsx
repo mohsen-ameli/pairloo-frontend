@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useAtom, useSetAtom } from "jotai";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import CustomInput from "../components/CustomInput";
 import PhoneNumber from "../components/phoneNumber";
 import LocationSelector from "../components/LocationSelector";
@@ -27,13 +27,9 @@ export default function Register() {
   const requested = useRef(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [flow, setFlow] = useAtom(flowAtom);
-  const [loading, setLoading] = useState(false);
   const usernameTimeout = useRef<number>(null);
-  const [displayLocation, setDisplayLocation] = useState(
-    "Select Your Location"
-  );
   const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
-    initialPageCount: 6,
+    initialPageCount: 5,
   });
 
   // Cleanup on unmount
@@ -73,10 +69,6 @@ export default function Register() {
           handleEmailVerification();
         } else if (currPage === 4) {
           // User info page
-          setCurrPage(5);
-          setPage(5);
-        } else if (currPage === 5) {
-          // Final sign up
           signUpHandler();
         }
       },
@@ -95,13 +87,12 @@ export default function Register() {
       } else if (
         signUpErrors.username ||
         signUpErrors.firstName ||
-        signUpErrors.lastName
+        signUpErrors.lastName ||
+        signUpErrors.country ||
+        signUpErrors.city
       ) {
         setCurrPage(4);
         setPage(4);
-      } else if (signUpErrors.country || signUpErrors.city) {
-        setCurrPage(5);
-        setPage(5);
       } else if (signUpErrors.general) {
         Alert.alert("Error", signUpErrors.general);
       }
@@ -149,7 +140,6 @@ export default function Register() {
       if (newUser.emailVerified) {
         setCurrPage(4);
         setPage(4);
-        setLoading(false);
         set(flowAtom, { ...get(flowAtom), nextEnabled: true });
         return;
       }
@@ -163,7 +153,6 @@ export default function Register() {
         return;
       }
       set(flowAtom, { ...get(flowAtom), nextEnabled: false });
-      setLoading(true);
 
       try {
         const res = await fetch(
@@ -185,7 +174,6 @@ export default function Register() {
             ...get(signUpErrorsAtom),
             email: data.error,
           });
-          setLoading(false);
           set(flowAtom, { ...get(flowAtom), nextEnabled: true });
           return;
         }
@@ -205,7 +193,6 @@ export default function Register() {
           });
         }, 1000);
 
-        setLoading(false);
         if (res.ok && resending) {
           Alert.alert(
             "Note",
@@ -217,7 +204,6 @@ export default function Register() {
           ...get(signUpErrorsAtom),
           email: "Failed to send verification code. Please try again.",
         });
-        setLoading(false);
         set(flowAtom, { ...get(flowAtom), nextEnabled: true });
       }
     }, [])
@@ -229,7 +215,6 @@ export default function Register() {
       if (newUser.phoneVerified) {
         setCurrPage(2);
         setPage(2);
-        setLoading(false);
         set(flowAtom, { ...get(flowAtom), nextEnabled: true });
         return;
       }
@@ -246,7 +231,6 @@ export default function Register() {
         return;
       }
       set(flowAtom, { ...get(flowAtom), nextEnabled: false });
-      setLoading(true);
 
       try {
         const res = await fetch(
@@ -269,7 +253,6 @@ export default function Register() {
             ...get(signUpErrorsAtom),
             phoneNumber: data.error,
           });
-          setLoading(false);
           set(flowAtom, { ...get(flowAtom), nextEnabled: true });
           return;
         }
@@ -289,7 +272,6 @@ export default function Register() {
           });
         }, 1000);
 
-        setLoading(false);
         if (res.ok && resending) {
           Alert.alert(
             "Note",
@@ -301,7 +283,6 @@ export default function Register() {
           ...get(signUpErrorsAtom),
           phoneNumber: "Failed to send verification code. Please try again.",
         });
-        setLoading(false);
         set(flowAtom, { ...get(flowAtom), nextEnabled: true });
       }
     }, [])
@@ -530,153 +511,93 @@ export default function Register() {
         </Pressable>
       </View>
 
-      <View style={styles.pageContainer} key="4">
-        <Text
-          style={{
-            color: colors.dark,
-            fontSize: 30,
-            marginBottom: 20,
-            fontWeight: "bold",
-            alignSelf: "center",
-          }}
-        >
-          Let's get to know you!
-        </Text>
-        <CustomInput
-          onChangeText={handleUsername}
-          defaultValue={newUser.username}
-          autoFocus
-          placeholder="Username"
-        />
-        {errors.username && (
+      <ScrollView key="4" keyboardShouldPersistTaps="handled">
+        <View style={styles.pageContainer}>
           <Text
             style={{
-              color: "tomato",
+              color: colors.dark,
+              fontSize: 30,
+              marginBottom: 20,
+              fontWeight: "bold",
+              alignSelf: "center",
             }}
           >
-            {errors.username}
+            Let's get to know you!
           </Text>
-        )}
-        <CustomInput
-          onChangeText={(text) => {
-            setNewUser({ ...newUser, firstName: text });
-            setErrors({ ...errors, firstName: "" });
-          }}
-          defaultValue={newUser.firstName}
-          placeholder="First Name"
-        />
-        {errors.firstName && (
-          <Text
-            style={{
-              color: "tomato",
+          <CustomInput
+            onChangeText={handleUsername}
+            defaultValue={newUser.username}
+            autoFocus
+            placeholder="Username"
+          />
+          {errors.username && (
+            <Text
+              style={{
+                color: "tomato",
+              }}
+            >
+              {errors.username}
+            </Text>
+          )}
+          <CustomInput
+            onChangeText={(text) => {
+              setNewUser({ ...newUser, firstName: text });
+              setErrors({ ...errors, firstName: "" });
             }}
-          >
-            {errors.firstName}
-          </Text>
-        )}
-        <Text style={styles.note}>
-          Please check your email for the verification code.
-        </Text>
-        <Pressable
-          onPress={() => handleEmailRequest(true)}
-          disabled={requested.current || timeRemaining > 0}
-        >
-          <Text
-            style={[
-              styles.resendText,
-              {
-                color:
-                  requested.current || timeRemaining > 0
-                    ? colors.gray
-                    : colors.purple,
-              },
-            ]}
-          >
-            {timeRemaining > 0
-              ? `Resend Code in ${timeRemaining} seconds`
-              : "Resend Code"}
-          </Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.pageContainer} key="4">
-        <Text
-          style={{
-            color: colors.dark,
-            fontSize: 30,
-            marginBottom: 20,
-            fontWeight: "bold",
-            alignSelf: "center",
-          }}
-        >
-          Let's get to know you!
-        </Text>
-        <CustomInput
-          onChangeText={handleUsername}
-          defaultValue={newUser.username}
-          autoFocus
-          placeholder="Username"
-        />
-        {errors.username && (
-          <Text
-            style={{
-              color: "tomato",
+            defaultValue={newUser.firstName}
+            placeholder="First Name"
+          />
+          {errors.firstName && (
+            <Text
+              style={{
+                color: "tomato",
+              }}
+            >
+              {errors.firstName}
+            </Text>
+          )}
+          <CustomInput
+            onChangeText={(text) => {
+              setNewUser({ ...newUser, lastName: text });
+              setErrors({ ...errors, lastName: "" });
             }}
-          >
-            {errors.username}
-          </Text>
-        )}
-        <CustomInput
-          onChangeText={(text) => {
-            setNewUser({ ...newUser, firstName: text });
-            setErrors({ ...errors, firstName: "" });
-          }}
-          defaultValue={newUser.firstName}
-          placeholder="First Name"
-        />
-        {errors.firstName && (
-          <Text
-            style={{
-              color: "tomato",
-            }}
-          >
-            {errors.firstName}
-          </Text>
-        )}
-        <LocationSelector
-          onLocationChange={(locationObj) => {
-            if (locationObj && typeof locationObj === "object") {
+            defaultValue={newUser.lastName}
+            placeholder="First Name"
+          />
+          {errors.lastName && (
+            <Text
+              style={{
+                color: "tomato",
+              }}
+            >
+              {errors.lastName}
+            </Text>
+          )}
+          <LocationSelector
+            onLocationChange={(location) => {
               setNewUser({
                 ...newUser,
-                city: locationObj.name,
-                state: locationObj.state_name,
-                country: locationObj.country_name,
-                coordinates: [locationObj.longitude, locationObj.latitude],
-                timezone: locationObj.timezone,
-                locationId: locationObj._id,
+                locationId: location._id,
+                city: location.name,
+                state: location.state_name,
+                country: location.country_name,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                timezone: location.timezone,
               });
-              setDisplayLocation(
-                locationObj.name +
-                  ", " +
-                  locationObj.state_name +
-                  ", " +
-                  locationObj.country_name
-              );
-            }
-            setErrors({ ...errors, city: "" });
-          }}
-          selectedCity={displayLocation}
-        />
-        {errors.city && (
-          <Text
-            style={{
-              color: "tomato",
             }}
-          >
-            {errors.city}
-          </Text>
-        )}
-      </View>
+          />
+          {errors.city && (
+            <Text
+              style={{
+                color: "tomato",
+              }}
+            >
+              {errors.city}
+            </Text>
+          )}
+        </View>
+      </ScrollView>
     </Pager>
   );
 }
