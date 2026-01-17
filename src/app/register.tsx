@@ -96,7 +96,7 @@ export default function Register() {
       } else if (signUpErrors.general) {
         Alert.alert("Error", signUpErrors.general);
       }
-    }, [])
+    }, []),
   );
 
   async function handleUsername(text: string) {
@@ -111,7 +111,7 @@ export default function Register() {
           `${BASE_URL}/api/auth/username-available?username=${text}`,
           {
             method: "GET",
-          }
+          },
         );
         const data = await res.json();
         if (!res.ok) {
@@ -166,7 +166,7 @@ export default function Register() {
               email: newUser.email,
               signUp: true,
             }),
-          }
+          },
         );
         const data = await res.json();
         if (!res.ok) {
@@ -196,7 +196,7 @@ export default function Register() {
         if (res.ok && resending) {
           Alert.alert(
             "Note",
-            "Please check your email for the verification code"
+            "Please check your email for the verification code",
           );
         }
       } catch {
@@ -206,7 +206,7 @@ export default function Register() {
         });
         set(flowAtom, { ...get(flowAtom), nextEnabled: true });
       }
-    }, [])
+    }, []),
   );
 
   const handlePhoneNumberRequest = useAtomCallback(
@@ -245,7 +245,7 @@ export default function Register() {
               phoneNumber: newUser.phoneNumber,
               signUp: true,
             }),
-          }
+          },
         );
         const data = await res.json();
         if (!res.ok) {
@@ -275,7 +275,7 @@ export default function Register() {
         if (res.ok && resending) {
           Alert.alert(
             "Note",
-            "Please check your phone for the verification code"
+            "Please check your phone for the verification code",
           );
         }
       } catch {
@@ -285,7 +285,7 @@ export default function Register() {
         });
         set(flowAtom, { ...get(flowAtom), nextEnabled: true });
       }
-    }, [])
+    }, []),
   );
 
   async function handleEmailVerification() {
@@ -395,7 +395,7 @@ export default function Register() {
         {errors.phoneVerify && (
           <Text
             style={{
-              color: "tomato",
+              color: colors.errorRed,
             }}
           >
             {errors.phoneVerify}
@@ -455,7 +455,7 @@ export default function Register() {
         {errors.email && (
           <Text
             style={{
-              color: "tomato",
+              color: colors.errorRed,
             }}
           >
             {errors.email}
@@ -481,7 +481,7 @@ export default function Register() {
         {errors.emailVerify && (
           <Text
             style={{
-              color: "tomato",
+              color: colors.errorRed,
             }}
           >
             {errors.emailVerify}
@@ -534,7 +534,7 @@ export default function Register() {
           {errors.username && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.username}
@@ -551,7 +551,7 @@ export default function Register() {
           {errors.firstName && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.firstName}
@@ -568,7 +568,7 @@ export default function Register() {
           {errors.lastName && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.lastName}
@@ -591,7 +591,7 @@ export default function Register() {
           {errors.city && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.city}

@@ -14,6 +14,7 @@ import { BASE_URL } from "../utils/constants";
 import Feather from "@expo/vector-icons/Feather";
 import { userAtom } from "../utils/store";
 import { useAtomValue } from "jotai";
+import { locSelecStyles } from "../styles/location-selector.styles";
 
 interface City {
   _id: number;
@@ -51,7 +52,7 @@ export default function LocationSelector({
     }
     try {
       const url = `${BASE_URL}/api/locations/search?q=${encodeURIComponent(
-        text
+        text,
       )}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -76,19 +77,15 @@ export default function LocationSelector({
           setShowModal(true);
           setCitySearchInput("");
         }}
-        style={{
-          borderWidth: 1,
-          borderColor: colors.borderGray,
-          padding: 10,
-          borderRadius: 5,
-          width: "100%",
-        }}
+        style={locSelecStyles.inputContainer}
       >
         <Text
-          style={{
-            color: locationInput ? colors.dark : colors.gray,
-            fontSize: 14,
-          }}
+          style={[
+            locSelecStyles.inputText,
+            {
+              color: locationInput ? colors.dark : colors.gray,
+            },
+          ]}
         >
           {locationInput}
         </Text>
@@ -99,40 +96,19 @@ export default function LocationSelector({
         animationType="slide"
         onRequestClose={() => setShowModal(false)}
       >
-        <SafeAreaView
-          style={{
-            flex: 1,
-            backgroundColor: colors.lightBackground,
-          }}
-        >
-          <View
-            style={{
-              paddingVertical: 15,
-              paddingRight: 10,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
+        <SafeAreaView style={locSelecStyles.modalContainer}>
+          <View style={locSelecStyles.searchContainer}>
             <TouchableOpacity
               onPress={() => {
                 setShowModal(false);
                 setCitySearchInput("");
               }}
-              style={{ padding: 10 }}
+              style={locSelecStyles.dismissButton}
             >
               <Feather name="x" size={20} color={colors.dark} />
             </TouchableOpacity>
             <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: colors.borderGray,
-                padding: 10,
-                borderRadius: 5,
-                color: colors.dark,
-                fontSize: 16,
-                flex: 1,
-              }}
+              style={locSelecStyles.searchInput}
               placeholder="Search cities..."
               placeholderTextColor={colors.gray}
               value={citySearchInput}
@@ -149,14 +125,11 @@ export default function LocationSelector({
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => handleSelect(item)}
-                style={{
-                  padding: 15,
-                  marginBottom: 5,
-                }}
+                style={locSelecStyles.cityItem}
               >
-                <Text style={{ color: colors.dark, fontSize: 16 }}>
+                <Text style={locSelecStyles.cityText}>
                   {item.name}{" "}
-                  <Text style={{ color: colors.gray, fontSize: 14 }}>
+                  <Text style={locSelecStyles.stateCountryText}>
                     ({item.state_name}, {item.country_name})
                   </Text>
                 </Text>
