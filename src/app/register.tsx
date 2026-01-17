@@ -1,13 +1,6 @@
 import { useRouter } from "expo-router";
-import { useAtom } from "jotai";
-import {
-  Alert,
-  Keyboard,
-  Pressable,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { useAtom, useSetAtom } from "jotai";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import CustomInput from "../components/CustomInput";
 import PhoneNumber from "../components/phoneNumber";
 import LocationSelector from "../components/LocationSelector";
@@ -26,20 +19,34 @@ import { useAtomCallback } from "jotai/utils";
 
 export default function Register() {
   const router = useRouter();
-  const signUp = useAtom(signUpAtom)[1];
+  const signUp = useSetAtom(signUpAtom);
   const [newUser, setNewUser] = useAtom(newUserAtom);
   const [errors, setErrors] = useAtom(signUpErrorsAtom);
-  const verificationCode = useRef<string | null>(null);
+  const emailVerificationCode = useRef("");
+  const phoneVerificationCode = useRef("");
   const requested = useRef(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [flow, setFlow] = useAtom(flowAtom);
-  const [loading, setLoading] = useState(false);
   const usernameTimeout = useRef<number>(null);
-  const [displayLocation, setDisplayLocation] = useState("Select Your Location");
   const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
     initialPageCount: 5,
   });
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      setFlow({
+        back: null,
+        next: null,
+        backEnabled: true,
+        nextEnabled: true,
+      });
+      setPage(0);
+      setCurrPage(0);
+    };
+  }, []);
+
+  // Set next/back functions based on current page
   useEffect(() => {
     setFlow({
       ...flow,
@@ -52,30 +59,20 @@ export default function Register() {
           // Phone number page
           handlePhoneNumberRequest(false);
         } else if (currPage === 1) {
-          // Email page
-          handleRequest(false);
+          // Phone verification
+          handlePhoneNumberVerification();
         } else if (currPage === 2) {
-          // Email verification
-          handleVerification();
+          // Email page
+          handleEmailRequest(false);
         } else if (currPage === 3) {
-          // User info page
-          setCurrPage(4);
-          setPage(4);
+          // Email verification
+          handleEmailVerification();
         } else if (currPage === 4) {
-          // Final sign up
+          // User info page
           signUpHandler();
         }
       },
     });
-
-    return () => {
-      setFlow({
-        back: null,
-        next: null,
-        backEnabled: true,
-        nextEnabled: true,
-      });
-    };
   }, [currPage]);
 
   const handleErrors = useAtomCallback(
@@ -85,22 +82,21 @@ export default function Register() {
         setCurrPage(0);
         setPage(0);
       } else if (signUpErrors.email) {
-        setCurrPage(1);
-        setPage(1);
+        setCurrPage(2);
+        setPage(2);
       } else if (
         signUpErrors.username ||
         signUpErrors.firstName ||
-        signUpErrors.lastName
+        signUpErrors.lastName ||
+        signUpErrors.country ||
+        signUpErrors.city
       ) {
-        setCurrPage(3);
-        setPage(3);
-      } else if (signUpErrors.country || signUpErrors.city) {
         setCurrPage(4);
         setPage(4);
       } else if (signUpErrors.general) {
         Alert.alert("Error", signUpErrors.general);
       }
-    }, [])
+    }, []),
   );
 
   async function handleUsername(text: string) {
@@ -115,7 +111,7 @@ export default function Register() {
           `${BASE_URL}/api/auth/username-available?username=${text}`,
           {
             method: "GET",
-          }
+          },
         );
         const data = await res.json();
         if (!res.ok) {
@@ -138,50 +134,25 @@ export default function Register() {
     }
   }
 
-  const handlePhoneNumberRequest = useAtomCallback(
+  const handleEmailRequest = useAtomCallback(
     useCallback(async (get, set, resending: boolean) => {
       const newUser = await get(newUserAtom);
-      const phoneSchema = z.string().min(9, "Invalid phone number");
-      if (
-        !newUser.phoneNumber ||
-        !phoneSchema.safeParse(newUser.phoneNumber).success
-      ) {
-        set(signUpErrorsAtom, {
-          ...errors,
-          phoneNumber: "Please enter a valid phone number",
-        });
-        return;
-      }
-
-      // For simplicity, we'll assume phone verification is done instantly
-      set(newUserAtom, { ...newUser, phoneVerified: true });
-      setCurrPage(1);
-      setPage(1);
-    }, [])
-  );
-
-  const handleRequest = useAtomCallback(
-    useCallback(async (get, set, resending: boolean) => {
-      const newUser = await get(newUserAtom);
-      const flow = get(flowAtom);
       if (newUser.emailVerified) {
-        setCurrPage(3);
-        setPage(3);
-        setLoading(false);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        setCurrPage(4);
+        setPage(4);
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
         return;
       }
 
       const emailSchema = z.email();
       if (!newUser.email || !emailSchema.safeParse(newUser.email).success) {
         set(signUpErrorsAtom, {
-          ...errors,
+          ...get(signUpErrorsAtom),
           email: "Please enter a valid email address",
         });
         return;
       }
-      set(flowAtom, { ...flow, nextEnabled: false });
-      setLoading(true);
+      set(flowAtom, { ...get(flowAtom), nextEnabled: false });
 
       try {
         const res = await fetch(
@@ -195,22 +166,21 @@ export default function Register() {
               email: newUser.email,
               signUp: true,
             }),
-          }
+          },
         );
         const data = await res.json();
         if (!res.ok) {
           set(signUpErrorsAtom, {
-            ...errors,
+            ...get(signUpErrorsAtom),
             email: data.error,
           });
-          setLoading(false);
-          set(flowAtom, { ...flow, nextEnabled: true });
+          set(flowAtom, { ...get(flowAtom), nextEnabled: true });
           return;
         }
-        setCurrPage(2);
-        setPage(2);
+        setCurrPage(3);
+        setPage(3);
         setTimeRemaining(VERIFICATION_RESEND_TIME);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
 
         let intervalId: number | null = null;
         intervalId = setInterval(() => {
@@ -223,27 +193,106 @@ export default function Register() {
           });
         }, 1000);
 
-        setLoading(false);
         if (res.ok && resending) {
           Alert.alert(
             "Note",
-            "Please check your email for the verification code"
+            "Please check your email for the verification code",
           );
         }
       } catch {
         set(signUpErrorsAtom, {
-          ...errors,
+          ...get(signUpErrorsAtom),
           email: "Failed to send verification code. Please try again.",
         });
-        setLoading(false);
-        set(flowAtom, { ...flow, nextEnabled: true });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
       }
-    }, [])
+    }, []),
   );
 
-  async function handleVerification() {
-    if (verificationCode.current === null) {
-      Alert.alert("Error", "Please enter the verification code");
+  const handlePhoneNumberRequest = useAtomCallback(
+    useCallback(async (get, set, resending: boolean) => {
+      const newUser = await get(newUserAtom);
+      if (newUser.phoneVerified) {
+        setCurrPage(2);
+        setPage(2);
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
+        return;
+      }
+
+      const phoneSchema = z.string().min(9, "Invalid phone number");
+      if (
+        !newUser.phoneNumber ||
+        !phoneSchema.safeParse(newUser.phoneNumber).success
+      ) {
+        set(signUpErrorsAtom, {
+          ...get(signUpErrorsAtom),
+          phoneNumber: "Please enter a valid phone number",
+        });
+        return;
+      }
+      set(flowAtom, { ...get(flowAtom), nextEnabled: false });
+
+      try {
+        const res = await fetch(
+          `${BASE_URL}/api/auth/request-phone-verification`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              callingCode: newUser.callingCode,
+              phoneNumber: newUser.phoneNumber,
+              signUp: true,
+            }),
+          },
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          set(signUpErrorsAtom, {
+            ...get(signUpErrorsAtom),
+            phoneNumber: data.error,
+          });
+          set(flowAtom, { ...get(flowAtom), nextEnabled: true });
+          return;
+        }
+        setCurrPage(1);
+        setPage(1);
+        setTimeRemaining(VERIFICATION_RESEND_TIME);
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
+
+        let intervalId: number | null = null;
+        intervalId = setInterval(() => {
+          setTimeRemaining((prev) => {
+            if (prev <= 1) {
+              if (intervalId) clearInterval(intervalId);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+
+        if (res.ok && resending) {
+          Alert.alert(
+            "Note",
+            "Please check your phone for the verification code",
+          );
+        }
+      } catch {
+        set(signUpErrorsAtom, {
+          ...get(signUpErrorsAtom),
+          phoneNumber: "Failed to send verification code. Please try again.",
+        });
+        set(flowAtom, { ...get(flowAtom), nextEnabled: true });
+      }
+    }, []),
+  );
+
+  async function handleEmailVerification() {
+    const verifySchema = z.string().min(6).max(6);
+    const codeClean = emailVerificationCode.current.trim();
+    if (!verifySchema.safeParse(codeClean).success) {
+      setErrors({ ...errors, emailVerify: "Invalid verification code" });
       return;
     }
 
@@ -255,121 +304,216 @@ export default function Register() {
         },
         body: JSON.stringify({
           email: newUser.email,
-          code: verificationCode.current,
+          code: emailVerificationCode.current,
           signUp: true,
         }),
       });
 
       if (res.ok) {
-        setCurrPage(3);
-        setPage(3);
+        setCurrPage(4);
+        setPage(4);
         setNewUser({ ...newUser, emailVerified: true });
       } else {
-        Alert.alert("Login Failed", "Invalid verification code");
+        setErrors({
+          ...errors,
+          emailVerify: "Invalid verification code",
+        });
       }
     } catch {
-      Alert.alert("Login Failed", "Invalid verification code");
+      setErrors({
+        ...errors,
+        emailVerify: "Invalid verification code",
+      });
+    }
+  }
+
+  async function handlePhoneNumberVerification() {
+    const verifySchema = z.string().min(6).max(6);
+    const codeClean = phoneVerificationCode.current.trim();
+    if (!verifySchema.safeParse(codeClean).success) {
+      setErrors({ ...errors, phoneNumber: "Invalid verification code" });
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/auth/verify-phone-code`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          callingCode: newUser.callingCode,
+          phoneNumber: newUser.phoneNumber,
+          code: phoneVerificationCode.current,
+          signUp: true,
+        }),
+      });
+
+      if (res.ok) {
+        setCurrPage(2);
+        setPage(2);
+        setNewUser({ ...newUser, phoneVerified: true });
+      } else {
+        setErrors({
+          ...errors,
+          phoneVerify: "Invalid verification code",
+        });
+      }
+    } catch {
+      setErrors({
+        ...errors,
+        phoneVerify: "Invalid verification code",
+      });
     }
   }
 
   return (
     <Pager>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.pageContainer} key="0">
-          <Text style={styles.title}>Phone Number</Text>
-          <PhoneNumber />
-          {errors.phoneNumber && (
-            <Text style={styles.error}>{errors.phoneNumber}</Text>
-          )}
-          {!newUser.phoneVerified && (
-            <Text style={styles.note}>
-              We will send you a verification code.
-            </Text>
-          )}
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={styles.pageContainer} key="0">
+        <Text style={styles.title}>Phone Number</Text>
+        <PhoneNumber />
+        {errors.phoneNumber && (
+          <Text style={styles.error}>{errors.phoneNumber}</Text>
+        )}
+        {!newUser.phoneVerified && (
+          <Text style={styles.note}>We will send you a verification code.</Text>
+        )}
+      </View>
 
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.pageContainer} key="1">
+      <View style={styles.pageContainer} key="1">
+        <Text style={styles.title}>Enter Verification Code</Text>
+        <CustomInput
+          placeholder="6-digit code"
+          onChangeText={(text) => {
+            setErrors({ ...errors, phoneVerify: "" });
+            phoneVerificationCode.current = text;
+          }}
+          autoFocus
+          keyboardType="numeric"
+          maxLength={6}
+        />
+        {errors.phoneVerify && (
           <Text
             style={{
-              color: colors.dark,
-              fontSize: 30,
-              fontWeight: "bold",
-              marginBottom: 20,
-              alignSelf: "center",
+              color: colors.errorRed,
             }}
           >
-            What's your email?
+            {errors.phoneVerify}
           </Text>
-          <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, email: text.trim().toLowerCase() });
-              setErrors({ ...errors, email: "" });
-            }}
-            autoFocus
-            defaultValue={newUser.email}
-            placeholder="Email Address"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            textContentType="emailAddress"
-          />
-          {errors.email && (
-            <Text
-              style={{
-                color: "tomato",
-              }}
-            >
-              {errors.email}
-            </Text>
-          )}
-          {!newUser.emailVerified && (
-            <Text style={styles.note}>We'll send you a verification code.</Text>
-          )}
-        </View>
-      </TouchableWithoutFeedback>
-
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.pageContainer} key="2">
-          <Text style={styles.title}>Enter Verification Code</Text>
-          <CustomInput
-            placeholder="6-digit code"
-            onChangeText={(text) => {
-              verificationCode.current = text;
-            }}
-            autoFocus
-            keyboardType="numeric"
-            maxLength={6}
-          />
-          <Text style={styles.note}>
-            Please check your email for the verification code.
-          </Text>
-          <Pressable
-            onPress={() => handleRequest(true)}
-            disabled={requested.current || timeRemaining > 0}
+        )}
+        <Text style={styles.note}>
+          Please check your email for the verification code.
+        </Text>
+        <Pressable
+          onPress={() => handlePhoneNumberRequest(true)}
+          disabled={requested.current || timeRemaining > 0}
+        >
+          <Text
+            style={[
+              styles.resendText,
+              {
+                color:
+                  requested.current || timeRemaining > 0
+                    ? colors.gray
+                    : colors.purple,
+              },
+            ]}
           >
-            <Text
-              style={[
-                styles.resendText,
-                {
-                  color:
-                    requested.current || timeRemaining > 0
-                      ? colors.gray
-                      : colors.purple,
-                },
-              ]}
-            >
-              {timeRemaining > 0
-                ? `Resend Code in ${timeRemaining} seconds`
-                : "Resend Code"}
-            </Text>
-          </Pressable>
-        </View>
-      </TouchableWithoutFeedback>
+            {timeRemaining > 0
+              ? `Resend Code in ${timeRemaining} seconds`
+              : "Resend Code"}
+          </Text>
+        </Pressable>
+      </View>
 
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.pageContainer} key="3">
+      <View style={styles.pageContainer} key="2">
+        <Text
+          style={{
+            color: colors.dark,
+            fontSize: 30,
+            fontWeight: "bold",
+            marginBottom: 20,
+            alignSelf: "center",
+          }}
+        >
+          What's your email?
+        </Text>
+        <CustomInput
+          onChangeText={(text) => {
+            setNewUser({ ...newUser, email: text.trim().toLowerCase() });
+            setErrors({ ...errors, email: "" });
+          }}
+          value={newUser.email}
+          autoFocus
+          defaultValue={newUser.email}
+          placeholder="Email Address"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
+        />
+        {errors.email && (
+          <Text
+            style={{
+              color: colors.errorRed,
+            }}
+          >
+            {errors.email}
+          </Text>
+        )}
+        {!newUser.emailVerified && (
+          <Text style={styles.note}>We'll send you a verification code.</Text>
+        )}
+      </View>
+
+      <View style={styles.pageContainer} key="3">
+        <Text style={styles.title}>Enter Verification Code</Text>
+        <CustomInput
+          placeholder="6-digit code"
+          onChangeText={(text) => {
+            setErrors({ ...errors, emailVerify: "" });
+            emailVerificationCode.current = text;
+          }}
+          autoFocus
+          keyboardType="numeric"
+          maxLength={6}
+        />
+        {errors.emailVerify && (
+          <Text
+            style={{
+              color: colors.errorRed,
+            }}
+          >
+            {errors.emailVerify}
+          </Text>
+        )}
+        <Text style={styles.note}>
+          Please check your email for the verification code.
+        </Text>
+        <Pressable
+          onPress={() => handleEmailRequest(true)}
+          disabled={requested.current || timeRemaining > 0}
+        >
+          <Text
+            style={[
+              styles.resendText,
+              {
+                color:
+                  requested.current || timeRemaining > 0
+                    ? colors.gray
+                    : colors.purple,
+              },
+            ]}
+          >
+            {timeRemaining > 0
+              ? `Resend Code in ${timeRemaining} seconds`
+              : "Resend Code"}
+          </Text>
+        </Pressable>
+      </View>
+
+      <ScrollView key="4" keyboardShouldPersistTaps="handled">
+        <View style={styles.pageContainer}>
           <Text
             style={{
               color: colors.dark,
@@ -390,7 +534,7 @@ export default function Register() {
           {errors.username && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.username}
@@ -407,7 +551,7 @@ export default function Register() {
           {errors.firstName && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.firstName}
@@ -419,61 +563,42 @@ export default function Register() {
               setErrors({ ...errors, lastName: "" });
             }}
             defaultValue={newUser.lastName}
-            placeholder="Last Name"
+            placeholder="First Name"
           />
           {errors.lastName && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.lastName}
             </Text>
           )}
-        </View>
-      </TouchableWithoutFeedback>
-
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.pageContainer} key="4">
-          <Text
-            style={{
-              color: colors.dark,
-              fontSize: 30,
-              fontWeight: "bold",
-              marginBottom: 20,
-            }}
-          >
-            Where are you based?
-          </Text>
           <LocationSelector
-            onLocationChange={(locationObj) => {
-              if (locationObj && typeof locationObj === "object") {
-                setNewUser({
-                  ...newUser,
-                  city: locationObj.name,
-                  state: locationObj.state_name,
-                  country: locationObj.country_name,
-                  coordinates: [locationObj.longitude, locationObj.latitude],
-                  timezone: locationObj.timezone,
-                  locationId: locationObj._id,
-                });
-                setDisplayLocation(locationObj.name + ", " + locationObj.state_name + ", " + locationObj.country_name);
-              }
-              setErrors({ ...errors, city: "" });
+            onLocationChange={(location) => {
+              setNewUser({
+                ...newUser,
+                locationId: location._id,
+                city: location.name,
+                state: location.state_name,
+                country: location.country_name,
+                latitude: location.latitude,
+                longitude: location.longitude,
+                timezone: location.timezone,
+              });
             }}
-            selectedCity={displayLocation}
           />
           {errors.city && (
             <Text
               style={{
-                color: "tomato",
+                color: colors.errorRed,
               }}
             >
               {errors.city}
             </Text>
           )}
         </View>
-      </TouchableWithoutFeedback>
+      </ScrollView>
     </Pager>
   );
 }

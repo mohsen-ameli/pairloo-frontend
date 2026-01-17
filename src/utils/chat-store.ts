@@ -28,7 +28,7 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   set(chatSocketAtom, socket);
 
-  socket.once("connected", () => {
+  socket.on("connected", () => {
     console.log("Connected to WebSocket server for chatting");
     socket.emit("getConversations");
   });
@@ -58,7 +58,7 @@ export const initChatAtom = atom(null, async (get, set) => {
   });
 
   // New conversation created
-  socket.on("conversationCreated", (conversation: ConversationType) => {
+  socket.on("conversation", (conversation: ConversationType) => {
     set(conversationsAtom, (prev) => [...prev, conversation]);
   });
 

@@ -9,7 +9,8 @@ export type UserType = null | {
   country: string;
   city: string;
   state: string;
-  coordinates: [number, number]; // [longitude, latitude]
+  latitude: number;
+  longitude: number;
   timezone: string;
   locationId: number; // reference to Location _id
   email: string;

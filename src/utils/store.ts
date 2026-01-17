@@ -23,10 +23,12 @@ const newUser = {
   country: "Canada",
   city: "",
   state: "",
-  coordinates: [0, 0] as [number, number],
+  latitude: 0,
+  longitude: 0,
   timezone: "",
   locationId: 0,
   cca2: "CA" as CountryCode,
+  callingCode: "1",
 };
 const storage = createJSONStorage<typeof newUser>(() => AsyncStorage);
 export const newUserAtom = atomWithStorage("new-user", newUser, storage);
@@ -37,7 +39,9 @@ const newUserErrors = {
   firstName: "",
   lastName: "",
   email: "",
+  emailVerify: "",
   phoneNumber: "",
+  phoneVerify: "",
   country: "",
   city: "",
   general: "",
@@ -67,11 +71,12 @@ export const signUpAtom = atom(null, async (get, set) => {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      phoneNumber: userData.phoneNumber,
+      phoneNumber: `+${userData.callingCode}${userData.phoneNumber}`,
       country: userData.country,
       city: userData.city,
       state: userData.state,
-      coordinates: userData.coordinates,
+      latitude: userData.latitude,
+      longitude: userData.longitude,
       timezone: userData.timezone,
       locationId: userData.locationId,
     };
