@@ -58,7 +58,7 @@ export const initChatAtom = atom(null, async (get, set) => {
   });
 
   // New conversation created
-  socket.on("conversationCreated", (conversation: ConversationType) => {
+  socket.on("conversation", (conversation: ConversationType) => {
     set(conversationsAtom, (prev) => [...prev, conversation]);
   });
 

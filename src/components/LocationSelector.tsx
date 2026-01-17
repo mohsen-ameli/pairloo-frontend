@@ -108,6 +108,7 @@ export default function LocationSelector({
           <View
             style={{
               paddingVertical: 15,
+              paddingRight: 10,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",

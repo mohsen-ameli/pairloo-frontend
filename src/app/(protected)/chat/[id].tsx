@@ -9,7 +9,11 @@ import {
   sendMessageAtom,
 } from "@/src/utils/chat-store";
 import { colors } from "@/src/utils/colors";
-import { MessageType, OtherUser } from "@/src/types/chat.type";
+import {
+  ConversationType,
+  MessageType,
+  OtherUser,
+} from "@/src/types/chat.type";
 import Feather from "@expo/vector-icons/Feather";
 import CustomHeader from "@/src/components/CustomHeader";
 import { formatDate } from "@/src/utils/format-date";
@@ -21,8 +25,6 @@ import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import { chatStyles } from "@/src/styles/chat.styles";
 import { chatSocketAtom } from "@/src/utils/socket-store";
 
-const ITEM_HEIGHT = 40;
-
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const socket = useAtomValue(chatSocketAtom);
@@ -30,23 +32,25 @@ export default function Chat() {
   const messages = useAtomValue(messagesAtom);
   const sendMessage = useSetAtom(sendMessageAtom);
   const user = useAtomValue(userAtom);
-  const conversation = useAtomValue(conversationsAtom).find(
-    (conv) => conv._id === id
+  const conversations = useAtomValue(conversationsAtom);
+  const [conversation, setConversation] = useState<ConversationType | null>(
+    null
   );
   const chatRef = useRef<FlatList>(null!);
   const { height } = useGradualAnimation();
   const [otherUser, setOtherUser] = useState<OtherUser>(null!);
 
   useEffect(() => {
-    if (!conversation || !user) return;
-    setOtherUser(
-      conversation.members.find((member) => member._id !== user._id)!
-    );
-  }, [conversation, user]);
+    if (!conversations || !user || !socket) return;
 
-  useEffect(() => {
-    socket?.emit("getMessages", id);
-  }, [socket, id]);
+    // Find the current conversation
+    const conv = conversations.find((conv) => conv._id === id);
+    if (!conv) return;
+
+    setConversation(conv);
+    setOtherUser(conv.members.find((member) => member._id !== user._id)!);
+    socket.emit("getMessages", id);
+  }, [conversations, user, socket, id]);
 
   async function handleSendMessage() {
     const msg = message.trim();
