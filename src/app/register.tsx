@@ -28,6 +28,7 @@ export default function Register() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [flow, setFlow] = useAtom(flowAtom);
   const usernameTimeout = useRef<number>(null);
+  const [displayLocation, setDisplayLocation] = useState("Select Your Location");
   const { setCurrPage, setPage, Pager, currPage } = useCustomPager({
     initialPageCount: 5,
   });
