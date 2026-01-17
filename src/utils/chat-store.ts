@@ -28,7 +28,7 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   set(chatSocketAtom, socket);
 
-  socket.once("connected", () => {
+  socket.on("connected", () => {
     console.log("Connected to WebSocket server for chatting");
     socket.emit("getConversations");
   });
