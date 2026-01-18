@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated as A, Platform, Pressable, Text, View } from "react-native";
 import PagerView, { usePagerView } from "react-native-pager-view";
 import { colors } from "../utils/colors";
@@ -7,6 +7,7 @@ import useGradualAnimation from "../utils/gradual-animation";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { currPageAtom, flowAtom, pageCountAtom } from "../store/pager-store";
 import { userAtom } from "../store/auth-store";
+import { useFocusEffect } from "expo-router";
 
 /**
  * Allows for creating a pager with multiple pages, navigation dots, and next/back buttons.
@@ -28,19 +29,20 @@ export default function CustomPager({
   const isAuthenticated = useAtomValue(userAtom) !== null;
   const { height } = useGradualAnimation({ isAuthenticated });
 
-  // Reset to first page on unmount
-  // useEffect(() => {
-  //   return () => {
-  //     setCurrPage(0);
-  //     setPageCount(0);
-  //     setFlow({
-  //       back: null,
-  //       next: null,
-  //       backEnabled: true,
-  //       nextEnabled: true,
-  //     });
-  //   };
-  // }, []);
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setCurrPage(0);
+        setPageCount(initialPageCount);
+        setFlow({
+          back: null,
+          next: null,
+          backEnabled: true,
+          nextEnabled: true,
+        });
+      };
+    }, []),
+  );
 
   useEffect(() => {
     setPageCount(initialPageCount);

@@ -1,7 +1,7 @@
 import CustomInput from "@/src/components/CustomInput";
-import { Link } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
 import { useAtom, useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "@/src/styles/login.styles";
 import { colors } from "@/src/utils/colors";
@@ -25,6 +25,17 @@ export default function LoginPage() {
   const [returningUser, setReturningUser] = useAtom(returningUserAtom);
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom);
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setReturningUser({ email: "", emailCode: "" });
+        setErrors({ ...errors, email: "", emailVerify: "" });
+        setCurrPage(0);
+        setTimeRemaining(0);
+      };
+    }, []),
+  );
 
   // Set next/back functions based on current page
   useEffect(() => {

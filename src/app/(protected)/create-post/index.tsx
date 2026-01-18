@@ -7,7 +7,7 @@ import {
   Switch,
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import CustomHeader from "@/src/components/CustomHeader";
 import { currPageAtom, flowAtom } from "@/src/store/pager-store";
 import CustomPager from "@/src/components/CustomPager";
@@ -29,6 +29,7 @@ import {
   publicPostAtom,
   questionsAtom,
 } from "@/src/store/create-post-store";
+import { useFocusEffect } from "expo-router";
 
 const INITIAL_PAGE_COUNT = 2;
 
@@ -50,18 +51,20 @@ export default function CreatePost() {
   const forward = useSetAtom(forwardCreatePostAtom);
   const pickImage = useSetAtom(pickImageAtom);
 
-  useEffect(() => {
-    if (!socket) return;
-    setFlow({
-      ...flow,
-      back: () => {
-        setCurrPage(currPage - 1);
-      },
-      next: () => {
-        forward();
-      },
-    });
-  }, [currPage, socket]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!socket) return;
+      setFlow({
+        ...flow,
+        back: () => {
+          setCurrPage(currPage - 1);
+        },
+        next: () => {
+          forward();
+        },
+      });
+    }, [currPage, socket]),
+  );
 
   const handleOptionSelect = (i: number, option: string) => {
     setInputs((prev) => {

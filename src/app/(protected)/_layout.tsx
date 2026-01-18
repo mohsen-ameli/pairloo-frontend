@@ -11,8 +11,11 @@ export default function ProtectedLayout() {
   const initCreatePost = useSetAtom(initCreatePostAtom);
 
   useEffect(() => {
-    initChatConnection();
-    initCreatePost();
+    async function initialize() {
+      await initChatConnection();
+      await initCreatePost();
+    }
+    initialize();
   }, []);
 
   return (
