@@ -3,12 +3,12 @@ import React from "react";
 import { Stack } from "expo-router";
 import { styles } from "../styles/header.styles";
 import { Image } from "expo-image";
-// @ts-ignore
-import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import { userAtom } from "../store/auth-store";
 import { useAtomValue } from "jotai";
 import { OtherUser } from "../types/chat.type";
 import { colors } from "../utils/colors";
+
+const defaultProfilePicture = require("@/assets/images/default_pfp.png");
 
 export default function CustomHeader({
   title,

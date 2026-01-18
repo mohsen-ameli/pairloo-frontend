@@ -8,6 +8,10 @@ import { Image } from "expo-image";
 import { Tabs, usePathname } from "expo-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState } from "react";
+import { useAudioPlayer } from "expo-audio";
+import { notificationSoundAtom } from "@/src/store/general-store";
+
+const audioSource = require("@/assets/audio/new-notification.mp3");
 
 export default function ProtectedLayout() {
   const initChatConnection = useSetAtom(initChatAtom);
@@ -17,6 +21,12 @@ export default function ProtectedLayout() {
   const setPath = useSetAtom(pathStore);
   const unreadMessages = useAtomValue(unreadMessagesAtom);
   const [numUnreadMessages, setNumUnreadMessages] = useState(0);
+  const player = useAudioPlayer(audioSource);
+  const setNotificationSound = useSetAtom(notificationSoundAtom);
+
+  useEffect(() => {
+    setNotificationSound(player);
+  }, []);
 
   useEffect(() => {
     if (!unreadMessages) {

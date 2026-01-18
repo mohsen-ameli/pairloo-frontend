@@ -10,9 +10,9 @@ import { colors } from "@/src/utils/colors";
 import { useEffect, useState } from "react";
 import { authFetchAtom } from "../../../utils/auth-fetch";
 import Feather from "@expo/vector-icons/Feather";
-// @ts-ignore
-import default_pfp from "@/assets/images/default_pfp.png";
 import CustomHeader from "@/src/components/CustomHeader";
+
+const defaultProfilePicture = require("@/assets/images/default_pfp.png");
 
 type EditFields = {
   firstName: string;
@@ -110,7 +110,7 @@ export default function SettingsScreen() {
                 {user.picture && (
                   <Image
                     source={{
-                      uri: user.picture || default_pfp,
+                      uri: user.picture || defaultProfilePicture,
                     }}
                     style={styles.avatar}
                     contentFit="cover"
