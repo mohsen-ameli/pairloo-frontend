@@ -29,18 +29,18 @@ export default function CustomPager({
   const { height } = useGradualAnimation({ isAuthenticated });
 
   // Reset to first page on unmount
-  useEffect(() => {
-    return () => {
-      setCurrPage(0);
-      setPageCount(0);
-      setFlow({
-        back: null,
-        next: null,
-        backEnabled: true,
-        nextEnabled: true,
-      });
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     setCurrPage(0);
+  //     setPageCount(0);
+  //     setFlow({
+  //       back: null,
+  //       next: null,
+  //       backEnabled: true,
+  //       nextEnabled: true,
+  //     });
+  //   };
+  // }, []);
 
   useEffect(() => {
     setPageCount(initialPageCount);
@@ -132,7 +132,7 @@ export default function CustomPager({
         style={{ flex: 1, backgroundColor: colors.light }}
         initialPage={currPage}
         scrollEnabled={scrollEnabled}
-        onLayout={() => setScrollEnabled(false)}
+        onLayout={() => setScrollEnabled(false)} // needed for ios
       >
         {children}
       </PagerView>

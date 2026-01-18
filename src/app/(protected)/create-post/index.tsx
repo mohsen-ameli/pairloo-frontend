@@ -5,47 +5,50 @@ import {
   Keyboard,
   Text,
   Switch,
-  Alert,
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomHeader from "@/src/components/CustomHeader";
-import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store";
+import { currPageAtom, flowAtom } from "@/src/store/pager-store";
 import CustomPager from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { createPostStyles } from "@/src/styles/create_post.styles";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { userAtom } from "@/src/store/auth-store";
-import { useRouter } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
 import ImageCarousel from "@/src/components/ImageCarousel";
-import { useQueryClient } from "@tanstack/react-query";
 import { createPostSocketAtom } from "@/src/store/socket-store";
+import {
+  forwardCreatePostAtom,
+  imagesAtom,
+  inputsAtom,
+  loadingAtom,
+  numMatchesAtom,
+  pagesAtom,
+  pickImageAtom,
+  publicPostAtom,
+  questionsAtom,
+} from "@/src/store/create-post-store";
 
 const INITIAL_PAGE_COUNT = 2;
 
-export default function Index() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const user = useAtomValue(userAtom);
-  const [pages, setPages] = useState([""]);
-  const [questions, setQuestions] = useState<string[]>([""]);
+export default function CreatePost() {
+  const pages = useAtomValue(pagesAtom);
+  const questions = useAtomValue(questionsAtom);
   const socket = useAtomValue(createPostSocketAtom);
-  const [loading, setLoading] = useState(false);
+  const loading = useAtomValue(loadingAtom);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
   const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([
     [],
   ]);
-  const [publicPost, setPublicPost] = useState(true);
-  const [images, setImages] = useState<string[]>([]);
-  const inputRefs = useRef<string[]>([""]);
-  const pagesLengthRef = useRef(pages.length);
-  const numMatchesRef = useRef(5);
+  const [publicPost, setPublicPost] = useAtom(publicPostAtom);
+  const [images, setImages] = useAtom(imagesAtom);
+  const [inputs, setInputs] = useAtom(inputsAtom);
+  const setNumMatches = useSetAtom(numMatchesAtom);
   const [flow, setFlow] = useAtom(flowAtom);
   const [currPage, setCurrPage] = useAtom(currPageAtom);
-  const setPageCount = useSetAtom(pageCountAtom);
+  const forward = useSetAtom(forwardCreatePostAtom);
+  const pickImage = useSetAtom(pickImageAtom);
 
   useEffect(() => {
     if (!socket) return;
@@ -60,61 +63,12 @@ export default function Index() {
     });
   }, [currPage, socket]);
 
-  function forward() {
-    if (!socket) {
-      console.warn("[forward] Socket is not initialized!");
-      return;
-    }
-
-    setLoading(true);
-    if (currPage == pagesLengthRef.current) {
-      socket.emit("submit", {
-        numMatches: numMatchesRef.current,
-        publicPost,
-        images,
-      });
-    } else if (
-      !inputRefs.current[currPage] ||
-      inputRefs.current[currPage].trim() === ""
-    ) {
-      Alert.alert(
-        "Input required",
-        "Please enter some text before continuing.",
-      );
-      setLoading(false);
-      return;
-    } else {
-      socket.emit("chat", inputRefs.current[currPage]);
-    }
-  }
-
-  async function pickImage() {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permissionResult.granted) {
-      Alert.alert(
-        "Permission required",
-        "Permission to access the media library is required.",
-      );
-      return;
-    }
-
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsMultipleSelection: true,
-    });
-
-    if (!result.canceled) {
-      setImages((prev) => [
-        ...prev,
-        ...result.assets.map((asset) => asset.uri),
-      ]);
-    }
-  }
-
   const handleOptionSelect = (i: number, option: string) => {
-    inputRefs.current[i] = option;
+    setInputs((prev) => {
+      const updated = [...prev];
+      updated[i] = option;
+      return updated;
+    });
     setMcqAnswers((prev) => {
       const updated = [...prev];
       updated[i] = option;
@@ -131,66 +85,14 @@ export default function Index() {
       } else {
         updated[i] = [...selected, option];
       }
-      inputRefs.current[i] = updated[i].join(", ");
+      setInputs((prev) => {
+        const updatedInputs = [...prev];
+        updatedInputs[i] = updated[i].join(", ");
+        return updatedInputs;
+      });
       return updated;
     });
   };
-
-  useEffect(() => {
-    if (!user || !socket) return;
-
-    socket.on("question", (question: string) => {
-      setQuestions((prevQuestions) => [...prevQuestions, question]);
-      setPages((prevPages) => [...prevPages, ""]);
-      setLoading(false);
-      setCurrPage(currPage + 1);
-    });
-
-    socket.on("chat-finished", () => {
-      setCurrPage(pagesLengthRef.current);
-      setLoading(false);
-    });
-
-    socket.on("success", (postId: string) => {
-      setPages([""]);
-      setCurrPage(0);
-      setPageCount(INITIAL_PAGE_COUNT);
-      setQuestions([""]);
-      inputRefs.current = [""];
-      numMatchesRef.current = 5;
-      setPublicPost(true);
-      setImages([]);
-      setLoading(false);
-
-      router.navigate({
-        pathname: "/my-posts",
-        params: { redirect: `/my-posts/${postId}` },
-      });
-      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
-    });
-  }, [socket, user]);
-
-  useEffect(() => {
-    pagesLengthRef.current = pages.length;
-    setPageCount(pages.length + 1);
-    setCurrPage(pages.length - 1);
-    setMcqAnswers((prev) => {
-      if (pages.length > prev.length) {
-        return [...prev, ...Array(pages.length - prev.length).fill("")];
-      } else if (pages.length < prev.length) {
-        return prev.slice(0, pages.length);
-      }
-      return prev;
-    });
-    setMultiSelectAnswers((prev) => {
-      if (pages.length > prev.length) {
-        return [...prev, ...Array(pages.length - prev.length).fill([])];
-      } else if (pages.length < prev.length) {
-        return prev.slice(0, pages.length);
-      }
-      return prev;
-    });
-  }, [pages]);
 
   return (
     <>
@@ -199,12 +101,10 @@ export default function Index() {
 
       <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
         {pages.map((pageText, i) => {
-          let response = questions[i]
-            ? JSON.parse(questions[i].replace(/```json|```/g, "").trim())
-            : null;
-          const type = response?.type;
-          const questionText = response?.question;
-          const options = response?.options || [];
+          const question = questions[i];
+          const type = question.type;
+          const questionText = question.question;
+          const options = question.options;
 
           return (
             <TouchableWithoutFeedback
@@ -214,11 +114,11 @@ export default function Index() {
             >
               <View style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>
-                  {response && questionText
-                    ? `Question: ${questionText}`
-                    : "Start by describing what you want to post about."}
+                  {questions.length == 1
+                    ? questionText
+                    : `Question: ${questionText}`}
                 </Text>
-                {type === "multiple_choice" && options.length > 0 ? (
+                {type === "multiple_choice" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10 }}>
                     {options.map((option: string, idx: number) => {
                       const isSelected = mcqAnswers[i] === option;
@@ -257,7 +157,7 @@ export default function Index() {
                       );
                     })}
                   </View>
-                ) : type === "multi_select" && options.length > 0 ? (
+                ) : type === "multi_select" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10 }}>
                     <Text style={{ marginBottom: 10 }}>
                       Select all the options that apply:
@@ -306,7 +206,14 @@ export default function Index() {
                     style={createPostStyles.textInput}
                     placeholderTextColor={colors.gray}
                     defaultValue={pageText}
-                    onChangeText={(text) => (inputRefs.current[i] = text)}
+                    value={inputs[i]}
+                    onChangeText={(text) => {
+                      setInputs((prev) => {
+                        const updated = [...prev];
+                        updated[i] = text;
+                        return updated;
+                      });
+                    }}
                     placeholder="Write as little or as much details as you want..."
                     editable={!loading}
                     multiline={type !== "multiple_choice"}
@@ -401,9 +308,7 @@ export default function Index() {
               defaultValue={"5"}
               keyboardType="number-pad"
               editable={!loading}
-              onChangeText={(text) =>
-                (numMatchesRef.current = parseInt(text) || 0)
-              }
+              onChangeText={(text) => setNumMatches(parseInt(text) || 0)}
             />
           </View>
         </View>

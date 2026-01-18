@@ -4,9 +4,30 @@ import { WS_BASE_URL } from "../utils/constants";
 import { createPostSocketAtom } from "./socket-store";
 import { refreshAccessToken } from "../utils/refresh-access-token";
 import io from "socket.io-client";
+import { currPageAtom, pageCountAtom } from "./pager-store";
+import { router } from "expo-router";
+import { Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Question } from "../types/question.types";
+
+const INITIAL_PAGE_COUNT = 2;
+const DEFAULT_NUM_MATCHES = 5;
 
 // To prevent multiple initializations
 const initializedAtom = atom(false);
+
+const defaultQuestion: Question = {
+  type: "short_answer",
+  question: "Start by describing what you want to post about.",
+};
+
+export const questionsAtom = atom<Question[]>([defaultQuestion]);
+export const pagesAtom = atom([""]);
+export const loadingAtom = atom(false);
+export const publicPostAtom = atom(false);
+export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES);
+export const imagesAtom = atom<string[]>([]);
+export const inputsAtom = atom<string[]>([]);
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
   const user = await get(userAtom);
@@ -28,7 +49,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("Disconnected from WebSocket server for chatting");
+    console.log("Disconnected from WebSocket server for create-post");
   });
 
   socket.on("error", (err: any) => {
@@ -46,4 +67,88 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     socket.io.opts.auth = { token: accessToken };
     socket.connect();
   });
+
+  socket.on("question", (question: Question) => {
+    set(questionsAtom, (prevQuestions) => [...prevQuestions, question]);
+    set(pagesAtom, (prevPages) => [...prevPages, ""]);
+    set(loadingAtom, false);
+    set(currPageAtom, (curr) => curr + 1);
+    set(pageCountAtom, (count) => count + 1);
+  });
+
+  socket.on("chat-finished", () => {
+    set(currPageAtom, (curr) => curr + 1);
+    set(loadingAtom, false);
+  });
+
+  socket.on("success", (postId: string) => {
+    set(questionsAtom, [defaultQuestion]);
+    set(pagesAtom, [""]);
+    set(currPageAtom, 0);
+    set(pageCountAtom, INITIAL_PAGE_COUNT);
+    set(numMatchesAtom, DEFAULT_NUM_MATCHES);
+    set(publicPostAtom, true);
+    set(imagesAtom, []);
+    set(inputsAtom, []);
+    set(loadingAtom, false);
+
+    router.navigate({
+      pathname: "/my-posts",
+      params: { redirect: `/my-posts/${postId}` },
+    });
+  });
+});
+
+export const forwardCreatePostAtom = atom(null, async (get, set) => {
+  const socket = get(createPostSocketAtom);
+  const currPage = get(currPageAtom);
+  const inputs = get(inputsAtom);
+  const publicPost = get(publicPostAtom);
+  const images = get(imagesAtom);
+  const numMatches = get(numMatchesAtom);
+  const pageCount = get(pageCountAtom);
+
+  if (!socket) {
+    console.warn("[forward] Socket is not initialized!");
+    return;
+  }
+
+  set(loadingAtom, true);
+  if (currPage === pageCount - 1) {
+    socket.emit("submit", {
+      numMatches,
+      publicPost,
+      images,
+    });
+  } else if (!inputs[currPage] || inputs[currPage].trim() === "") {
+    Alert.alert("Input required", "Please enter some text before continuing.");
+    set(loadingAtom, false);
+  } else {
+    socket.emit("chat", inputs[currPage]);
+  }
+});
+
+export const pickImageAtom = atom(null, async (get, set) => {
+  const permissionResult =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permissionResult.granted) {
+    Alert.alert(
+      "Permission required",
+      "Permission to access the media library is required.",
+    );
+    return;
+  }
+
+  let result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images", "videos"],
+    allowsMultipleSelection: true,
+  });
+
+  if (!result.canceled) {
+    set(imagesAtom, (prev) => [
+      ...prev,
+      ...result.assets.map((asset) => asset.uri),
+    ]);
+  }
 });
