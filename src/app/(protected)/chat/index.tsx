@@ -57,8 +57,8 @@ export default function index() {
                 </Text>
                 {conversation.lastMessage && (
                   <Text style={conversationStyles.lastMessage}>
-                    {otherPerson._id === conversation.lastMessage?.sender?._id
-                      ? "you"
+                    {conversation.lastMessage?.sender?._id === user?._id
+                      ? "You"
                       : conversation.lastMessage?.sender?.username}
                     : {formatString(conversation.lastMessage?.content, 32)}
                   </Text>
