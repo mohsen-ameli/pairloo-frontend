@@ -19,12 +19,12 @@ import { formatDate } from "@/src/utils/format-date";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import useGradualAnimation from "@/src/utils/gradual-animation";
 import { userAtom } from "@/src/store/auth-store";
-// @ts-ignore
-import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import { chatStyles } from "@/src/styles/chat.styles";
 import { chatSocketAtom } from "@/src/store/socket-store";
 import useCustomHeader from "@/src/utils/useCustomHeader";
 import { Stack } from "expo-router";
+
+const defaultProfilePicture = require("@/assets/images/default_pfp.png");
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();

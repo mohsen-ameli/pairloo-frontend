@@ -12,12 +12,12 @@ import {
   Pressable,
 } from "react-native";
 import { styles } from "@/src/styles/index.styles";
-// @ts-ignore
-import imageNotAvailable from "@/assets/images/image-not-available.png";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { MyPostType } from "@/src/types/post.type";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
+
+const imageNotAvailable = require("@/assets/images/image-not-available.png");
 
 export default function Index() {
   const router = useRouter();
