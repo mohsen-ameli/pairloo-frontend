@@ -40,3 +40,9 @@ If you want to refresh the cache use
 ```bash
 npm run dev --reset-cache
 ```
+
+## Libraries and Assets used
+
+New chat message notification sound:
+
+Sound Effect by <a href="https://pixabay.com/users/universfield-28281460/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=363678">Universfield</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=363678">Pixabay</a>

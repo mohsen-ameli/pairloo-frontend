@@ -5,6 +5,20 @@ import { ConversationType, MessageType } from "../types/chat.type";
 import { chatSocketAtom } from "./socket-store";
 import { refreshAccessToken } from "../utils/refresh-access-token";
 import { WS_BASE_URL } from "../utils/constants";
+import { notificationSoundAtom, pathStore } from "./general-store";
+import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
+import { router } from "expo-router";
+
+const unreadMsgStorage = createJSONStorage<{
+  [conversationId: string]: number;
+}>(() => AsyncStorage);
+export const unreadMessagesAtom = atomWithStorage(
+  "unread-messages",
+  {},
+  unreadMsgStorage,
+);
 
 export const conversationsAtom = atom<ConversationType[]>([]);
 
@@ -82,12 +96,22 @@ export const initChatAtom = atom(null, async (get, set) => {
   );
 
   // Got all messages for a conversation
-  socket.on("messages", (messages: MessageType[]) => {
+  socket.on("messages", async (messages: MessageType[]) => {
     set(messagesAtom, messages);
+    const unreadMsgs = await get(unreadMessagesAtom);
+    await set(unreadMessagesAtom, () => {
+      const updated = { ...unreadMsgs };
+      messages.forEach((msg) => {
+        if (msg.conversationId in updated) {
+          delete updated[msg.conversationId];
+        }
+      });
+      return updated;
+    });
   });
 
   // Received a message from the server
-  socket.on("message", (message: MessageType) => {
+  socket.on("message", async (message: MessageType) => {
     let isOptimistic = false;
     set(messagesAtom, (prev) =>
       prev.map((msg) => {
@@ -100,7 +124,48 @@ export const initChatAtom = atom(null, async (get, set) => {
       }),
     );
     // we received a message from other user
-    if (!isOptimistic) set(messagesAtom, (prev) => [...prev, message]);
+    if (!isOptimistic) {
+      set(messagesAtom, (prev) => [...prev, message]);
+
+      // If user is not in the chat that received the message
+      if (get(pathStore) !== `/chat/${message.conversationId}`) {
+        Toast.show({
+          type: "newMessage",
+          props: {
+            username: message.sender.username,
+            message: message.content,
+            picture: message.sender.picture,
+          },
+          onPress: () => {
+            router.replace({
+              pathname: "/chat",
+              params: { redirect: `/chat/${message.conversationId}` },
+            });
+          },
+        });
+        const player = get(notificationSoundAtom);
+        if (!player) {
+          console.warn("No audio player for notification sound");
+        } else {
+          player.seekTo(0);
+          player.play();
+        }
+        const unreadMsgs = await get(unreadMessagesAtom);
+        await set(unreadMessagesAtom, () => {
+          if (message.conversationId in unreadMsgs) {
+            return {
+              ...unreadMsgs,
+              [message.conversationId]: unreadMsgs[message.conversationId] + 1,
+            };
+          } else {
+            return {
+              ...unreadMsgs,
+              [message.conversationId]: 1,
+            };
+          }
+        });
+      }
+    }
   });
 });
 
