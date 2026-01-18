@@ -117,7 +117,7 @@ export default function CreatePost() {
             >
               <View style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>
-                  {questions.length == 1
+                  {questions.length === 1
                     ? questionText
                     : `Question: ${questionText}`}
                 </Text>

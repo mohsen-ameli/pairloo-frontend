@@ -14,23 +14,21 @@ import CustomHeader from "@/src/components/CustomHeader";
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png");
 
-type EditFields = {
-  firstName: string;
-  lastName: string;
-  country: string;
-  city: string;
-  state: string;
-  latitude: number;
-  longitude: number;
-  timezone: string;
-  locationId: number;
-};
-
 export default function SettingsScreen() {
   const logout = useSetAtom(logOutAtom);
   const [user, setUser] = useAtom(userAtom);
   const [editMode, setEditMode] = useState(false);
-  const [editFields, setEditFields] = useState<EditFields>(null!);
+  const [editFields, setEditFields] = useState({
+    firstName: "",
+    lastName: "",
+    country: "",
+    city: "",
+    state: "",
+    latitude: 0,
+    longitude: 0,
+    timezone: "",
+    locationId: 0,
+  });
   const authFetch = useSetAtom(authFetchAtom);
 
   useEffect(() => {
@@ -170,9 +168,9 @@ export default function SettingsScreen() {
                   <View style={styles.editInputContainer}>
                     <CustomInput
                       defaultValue={editFields.firstName}
-                      onChangeText={(text: string) =>
-                        setEditFields((f) => ({ ...f, firstName: text }))
-                      }
+                      onChangeText={(text: string) => {
+                        setEditFields((f) => ({ ...f, firstName: text }));
+                      }}
                       style={styles.editInput}
                     />
                   </View>
