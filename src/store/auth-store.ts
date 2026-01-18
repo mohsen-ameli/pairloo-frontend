@@ -26,11 +26,11 @@ export const returningUserAtom = atomWithStorage(
 
 // For the sign up process
 const newUser = {
-  username: "noob",
-  firstName: "michael",
-  lastName: "jackson",
+  username: "",
+  firstName: "",
+  lastName: "",
   picture: "",
-  email: "hehehehe@gmail.com",
+  email: "",
   emailCode: "",
   emailVerified: false,
   phoneNumber: "",
