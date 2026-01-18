@@ -8,9 +8,9 @@ import { useRouter } from "expo-router";
 import { useAtom, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { Platform, View } from "react-native";
-import CustomButton from "../components/CustomButton";
-import { newUserAtom, userAtom } from "../store/auth-store";
-import { BASE_URL } from "../utils/constants";
+import CustomButton from "@/src/components/CustomButton";
+import { newUserAtom, userAtom } from "@/src/store/auth-store";
+import { BASE_URL } from "@/src/utils/constants";
 
 const config: AuthRequestConfig = {
   clientId: "google",

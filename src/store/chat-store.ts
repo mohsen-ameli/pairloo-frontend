@@ -1,10 +1,10 @@
 import { atom } from "jotai";
 import { userAtom } from "./auth-store";
 import io from "socket.io-client";
-import { ConversationType, MessageType } from "../types/chat.type";
+import { ConversationType, MessageType } from "@/src/types/chat.type";
 import { chatSocketAtom } from "./socket-store";
-import { refreshAccessToken } from "../utils/refresh-access-token";
-import { WS_BASE_URL } from "../utils/constants";
+import { refreshAccessToken } from "@/src/utils/refresh-access-token";
+import { WS_BASE_URL } from "@/src/utils/constants";
 import { notificationSoundAtom, pathStore } from "./general-store";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";

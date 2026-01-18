@@ -1,14 +1,14 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useAtomValue } from "jotai";
-import { userAtom } from "../store/auth-store";
+import { userAtom } from "@/src/store/auth-store";
 import { LogBox } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { colors } from "../utils/colors";
+import { colors } from "@/src/utils/colors";
 import { maybeCompleteAuthSession } from "expo-web-browser";
 import Toast from "react-native-toast-message";
-import CustomToast from "../components/CustomToast";
+import CustomToast from "@/src/components/CustomToast";
 
 LogBox.ignoreAllLogs();
 maybeCompleteAuthSession();

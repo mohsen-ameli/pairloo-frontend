@@ -1,6 +1,6 @@
 import { View, ActivityIndicator } from "react-native";
 import React from "react";
-import { colors } from "../utils/colors";
+import { colors } from "@/src/utils/colors";
 
 export default function LoadingIndicator({ loading }: { loading: boolean }) {
   if (!loading) return null;
@@ -12,7 +12,7 @@ export default function LoadingIndicator({ loading }: { loading: boolean }) {
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: "rgba(0,0,0,0.1)",
+        backgroundColor: colors.lightGray,
         justifyContent: "center",
         alignItems: "center",
         zIndex: 10,

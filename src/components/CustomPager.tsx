@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated as A, Platform, Pressable, Text, View } from "react-native";
 import PagerView, { usePagerView } from "react-native-pager-view";
-import { colors } from "../utils/colors";
+import { colors } from "@/src/utils/colors";
 import { useAtom, useAtomValue } from "jotai";
-import useGradualAnimation from "../utils/gradual-animation";
+import useGradualAnimation from "@/src/utils/gradual-animation";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
-import { currPageAtom, flowAtom, pageCountAtom } from "../store/pager-store";
-import { userAtom } from "../store/auth-store";
+import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store";
+import { userAtom } from "@/src/store/auth-store";
 import { useFocusEffect } from "expo-router";
 
 /**

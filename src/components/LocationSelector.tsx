@@ -9,10 +9,10 @@ import {
   Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "../utils/colors";
-import { BASE_URL } from "../utils/constants";
+import { colors } from "@/src/utils/colors";
+import { BASE_URL } from "@/src/utils/constants";
 import Feather from "@expo/vector-icons/Feather";
-import { userAtom } from "../store/auth-store";
+import { userAtom } from "@/src/store/auth-store";
 import { useAtomValue } from "jotai";
 import { locSelecStyles } from "@/src/styles/location-selector.styles";
 import CustomInput from "./CustomInput";

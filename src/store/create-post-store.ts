@@ -1,14 +1,14 @@
 import { atom } from "jotai";
 import { userAtom } from "./auth-store";
-import { WS_BASE_URL } from "../utils/constants";
+import { WS_BASE_URL } from "@/src/utils/constants";
 import { createPostSocketAtom } from "./socket-store";
-import { refreshAccessToken } from "../utils/refresh-access-token";
+import { refreshAccessToken } from "@/src/utils/refresh-access-token";
 import io from "socket.io-client";
 import { currPageAtom, pageCountAtom } from "./pager-store";
 import { router } from "expo-router";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Question } from "../types/question.types";
+import { Question } from "@/src/types/question.types";
 
 const INITIAL_PAGE_COUNT = 2;
 const DEFAULT_NUM_MATCHES = 5;
