@@ -1,9 +1,9 @@
 import CustomHeader from "@/src/components/CustomHeader";
 import { conversationStyles } from "@/src/styles/conversation.style";
-import { conversationsAtom } from "@/src/utils/chat-store";
+import { conversationsAtom } from "@/src/store/chat-store";
 import { sinceNow } from "@/src/utils/format-date";
 import { formatString } from "@/src/utils/format-string";
-import { userAtom } from "@/src/utils/store";
+import { userAtom } from "@/src/store/auth-store";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";

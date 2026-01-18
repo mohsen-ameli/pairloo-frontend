@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { userAtom } from "./store";
+import { userAtom } from "../store/auth-store";
 import { BASE_URL } from "./constants";
 import { fetch, FetchRequestInit } from "expo/fetch";
 import { refreshAccessToken } from "./refresh-access-token";
@@ -44,5 +44,5 @@ export const authFetchAtom = atom(
     }
 
     return res;
-  }
+  },
 );

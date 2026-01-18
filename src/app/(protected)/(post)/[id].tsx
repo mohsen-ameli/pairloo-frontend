@@ -9,10 +9,10 @@ import { GeneralPostType } from "@/src/types/post.type";
 import ImageCarousel from "@/src/components/ImageCarousel";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
-import { userAtom } from "@/src/utils/store";
+import { userAtom } from "@/src/store/auth-store";
 import { ConversationType } from "@/src/types/chat.type";
 import CustomHeader from "@/src/components/CustomHeader";
-import { chatSocketAtom } from "@/src/utils/socket-store";
+import { chatSocketAtom } from "@/src/store/socket-store";
 
 export default function PostDetails() {
   const router = useRouter();

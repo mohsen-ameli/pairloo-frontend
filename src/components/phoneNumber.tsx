@@ -1,21 +1,22 @@
 import { colors } from "@/src/utils/colors";
-import { newUserAtom, signUpErrorsAtom } from "@/src/utils/store";
+import { newUserAtom, authErrorsAtom } from "@/src/store/auth-store";
 import Feather from "@expo/vector-icons/Feather";
 import { useAtom } from "jotai";
 import React, { useEffect, useState } from "react";
-import { Platform, Pressable, TextInput, View } from "react-native";
+import { Appearance, Platform, Pressable, TextInput, View } from "react-native";
 import CountryPicker, { DARK_THEME } from "react-native-country-picker-modal";
 import {
   Country,
   CountryCode,
 } from "react-native-country-picker-modal/lib/types";
 
+const colorScheme = Appearance.getColorScheme();
+
 export default function PhoneNumber() {
   const [countryCode, setCountryCode] = useState<CountryCode>("CA");
   const [visible, setVisible] = useState<boolean>(false);
-  const [dark, setDark] = useState<boolean>(false);
   const [newUser, setNewUser] = useAtom(newUserAtom);
-  const [errors, setErrors] = useAtom(signUpErrorsAtom);
+  const [errors, setErrors] = useAtom(authErrorsAtom);
 
   // Get country code from storage
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function PhoneNumber() {
         }}
       >
         <CountryPicker
-          theme={dark ? DARK_THEME : {}}
+          theme={colorScheme === "dark" ? DARK_THEME : {}}
           {...{
             allowFontScaling: true,
             countryCode,

@@ -9,7 +9,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { Platform, View } from "react-native";
 import CustomButton from "../components/CustomButton";
-import { newUserAtom, userAtom } from "../utils/store";
+import { newUserAtom, userAtom } from "../store/auth-store";
 import { BASE_URL } from "../utils/constants";
 
 const config: AuthRequestConfig = {

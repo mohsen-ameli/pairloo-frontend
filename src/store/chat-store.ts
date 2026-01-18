@@ -1,10 +1,10 @@
 import { atom } from "jotai";
-import { userAtom } from "./store";
-import { WS_BASE_URL } from "./constants";
+import { userAtom } from "./auth-store";
 import io from "socket.io-client";
-import { refreshAccessToken } from "./refresh-access-token";
 import { ConversationType, MessageType } from "../types/chat.type";
 import { chatSocketAtom } from "./socket-store";
+import { refreshAccessToken } from "../utils/refresh-access-token";
+import { WS_BASE_URL } from "../utils/constants";
 
 export const conversationsAtom = atom<ConversationType[]>([]);
 
@@ -76,9 +76,9 @@ export const initChatAtom = atom(null, async (get, set) => {
             return { ...conv, lastMessage };
           }
           return conv;
-        })
+        }),
       );
-    }
+    },
   );
 
   // Got all messages for a conversation
@@ -97,7 +97,7 @@ export const initChatAtom = atom(null, async (get, set) => {
           return message;
         }
         return msg;
-      })
+      }),
     );
     // we received a message from other user
     if (!isOptimistic) set(messagesAtom, (prev) => [...prev, message]);
@@ -134,5 +134,5 @@ export const sendMessageAtom = atom(
       conversationId,
       content,
     });
-  }
+  },
 );

@@ -1,4 +1,5 @@
-import { initChatAtom } from "@/src/utils/chat-store";
+import { initChatAtom } from "@/src/store/chat-store";
+import { initCreatePostAtom } from "@/src/store/create-post-store";
 import { colors } from "@/src/utils/colors";
 import Feather from "@expo/vector-icons/Feather";
 import { Tabs } from "expo-router";
@@ -7,9 +8,11 @@ import { useEffect } from "react";
 
 export default function ProtectedLayout() {
   const initChatConnection = useSetAtom(initChatAtom);
+  const initCreatePost = useSetAtom(initCreatePostAtom);
 
   useEffect(() => {
     initChatConnection();
+    initCreatePost();
   }, []);
 
   return (

@@ -8,24 +8,21 @@ import {
   Alert,
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CustomHeader from "@/src/components/CustomHeader";
-import useCustomPager, { flowAtom } from "@/src/components/CustomPager";
+import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store";
+import CustomPager from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { createPostStyles } from "@/src/styles/create_post.styles";
-import io from "socket.io-client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { logOutAtom, userAtom } from "@/src/utils/store";
-import { WS_BASE_URL } from "@/src/utils/constants";
+import { userAtom } from "@/src/store/auth-store";
 import { useRouter } from "expo-router";
-import { refreshAccessToken } from "@/src/utils/refresh-access-token";
 import * as ImagePicker from "expo-image-picker";
 import ImageCarousel from "@/src/components/ImageCarousel";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAtomCallback } from "jotai/utils";
-import { createPostSocketAtom } from "@/src/utils/socket-store";
+import { createPostSocketAtom } from "@/src/store/socket-store";
 
 const INITIAL_PAGE_COUNT = 2;
 
@@ -33,10 +30,9 @@ export default function Index() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const user = useAtomValue(userAtom);
-  const logout = useSetAtom(logOutAtom);
   const [pages, setPages] = useState([""]);
   const [questions, setQuestions] = useState<string[]>([""]);
-  const [socket, setSocket] = useAtom(createPostSocketAtom);
+  const socket = useAtomValue(createPostSocketAtom);
   const [loading, setLoading] = useState(false);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
   const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([
@@ -48,75 +44,48 @@ export default function Index() {
   const pagesLengthRef = useRef(pages.length);
   const numMatchesRef = useRef(5);
   const [flow, setFlow] = useAtom(flowAtom);
-  const { currPage, setPageCount, setPage, setCurrPage, Pager } =
-    useCustomPager({ initialPageCount: INITIAL_PAGE_COUNT });
+  const [currPage, setCurrPage] = useAtom(currPageAtom);
+  const setPageCount = useSetAtom(pageCountAtom);
 
   useEffect(() => {
+    if (!socket) return;
     setFlow({
       ...flow,
       back: () => {
         setCurrPage(currPage - 1);
-        setPage(currPage - 1);
       },
       next: () => {
         forward();
       },
     });
+  }, [currPage, socket]);
 
-    return () => {
-      setFlow({
-        back: null,
-        next: null,
-        backEnabled: true,
-        nextEnabled: true,
+  function forward() {
+    if (!socket) {
+      console.warn("[forward] Socket is not initialized!");
+      return;
+    }
+
+    setLoading(true);
+    if (currPage == pagesLengthRef.current) {
+      socket.emit("submit", {
+        numMatches: numMatchesRef.current,
+        publicPost,
+        images,
       });
-    };
-  }, [currPage]);
-
-  const forward = useAtomCallback(
-    useCallback(
-      (get) => {
-        const s = get(createPostSocketAtom);
-        if (!s) {
-          console.warn("[forward] Socket is not initialized!");
-          return;
-        }
-
-        setLoading(true);
-        if (currPage == pagesLengthRef.current) {
-          s.emit("submit", {
-            numMatches: numMatchesRef.current,
-            publicPost,
-            images,
-          });
-        } else if (
-          !inputRefs.current[currPage] ||
-          inputRefs.current[currPage].trim() === ""
-        ) {
-          Alert.alert(
-            "Input required",
-            "Please enter some text before continuing."
-          );
-          setLoading(false);
-          return;
-        } else {
-          s.emit("chat", inputRefs.current[currPage]);
-        }
-      },
-      [currPage, publicPost, images]
-    )
-  );
-
-  async function initConnection(accessToken: string) {
-    if (!user) return;
-
-    setSocket(
-      io(WS_BASE_URL + "/create-post", {
-        auth: {
-          token: accessToken,
-        },
-      })
-    );
+    } else if (
+      !inputRefs.current[currPage] ||
+      inputRefs.current[currPage].trim() === ""
+    ) {
+      Alert.alert(
+        "Input required",
+        "Please enter some text before continuing.",
+      );
+      setLoading(false);
+      return;
+    } else {
+      socket.emit("chat", inputRefs.current[currPage]);
+    }
   }
 
   async function pickImage() {
@@ -126,7 +95,7 @@ export default function Index() {
     if (!permissionResult.granted) {
       Alert.alert(
         "Permission required",
-        "Permission to access the media library is required."
+        "Permission to access the media library is required.",
       );
       return;
     }
@@ -168,38 +137,16 @@ export default function Index() {
   };
 
   useEffect(() => {
-    if (!user) return;
-    if (!socket) {
-      initConnection(user.accessToken);
-      return;
-    }
-
-    socket.on("connect", () => {
-      console.log("Connected to WebSocket server for create-post");
-    });
-
-    socket.on("error", (err: any) => {
-      console.error("WebSocket error event:", err);
-    });
-
-    socket.on("connect_error", async () => {
-      const accessToken = await refreshAccessToken(user.refreshToken);
-      if (accessToken === null) {
-        socket.disconnect();
-        logout();
-        return;
-      }
-      initConnection(accessToken);
-    });
+    if (!user || !socket) return;
 
     socket.on("question", (question: string) => {
       setQuestions((prevQuestions) => [...prevQuestions, question]);
       setPages((prevPages) => [...prevPages, ""]);
       setLoading(false);
+      setCurrPage(currPage + 1);
     });
 
     socket.on("chat-finished", () => {
-      setPage(pagesLengthRef.current);
       setCurrPage(pagesLengthRef.current);
       setLoading(false);
     });
@@ -207,7 +154,6 @@ export default function Index() {
     socket.on("success", (postId: string) => {
       setPages([""]);
       setCurrPage(0);
-      setPage(0);
       setPageCount(INITIAL_PAGE_COUNT);
       setQuestions([""]);
       inputRefs.current = [""];
@@ -215,7 +161,6 @@ export default function Index() {
       setPublicPost(true);
       setImages([]);
       setLoading(false);
-      setSocket(null);
 
       router.navigate({
         pathname: "/my-posts",
@@ -228,7 +173,6 @@ export default function Index() {
   useEffect(() => {
     pagesLengthRef.current = pages.length;
     setPageCount(pages.length + 1);
-    setPage(pages.length - 1);
     setCurrPage(pages.length - 1);
     setMcqAnswers((prev) => {
       if (pages.length > prev.length) {
@@ -253,7 +197,7 @@ export default function Index() {
       <CustomHeader title="Create Post" />
       <LoadingIndicator loading={loading} />
 
-      <Pager>
+      <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
         {pages.map((pageText, i) => {
           let response = questions[i]
             ? JSON.parse(questions[i].replace(/```json|```/g, "").trim())
@@ -463,7 +407,7 @@ export default function Index() {
             />
           </View>
         </View>
-      </Pager>
+      </CustomPager>
     </>
   );
 }

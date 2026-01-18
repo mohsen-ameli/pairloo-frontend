@@ -1,36 +1,42 @@
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
-import { userAtom, logOutAtom } from "@/src/utils/store";
+import { userAtom, logOutAtom } from "@/src/store/auth-store";
 import { styles } from "@/src/styles/settings.styles";
 import CustomButton from "@/src/components/CustomButton";
 import CustomInput from "@/src/components/CustomInput";
 import LocationSelector from "@/src/components/LocationSelector";
 import { colors } from "@/src/utils/colors";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authFetchAtom } from "../../../utils/auth-fetch";
 import Feather from "@expo/vector-icons/Feather";
 // @ts-ignore
 import default_pfp from "@/assets/images/default_pfp.png";
 import CustomHeader from "@/src/components/CustomHeader";
 
+type EditFields = {
+  firstName: string;
+  lastName: string;
+  country: string;
+  city: string;
+  state: string;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  locationId: number;
+};
+
 export default function SettingsScreen() {
-  const user = useAtomValue(userAtom);
   const logout = useSetAtom(logOutAtom);
+  const [user, setUser] = useAtom(userAtom);
   const [editMode, setEditMode] = useState(false);
-  const [editFields, setEditFields] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    country: user?.country || "",
-    city: user?.city || "",
-    state: user?.state || "",
-    latitude: user?.latitude || 0,
-    longitude: user?.longitude || 0,
-    timezone: user?.timezone || "",
-    locationId: user?.locationId || 0,
-  });
-  const setUser = useSetAtom(userAtom);
+  const [editFields, setEditFields] = useState<EditFields>(null!);
   const authFetch = useSetAtom(authFetchAtom);
+
+  useEffect(() => {
+    if (!user) return;
+    resetEdit();
+  }, [user]);
 
   async function handleSaveEdit() {
     if (!user) return;
@@ -57,22 +63,23 @@ export default function SettingsScreen() {
     } catch (err: any) {
       Alert.alert(
         "Update Failed",
-        err?.message || "An unexpected error occurred."
+        err?.message || "An unexpected error occurred.",
       );
     }
   }
 
-  function handleCancelEdit() {
+  function resetEdit() {
+    if (!user) return;
     setEditFields({
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      country: user?.country || "",
-      city: user?.city || "",
-      state: user?.state || "",
-      latitude: user?.latitude || 0,
-      longitude: user?.longitude || 0,
-      timezone: user?.timezone || "",
-      locationId: user?.locationId || 0,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      country: user.country,
+      city: user.city,
+      state: user.state,
+      latitude: user.latitude,
+      longitude: user.longitude,
+      timezone: user.timezone,
+      locationId: user.locationId,
     });
     setEditMode(false);
   }
@@ -88,6 +95,8 @@ export default function SettingsScreen() {
     ]);
   }
 
+  if (!user || !editFields) return null;
+
   return (
     <View style={styles.container}>
       <CustomHeader title="Settings" />
@@ -98,13 +107,15 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <View style={styles.row}>
               <View style={styles.avatarContainer}>
-                <Image
-                  source={{
-                    uri: user?.picture || default_pfp,
-                  }}
-                  style={styles.avatar}
-                  contentFit="cover"
-                />
+                {user.picture && (
+                  <Image
+                    source={{
+                      uri: user.picture || default_pfp,
+                    }}
+                    style={styles.avatar}
+                    contentFit="cover"
+                  />
+                )}
               </View>
               <View style={styles.profileTextContainer}>
                 <View
@@ -150,7 +161,7 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
             <View style={styles.fieldRow}>
               <Text style={styles.fieldLabel}>Email</Text>
-              <Text style={styles.fieldValue}>{user?.email || "NA"}</Text>
+              <Text style={styles.fieldValue}>{user.email || "NA"}</Text>
             </View>
             {editMode ? (
               <>
@@ -208,10 +219,7 @@ export default function SettingsScreen() {
                   </View>
                   <View style={{ width: 12 }} />
                   <View style={{ flex: 1 }}>
-                    <CustomButton
-                      onPress={handleCancelEdit}
-                      color={colors.gray}
-                    >
+                    <CustomButton onPress={resetEdit} color={colors.gray}>
                       Cancel
                     </CustomButton>
                   </View>
@@ -221,18 +229,16 @@ export default function SettingsScreen() {
               <>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>First Name</Text>
-                  <Text style={styles.fieldValue}>
-                    {user?.firstName || "—"}
-                  </Text>
+                  <Text style={styles.fieldValue}>{user.firstName || "—"}</Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Last Name</Text>
-                  <Text style={styles.fieldValue}>{user?.lastName || "—"}</Text>
+                  <Text style={styles.fieldValue}>{user.lastName || "—"}</Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Phone</Text>
                   <Text style={styles.fieldValue}>
-                    {user?.phoneNumber || "—"}
+                    {user.phoneNumber || "—"}
                   </Text>
                 </View>
                 <View style={styles.fieldRow}>

@@ -21,11 +21,12 @@ export const conversationStyles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
   },
-  image: { width: 40, height: 40, borderRadius: 25 },
+  image: { width: 50, height: 50, borderRadius: 25 },
   itemTitle: {
     color: colors.dark,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
+    marginBottom: 4,
   },
   lastMessage: {
     color: colors.dark,

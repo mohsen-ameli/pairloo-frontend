@@ -7,7 +7,7 @@ import {
   conversationsAtom,
   messagesAtom,
   sendMessageAtom,
-} from "@/src/utils/chat-store";
+} from "@/src/store/chat-store";
 import { colors } from "@/src/utils/colors";
 import {
   ConversationType,
@@ -19,11 +19,11 @@ import CustomHeader from "@/src/components/CustomHeader";
 import { formatDate } from "@/src/utils/format-date";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import useGradualAnimation from "@/src/utils/gradual-animation";
-import { userAtom } from "@/src/utils/store";
+import { userAtom } from "@/src/store/auth-store";
 // @ts-ignore
 import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import { chatStyles } from "@/src/styles/chat.styles";
-import { chatSocketAtom } from "@/src/utils/socket-store";
+import { chatSocketAtom } from "@/src/store/socket-store";
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,10 +34,10 @@ export default function Chat() {
   const user = useAtomValue(userAtom);
   const conversations = useAtomValue(conversationsAtom);
   const [conversation, setConversation] = useState<ConversationType | null>(
-    null
+    null,
   );
   const chatRef = useRef<FlatList>(null!);
-  const { height } = useGradualAnimation();
+  const { height } = useGradualAnimation({ isAuthenticated: user !== null });
   const [otherUser, setOtherUser] = useState<OtherUser>(null!);
 
   useEffect(() => {
