@@ -1,15 +1,39 @@
-import { initChatAtom } from "@/src/store/chat-store";
+import { userAtom } from "@/src/store/auth-store";
+import { initChatAtom, unreadMessagesAtom } from "@/src/store/chat-store";
 import { initCreatePostAtom } from "@/src/store/create-post-store";
+import { pathStore } from "@/src/store/general-store";
 import { colors } from "@/src/utils/colors";
 import Feather from "@expo/vector-icons/Feather";
-import { Tabs } from "expo-router";
-import { useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { Image } from "expo-image";
+import { Tabs, usePathname } from "expo-router";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 
 export default function ProtectedLayout() {
   const initChatConnection = useSetAtom(initChatAtom);
   const initCreatePost = useSetAtom(initCreatePostAtom);
+  const user = useAtomValue(userAtom);
+  const pathname = usePathname();
+  const setPath = useSetAtom(pathStore);
+  const unreadMessages = useAtomValue(unreadMessagesAtom);
+  const [numUnreadMessages, setNumUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    if (!unreadMessages) {
+      setNumUnreadMessages(0);
+      return;
+    }
+    const total = Object.values(unreadMessages).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+    setNumUnreadMessages(total);
+  }, [unreadMessages]);
+
+  useEffect(() => {
+    setPath(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     async function initialize() {
@@ -33,6 +57,9 @@ export default function ProtectedLayout() {
         options={{
           title: "Home",
           headerShown: false,
+          tabBarLabelStyle: {
+            marginTop: 2,
+          },
           tabBarIcon: ({ color, size }) => (
             <Feather name="home" size={size} color={color} />
           ),
@@ -43,6 +70,9 @@ export default function ProtectedLayout() {
         options={{
           title: "My Posts",
           headerShown: false,
+          tabBarLabelStyle: {
+            marginTop: 2,
+          },
           tabBarIcon: ({ color, size }) => (
             <Feather name="file-text" size={size} color={color} />
           ),
@@ -53,6 +83,9 @@ export default function ProtectedLayout() {
         options={{
           title: "Create Post",
           headerShown: false,
+          tabBarLabelStyle: {
+            marginTop: 2,
+          },
           tabBarIcon: ({ color, size }) => (
             <Feather name="plus-circle" size={size} color={color} />
           ),
@@ -63,10 +96,13 @@ export default function ProtectedLayout() {
         options={{
           title: "Chat",
           headerShown: false,
-          tabBarBadge: 2,
+          tabBarBadge: numUnreadMessages > 0 ? numUnreadMessages : undefined,
           tabBarBadgeStyle: {
-            backgroundColor: "tomato",
-            color: "white",
+            backgroundColor: colors.purple,
+            color: colors.light,
+          },
+          tabBarLabelStyle: {
+            marginTop: 2,
           },
           tabBarIcon: ({ color, size }) => (
             <Feather name="message-circle" size={size} color={color} />
@@ -76,11 +112,25 @@ export default function ProtectedLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "You",
           headerShown: false,
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="settings" size={size} color={color} />
-          ),
+          tabBarLabelStyle: {
+            marginTop: 2,
+          },
+          tabBarIcon: ({ color, size }) =>
+            user?.picture ? (
+              <Image
+                source={user.picture}
+                style={{
+                  width: size + 3,
+                  height: size + 3,
+                  borderRadius: 25,
+                }}
+                contentFit="contain"
+              />
+            ) : (
+              <Feather name="settings" size={size} color={color} />
+            ),
         }}
       />
     </Tabs>

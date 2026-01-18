@@ -32,10 +32,22 @@ export const conversationStyles = StyleSheet.create({
     color: colors.dark,
   },
   timestamp: {
-    position: "absolute",
-    right: 10,
-    top: 10,
-    fontSize: 12,
+    fontSize: 13,
     color: colors.gray,
+  },
+  unreadBadge: {
+    backgroundColor: colors.purple,
+    borderRadius: 25,
+    minWidth: 24,
+    height: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  unreadBadgeText: {
+    color: colors.light,
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
