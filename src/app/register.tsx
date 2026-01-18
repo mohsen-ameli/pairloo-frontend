@@ -21,7 +21,7 @@ import {
   REGISTER_USERNAME_CHECK_INTERVAL,
 } from "@/src/utils/constants";
 import { currPageAtom, flowAtom } from "@/src/store/pager-store";
-import CustomPager from "../components/CustomPager";
+import CustomPager from "@/src/components/CustomPager";
 
 const INITIAL_PAGE_COUNT = 5;
 

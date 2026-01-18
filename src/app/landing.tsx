@@ -4,7 +4,7 @@ import { Link } from "expo-router";
 import { Text, View } from "react-native";
 import ContinueWithGoogle from "./continue-with-google";
 import { useState } from "react";
-import LoadingIndicator from "../components/LoadingIndicator";
+import LoadingIndicator from "@/src/components/LoadingIndicator";
 
 export default function Landing() {
   const [loading, setLoading] = useState(false);

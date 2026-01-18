@@ -32,7 +32,7 @@ export const createPostStyles = StyleSheet.create({
   textInput: {
     flex: 1,
     color: colors.dark,
-    borderColor: "gray",
+    borderColor: colors.borderGray,
     borderWidth: 1,
     padding: 10,
     textAlignVertical: "top",

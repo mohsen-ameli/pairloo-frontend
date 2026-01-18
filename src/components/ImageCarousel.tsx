@@ -7,6 +7,7 @@ import Carousel, {
 import { SlideItem } from "./SlideItem";
 import { Dispatch, useEffect, useRef, useState } from "react";
 import { SetStateAction } from "jotai";
+import { colors } from "@/src/utils/colors";
 
 export default function ImageCarousel({
   images,
@@ -20,7 +21,7 @@ export default function ImageCarousel({
   const ref = useRef<ICarouselInstance>(null);
   const progress = useSharedValue<number>(0);
   const [width, setWidth] = useState(
-    Dimensions.get("window").width - widthOffset
+    Dimensions.get("window").width - widthOffset,
   );
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function ImageCarousel({
         progress={progress}
         data={images}
         dotStyle={{
-          backgroundColor: "rgba(0,0,0,0.2)",
+          backgroundColor: colors.lightGray,
           borderRadius: 50,
           width: 10,
           height: 10,

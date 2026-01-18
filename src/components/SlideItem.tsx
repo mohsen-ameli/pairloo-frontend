@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import type { AnimatedProps } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
-import { colors } from "../utils/colors";
+import { colors } from "@/src/utils/colors";
 import Feather from "@expo/vector-icons/Feather";
 
 interface Props extends AnimatedProps<ViewProps> {
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   removeOverlayButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    backgroundColor: colors.light,
     borderRadius: 20,
     padding: 5,
   },
@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "gray",
+    backgroundColor: colors.gray,
   },
 });

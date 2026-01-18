@@ -301,7 +301,7 @@ export default function CreatePost() {
             <TextInput
               style={{
                 color: colors.dark,
-                borderColor: "gray",
+                borderColor: colors.gray,
                 borderWidth: 1,
                 padding: 5,
                 width: 50,

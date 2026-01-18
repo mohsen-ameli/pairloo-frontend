@@ -12,8 +12,8 @@ import {
   authErrorsAtom,
   verifyEmailCodeAtom,
   returningUserAtom,
-} from "../store/auth-store";
-import CustomPager from "../components/CustomPager";
+} from "@/src/store/auth-store";
+import CustomPager from "@/src/components/CustomPager";
 
 const INITIAL_PAGE_COUNT = 2;
 

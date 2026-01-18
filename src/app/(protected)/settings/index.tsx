@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 import { userAtom, logOutAtom } from "@/src/store/auth-store";
@@ -8,7 +8,7 @@ import CustomInput from "@/src/components/CustomInput";
 import LocationSelector from "@/src/components/LocationSelector";
 import { colors } from "@/src/utils/colors";
 import { useEffect, useState } from "react";
-import { authFetchAtom } from "../../../utils/auth-fetch";
+import { authFetchAtom } from "@/src/utils/auth-fetch";
 import Feather from "@expo/vector-icons/Feather";
 import CustomHeader from "@/src/components/CustomHeader";
 
