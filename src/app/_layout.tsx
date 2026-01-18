@@ -48,6 +48,7 @@ export default function RootLayout() {
                   headerStyle: {
                     backgroundColor: colors.lightBackground,
                   },
+                  headerBackButtonDisplayMode: "minimal",
                 }}
               />
               <Stack.Screen
@@ -60,15 +61,20 @@ export default function RootLayout() {
                   headerStyle: {
                     backgroundColor: colors.lightBackground,
                   },
+                  headerBackButtonDisplayMode: "minimal",
                 }}
               />
               <Stack.Screen
                 name="forgot-email"
                 options={{
-                  headerShown: false,
+                  title: "Forgot Email",
+                  headerTitleStyle: {
+                    color: colors.dark,
+                  },
                   headerStyle: {
                     backgroundColor: colors.lightBackground,
                   },
+                  headerBackButtonDisplayMode: "minimal",
                 }}
               />
             </Stack.Protected>

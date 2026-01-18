@@ -4,7 +4,10 @@ export default function Layout() {
   return (
     <Stack>
       <Stack.Screen name="index" />
-      <Stack.Screen name="[id]" />
+      <Stack.Screen
+        name="[id]"
+        options={{ headerBackButtonDisplayMode: "minimal" }}
+      />
     </Stack>
   );
 }
