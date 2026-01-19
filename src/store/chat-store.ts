@@ -24,15 +24,10 @@ export const conversationsAtom = atom<ConversationType[]>([]);
 
 export const messagesAtom = atom<MessageType[]>([]);
 
-// To prevent multiple initializations
-const initializedAtom = atom(false);
-
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom);
   if (!user) return;
-  const initialized = get(initializedAtom);
-  if (initialized) return;
-  set(initializedAtom, true);
+  if (get(chatSocketAtom)) return;
 
   const socket = io(WS_BASE_URL + "/chat", {
     auth: {
@@ -52,7 +47,6 @@ export const initChatAtom = atom(null, async (get, set) => {
     set(chatSocketAtom, null);
     set(conversationsAtom, []);
     set(messagesAtom, []);
-    set(initializedAtom, false);
   });
 
   socket.on("error", (err: any) => {

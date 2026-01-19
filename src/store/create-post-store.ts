@@ -12,19 +12,17 @@ import { Question } from "@/src/types/question.types";
 
 const INITIAL_PAGE_COUNT = 2;
 const DEFAULT_NUM_MATCHES = 5;
+const DEFAULT_PUBLIC_POST = false;
 
-// To prevent multiple initializations
-const initializedAtom = atom(false);
-
-const defaultQuestion: Question = {
+const DEFAULT_QUESTION: Question = {
   type: "short_answer",
   question: "Start by describing what you want to post about.",
 };
 
-export const questionsAtom = atom<Question[]>([defaultQuestion]);
+export const questionsAtom = atom<Question[]>([DEFAULT_QUESTION]);
 export const pagesAtom = atom([""]);
 export const loadingAtom = atom(false);
-export const publicPostAtom = atom(false);
+export const publicPostAtom = atom(DEFAULT_PUBLIC_POST);
 export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES);
 export const imagesAtom = atom<string[]>([]);
 export const inputsAtom = atom<string[]>([]);
@@ -32,9 +30,7 @@ export const inputsAtom = atom<string[]>([]);
 export const initCreatePostAtom = atom(null, async (get, set) => {
   const user = await get(userAtom);
   if (!user) return;
-  const initialized = get(initializedAtom);
-  if (initialized) return;
-  set(initializedAtom, true);
+  if (get(createPostSocketAtom)) return;
 
   const socket = io(WS_BASE_URL + "/create-post", {
     auth: {
@@ -82,12 +78,12 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   });
 
   socket.on("success", (postId: string) => {
-    set(questionsAtom, [defaultQuestion]);
+    set(questionsAtom, [DEFAULT_QUESTION]);
     set(pagesAtom, [""]);
     set(currPageAtom, 0);
     set(pageCountAtom, INITIAL_PAGE_COUNT);
     set(numMatchesAtom, DEFAULT_NUM_MATCHES);
-    set(publicPostAtom, true);
+    set(publicPostAtom, DEFAULT_PUBLIC_POST);
     set(imagesAtom, []);
     set(inputsAtom, []);
     set(loadingAtom, false);
