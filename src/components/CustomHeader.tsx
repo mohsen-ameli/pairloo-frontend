@@ -17,7 +17,7 @@ export default function CustomHeader({
   title?: string;
   otherUser?: OtherUser;
 }) {
-  const user = useAtomValue(userAtom)!;
+  const user = useAtomValue(userAtom);
 
   function handleProfilePress() {}
 
@@ -70,7 +70,7 @@ export default function CustomHeader({
             >
               <Image
                 source={
-                  user.picture ? { uri: user.picture } : defaultProfilePicture
+                  user?.picture ? { uri: user.picture } : defaultProfilePicture
                 }
                 style={styles.profileImage}
               />

@@ -67,17 +67,7 @@ export default function index() {
                   </Text>
                 )}
               </View>
-              <View
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: 10,
-                  bottom: 10,
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  justifyContent: "space-between",
-                }}
-              >
+              <View style={conversationStyles.timestampContainer}>
                 <Text
                   style={[
                     conversationStyles.timestamp,

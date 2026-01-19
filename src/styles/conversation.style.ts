@@ -31,6 +31,15 @@ export const conversationStyles = StyleSheet.create({
   lastMessage: {
     color: colors.dark,
   },
+  timestampContainer: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+    bottom: 10,
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
   timestamp: {
     fontSize: 13,
     color: colors.gray,

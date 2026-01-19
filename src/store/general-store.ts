@@ -3,4 +3,4 @@ import { atom } from "jotai";
 
 export const pathStore = atom("");
 
-export const notificationSoundAtom = atom<AudioPlayer>();
+export const notificationSoundAtom = atom<AudioPlayer | null>(null);

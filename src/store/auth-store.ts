@@ -19,7 +19,7 @@ const returningUserStorage = createJSONStorage<typeof returningUser>(
   () => AsyncStorage,
 );
 export const returningUserAtom = atomWithStorage(
-  "new-user",
+  "returning-user",
   returningUser,
   returningUserStorage,
 );
@@ -122,21 +122,6 @@ export const signUpAtom = atom(null, async (get, set) => {
     set(authErrorsAtom, { ...get(authErrorsAtom), general: error.message });
     return false;
   }
-});
-
-export const loginAtom = atom(null, async (get, set, email) => {
-  const res = await fetch(`${BASE_URL}/api/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: email,
-    }),
-  });
-  const data = await res.json();
-  set(userAtom, data);
-  return true;
 });
 
 export const logOutAtom = atom(null, (get, set) => {
