@@ -1,24 +1,33 @@
 import { atom } from "jotai";
-import { userAtom } from "./store";
-import { WS_BASE_URL } from "./constants";
+import { userAtom } from "./auth-store";
 import io from "socket.io-client";
-import { refreshAccessToken } from "./refresh-access-token";
-import { ConversationType, MessageType } from "../types/chat.type";
+import { ConversationType, MessageType } from "@/src/types/chat.type";
 import { chatSocketAtom } from "./socket-store";
+import { refreshAccessToken } from "@/src/utils/refresh-access-token";
+import { WS_BASE_URL } from "@/src/utils/constants";
+import { notificationSoundAtom, pathStore } from "./general-store";
+import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
+import { router } from "expo-router";
+
+const unreadMsgStorage = createJSONStorage<{
+  [conversationId: string]: number;
+}>(() => AsyncStorage);
+export const unreadMessagesAtom = atomWithStorage(
+  "unread-messages",
+  {},
+  unreadMsgStorage,
+);
 
 export const conversationsAtom = atom<ConversationType[]>([]);
 
 export const messagesAtom = atom<MessageType[]>([]);
 
-// To prevent multiple initializations
-const initializedAtom = atom(false);
-
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom);
   if (!user) return;
-  const initialized = get(initializedAtom);
-  if (initialized) return;
-  set(initializedAtom, true);
+  if (get(chatSocketAtom)) return;
 
   const socket = io(WS_BASE_URL + "/chat", {
     auth: {
@@ -38,7 +47,6 @@ export const initChatAtom = atom(null, async (get, set) => {
     set(chatSocketAtom, null);
     set(conversationsAtom, []);
     set(messagesAtom, []);
-    set(initializedAtom, false);
   });
 
   socket.on("error", (err: any) => {
@@ -76,18 +84,28 @@ export const initChatAtom = atom(null, async (get, set) => {
             return { ...conv, lastMessage };
           }
           return conv;
-        })
+        }),
       );
-    }
+    },
   );
 
   // Got all messages for a conversation
-  socket.on("messages", (messages: MessageType[]) => {
+  socket.on("messages", async (messages: MessageType[]) => {
     set(messagesAtom, messages);
+    const unreadMsgs = await get(unreadMessagesAtom);
+    await set(unreadMessagesAtom, () => {
+      const updated = { ...unreadMsgs };
+      messages.forEach((msg) => {
+        if (msg.conversationId in updated) {
+          delete updated[msg.conversationId];
+        }
+      });
+      return updated;
+    });
   });
 
   // Received a message from the server
-  socket.on("message", (message: MessageType) => {
+  socket.on("message", async (message: MessageType) => {
     let isOptimistic = false;
     set(messagesAtom, (prev) =>
       prev.map((msg) => {
@@ -97,10 +115,51 @@ export const initChatAtom = atom(null, async (get, set) => {
           return message;
         }
         return msg;
-      })
+      }),
     );
     // we received a message from other user
-    if (!isOptimistic) set(messagesAtom, (prev) => [...prev, message]);
+    if (!isOptimistic) {
+      set(messagesAtom, (prev) => [...prev, message]);
+
+      // If user is not in the chat that received the message
+      if (get(pathStore) !== `/chat/${message.conversationId}`) {
+        Toast.show({
+          type: "newMessage",
+          props: {
+            username: message.sender.username,
+            message: message.content,
+            picture: message.sender.picture,
+          },
+          onPress: () => {
+            router.replace({
+              pathname: "/chat",
+              params: { redirect: `/chat/${message.conversationId}` },
+            });
+          },
+        });
+        const player = get(notificationSoundAtom);
+        if (!player) {
+          console.warn("No audio player for notification sound");
+        } else {
+          player.seekTo(0);
+          player.play();
+        }
+        const unreadMsgs = await get(unreadMessagesAtom);
+        await set(unreadMessagesAtom, () => {
+          if (message.conversationId in unreadMsgs) {
+            return {
+              ...unreadMsgs,
+              [message.conversationId]: unreadMsgs[message.conversationId] + 1,
+            };
+          } else {
+            return {
+              ...unreadMsgs,
+              [message.conversationId]: 1,
+            };
+          }
+        });
+      }
+    }
   });
 });
 
@@ -134,5 +193,5 @@ export const sendMessageAtom = atom(
       conversationId,
       content,
     });
-  }
+  },
 );

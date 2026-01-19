@@ -1,6 +1,6 @@
 import React from "react";
 import { TextInput, TextInputProps } from "react-native";
-import { colors } from "../utils/colors";
+import { colors } from "@/src/utils/colors";
 
 export default function CustomInput({ ...rest }: TextInputProps) {
   return (

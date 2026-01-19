@@ -1,14 +1,14 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import { Stack } from "expo-router";
-import { styles } from "../styles/header.styles";
+import { styles } from "@/src/styles/header.styles";
 import { Image } from "expo-image";
-// @ts-ignore
-import defaultProfilePicture from "@/assets/images/default_pfp.png";
-import { userAtom } from "../utils/store";
+import { userAtom } from "@/src/store/auth-store";
 import { useAtomValue } from "jotai";
-import { OtherUser } from "../types/chat.type";
-import { colors } from "../utils/colors";
+import { OtherUser } from "@/src/types/chat.type";
+import { colors } from "@/src/utils/colors";
+
+const defaultProfilePicture = require("@/assets/images/default_pfp.png");
 
 export default function CustomHeader({
   title,
@@ -17,7 +17,7 @@ export default function CustomHeader({
   title?: string;
   otherUser?: OtherUser;
 }) {
-  const user = useAtomValue(userAtom)!;
+  const user = useAtomValue(userAtom);
 
   function handleProfilePress() {}
 
@@ -70,7 +70,7 @@ export default function CustomHeader({
             >
               <Image
                 source={
-                  user.picture ? { uri: user.picture } : defaultProfilePicture
+                  user?.picture ? { uri: user.picture } : defaultProfilePicture
                 }
                 style={styles.profileImage}
               />

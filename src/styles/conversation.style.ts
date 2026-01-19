@@ -21,20 +21,42 @@ export const conversationStyles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
   },
-  image: { width: 40, height: 40, borderRadius: 25 },
+  image: { width: 50, height: 50, borderRadius: 25 },
   itemTitle: {
     color: colors.dark,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
+    marginBottom: 4,
   },
   lastMessage: {
     color: colors.dark,
   },
-  timestamp: {
+  timestampContainer: {
     position: "absolute",
     right: 10,
     top: 10,
-    fontSize: 12,
+    bottom: 10,
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+  timestamp: {
+    fontSize: 13,
     color: colors.gray,
+  },
+  unreadBadge: {
+    backgroundColor: colors.purple,
+    borderRadius: 25,
+    minWidth: 24,
+    height: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  unreadBadgeText: {
+    color: colors.light,
+    fontSize: 14,
+    fontWeight: "500",
   },
 });

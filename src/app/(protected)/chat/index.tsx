@@ -1,20 +1,22 @@
 import CustomHeader from "@/src/components/CustomHeader";
 import { conversationStyles } from "@/src/styles/conversation.style";
-import { conversationsAtom } from "@/src/utils/chat-store";
+import { conversationsAtom, unreadMessagesAtom } from "@/src/store/chat-store";
 import { sinceNow } from "@/src/utils/format-date";
 import { formatString } from "@/src/utils/format-string";
-import { userAtom } from "@/src/utils/store";
+import { userAtom } from "@/src/store/auth-store";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
+import { colors } from "@/src/utils/colors";
 
 export default function index() {
   const router = useRouter();
   const conversations = useAtomValue(conversationsAtom);
   const { redirect } = useLocalSearchParams();
   const user = useAtomValue(userAtom);
+  const unreadMessages = useAtomValue(unreadMessagesAtom);
 
   useEffect(() => {
     if (redirect) {
@@ -58,16 +60,40 @@ export default function index() {
                 </Text>
                 {conversation.lastMessage && (
                   <Text style={conversationStyles.lastMessage}>
-                    {otherPerson._id === conversation.lastMessage?.sender?._id
-                      ? "you"
+                    {conversation.lastMessage?.sender?._id === user?._id
+                      ? "You"
                       : conversation.lastMessage?.sender?.username}
                     : {formatString(conversation.lastMessage?.content, 32)}
                   </Text>
                 )}
               </View>
-              <Text style={conversationStyles.timestamp}>
-                {sinceNow(conversation.lastMessage?.updatedAt)}
-              </Text>
+              <View style={conversationStyles.timestampContainer}>
+                <Text
+                  style={[
+                    conversationStyles.timestamp,
+                    {
+                      color:
+                        conversation._id in unreadMessages
+                          ? colors.purple
+                          : colors.gray,
+                      fontWeight:
+                        conversation._id in unreadMessages ? "500" : "400",
+                    },
+                  ]}
+                >
+                  {sinceNow(conversation.lastMessage?.updatedAt)}
+                </Text>
+                <Text>
+                  {conversation._id in unreadMessages &&
+                    unreadMessages[conversation._id] > 0 && (
+                      <View style={conversationStyles.unreadBadge}>
+                        <Text style={conversationStyles.unreadBadgeText}>
+                          {unreadMessages[conversation._id]}
+                        </Text>
+                      </View>
+                    )}
+                </Text>
+              </View>
             </Pressable>
           );
         })}

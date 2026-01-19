@@ -5,147 +5,73 @@ import {
   Keyboard,
   Text,
   Switch,
-  Alert,
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import CustomHeader from "@/src/components/CustomHeader";
-import useCustomPager, { flowAtom } from "@/src/components/CustomPager";
+import { currPageAtom, flowAtom } from "@/src/store/pager-store";
+import CustomPager from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
 import CustomButton from "@/src/components/CustomButton";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { createPostStyles } from "@/src/styles/create_post.styles";
-import io from "socket.io-client";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { logOutAtom, userAtom } from "@/src/utils/store";
-import { WS_BASE_URL } from "@/src/utils/constants";
-import { useRouter } from "expo-router";
-import { refreshAccessToken } from "@/src/utils/refresh-access-token";
-import * as ImagePicker from "expo-image-picker";
 import ImageCarousel from "@/src/components/ImageCarousel";
-import { useQueryClient } from "@tanstack/react-query";
-import { useAtomCallback } from "jotai/utils";
-import { createPostSocketAtom } from "@/src/utils/socket-store";
+import { createPostSocketAtom } from "@/src/store/socket-store";
+import {
+  forwardCreatePostAtom,
+  imagesAtom,
+  inputsAtom,
+  loadingAtom,
+  numMatchesAtom,
+  pagesAtom,
+  pickImageAtom,
+  publicPostAtom,
+  questionsAtom,
+} from "@/src/store/create-post-store";
+import { useFocusEffect } from "expo-router";
 
 const INITIAL_PAGE_COUNT = 2;
 
-export default function Index() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const user = useAtomValue(userAtom);
-  const logout = useSetAtom(logOutAtom);
-  const [pages, setPages] = useState([""]);
-  const [questions, setQuestions] = useState<string[]>([""]);
-  const [socket, setSocket] = useAtom(createPostSocketAtom);
-  const [loading, setLoading] = useState(false);
+export default function CreatePost() {
+  const pages = useAtomValue(pagesAtom);
+  const questions = useAtomValue(questionsAtom);
+  const socket = useAtomValue(createPostSocketAtom);
+  const loading = useAtomValue(loadingAtom);
   const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
   const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([
     [],
   ]);
-  const [publicPost, setPublicPost] = useState(true);
-  const [images, setImages] = useState<string[]>([]);
-  const inputRefs = useRef<string[]>([""]);
-  const pagesLengthRef = useRef(pages.length);
-  const numMatchesRef = useRef(5);
+  const [publicPost, setPublicPost] = useAtom(publicPostAtom);
+  const [images, setImages] = useAtom(imagesAtom);
+  const [inputs, setInputs] = useAtom(inputsAtom);
+  const setNumMatches = useSetAtom(numMatchesAtom);
   const [flow, setFlow] = useAtom(flowAtom);
-  const { currPage, setPageCount, setPage, setCurrPage, Pager } =
-    useCustomPager({ initialPageCount: INITIAL_PAGE_COUNT });
+  const [currPage, setCurrPage] = useAtom(currPageAtom);
+  const forward = useSetAtom(forwardCreatePostAtom);
+  const pickImage = useSetAtom(pickImageAtom);
 
-  useEffect(() => {
-    setFlow({
-      ...flow,
-      back: () => {
-        setCurrPage(currPage - 1);
-        setPage(currPage - 1);
-      },
-      next: () => {
-        forward();
-      },
-    });
-
-    return () => {
+  useFocusEffect(
+    useCallback(() => {
+      if (!socket) return;
       setFlow({
-        back: null,
-        next: null,
-        backEnabled: true,
-        nextEnabled: true,
+        ...flow,
+        back: () => {
+          setCurrPage(currPage - 1);
+        },
+        next: () => {
+          forward();
+        },
       });
-    };
-  }, [currPage]);
-
-  const forward = useAtomCallback(
-    useCallback(
-      (get) => {
-        const s = get(createPostSocketAtom);
-        if (!s) {
-          console.warn("[forward] Socket is not initialized!");
-          return;
-        }
-
-        setLoading(true);
-        if (currPage == pagesLengthRef.current) {
-          s.emit("submit", {
-            numMatches: numMatchesRef.current,
-            publicPost,
-            images,
-          });
-        } else if (
-          !inputRefs.current[currPage] ||
-          inputRefs.current[currPage].trim() === ""
-        ) {
-          Alert.alert(
-            "Input required",
-            "Please enter some text before continuing."
-          );
-          setLoading(false);
-          return;
-        } else {
-          s.emit("chat", inputRefs.current[currPage]);
-        }
-      },
-      [currPage, publicPost, images]
-    )
+    }, [currPage, socket]),
   );
 
-  async function initConnection(accessToken: string) {
-    if (!user) return;
-
-    setSocket(
-      io(WS_BASE_URL + "/create-post", {
-        auth: {
-          token: accessToken,
-        },
-      })
-    );
-  }
-
-  async function pickImage() {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permissionResult.granted) {
-      Alert.alert(
-        "Permission required",
-        "Permission to access the media library is required."
-      );
-      return;
-    }
-
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
-      allowsMultipleSelection: true,
-    });
-
-    if (!result.canceled) {
-      setImages((prev) => [
-        ...prev,
-        ...result.assets.map((asset) => asset.uri),
-      ]);
-    }
-  }
-
   const handleOptionSelect = (i: number, option: string) => {
-    inputRefs.current[i] = option;
+    setInputs((prev) => {
+      const updated = [...prev];
+      updated[i] = option;
+      return updated;
+    });
     setMcqAnswers((prev) => {
       const updated = [...prev];
       updated[i] = option;
@@ -162,105 +88,26 @@ export default function Index() {
       } else {
         updated[i] = [...selected, option];
       }
-      inputRefs.current[i] = updated[i].join(", ");
+      setInputs((prev) => {
+        const updatedInputs = [...prev];
+        updatedInputs[i] = updated[i].join(", ");
+        return updatedInputs;
+      });
       return updated;
     });
   };
-
-  useEffect(() => {
-    if (!user) return;
-    if (!socket) {
-      initConnection(user.accessToken);
-      return;
-    }
-
-    socket.on("connect", () => {
-      console.log("Connected to WebSocket server for create-post");
-    });
-
-    socket.on("error", (err: any) => {
-      console.error("WebSocket error event:", err);
-    });
-
-    socket.on("connect_error", async () => {
-      const accessToken = await refreshAccessToken(user.refreshToken);
-      if (accessToken === null) {
-        socket.disconnect();
-        logout();
-        return;
-      }
-      initConnection(accessToken);
-    });
-
-    socket.on("question", (question: string) => {
-      setQuestions((prevQuestions) => [...prevQuestions, question]);
-      setPages((prevPages) => [...prevPages, ""]);
-      setLoading(false);
-    });
-
-    socket.on("chat-finished", () => {
-      setPage(pagesLengthRef.current);
-      setCurrPage(pagesLengthRef.current);
-      setLoading(false);
-    });
-
-    socket.on("success", (postId: string) => {
-      setPages([""]);
-      setCurrPage(0);
-      setPage(0);
-      setPageCount(INITIAL_PAGE_COUNT);
-      setQuestions([""]);
-      inputRefs.current = [""];
-      numMatchesRef.current = 5;
-      setPublicPost(true);
-      setImages([]);
-      setLoading(false);
-      setSocket(null);
-
-      router.navigate({
-        pathname: "/my-posts",
-        params: { redirect: `/my-posts/${postId}` },
-      });
-      queryClient.invalidateQueries({ queryKey: ["my-posts"] });
-    });
-  }, [socket, user]);
-
-  useEffect(() => {
-    pagesLengthRef.current = pages.length;
-    setPageCount(pages.length + 1);
-    setPage(pages.length - 1);
-    setCurrPage(pages.length - 1);
-    setMcqAnswers((prev) => {
-      if (pages.length > prev.length) {
-        return [...prev, ...Array(pages.length - prev.length).fill("")];
-      } else if (pages.length < prev.length) {
-        return prev.slice(0, pages.length);
-      }
-      return prev;
-    });
-    setMultiSelectAnswers((prev) => {
-      if (pages.length > prev.length) {
-        return [...prev, ...Array(pages.length - prev.length).fill([])];
-      } else if (pages.length < prev.length) {
-        return prev.slice(0, pages.length);
-      }
-      return prev;
-    });
-  }, [pages]);
 
   return (
     <>
       <CustomHeader title="Create Post" />
       <LoadingIndicator loading={loading} />
 
-      <Pager>
+      <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
         {pages.map((pageText, i) => {
-          let response = questions[i]
-            ? JSON.parse(questions[i].replace(/```json|```/g, "").trim())
-            : null;
-          const type = response?.type;
-          const questionText = response?.question;
-          const options = response?.options || [];
+          const question = questions[i];
+          const type = question.type;
+          const questionText = question.question;
+          const options = question.options;
 
           return (
             <TouchableWithoutFeedback
@@ -270,11 +117,11 @@ export default function Index() {
             >
               <View style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>
-                  {response && questionText
-                    ? `Question: ${questionText}`
-                    : "Start by describing what you want to post about."}
+                  {questions.length === 1
+                    ? questionText
+                    : `Question: ${questionText}`}
                 </Text>
-                {type === "multiple_choice" && options.length > 0 ? (
+                {type === "multiple_choice" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10 }}>
                     {options.map((option: string, idx: number) => {
                       const isSelected = mcqAnswers[i] === option;
@@ -313,7 +160,7 @@ export default function Index() {
                       );
                     })}
                   </View>
-                ) : type === "multi_select" && options.length > 0 ? (
+                ) : type === "multi_select" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10 }}>
                     <Text style={{ marginBottom: 10 }}>
                       Select all the options that apply:
@@ -362,7 +209,14 @@ export default function Index() {
                     style={createPostStyles.textInput}
                     placeholderTextColor={colors.gray}
                     defaultValue={pageText}
-                    onChangeText={(text) => (inputRefs.current[i] = text)}
+                    value={inputs[i]}
+                    onChangeText={(text) => {
+                      setInputs((prev) => {
+                        const updated = [...prev];
+                        updated[i] = text;
+                        return updated;
+                      });
+                    }}
                     placeholder="Write as little or as much details as you want..."
                     editable={!loading}
                     multiline={type !== "multiple_choice"}
@@ -447,7 +301,7 @@ export default function Index() {
             <TextInput
               style={{
                 color: colors.dark,
-                borderColor: "gray",
+                borderColor: colors.gray,
                 borderWidth: 1,
                 padding: 5,
                 width: 50,
@@ -457,13 +311,11 @@ export default function Index() {
               defaultValue={"5"}
               keyboardType="number-pad"
               editable={!loading}
-              onChangeText={(text) =>
-                (numMatchesRef.current = parseInt(text) || 0)
-              }
+              onChangeText={(text) => setNumMatches(parseInt(text) || 0)}
             />
           </View>
         </View>
-      </Pager>
+      </CustomPager>
     </>
   );
 }
