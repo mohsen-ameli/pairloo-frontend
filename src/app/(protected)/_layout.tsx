@@ -121,7 +121,7 @@ export default function ProtectedLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "You",
+          title: "Profile",
           headerShown: false,
           tabBarLabelStyle: {
             marginTop: 2,
