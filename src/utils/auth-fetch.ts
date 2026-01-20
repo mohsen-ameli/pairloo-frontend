@@ -1,8 +1,8 @@
-import { atom } from "jotai";
-import { userAtom } from "@/src/store/auth-store";
-import { BASE_URL } from "./constants";
-import { fetch, FetchRequestInit } from "expo/fetch";
-import { refreshAccessToken } from "./refresh-access-token";
+import { atom } from "jotai"
+import { userAtom } from "@/src/store/auth-store"
+import { BASE_URL } from "./constants"
+import { fetch, FetchRequestInit } from "expo/fetch"
+import { refreshAccessToken } from "./refresh-access-token"
 
 export const authFetchAtom = atom(
   null,
@@ -16,33 +16,33 @@ export const authFetchAtom = atom(
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      });
+      })
 
-    const user = await get(userAtom);
+    const user = await get(userAtom)
 
     if (!user) {
-      throw new Error("User is not authenticated");
+      throw new Error("User is not authenticated")
     }
 
-    let res;
+    let res
     try {
-      res = await fetchWithToken(user.accessToken);
+      res = await fetchWithToken(user.accessToken)
     } catch (error) {
-      throw new Error("Network error occurred");
+      throw new Error("Network error occurred")
     }
 
     if (res.status === 401 || res.status === 403) {
-      const accessToken = await refreshAccessToken(user.refreshToken);
+      const accessToken = await refreshAccessToken(user.refreshToken)
 
       if (accessToken !== null) {
-        set(userAtom, { ...user, accessToken });
-        res = await fetchWithToken(accessToken);
+        set(userAtom, { ...user, accessToken })
+        res = await fetchWithToken(accessToken)
       } else {
-        set(userAtom, null);
-        throw new Error("Session expired. Please log in again.");
+        set(userAtom, null)
+        throw new Error("Session expired. Please log in again.")
       }
     }
 
-    return res;
-  },
-);
+    return res
+  }
+)

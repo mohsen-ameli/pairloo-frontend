@@ -1,24 +1,20 @@
-import { useSharedValue } from "react-native-reanimated";
-import { useKeyboardHandler } from "react-native-keyboard-controller";
-import { TAB_HEIGHT } from "./constants";
+import { useSharedValue } from "react-native-reanimated"
+import { useKeyboardHandler } from "react-native-keyboard-controller"
+import { TAB_HEIGHT } from "./constants"
 
-export default function useGradualAnimation({
-  isAuthenticated,
-}: {
-  isAuthenticated: boolean;
-}) {
-  const height = useSharedValue(0);
-  const tab_height = isAuthenticated ? TAB_HEIGHT : 0;
+export default function useGradualAnimation({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const height = useSharedValue(0)
+  const tab_height = isAuthenticated ? TAB_HEIGHT : 0
 
   useKeyboardHandler({
-    onMove: (e) => {
-      "worklet";
-      height.value = Math.max(e.height - tab_height, 0);
+    onMove: e => {
+      "worklet"
+      height.value = Math.max(e.height - tab_height, 0)
     },
-    onEnd: (e) => {
-      "worklet";
-      height.value = Math.max(e.height - tab_height, 0);
+    onEnd: e => {
+      "worklet"
+      height.value = Math.max(e.height - tab_height, 0)
     },
-  });
-  return { height };
+  })
+  return { height }
 }

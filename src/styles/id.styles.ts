@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 const styles = StyleSheet.create({
   container: {
@@ -7,13 +7,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light,
   },
   content: {
-    padding: 24,
+    paddingHorizontal: 12,
     paddingBottom: 48,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: colors.darkGray,
+    color: colors.dark,
     marginBottom: 8,
   },
   subtitle: {
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
   closestPostUserInfo: {
     flexDirection: "column",
   },
-});
+})
 
-export default styles;
+export default styles

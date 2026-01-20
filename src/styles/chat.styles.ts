@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const chatStyles = StyleSheet.create({
   container: {
@@ -66,4 +66,4 @@ export const chatStyles = StyleSheet.create({
     paddingRight: 50,
     flexWrap: "wrap",
   },
-});
+})

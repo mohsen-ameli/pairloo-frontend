@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   header: {
@@ -33,30 +33,17 @@ export const styles = StyleSheet.create({
     color: colors.muted,
     marginTop: 2,
   },
-  profileButton: {
-    width: 45,
-    height: 45,
-    borderRadius: 25,
-    backgroundColor: colors.accentOrange,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
   otherProfileButton: {
     width: 35,
     height: 35,
     borderRadius: 20,
-    backgroundColor: colors.accentOrange,
+    backgroundColor: colors.light,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
-  },
-  profileImage: {
-    width: 45,
-    height: 45,
   },
   otherProfileImage: {
     width: 35,
     height: 35,
   },
-});
+})

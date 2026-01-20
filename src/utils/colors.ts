@@ -1,46 +1,41 @@
-import { Appearance } from "react-native";
+import { Appearance } from "react-native"
 
-const colorScheme = Appearance.getColorScheme();
+const colorScheme = Appearance.getColorScheme()
 
 const baseColors = {
   purple: "#6B46C1",
-  lightPurple: "rgb(167, 145, 255)",
+  lightPurple: "#9880f5",
   darkPurple: "#3a1d8bff",
-  background: "#f2f2f7ff",
-  lightBackground: "#ffffffcc",
-  darkBackground: "#c7c7ccff",
-  dark: "#000000ff",
-  light: "#ffffffff",
-  gray: "#8e8e93ff",
-  darkGray: "#222222",
-  lightGray: "#eeeeee",
+  dark: "#1d1d25",
+  light: "#ffffff",
+  gray: "#8e8e93",
+  darkGray: "#3a3a3a",
+  lightGray: "#e6e6e6",
   textSecondary: "#3c3c4399",
-  errorRed: "#ff3b30ff",
+  errorRed: "#ff3b30",
   green: "#059669",
-  successGreen: "#34c759ff",
+  successGreen: "#34c759",
   lightGreen: "#E7F5ED",
-  warningYellow: "#ffcc00ff",
-  yellow: "#e4b90cff",
-  borderGray: "#d1d1d6ff",
+  warningYellow: "#ffcc00",
+  yellow: "#c76e00ff",
+  borderGray: "#d1d1d6",
   blue: "#007AFF",
-  lightBlue: "#F0E7FF",
-  accentOrange: "#f0f0f0",
+  lightBlue: "#5ac8ff",
   muted: "#999999",
-  shadow: "#000000",
-};
+  shadow: "#373535",
+}
 
-export const colors = { ...baseColors };
+export const colors = { ...baseColors }
 
 if (colorScheme === "dark") {
-  colors.background = baseColors.darkBackground;
-  colors.textSecondary = baseColors.lightGray;
-  colors.borderGray = baseColors.darkGray;
-  colors.shadow = baseColors.light;
-  colors.light = baseColors.dark;
-  colors.dark = baseColors.light;
-  colors.lightBackground = baseColors.dark;
-  colors.lightGray = baseColors.darkGray;
-  colors.gray = baseColors.lightGray;
-  colors.darkGray = baseColors.lightGray;
-  colors.purple = baseColors.lightPurple;
+  colors.textSecondary = baseColors.lightGray
+  colors.borderGray = baseColors.darkGray
+  colors.shadow = baseColors.light
+  colors.light = baseColors.dark
+  colors.dark = baseColors.light
+  colors.lightGray = "#3a3a3aff"
+  colors.gray = baseColors.lightGray
+  colors.darkGray = baseColors.lightGray
+  colors.purple = baseColors.lightPurple
+  colors.lightPurple = baseColors.purple
 }

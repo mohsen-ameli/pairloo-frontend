@@ -1,100 +1,74 @@
-import { authFetchAtom } from "@/src/utils/auth-fetch";
-import { useSetAtom } from "jotai";
-import { useRouter } from "expo-router";
-import {
-  Text,
-  View,
-  Image,
-  ScrollView,
-  RefreshControl,
-  Pressable,
-} from "react-native";
-import CustomHeader from "@/src/components/CustomHeader";
-import LoadingIndicator from "@/src/components/LoadingIndicator";
-import { styles } from "@/src/styles/feed.styles";
-import { GeneralPostType } from "@/src/types/post.type";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { errorStyles } from "@/src/styles/error.styles";
+import { authFetchAtom } from "@/src/utils/auth-fetch"
+import { useSetAtom } from "jotai"
+import { useRouter } from "expo-router"
+import { Text, View, Image, ScrollView, RefreshControl, Pressable } from "react-native"
+import LoadingIndicator from "@/src/components/LoadingIndicator"
+import { styles } from "@/src/styles/feed.styles"
+import { GeneralPostType } from "@/src/types/post.type"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { errorStyles } from "@/src/styles/error.styles"
 
 export default function Index() {
-  const router = useRouter();
-  const authFetch = useSetAtom(authFetchAtom);
-  const queryClient = useQueryClient();
-  const {
-    data: posts,
-    isError,
-    isPending,
-  } = useQuery({ queryKey: ["feed"], queryFn: fetchPosts });
+  const router = useRouter()
+  const authFetch = useSetAtom(authFetchAtom)
+  const queryClient = useQueryClient()
+  const { data: posts, isError, isPending } = useQuery({ queryKey: ["feed"], queryFn: fetchPosts })
 
   async function fetchPosts() {
-    const res = await authFetch("/api/posts/my-feed");
-    const data: GeneralPostType[] = await res.json();
+    const res = await authFetch("/api/posts/my-feed")
+    const data: GeneralPostType[] = await res.json()
 
     // Masonry logic
-    const numColumns = 2;
-    const columns: Array<typeof data> = Array.from(
-      { length: numColumns },
-      () => []
-    );
+    const numColumns = 2
+    const columns: Array<typeof data> = Array.from({ length: numColumns }, () => [])
     data.forEach((post, idx) => {
-      columns[idx % numColumns].push(post);
-    });
-    return columns;
+      columns[idx % numColumns].push(post)
+    })
+    return columns
   }
 
   async function refresh() {
-    queryClient.invalidateQueries({ queryKey: ["feed"] });
+    queryClient.invalidateQueries({ queryKey: ["feed"] })
   }
 
   if (isPending) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="Home" />
         <LoadingIndicator loading={true} />
       </View>
-    );
+    )
   }
 
   if (isError) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="Home" />
-        <Text style={errorStyles.errorText}>
-          Error loading posts. Please try again.
-        </Text>
+        <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
         <Pressable style={errorStyles.retryButton} onPress={refresh}>
           <Text style={errorStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
-    );
+    )
   }
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Home" />
-
       <ScrollView
         contentContainerStyle={styles.feedContainer}
-        refreshControl={
-          <RefreshControl refreshing={isPending} onRefresh={refresh} />
-        }
+        refreshControl={<RefreshControl refreshing={isPending} onRefresh={refresh} />}
       >
         {posts.map((col, colIdx) => (
           <View key={colIdx} style={styles.column}>
-            {col.map((post) => (
+            {col.map(post => (
               <Pressable
                 key={post._id}
                 style={styles.postCard}
                 onPress={() => {
-                  router.push(`/${post._id}`);
+                  router.push(`/${post._id}`)
                 }}
               >
                 <View style={styles.postHeader}>
                   {post.picture && (
-                    <Image
-                      source={{ uri: post.picture }}
-                      style={styles.postHeaderImage}
-                    />
+                    <Image source={{ uri: post.picture }} style={styles.postHeaderImage} />
                   )}
                   <View style={styles.postHeaderTextContainer}>
                     <Text style={styles.postHeaderName}>
@@ -110,5 +84,5 @@ export default function Index() {
         ))}
       </ScrollView>
     </View>
-  );
+  )
 }

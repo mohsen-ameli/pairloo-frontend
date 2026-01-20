@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"
 import {
   View,
   TextInput,
@@ -7,101 +7,89 @@ import {
   Text,
   Keyboard,
   Modal,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "@/src/utils/colors";
-import { BASE_URL } from "@/src/utils/constants";
-import Feather from "@expo/vector-icons/Feather";
-import { userAtom } from "@/src/store/auth-store";
-import { useAtomValue } from "jotai";
-import { locSelecStyles } from "@/src/styles/location-selector.styles";
+  Pressable,
+} from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { colors } from "@/src/utils/colors"
+import { BASE_URL } from "@/src/utils/constants"
+import Feather from "@expo/vector-icons/Feather"
+import { userAtom } from "@/src/store/auth-store"
+import { useAtomValue } from "jotai"
+import { locSelecStyles } from "@/src/styles/location-selector.styles"
+import CustomInput from "./CustomInput"
 
 interface City {
-  _id: number;
-  name: string;
-  country_name: string;
-  state_name: string;
-  population: number;
-  latitude: number;
-  longitude: number;
-  timezone: string;
-  score: number;
+  _id: number
+  name: string
+  country_name: string
+  state_name: string
+  population: number
+  latitude: number
+  longitude: number
+  timezone: string
+  score: number
 }
 
 export default function LocationSelector({
   onLocationChange,
 }: {
-  onLocationChange: (locationObj: City) => void;
+  onLocationChange: (locationObj: City) => void
 }) {
-  const user = useAtomValue(userAtom);
-  const [locationInput, setLocationInput] = useState("Select Your Location");
-  const [cities, setCities] = useState<City[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [citySearchInput, setCitySearchInput] = useState("");
+  const user = useAtomValue(userAtom)
+  const [locationInput, setLocationInput] = useState("Select Your Location")
+  const [cities, setCities] = useState<City[]>([])
+  const [showModal, setShowModal] = useState(false)
+  const [citySearchInput, setCitySearchInput] = useState("")
 
   useEffect(() => {
-    if (!user) return;
-    setLocationInput(`${user.city} (${user.state}, ${user.country})`);
-  }, [user]);
+    if (!user) return
+    setLocationInput(`${user.city} (${user.state}, ${user.country})`)
+  }, [user])
 
   async function handleCitySearch(text: string) {
-    setCitySearchInput(text);
+    setCitySearchInput(text)
     if (text.length === 0) {
-      setCities([]);
-      return;
+      setCities([])
+      return
     }
     try {
-      const url = `${BASE_URL}/api/locations/search?q=${encodeURIComponent(
-        text,
-      )}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      setCities(data);
+      const url = `${BASE_URL}/api/locations/search?q=${encodeURIComponent(text)}`
+      const res = await fetch(url)
+      const data = await res.json()
+      setCities(data)
     } catch (error) {
-      setCities([]);
+      setCities([])
     }
   }
 
   async function handleSelect(city: City) {
-    Keyboard.dismiss();
-    setLocationInput(`${city.name} (${city.state_name}, ${city.country_name})`);
-    setCitySearchInput("");
-    setShowModal(false);
-    onLocationChange(city);
+    Keyboard.dismiss()
+    setLocationInput(`${city.name} (${city.state_name}, ${city.country_name})`)
+    setCitySearchInput("")
+    setShowModal(false)
+    onLocationChange(city)
   }
 
   return (
     <View>
-      <TouchableOpacity
+      <Pressable
         onPress={() => {
-          setShowModal(true);
-          setCitySearchInput("");
+          setShowModal(true)
+          setCitySearchInput("")
         }}
-        style={locSelecStyles.inputContainer}
       >
-        <Text
-          style={[
-            locSelecStyles.inputText,
-            {
-              color: locationInput ? colors.dark : colors.gray,
-            },
-          ]}
-        >
+        <CustomInput title="Location" editable={false} selectTextOnFocus={false}>
           {locationInput}
-        </Text>
-      </TouchableOpacity>
+        </CustomInput>
+      </Pressable>
 
-      <Modal
-        visible={showModal}
-        animationType="slide"
-        onRequestClose={() => setShowModal(false)}
-      >
+      <Modal visible={showModal} animationType="slide" onRequestClose={() => setShowModal(false)}>
         <SafeAreaView style={locSelecStyles.modalContainer}>
           <View style={locSelecStyles.searchContainer}>
             <TouchableOpacity
               onPress={() => {
-                setShowModal(false);
-                setCitySearchInput("");
+                setShowModal(false)
+                setCitySearchInput("")
               }}
               style={locSelecStyles.dismissButton}
             >
@@ -119,14 +107,11 @@ export default function LocationSelector({
 
           <FlatList
             data={cities}
-            keyExtractor={(item) => item._id.toString()}
+            keyExtractor={item => item._id.toString()}
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="on-drag"
             renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => handleSelect(item)}
-                style={locSelecStyles.cityItem}
-              >
+              <TouchableOpacity onPress={() => handleSelect(item)} style={locSelecStyles.cityItem}>
                 <Text style={locSelecStyles.cityText}>
                   {item.name}{" "}
                   <Text style={locSelecStyles.stateCountryText}>
@@ -139,5 +124,5 @@ export default function LocationSelector({
         </SafeAreaView>
       </Modal>
     </View>
-  );
+  )
 }

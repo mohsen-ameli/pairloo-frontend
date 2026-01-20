@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   container: {
@@ -26,7 +26,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: colors.accentOrange,
+    borderColor: colors.borderGray,
     elevation: 2,
   },
   postCardShadow: {
@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
     marginRight: 12,
   },
   postImageBackground: {
-    backgroundColor: colors.accentOrange,
+    backgroundColor: colors.lightGray,
   },
   postImageFill: {
     width: "100%",
@@ -99,4 +99,4 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-});
+})

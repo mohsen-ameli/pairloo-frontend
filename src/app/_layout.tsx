@@ -1,17 +1,18 @@
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useAtomValue } from "jotai";
-import { userAtom } from "@/src/store/auth-store";
-import { LogBox } from "react-native";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { KeyboardProvider } from "react-native-keyboard-controller";
-import { colors } from "@/src/utils/colors";
-import { maybeCompleteAuthSession } from "expo-web-browser";
-import Toast from "react-native-toast-message";
-import CustomToast from "@/src/components/CustomToast";
+import { Stack } from "expo-router"
+import { StatusBar } from "expo-status-bar"
+import { useAtomValue } from "jotai"
+import { userAtom } from "@/src/store/auth-store"
+import { LogBox } from "react-native"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { KeyboardProvider } from "react-native-keyboard-controller"
+import { colors } from "@/src/utils/colors"
+import { maybeCompleteAuthSession } from "expo-web-browser"
+import Toast from "react-native-toast-message"
+import CustomToast from "@/src/components/CustomToast"
+import useCustomHeader from "../utils/useCustomHeader"
 
-LogBox.ignoreAllLogs();
-maybeCompleteAuthSession();
+LogBox.ignoreAllLogs()
+maybeCompleteAuthSession()
 
 const toastConfig = {
   newMessage: ({
@@ -19,19 +20,23 @@ const toastConfig = {
     onPress,
   }: {
     props: {
-      username: string;
-      message: string;
-      picture?: string;
-    };
-    onPress: () => void;
+      username: string
+      message: string
+      picture?: string
+    }
+    onPress: () => void
   }) => {
-    return <CustomToast {...props} onPress={onPress} />;
+    return <CustomToast {...props} onPress={onPress} />
   },
-};
+}
 
 export default function RootLayout() {
-  const user = useAtomValue(userAtom);
-  const queryClient = new QueryClient();
+  const user = useAtomValue(userAtom)
+  const queryClient = new QueryClient()
+
+  const loginOptions = useCustomHeader("")
+  const registerOptions = useCustomHeader("Create Account")
+  const forgotEmailOptions = useCustomHeader("Forgot Email")
 
   return (
     <>
@@ -39,62 +44,22 @@ export default function RootLayout() {
 
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
-          <Stack>
+          <Stack
+            screenOptions={{
+              headerBackButtonDisplayMode: "minimal",
+              headerTitleStyle: { color: colors.dark },
+              headerStyle: { backgroundColor: colors.light },
+              headerTintColor: colors.dark,
+            }}
+          >
             <Stack.Protected guard={user !== null}>
-              <Stack.Screen
-                name="(protected)"
-                options={{ headerShown: false }}
-              />
+              <Stack.Screen name="(protected)" options={{ headerShown: false }} />
             </Stack.Protected>
             <Stack.Protected guard={user === null}>
-              <Stack.Screen
-                name="landing"
-                options={{
-                  headerShown: false,
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                }}
-              />
-              <Stack.Screen
-                name="register"
-                options={{
-                  title: "Create Account",
-                  headerTitleStyle: {
-                    color: colors.dark,
-                  },
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                  headerBackButtonDisplayMode: "minimal",
-                }}
-              />
-              <Stack.Screen
-                name="login"
-                options={{
-                  title: "Log In",
-                  headerTitleStyle: {
-                    color: colors.dark,
-                  },
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                  headerBackButtonDisplayMode: "minimal",
-                }}
-              />
-              <Stack.Screen
-                name="forgot-email"
-                options={{
-                  title: "Forgot Email",
-                  headerTitleStyle: {
-                    color: colors.dark,
-                  },
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                  headerBackButtonDisplayMode: "minimal",
-                }}
-              />
+              <Stack.Screen name="landing" options={{ headerShown: false }} />
+              <Stack.Screen name="register" options={registerOptions} />
+              <Stack.Screen name="login" options={loginOptions} />
+              <Stack.Screen name="forgot-email" options={forgotEmailOptions} />
             </Stack.Protected>
           </Stack>
         </QueryClientProvider>
@@ -102,5 +67,5 @@ export default function RootLayout() {
 
       <Toast config={toastConfig} />
     </>
-  );
+  )
 }

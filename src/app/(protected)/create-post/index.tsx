@@ -1,23 +1,15 @@
-import {
-  View,
-  TextInput,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Text,
-  Switch,
-} from "react-native";
-import BouncyCheckbox from "react-native-bouncy-checkbox";
-import React, { useCallback, useState } from "react";
-import CustomHeader from "@/src/components/CustomHeader";
-import { currPageAtom, flowAtom } from "@/src/store/pager-store";
-import CustomPager from "@/src/components/CustomPager";
-import { colors } from "@/src/utils/colors";
-import CustomButton from "@/src/components/CustomButton";
-import LoadingIndicator from "@/src/components/LoadingIndicator";
-import { createPostStyles } from "@/src/styles/create_post.styles";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import ImageCarousel from "@/src/components/ImageCarousel";
-import { createPostSocketAtom } from "@/src/store/socket-store";
+import { View, TextInput, TouchableWithoutFeedback, Keyboard, Text, Switch } from "react-native"
+import BouncyCheckbox from "react-native-bouncy-checkbox"
+import React, { useCallback, useState } from "react"
+import { currPageAtom, flowAtom } from "@/src/store/pager-store"
+import CustomPager from "@/src/components/CustomPager"
+import { colors } from "@/src/utils/colors"
+import CustomButton from "@/src/components/CustomButton"
+import LoadingIndicator from "@/src/components/LoadingIndicator"
+import { createPostStyles } from "@/src/styles/create-post.styles"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import ImageCarousel from "@/src/components/ImageCarousel"
+import { createPostSocketAtom } from "@/src/store/socket-store"
 import {
   forwardCreatePostAtom,
   imagesAtom,
@@ -28,103 +20,94 @@ import {
   pickImageAtom,
   publicPostAtom,
   questionsAtom,
-} from "@/src/store/create-post-store";
-import { useFocusEffect } from "expo-router";
+} from "@/src/store/create-post-store"
+import { useFocusEffect } from "expo-router"
 
-const INITIAL_PAGE_COUNT = 2;
+const INITIAL_PAGE_COUNT = 2
 
 export default function CreatePost() {
-  const pages = useAtomValue(pagesAtom);
-  const questions = useAtomValue(questionsAtom);
-  const socket = useAtomValue(createPostSocketAtom);
-  const loading = useAtomValue(loadingAtom);
-  const [mcqAnswers, setMcqAnswers] = useState<string[]>([""]);
-  const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([
-    [],
-  ]);
-  const [publicPost, setPublicPost] = useAtom(publicPostAtom);
-  const [images, setImages] = useAtom(imagesAtom);
-  const [inputs, setInputs] = useAtom(inputsAtom);
-  const setNumMatches = useSetAtom(numMatchesAtom);
-  const [flow, setFlow] = useAtom(flowAtom);
-  const [currPage, setCurrPage] = useAtom(currPageAtom);
-  const forward = useSetAtom(forwardCreatePostAtom);
-  const pickImage = useSetAtom(pickImageAtom);
+  const pages = useAtomValue(pagesAtom)
+  const questions = useAtomValue(questionsAtom)
+  const socket = useAtomValue(createPostSocketAtom)
+  const loading = useAtomValue(loadingAtom)
+  const [mcqAnswers, setMcqAnswers] = useState<string[]>([""])
+  const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([[]])
+  const [publicPost, setPublicPost] = useAtom(publicPostAtom)
+  const [images, setImages] = useAtom(imagesAtom)
+  const [inputs, setInputs] = useAtom(inputsAtom)
+  const setNumMatches = useSetAtom(numMatchesAtom)
+  const [flow, setFlow] = useAtom(flowAtom)
+  const [currPage, setCurrPage] = useAtom(currPageAtom)
+  const forward = useSetAtom(forwardCreatePostAtom)
+  const pickImage = useSetAtom(pickImageAtom)
 
   useFocusEffect(
     useCallback(() => {
-      if (!socket) return;
+      if (!socket) return
       setFlow({
         ...flow,
         back: () => {
-          setCurrPage(currPage - 1);
+          setCurrPage(currPage - 1)
         },
         next: () => {
-          forward();
+          forward()
         },
-      });
-    }, [currPage, socket]),
-  );
+      })
+    }, [currPage, socket])
+  )
 
   const handleOptionSelect = (i: number, option: string) => {
-    setInputs((prev) => {
-      const updated = [...prev];
-      updated[i] = option;
-      return updated;
-    });
-    setMcqAnswers((prev) => {
-      const updated = [...prev];
-      updated[i] = option;
-      return updated;
-    });
-  };
+    setInputs(prev => {
+      const updated = [...prev]
+      updated[i] = option
+      return updated
+    })
+    setMcqAnswers(prev => {
+      const updated = [...prev]
+      updated[i] = option
+      return updated
+    })
+  }
 
   const handleMultiSelectOption = (i: number, option: string) => {
-    setMultiSelectAnswers((prev) => {
-      const updated = [...prev];
-      const selected = updated[i] || [];
+    setMultiSelectAnswers(prev => {
+      const updated = [...prev]
+      const selected = updated[i] || []
       if (selected.includes(option)) {
-        updated[i] = selected.filter((o) => o !== option);
+        updated[i] = selected.filter(o => o !== option)
       } else {
-        updated[i] = [...selected, option];
+        updated[i] = [...selected, option]
       }
-      setInputs((prev) => {
-        const updatedInputs = [...prev];
-        updatedInputs[i] = updated[i].join(", ");
-        return updatedInputs;
-      });
-      return updated;
-    });
-  };
+      setInputs(prev => {
+        const updatedInputs = [...prev]
+        updatedInputs[i] = updated[i].join(", ")
+        return updatedInputs
+      })
+      return updated
+    })
+  }
 
   return (
     <>
-      <CustomHeader title="Create Post" />
       <LoadingIndicator loading={loading} />
 
       <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
         {pages.map((pageText, i) => {
-          const question = questions[i];
-          const type = question.type;
-          const questionText = question.question;
-          const options = question.options;
+          const question = questions[i]
+          const type = question.type
+          const questionText = question.question
+          const options = question.options
 
           return (
-            <TouchableWithoutFeedback
-              onPress={Keyboard.dismiss}
-              accessible={false}
-              key={i}
-            >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} key={i}>
               <View style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>
-                  {questions.length === 1
-                    ? questionText
-                    : `Question: ${questionText}`}
+                  {questions.length === 1 ? questionText : `Question: ${questionText}`}
                 </Text>
                 {type === "multiple_choice" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10 }}>
                     {options.map((option: string, idx: number) => {
-                      const isSelected = mcqAnswers[i] === option;
+                      const isSelected = mcqAnswers[i] === option
                       return (
                         <TouchableWithoutFeedback
                           key={option}
@@ -134,12 +117,8 @@ export default function CreatePost() {
                             style={[
                               createPostStyles.mcqOption,
                               {
-                                borderColor: isSelected
-                                  ? colors.purple
-                                  : colors.lightGray,
-                                backgroundColor: isSelected
-                                  ? colors.lightBlue
-                                  : colors.lightGray,
+                                borderColor: isSelected ? colors.purple : colors.lightGray,
+                                backgroundColor: isSelected ? colors.lightPurple : colors.lightGray,
                               },
                             ]}
                           >
@@ -147,9 +126,7 @@ export default function CreatePost() {
                               style={[
                                 createPostStyles.mcqOptionText,
                                 {
-                                  color: isSelected
-                                    ? colors.purple
-                                    : colors.dark,
+                                  color: colors.dark,
                                 },
                               ]}
                             >
@@ -157,26 +134,22 @@ export default function CreatePost() {
                             </Text>
                           </View>
                         </TouchableWithoutFeedback>
-                      );
+                      )
                     })}
                   </View>
                 ) : type === "multi_select" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10 }}>
-                    <Text style={{ marginBottom: 10 }}>
-                      Select all the options that apply:
-                    </Text>
+                    <Text style={{ marginBottom: 10 }}>Select all the options that apply:</Text>
                     {options.map((option: string, idx: number) => {
-                      const selectedOptions = multiSelectAnswers[i] || [];
-                      const isSelected = selectedOptions.includes(option);
+                      const selectedOptions = multiSelectAnswers[i] || []
+                      const isSelected = selectedOptions.includes(option)
                       return (
                         <View
                           key={option}
                           style={[
                             createPostStyles.multiSelect,
                             {
-                              backgroundColor: isSelected
-                                ? colors.lightBlue
-                                : colors.lightGray,
+                              backgroundColor: isSelected ? colors.lightPurple : colors.lightGray,
                             },
                           ]}
                         >
@@ -201,7 +174,7 @@ export default function CreatePost() {
                             }}
                           />
                         </View>
-                      );
+                      )
                     })}
                   </View>
                 ) : (
@@ -210,12 +183,12 @@ export default function CreatePost() {
                     placeholderTextColor={colors.gray}
                     defaultValue={pageText}
                     value={inputs[i]}
-                    onChangeText={(text) => {
-                      setInputs((prev) => {
-                        const updated = [...prev];
-                        updated[i] = text;
-                        return updated;
-                      });
+                    onChangeText={text => {
+                      setInputs(prev => {
+                        const updated = [...prev]
+                        updated[i] = text
+                        return updated
+                      })
                     }}
                     placeholder="Write as little or as much details as you want..."
                     editable={!loading}
@@ -226,7 +199,7 @@ export default function CreatePost() {
                 )}
               </View>
             </TouchableWithoutFeedback>
-          );
+          )
         })}
 
         {/* The last page */}
@@ -311,11 +284,11 @@ export default function CreatePost() {
               defaultValue={"5"}
               keyboardType="number-pad"
               editable={!loading}
-              onChangeText={(text) => setNumMatches(parseInt(text) || 0)}
+              onChangeText={text => setNumMatches(parseInt(text) || 0)}
             />
           </View>
         </View>
       </CustomPager>
     </>
-  );
+  )
 }

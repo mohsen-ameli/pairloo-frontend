@@ -1,9 +1,9 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import CustomInput from "@/src/components/CustomInput";
-import PhoneNumber from "@/src/components/phoneNumber";
-import LocationSelector from "@/src/components/LocationSelector";
-import { colors } from "@/src/utils/colors";
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { Pressable, ScrollView, Text, View } from "react-native"
+import CustomInput from "@/src/components/CustomInput"
+import PhoneNumber from "@/src/components/phoneNumber"
+import LocationSelector from "@/src/components/LocationSelector"
+import { colors } from "@/src/utils/colors"
 import {
   newUserAtom,
   signUpAtom,
@@ -13,92 +13,111 @@ import {
   requestPhoneNumberVerificationAtom,
   verifyPhoneNumberVerificationAtom,
   resendTimerAtom,
-} from "@/src/store/auth-store";
-import { styles } from "@/src/styles/register.styles";
-import { useEffect, useRef } from "react";
-import {
-  BASE_URL,
-  REGISTER_USERNAME_CHECK_INTERVAL,
-} from "@/src/utils/constants";
-import { currPageAtom, flowAtom } from "@/src/store/pager-store";
-import CustomPager from "@/src/components/CustomPager";
+} from "@/src/store/auth-store"
+import { styles } from "@/src/styles/register.styles"
+import { useEffect, useRef, useState } from "react"
+import { TextInput } from "react-native"
+import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
+import { currPageAtom, flowAtom } from "@/src/store/pager-store"
+import CustomPager from "@/src/components/CustomPager"
 
-const INITIAL_PAGE_COUNT = 5;
+const INITIAL_PAGE_COUNT = 5
 
 export default function Register() {
-  const signUp = useSetAtom(signUpAtom);
-  const [newUser, setNewUser] = useAtom(newUserAtom);
-  const [errors, setErrors] = useAtom(authErrorsAtom);
-  const requested = useRef(false);
-  const timeRemaining = useAtomValue(resendTimerAtom);
-  const [flow, setFlow] = useAtom(flowAtom);
-  const usernameTimeout = useRef<number>(null);
-  const [currPage, setCurrPage] = useAtom(currPageAtom);
-  const requestPhoneNumberVerification = useSetAtom(
-    requestPhoneNumberVerificationAtom,
-  );
-  const verifyPhoneNumberVerification = useSetAtom(
-    verifyPhoneNumberVerificationAtom,
-  );
-  const requestEmailVerification = useSetAtom(requestEmailVerificationAtom);
-  const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom);
+  const signUp = useSetAtom(signUpAtom)
+  const [newUser, setNewUser] = useAtom(newUserAtom)
+  const [errors, setErrors] = useAtom(authErrorsAtom)
+  const requested = useRef(false)
+  const timeRemaining = useAtomValue(resendTimerAtom)
+  const [flow, setFlow] = useAtom(flowAtom)
+  const usernameTimeout = useRef<number>(null)
+  const [currPage, setCurrPage] = useAtom(currPageAtom)
+  const requestPhoneNumberVerification = useSetAtom(requestPhoneNumberVerificationAtom)
+  const verifyPhoneNumberVerification = useSetAtom(verifyPhoneNumberVerificationAtom)
+  const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
+  const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
+  const [avatar, setAvatar] = useState<string | null>(null)
+
+  // Refs for manual focus
+  const phoneCodeRef = useRef<TextInput>(null!)
+  const emailRef = useRef<TextInput>(null!)
+  const emailCodeRef = useRef<TextInput>(null!)
+  const usernameRef = useRef<TextInput>(null!)
 
   // Set next/back functions based on current page
   useEffect(() => {
     setFlow({
       ...flow,
       back: () => {
-        setCurrPage(currPage - 1);
+        setCurrPage(currPage - 1)
       },
       next: () => {
         if (currPage === 0) {
-          requestPhoneNumberVerification(false);
+          requestPhoneNumberVerification(false)
         } else if (currPage === 1) {
-          verifyPhoneNumberVerification();
+          verifyPhoneNumberVerification()
         } else if (currPage === 2) {
-          requestEmailVerification(true, false);
+          requestEmailVerification(true, false)
         } else if (currPage === 3) {
-          verifyEmailVerification(true);
+          verifyEmailVerification(true)
         } else if (currPage === 4) {
-          signUp();
+          signUp()
         }
       },
-    });
-  }, [currPage]);
+    })
+  }, [currPage])
+
+  // Manual focus logic
+  useEffect(() => {
+    if (currPage === 1 && phoneCodeRef.current) {
+      setTimeout(() => phoneCodeRef.current?.focus(), 500)
+    } else if (currPage === 2 && emailRef.current) {
+      setTimeout(() => emailRef.current?.focus(), 500)
+    } else if (currPage === 3 && emailCodeRef.current) {
+      setTimeout(() => emailCodeRef.current?.focus(), 500)
+    } else if (currPage === 4 && usernameRef.current) {
+      setTimeout(() => usernameRef.current?.focus(), 500)
+    }
+  }, [currPage])
 
   async function handleUsername(text: string) {
-    setNewUser({ ...newUser, username: text });
-    setErrors({ ...errors, username: "" });
+    setNewUser({ ...newUser, username: text })
+    setErrors({ ...errors, username: "" })
     if (usernameTimeout.current) {
-      clearTimeout(usernameTimeout.current);
+      clearTimeout(usernameTimeout.current)
     }
     usernameTimeout.current = setTimeout(async () => {
       if (text.length > 0) {
-        const res = await fetch(
-          `${BASE_URL}/api/auth/username-available?username=${text}`,
-          {
-            method: "GET",
-          },
-        );
-        const data = await res.json();
+        const res = await fetch(`${BASE_URL}/api/auth/username-available?username=${text}`, {
+          method: "GET",
+        })
+        const data = await res.json()
         if (!res.ok) {
-          setErrors((prev) => ({
+          setErrors(prev => ({
             ...prev,
             username: data.errors.username,
-          }));
+          }))
         }
       }
-    }, REGISTER_USERNAME_CHECK_INTERVAL);
+    }, REGISTER_USERNAME_CHECK_INTERVAL)
+  }
+
+  async function generateAvatar() {
+    const res = await fetch(`${BASE_URL}/api/test`, {
+      method: "GET",
+    })
+    const data = await res.json()
+    setAvatar(data.svg.toString())
   }
 
   return (
     <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
       <View style={styles.pageContainer} key="0">
+        {/* {avatar && <SvgXml xml={avatar} />}
+        <CustomButton onPress={generateAvatar}>Generate Avatar</CustomButton> */}
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
-        {errors.phoneNumber && (
-          <Text style={styles.error}>{errors.phoneNumber}</Text>
-        )}
+        {errors.phoneNumber && <Text style={styles.error}>{errors.phoneNumber}</Text>}
         {!newUser.phoneVerified && (
           <Text style={styles.note}>We will send you a verification code.</Text>
         )}
@@ -107,27 +126,18 @@ export default function Register() {
       <View style={styles.pageContainer} key="1">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
+          title="Code"
+          errors={errors.phoneVerify}
           placeholder="6-digit code"
-          onChangeText={(text) => {
-            setErrors({ ...errors, phoneVerify: "" });
-            setNewUser({ ...newUser, phoneCode: text });
+          onChangeText={text => {
+            setErrors({ ...errors, phoneVerify: "" })
+            setNewUser({ ...newUser, phoneCode: text })
           }}
-          autoFocus
+          inputRef={phoneCodeRef}
           keyboardType="numeric"
           maxLength={6}
         />
-        {errors.phoneVerify && (
-          <Text
-            style={{
-              color: colors.errorRed,
-            }}
-          >
-            {errors.phoneVerify}
-          </Text>
-        )}
-        <Text style={styles.note}>
-          Please check your email for the verification code.
-        </Text>
+        <Text style={styles.note}>Please check your email for the verification code.</Text>
         <Pressable
           onPress={() => requestPhoneNumberVerification(true)}
           disabled={requested.current || timeRemaining > 0}
@@ -136,16 +146,11 @@ export default function Register() {
             style={[
               styles.resendText,
               {
-                color:
-                  requested.current || timeRemaining > 0
-                    ? colors.gray
-                    : colors.purple,
+                color: requested.current || timeRemaining > 0 ? colors.gray : colors.purple,
               },
             ]}
           >
-            {timeRemaining > 0
-              ? `Resend Code in ${timeRemaining} seconds`
-              : "Resend Code"}
+            {timeRemaining > 0 ? `Resend Code in ${timeRemaining} seconds` : "Resend Code"}
           </Text>
         </Pressable>
       </View>
@@ -163,28 +168,20 @@ export default function Register() {
           What's your email?
         </Text>
         <CustomInput
-          onChangeText={(text) => {
-            setNewUser({ ...newUser, email: text.trim().toLowerCase() });
-            setErrors({ ...errors, email: "" });
+          title="Email Address"
+          errors={errors.email}
+          onChangeText={text => {
+            setNewUser({ ...newUser, email: text.trim().toLowerCase() })
+            setErrors({ ...errors, email: "" })
           }}
           value={newUser.email}
-          autoFocus
+          inputRef={emailRef}
           defaultValue={newUser.email}
-          placeholder="Email Address"
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
           textContentType="emailAddress"
         />
-        {errors.email && (
-          <Text
-            style={{
-              color: colors.errorRed,
-            }}
-          >
-            {errors.email}
-          </Text>
-        )}
         {!newUser.emailVerified && (
           <Text style={styles.note}>We'll send you a verification code.</Text>
         )}
@@ -193,27 +190,18 @@ export default function Register() {
       <View style={styles.pageContainer} key="3">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
+          title="Code"
+          errors={errors.emailVerify}
           placeholder="6-digit code"
-          onChangeText={(text) => {
-            setErrors({ ...errors, emailVerify: "" });
-            setNewUser({ ...newUser, emailCode: text });
+          onChangeText={text => {
+            setErrors({ ...errors, emailVerify: "" })
+            setNewUser({ ...newUser, emailCode: text })
           }}
-          autoFocus
+          inputRef={emailCodeRef}
           keyboardType="numeric"
           maxLength={6}
         />
-        {errors.emailVerify && (
-          <Text
-            style={{
-              color: colors.errorRed,
-            }}
-          >
-            {errors.emailVerify}
-          </Text>
-        )}
-        <Text style={styles.note}>
-          Please check your email for the verification code.
-        </Text>
+        <Text style={styles.note}>Please check your email for the verification code.</Text>
         <Pressable
           onPress={() => requestEmailVerification(true, true)}
           disabled={requested.current || timeRemaining > 0}
@@ -222,16 +210,11 @@ export default function Register() {
             style={[
               styles.resendText,
               {
-                color:
-                  requested.current || timeRemaining > 0
-                    ? colors.gray
-                    : colors.purple,
+                color: requested.current || timeRemaining > 0 ? colors.gray : colors.purple,
               },
             ]}
           >
-            {timeRemaining > 0
-              ? `Resend Code in ${timeRemaining} seconds`
-              : "Resend Code"}
+            {timeRemaining > 0 ? `Resend Code in ${timeRemaining} seconds` : "Resend Code"}
           </Text>
         </Pressable>
       </View>
@@ -250,56 +233,32 @@ export default function Register() {
             Let's get to know you!
           </Text>
           <CustomInput
+            title="Username"
+            errors={errors.username}
             onChangeText={handleUsername}
             defaultValue={newUser.username}
-            autoFocus
-            placeholder="Username"
+            inputRef={usernameRef}
           />
-          {errors.username && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.username}
-            </Text>
-          )}
           <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, firstName: text });
-              setErrors({ ...errors, firstName: "" });
+            title="First Name"
+            errors={errors.firstName}
+            onChangeText={text => {
+              setNewUser({ ...newUser, firstName: text })
+              setErrors({ ...errors, firstName: "" })
             }}
             defaultValue={newUser.firstName}
-            placeholder="First Name"
           />
-          {errors.firstName && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.firstName}
-            </Text>
-          )}
           <CustomInput
-            onChangeText={(text) => {
-              setNewUser({ ...newUser, lastName: text });
-              setErrors({ ...errors, lastName: "" });
+            title="Last Name"
+            errors={errors.lastName}
+            onChangeText={text => {
+              setNewUser({ ...newUser, lastName: text })
+              setErrors({ ...errors, lastName: "" })
             }}
             defaultValue={newUser.lastName}
-            placeholder="First Name"
           />
-          {errors.lastName && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.lastName}
-            </Text>
-          )}
           <LocationSelector
-            onLocationChange={(location) => {
+            onLocationChange={location => {
               setNewUser({
                 ...newUser,
                 locationId: location._id,
@@ -309,20 +268,11 @@ export default function Register() {
                 latitude: location.latitude,
                 longitude: location.longitude,
                 timezone: location.timezone,
-              });
+              })
             }}
           />
-          {errors.city && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.city}
-            </Text>
-          )}
         </View>
       </ScrollView>
     </CustomPager>
-  );
+  )
 }

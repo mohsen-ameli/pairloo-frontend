@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   pageContainer: {
@@ -11,6 +11,7 @@ export const styles = StyleSheet.create({
     borderRightWidth: 1,
   },
   title: {
+    color: colors.dark,
     fontSize: 30,
     marginBottom: 20,
     fontWeight: "bold",
@@ -30,4 +31,4 @@ export const styles = StyleSheet.create({
   errorText: {
     color: colors.errorRed,
   },
-});
+})

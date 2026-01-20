@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const locSelecStyles = StyleSheet.create({
   inputContainer: {
@@ -14,7 +14,7 @@ export const locSelecStyles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: colors.lightBackground,
+    backgroundColor: colors.light,
   },
   searchContainer: {
     paddingVertical: 15,
@@ -39,4 +39,4 @@ export const locSelecStyles = StyleSheet.create({
   },
   cityText: { color: colors.dark, fontSize: 16 },
   stateCountryText: { color: colors.gray, fontSize: 14 },
-});
+})

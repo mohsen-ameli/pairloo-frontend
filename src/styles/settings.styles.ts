@@ -1,21 +1,7 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
-  editInputContainer: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  editInput: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: colors.lightBackground,
-    fontSize: 14,
-    color: colors.dark,
-    width: "100%",
-  },
   fabContainer: {
     position: "absolute",
     left: 0,
@@ -82,10 +68,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderGray,
     padding: 12,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: `0px 0px 1.5px 0.2px ${colors.shadow}`,
     elevation: 2,
   },
   row: {
@@ -96,7 +79,7 @@ export const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.background,
+    backgroundColor: colors.lightGray,
     overflow: "hidden",
     marginRight: 12,
     alignItems: "center",
@@ -125,6 +108,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.borderGray,
     marginVertical: 12,
   },
+  editableContainer: { gap: 12, marginTop: 8 },
   fieldRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -143,4 +127,4 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 12,
   },
-});
+})

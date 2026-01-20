@@ -1,13 +1,13 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { Platform, StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.lightBackground,
+    backgroundColor: colors.light,
   },
   feedContainer: {
-    backgroundColor: colors.lightBackground,
+    backgroundColor: colors.light,
     padding: 8,
     flexDirection: "row",
     alignItems: "flex-start",
@@ -19,9 +19,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     elevation: 2,
     shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    boxShadow: `0px 0px 1.5px 0.2px ${colors.shadow}`,
   },
   postHeader: {
     flexDirection: "row",
@@ -43,4 +41,4 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.dark,
   },
-});
+})
