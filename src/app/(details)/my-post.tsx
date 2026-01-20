@@ -143,7 +143,10 @@ export default function PostDetails() {
                   </View>
                   <CustomButton
                     onPress={() => {
-                      router.push(`/${post._id}`)
+                      router.push({
+                        pathname: "/feed-post",
+                        params: { id: post._id },
+                      })
                     }}
                   >
                     View Post

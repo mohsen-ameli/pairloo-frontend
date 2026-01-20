@@ -4,25 +4,16 @@ import { sinceNow } from "@/src/utils/format-date"
 import { formatString } from "@/src/utils/format-string"
 import { userAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
-import { useLocalSearchParams, useRouter } from "expo-router"
+import { useRouter } from "expo-router"
 import { useAtomValue } from "jotai"
-import { useEffect } from "react"
 import { Pressable, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 
 export default function index() {
   const router = useRouter()
   const conversations = useAtomValue(conversationsAtom)
-  const { redirect } = useLocalSearchParams()
   const user = useAtomValue(userAtom)
   const unreadMessages = useAtomValue(unreadMessagesAtom)
-
-  useEffect(() => {
-    if (redirect) {
-      router.push(redirect as string)
-      router.setParams({ redirect: undefined })
-    }
-  }, [redirect])
 
   return (
     <>
@@ -42,7 +33,10 @@ export default function index() {
               key={conversation._id}
               style={conversationStyles.item}
               onPress={() => {
-                router.push(`/chat/${conversation._id}`)
+                router.push({
+                  pathname: "/chat-details",
+                  params: { id: conversation._id },
+                })
               }}
             >
               {otherPerson.picture && (

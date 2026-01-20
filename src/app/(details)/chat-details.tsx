@@ -18,7 +18,7 @@ import { Stack } from "expo-router"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
-export default function Chat() {
+export default function ChatDetails() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")

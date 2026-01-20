@@ -126,9 +126,9 @@ export const initChatAtom = atom(null, async (get, set) => {
             picture: message.sender.picture,
           },
           onPress: () => {
-            router.replace({
-              pathname: "/chat",
-              params: { redirect: `/chat/${message.conversationId}` },
+            router.push({
+              pathname: "/chat-details",
+              params: { id: message.conversationId },
             })
           },
         })
