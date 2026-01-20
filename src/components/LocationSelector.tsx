@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react"
-import { View, TextInput, FlatList, TouchableOpacity, Text, Keyboard, Modal } from "react-native"
+import {
+  View,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Text,
+  Keyboard,
+  Modal,
+  Pressable,
+} from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { colors } from "@/src/utils/colors"
 import { BASE_URL } from "@/src/utils/constants"
@@ -63,27 +72,16 @@ export default function LocationSelector({
 
   return (
     <View>
-      <CustomInput
-        title="Location"
-        editable={false}
-        selectTextOnFocus={false}
+      <Pressable
         onPress={() => {
           setShowModal(true)
           setCitySearchInput("")
         }}
-        style={locSelecStyles.inputContainer}
       >
-        <Text
-          style={[
-            locSelecStyles.inputText,
-            {
-              color: locationInput ? colors.dark : colors.gray,
-            },
-          ]}
-        >
+        <CustomInput title="Location" editable={false} selectTextOnFocus={false}>
           {locationInput}
-        </Text>
-      </CustomInput>
+        </CustomInput>
+      </Pressable>
 
       <Modal visible={showModal} animationType="slide" onRequestClose={() => setShowModal(false)}>
         <SafeAreaView style={locSelecStyles.modalContainer}>
