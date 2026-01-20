@@ -118,7 +118,7 @@ export default function CreatePost() {
                               createPostStyles.mcqOption,
                               {
                                 borderColor: isSelected ? colors.purple : colors.lightGray,
-                                backgroundColor: isSelected ? colors.lightBlue : colors.lightGray,
+                                backgroundColor: isSelected ? colors.lightPurple : colors.lightGray,
                               },
                             ]}
                           >
@@ -126,7 +126,7 @@ export default function CreatePost() {
                               style={[
                                 createPostStyles.mcqOptionText,
                                 {
-                                  color: isSelected ? colors.purple : colors.dark,
+                                  color: colors.dark,
                                 },
                               ]}
                             >
@@ -149,7 +149,7 @@ export default function CreatePost() {
                           style={[
                             createPostStyles.multiSelect,
                             {
-                              backgroundColor: isSelected ? colors.lightBlue : colors.lightGray,
+                              backgroundColor: isSelected ? colors.lightPurple : colors.lightGray,
                             },
                           ]}
                         >

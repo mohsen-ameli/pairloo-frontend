@@ -9,6 +9,7 @@ import { colors } from "@/src/utils/colors"
 import { maybeCompleteAuthSession } from "expo-web-browser"
 import Toast from "react-native-toast-message"
 import CustomToast from "@/src/components/CustomToast"
+import useCustomHeader from "../utils/useCustomHeader"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -33,6 +34,10 @@ export default function RootLayout() {
   const user = useAtomValue(userAtom)
   const queryClient = new QueryClient()
 
+  const loginOptions = useCustomHeader("")
+  const registerOptions = useCustomHeader("Create Account")
+  const forgotEmailOptions = useCustomHeader("Forgot Email")
+
   return (
     <>
       <StatusBar style="auto" />
@@ -52,9 +57,9 @@ export default function RootLayout() {
             </Stack.Protected>
             <Stack.Protected guard={user === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />
-              <Stack.Screen name="register" options={{ title: "Create Account" }} />
-              <Stack.Screen name="login" options={{ title: "Log In" }} />
-              <Stack.Screen name="forgot-email" options={{ title: "Forgot Email" }} />
+              <Stack.Screen name="register" options={registerOptions} />
+              <Stack.Screen name="login" options={loginOptions} />
+              <Stack.Screen name="forgot-email" options={forgotEmailOptions} />
             </Stack.Protected>
           </Stack>
         </QueryClientProvider>

@@ -16,6 +16,7 @@ import {
 } from "@/src/store/auth-store"
 import { styles } from "@/src/styles/register.styles"
 import { useEffect, useRef, useState } from "react"
+import { TextInput } from "react-native"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
@@ -36,6 +37,12 @@ export default function Register() {
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
   const [avatar, setAvatar] = useState<string | null>(null)
+
+  // Refs for manual focus
+  const phoneCodeRef = useRef<TextInput>(null!)
+  const emailRef = useRef<TextInput>(null!)
+  const emailCodeRef = useRef<TextInput>(null!)
+  const usernameRef = useRef<TextInput>(null!)
 
   // Set next/back functions based on current page
   useEffect(() => {
@@ -58,6 +65,19 @@ export default function Register() {
         }
       },
     })
+  }, [currPage])
+
+  // Manual focus logic
+  useEffect(() => {
+    if (currPage === 1 && phoneCodeRef.current) {
+      setTimeout(() => phoneCodeRef.current?.focus(), 500)
+    } else if (currPage === 2 && emailRef.current) {
+      setTimeout(() => emailRef.current?.focus(), 500)
+    } else if (currPage === 3 && emailCodeRef.current) {
+      setTimeout(() => emailCodeRef.current?.focus(), 500)
+    } else if (currPage === 4 && usernameRef.current) {
+      setTimeout(() => usernameRef.current?.focus(), 500)
+    }
   }, [currPage])
 
   async function handleUsername(text: string) {
@@ -90,10 +110,6 @@ export default function Register() {
     setAvatar(data.svg.toString())
   }
 
-  useEffect(() => {
-    generateAvatar()
-  }, [])
-
   return (
     <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
       <View style={styles.pageContainer} key="0">
@@ -117,7 +133,7 @@ export default function Register() {
             setErrors({ ...errors, phoneVerify: "" })
             setNewUser({ ...newUser, phoneCode: text })
           }}
-          autoFocus
+          inputRef={phoneCodeRef}
           keyboardType="numeric"
           maxLength={6}
         />
@@ -159,7 +175,7 @@ export default function Register() {
             setErrors({ ...errors, email: "" })
           }}
           value={newUser.email}
-          autoFocus
+          inputRef={emailRef}
           defaultValue={newUser.email}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -181,7 +197,7 @@ export default function Register() {
             setErrors({ ...errors, emailVerify: "" })
             setNewUser({ ...newUser, emailCode: text })
           }}
-          autoFocus
+          inputRef={emailCodeRef}
           keyboardType="numeric"
           maxLength={6}
         />
@@ -221,7 +237,7 @@ export default function Register() {
             errors={errors.username}
             onChangeText={handleUsername}
             defaultValue={newUser.username}
-            autoFocus
+            inputRef={usernameRef}
           />
           <CustomInput
             title="First Name"

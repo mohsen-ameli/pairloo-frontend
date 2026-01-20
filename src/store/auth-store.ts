@@ -169,6 +169,7 @@ export const requestEmailVerificationAtom = atom(
         body: JSON.stringify({ email, isSignUp }),
       })
       const data = await res.json()
+
       if (!res.ok && !isSignUp) {
         set(authErrorsAtom, {
           ...errors,
@@ -184,7 +185,7 @@ export const requestEmailVerificationAtom = atom(
         set(flowAtom, { ...flow, nextEnabled: true })
         return
       }
-      set(currPageAtom, get(currPageAtom) + 1)
+      set(currPageAtom, curr => curr + 1)
       set(resendTimerAtom, VERIFICATION_RESEND_TIME)
       set(flowAtom, { ...flow, nextEnabled: true })
 
@@ -305,8 +306,6 @@ export const requestPhoneNumberVerificationAtom = atom(
         body: JSON.stringify({ callingCode, phoneNumber }),
       })
       const data = await res.json()
-      // const res = { ok: true }; // Mock response for testing
-      // const data = { error: "" }; // Mock data for testing
 
       if (!res.ok) {
         set(authErrorsAtom, {

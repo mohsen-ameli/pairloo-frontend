@@ -1,8 +1,8 @@
 import CustomInput from "@/src/components/CustomInput"
 import { Link } from "expo-router"
 import { useAtom, useSetAtom } from "jotai"
-import { useEffect } from "react"
-import { Pressable, Text, View } from "react-native"
+import { useEffect, useRef } from "react"
+import { Pressable, Text, TextInput, View } from "react-native"
 import { styles } from "@/src/styles/login.styles"
 import { colors } from "@/src/utils/colors"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
@@ -26,6 +26,9 @@ export default function LoginPage() {
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
 
+  // Refs for manual focus
+  const emailCodeRef = useRef<TextInput>(null!)
+
   // Set next/back functions based on current page
   useEffect(() => {
     setFlow({
@@ -43,6 +46,13 @@ export default function LoginPage() {
         }
       },
     })
+  }, [currPage])
+
+  // Manual focus logic
+  useEffect(() => {
+    if (currPage === 1 && emailCodeRef.current) {
+      setTimeout(() => emailCodeRef.current?.focus(), 500)
+    }
   }, [currPage])
 
   return (
@@ -75,8 +85,8 @@ export default function LoginPage() {
         <CustomInput
           title="Code"
           errors={errors.emailVerify}
-          autoFocus
           value={returningUser.emailCode}
+          inputRef={emailCodeRef}
           placeholder="6-digit code"
           onChangeText={text => {
             setReturningUser(prev => ({ ...prev, emailCode: text }))

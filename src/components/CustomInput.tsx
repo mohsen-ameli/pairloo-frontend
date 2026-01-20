@@ -6,9 +6,10 @@ interface Props extends TextInputProps {
   title: string
   mandatory?: boolean
   errors?: string
+  inputRef?: React.RefObject<TextInput>
 }
 
-export default function CustomInput({ title, mandatory, errors, ...rest }: Props) {
+export default function CustomInput({ title, mandatory, errors, inputRef, ...rest }: Props) {
   return (
     <View>
       <Text style={{ fontSize: 14, marginBottom: 5, color: colors.dark }}>
@@ -16,6 +17,7 @@ export default function CustomInput({ title, mandatory, errors, ...rest }: Props
         {mandatory ? <Text style={{ color: colors.errorRed }}> *</Text> : null}
       </Text>
       <TextInput
+        ref={inputRef}
         style={{
           color: colors.dark,
           fontSize: 16,
