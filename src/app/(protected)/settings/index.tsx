@@ -185,13 +185,13 @@ export default function SettingsScreen() {
                 />
                 <View style={styles.actionsRow}>
                   <View style={{ flex: 1 }}>
-                    <CustomButton onPress={handleSaveEdit} color={colors.purple}>
+                    <CustomButton onPress={handleSaveEdit} color={colors.purple} fontSize={16}>
                       Save Changes
                     </CustomButton>
                   </View>
                   <View style={{ width: 12 }} />
                   <View style={{ flex: 1 }}>
-                    <CustomButton onPress={resetEdit} color={colors.gray}>
+                    <CustomButton onPress={resetEdit} color={colors.muted} fontSize={16}>
                       Cancel
                     </CustomButton>
                   </View>

@@ -12,7 +12,7 @@ export default function LoadingIndicator({ loading }: { loading: boolean }) {
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: colors.lightGray,
+        backgroundColor: colors.light,
         justifyContent: "center",
         alignItems: "center",
         zIndex: 10,

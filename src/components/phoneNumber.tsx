@@ -93,7 +93,7 @@ export default function PhoneNumber() {
         value={newUser.phoneNumber}
         autoFocus
         placeholder="4160001234"
-        placeholderTextColor={colors.gray}
+        placeholderTextColor={colors.muted}
         autoComplete="off"
         keyboardType="number-pad"
         maxLength={14}

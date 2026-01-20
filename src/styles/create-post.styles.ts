@@ -32,8 +32,7 @@ export const createPostStyles = StyleSheet.create({
   textInput: {
     flex: 1,
     color: colors.dark,
-    borderColor: colors.borderGray,
-    borderWidth: 1,
+    boxShadow: `0px 0px 1.5px 0.2px ${colors.shadow}`,
     padding: 10,
     textAlignVertical: "top",
     borderRadius: 5,

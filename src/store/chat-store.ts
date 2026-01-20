@@ -63,6 +63,8 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   // New conversation created
   socket.on("conversation", (conversation: ConversationType) => {
+    const exists = get(conversationsAtom).some(conv => conv._id === conversation._id)
+    if (exists) return
     set(conversationsAtom, prev => [...prev, conversation])
   })
 

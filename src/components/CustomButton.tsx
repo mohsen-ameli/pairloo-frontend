@@ -5,12 +5,14 @@ import { Appearance, Pressable, PressableProps, StyleProp, Text, ViewStyle } fro
 interface CustomProps extends PressableProps {
   children: React.ReactNode
   color?: string
+  disabled?: boolean
+  fontSize?: number
   style?: StyleProp<ViewStyle>
 }
 
 const colorScheme = Appearance.getColorScheme()
 
-export default function ({ color, children, disabled, style, ...rest }: CustomProps) {
+export default function ({ color, children, disabled, fontSize, style, ...rest }: CustomProps) {
   const backgroundColor = disabled ? colors.borderGray : color || colors.purple
   const shadowColor = disabled ? colors.borderGray : color || colors.purple
   return (
@@ -37,7 +39,7 @@ export default function ({ color, children, disabled, style, ...rest }: CustomPr
         style={{
           color: colorScheme === "dark" ? colors.dark : colors.light,
           fontWeight: "bold",
-          fontSize: 18,
+          fontSize: fontSize ? fontSize : 18,
           letterSpacing: 0.5,
         }}
       >

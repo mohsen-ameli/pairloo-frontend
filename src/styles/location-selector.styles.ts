@@ -14,7 +14,7 @@ export const locSelecStyles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: colors.lightBackground,
+    backgroundColor: colors.light,
   },
   searchContainer: {
     paddingVertical: 15,

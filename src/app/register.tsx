@@ -19,8 +19,6 @@ import { useEffect, useRef, useState } from "react"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
-import { SvgXml } from "react-native-svg"
-import CustomButton from "../components/CustomButton"
 
 const INITIAL_PAGE_COUNT = 5
 

@@ -23,7 +23,7 @@ export default function useCustomHeader(
     title,
     headerShown: true,
     headerStyle: {
-      backgroundColor: colors.lightBackground,
+      backgroundColor: colors.light,
     },
     headerTintColor: colors.dark,
     headerBackButtonDisplayMode: "minimal",
@@ -44,12 +44,6 @@ export default function useCustomHeader(
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>{title}</Text>
         </View>
-        <TouchableOpacity onPress={handleProfilePress} style={styles.profileButton}>
-          <Image
-            source={user?.picture ? { uri: user.picture } : defaultProfilePicture}
-            style={styles.profileImage}
-          />
-        </TouchableOpacity>
       </View>
     ),
   }

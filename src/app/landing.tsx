@@ -16,7 +16,7 @@ export default function Landing() {
       <View
         style={{
           flex: 1,
-          backgroundColor: colors.lightBackground,
+          backgroundColor: colors.light,
           justifyContent: "space-between",
           alignItems: "center",
           paddingTop: 120,
