@@ -26,7 +26,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: colors.accentOrange,
+    borderColor: colors.borderGray,
     elevation: 2,
   },
   postCardShadow: {
@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
     marginRight: 12,
   },
   postImageBackground: {
-    backgroundColor: colors.accentOrange,
+    backgroundColor: colors.lightGray,
   },
   postImageFill: {
     width: "100%",

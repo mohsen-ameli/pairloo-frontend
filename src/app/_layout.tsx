@@ -21,7 +21,14 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
-          <Stack>
+          <Stack
+            screenOptions={{
+              headerBackButtonDisplayMode: "minimal",
+              headerTitleStyle: { color: colors.dark },
+              headerStyle: { backgroundColor: colors.light },
+              headerTintColor: colors.dark,
+            }}
+          >
             <Stack.Protected guard={user !== null}>
               <Stack.Screen
                 name="(protected)"
@@ -29,53 +36,15 @@ export default function RootLayout() {
               />
             </Stack.Protected>
             <Stack.Protected guard={user === null}>
-              <Stack.Screen
-                name="landing"
-                options={{
-                  headerShown: false,
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                }}
-              />
+              <Stack.Screen name="landing" options={{ headerShown: false }} />
               <Stack.Screen
                 name="register"
-                options={{
-                  title: "Create Account",
-                  headerTitleStyle: {
-                    color: colors.dark,
-                  },
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                  headerBackButtonDisplayMode: "minimal",
-                }}
+                options={{ title: "Create Account" }}
               />
-              <Stack.Screen
-                name="login"
-                options={{
-                  title: "Log In",
-                  headerTitleStyle: {
-                    color: colors.dark,
-                  },
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                  headerBackButtonDisplayMode: "minimal",
-                }}
-              />
+              <Stack.Screen name="login" options={{ title: "Log In" }} />
               <Stack.Screen
                 name="forgot-email"
-                options={{
-                  title: "Forgot Email",
-                  headerTitleStyle: {
-                    color: colors.dark,
-                  },
-                  headerStyle: {
-                    backgroundColor: colors.lightBackground,
-                  },
-                  headerBackButtonDisplayMode: "minimal",
-                }}
+                options={{ title: "Forgot Email" }}
               />
             </Stack.Protected>
           </Stack>

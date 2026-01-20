@@ -5,6 +5,7 @@ import Feather from "@expo/vector-icons/Feather";
 import { Tabs } from "expo-router";
 import { useSetAtom } from "jotai";
 import { useEffect } from "react";
+import { View } from "react-native";
 
 export default function ProtectedLayout() {
   const initChatConnection = useSetAtom(initChatAtom);
@@ -22,8 +23,8 @@ export default function ProtectedLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.purple,
-        tabBarStyle: {
-          backgroundColor: colors.lightBackground,
+        tabBarBackground() {
+          return <View style={{ backgroundColor: colors.light, flex: 1 }} />;
         },
       }}
     >

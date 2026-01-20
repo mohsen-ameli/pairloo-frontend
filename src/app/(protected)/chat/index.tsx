@@ -1,4 +1,3 @@
-import CustomHeader from "@/src/components/CustomHeader";
 import { conversationStyles } from "@/src/styles/conversation.style";
 import { conversationsAtom } from "@/src/store/chat-store";
 import { sinceNow } from "@/src/utils/format-date";
@@ -25,8 +24,6 @@ export default function index() {
 
   return (
     <>
-      <CustomHeader title="Chat" />
-
       <View style={conversationStyles.container}>
         {conversations.map((conversation) => {
           let otherPerson;

@@ -9,7 +9,6 @@ import {
   RefreshControl,
   Pressable,
 } from "react-native";
-import CustomHeader from "@/src/components/CustomHeader";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
 import { styles } from "@/src/styles/feed.styles";
 import { GeneralPostType } from "@/src/types/post.type";
@@ -34,7 +33,7 @@ export default function Index() {
     const numColumns = 2;
     const columns: Array<typeof data> = Array.from(
       { length: numColumns },
-      () => []
+      () => [],
     );
     data.forEach((post, idx) => {
       columns[idx % numColumns].push(post);
@@ -49,7 +48,6 @@ export default function Index() {
   if (isPending) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="Home" />
         <LoadingIndicator loading={true} />
       </View>
     );
@@ -58,7 +56,6 @@ export default function Index() {
   if (isError) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="Home" />
         <Text style={errorStyles.errorText}>
           Error loading posts. Please try again.
         </Text>
@@ -71,8 +68,6 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Home" />
-
       <ScrollView
         contentContainerStyle={styles.feedContainer}
         refreshControl={

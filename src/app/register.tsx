@@ -15,13 +15,15 @@ import {
   resendTimerAtom,
 } from "@/src/store/auth-store";
 import { styles } from "@/src/styles/register.styles";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BASE_URL,
   REGISTER_USERNAME_CHECK_INTERVAL,
 } from "@/src/utils/constants";
 import { currPageAtom, flowAtom } from "@/src/store/pager-store";
-import CustomPager from "../components/CustomPager";
+import CustomPager from "@/src/components/CustomPager";
+import { SvgXml } from "react-native-svg";
+import CustomButton from "../components/CustomButton";
 
 const INITIAL_PAGE_COUNT = 5;
 
@@ -42,6 +44,7 @@ export default function Register() {
   );
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom);
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   // Set next/back functions based on current page
   useEffect(() => {
@@ -91,9 +94,23 @@ export default function Register() {
     }, REGISTER_USERNAME_CHECK_INTERVAL);
   }
 
+  async function generateAvatar() {
+    const res = await fetch(`${BASE_URL}/api/test`, {
+      method: "GET",
+    });
+    const data = await res.json();
+    setAvatar(data.svg.toString());
+  }
+
+  useEffect(() => {
+    generateAvatar();
+  }, []);
+
   return (
     <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
       <View style={styles.pageContainer} key="0">
+        {/* {avatar && <SvgXml xml={avatar} />}
+        <CustomButton onPress={generateAvatar}>Generate Avatar</CustomButton> */}
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
         {errors.phoneNumber && (
@@ -107,6 +124,8 @@ export default function Register() {
       <View style={styles.pageContainer} key="1">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
+          title="Code"
+          errors={errors.phoneVerify}
           placeholder="6-digit code"
           onChangeText={(text) => {
             setErrors({ ...errors, phoneVerify: "" });
@@ -116,15 +135,6 @@ export default function Register() {
           keyboardType="numeric"
           maxLength={6}
         />
-        {errors.phoneVerify && (
-          <Text
-            style={{
-              color: colors.errorRed,
-            }}
-          >
-            {errors.phoneVerify}
-          </Text>
-        )}
         <Text style={styles.note}>
           Please check your email for the verification code.
         </Text>
@@ -163,6 +173,8 @@ export default function Register() {
           What's your email?
         </Text>
         <CustomInput
+          title="Email Address"
+          errors={errors.email}
           onChangeText={(text) => {
             setNewUser({ ...newUser, email: text.trim().toLowerCase() });
             setErrors({ ...errors, email: "" });
@@ -170,21 +182,11 @@ export default function Register() {
           value={newUser.email}
           autoFocus
           defaultValue={newUser.email}
-          placeholder="Email Address"
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
           textContentType="emailAddress"
         />
-        {errors.email && (
-          <Text
-            style={{
-              color: colors.errorRed,
-            }}
-          >
-            {errors.email}
-          </Text>
-        )}
         {!newUser.emailVerified && (
           <Text style={styles.note}>We'll send you a verification code.</Text>
         )}
@@ -193,6 +195,8 @@ export default function Register() {
       <View style={styles.pageContainer} key="3">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
+          title="Code"
+          errors={errors.emailVerify}
           placeholder="6-digit code"
           onChangeText={(text) => {
             setErrors({ ...errors, emailVerify: "" });
@@ -202,15 +206,6 @@ export default function Register() {
           keyboardType="numeric"
           maxLength={6}
         />
-        {errors.emailVerify && (
-          <Text
-            style={{
-              color: colors.errorRed,
-            }}
-          >
-            {errors.emailVerify}
-          </Text>
-        )}
         <Text style={styles.note}>
           Please check your email for the verification code.
         </Text>
@@ -250,54 +245,30 @@ export default function Register() {
             Let's get to know you!
           </Text>
           <CustomInput
+            title="Username"
+            errors={errors.username}
             onChangeText={handleUsername}
             defaultValue={newUser.username}
             autoFocus
-            placeholder="Username"
           />
-          {errors.username && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.username}
-            </Text>
-          )}
           <CustomInput
+            title="First Name"
+            errors={errors.firstName}
             onChangeText={(text) => {
               setNewUser({ ...newUser, firstName: text });
               setErrors({ ...errors, firstName: "" });
             }}
             defaultValue={newUser.firstName}
-            placeholder="First Name"
           />
-          {errors.firstName && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.firstName}
-            </Text>
-          )}
           <CustomInput
+            title="Last Name"
+            errors={errors.lastName}
             onChangeText={(text) => {
               setNewUser({ ...newUser, lastName: text });
               setErrors({ ...errors, lastName: "" });
             }}
             defaultValue={newUser.lastName}
-            placeholder="First Name"
           />
-          {errors.lastName && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.lastName}
-            </Text>
-          )}
           <LocationSelector
             onLocationChange={(location) => {
               setNewUser({
@@ -312,15 +283,6 @@ export default function Register() {
               });
             }}
           />
-          {errors.city && (
-            <Text
-              style={{
-                color: colors.errorRed,
-              }}
-            >
-              {errors.city}
-            </Text>
-          )}
         </View>
       </ScrollView>
     </CustomPager>

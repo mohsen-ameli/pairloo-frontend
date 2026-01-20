@@ -1,13 +1,13 @@
+import useCustomHeader from "@/src/utils/useCustomHeader";
 import { Stack } from "expo-router";
 
 export default function Layout() {
+  const indexOptions = useCustomHeader("Chat");
+
   return (
     <Stack>
-      <Stack.Screen name="index" />
-      <Stack.Screen
-        name="[id]"
-        options={{ headerBackButtonDisplayMode: "minimal" }}
-      />
+      <Stack.Screen name="index" options={indexOptions} />
+      <Stack.Screen name="[id]" />
     </Stack>
   );
 }

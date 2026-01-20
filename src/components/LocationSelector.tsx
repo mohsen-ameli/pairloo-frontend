@@ -14,7 +14,8 @@ import { BASE_URL } from "../utils/constants";
 import Feather from "@expo/vector-icons/Feather";
 import { userAtom } from "../store/auth-store";
 import { useAtomValue } from "jotai";
-import { locSelecStyles } from "../styles/location-selector.styles";
+import { locSelecStyles } from "@/src/styles/location-selector.styles";
+import CustomInput from "./CustomInput";
 
 interface City {
   _id: number;
@@ -72,7 +73,10 @@ export default function LocationSelector({
 
   return (
     <View>
-      <TouchableOpacity
+      <CustomInput
+        title="Location"
+        editable={false}
+        selectTextOnFocus={false}
         onPress={() => {
           setShowModal(true);
           setCitySearchInput("");
@@ -89,7 +93,7 @@ export default function LocationSelector({
         >
           {locationInput}
         </Text>
-      </TouchableOpacity>
+      </CustomInput>
 
       <Modal
         visible={showModal}

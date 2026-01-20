@@ -10,9 +10,8 @@ import { colors } from "@/src/utils/colors";
 import { useEffect, useState } from "react";
 import { authFetchAtom } from "../../../utils/auth-fetch";
 import Feather from "@expo/vector-icons/Feather";
-// @ts-ignore
-import default_pfp from "@/assets/images/default_pfp.png";
-import CustomHeader from "@/src/components/CustomHeader";
+
+const default_pfp = require("@/assets/images/default_pfp.png");
 
 type EditFields = {
   firstName: string;
@@ -99,8 +98,6 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="Settings" />
-
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
@@ -164,50 +161,35 @@ export default function SettingsScreen() {
               <Text style={styles.fieldValue}>{user.email || "NA"}</Text>
             </View>
             {editMode ? (
-              <>
-                <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>First Name</Text>
-                  <View style={styles.editInputContainer}>
-                    <CustomInput
-                      defaultValue={editFields.firstName}
-                      onChangeText={(text: string) =>
-                        setEditFields((f) => ({ ...f, firstName: text }))
-                      }
-                      style={styles.editInput}
-                    />
-                  </View>
-                </View>
-                <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Last Name</Text>
-                  <View style={styles.editInputContainer}>
-                    <CustomInput
-                      defaultValue={editFields.lastName}
-                      onChangeText={(text: string) =>
-                        setEditFields((f) => ({ ...f, lastName: text }))
-                      }
-                      style={styles.editInput}
-                    />
-                  </View>
-                </View>
-                <View style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>Location</Text>
-                  <View style={styles.editInputContainer}>
-                    <LocationSelector
-                      onLocationChange={(location) => {
-                        setEditFields((f) => ({
-                          ...f,
-                          city: location.name,
-                          state: location.state_name,
-                          country: location.country_name,
-                          latitude: location.latitude,
-                          longitude: location.longitude,
-                          timezone: location.timezone,
-                          locationId: location._id,
-                        }));
-                      }}
-                    />
-                  </View>
-                </View>
+              <View style={styles.editableContainer}>
+                <CustomInput
+                  title="First Name"
+                  defaultValue={editFields.firstName}
+                  onChangeText={(text: string) => {
+                    setEditFields((f) => ({ ...f, firstName: text }));
+                  }}
+                />
+                <CustomInput
+                  title="Last Name"
+                  defaultValue={editFields.lastName}
+                  onChangeText={(text: string) =>
+                    setEditFields((f) => ({ ...f, lastName: text }))
+                  }
+                />
+                <LocationSelector
+                  onLocationChange={(location) => {
+                    setEditFields((f) => ({
+                      ...f,
+                      city: location.name,
+                      state: location.state_name,
+                      country: location.country_name,
+                      latitude: location.latitude,
+                      longitude: location.longitude,
+                      timezone: location.timezone,
+                      locationId: location._id,
+                    }));
+                  }}
+                />
                 <View style={styles.actionsRow}>
                   <View style={{ flex: 1 }}>
                     <CustomButton
@@ -224,7 +206,7 @@ export default function SettingsScreen() {
                     </CustomButton>
                   </View>
                 </View>
-              </>
+              </View>
             ) : (
               <>
                 <View style={styles.fieldRow}>

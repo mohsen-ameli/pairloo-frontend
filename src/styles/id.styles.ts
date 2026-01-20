@@ -7,13 +7,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light,
   },
   content: {
-    padding: 24,
+    paddingHorizontal: 12,
     paddingBottom: 48,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: colors.darkGray,
+    color: colors.dark,
     marginBottom: 8,
   },
   subtitle: {

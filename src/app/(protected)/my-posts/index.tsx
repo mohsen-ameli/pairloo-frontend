@@ -15,7 +15,6 @@ import { styles } from "@/src/styles/index.styles";
 // @ts-ignore
 import imageNotAvailable from "@/assets/images/image-not-available.png";
 import LoadingIndicator from "@/src/components/LoadingIndicator";
-import CustomHeader from "@/src/components/CustomHeader";
 import { MyPostType } from "@/src/types/post.type";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
@@ -50,7 +49,6 @@ export default function Index() {
   if (isPending) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="My Posts" />
         <LoadingIndicator loading={true} />
       </View>
     );
@@ -59,7 +57,6 @@ export default function Index() {
   if (isError) {
     return (
       <View style={styles.container}>
-        <CustomHeader title="My Posts" />
         <Text style={errorStyles.errorText}>
           Error loading posts. Please try again.
         </Text>
@@ -72,8 +69,6 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <CustomHeader title="My Posts" />
-
       {/* Posts List */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}

@@ -4,7 +4,7 @@ const colorScheme = Appearance.getColorScheme();
 
 const baseColors = {
   purple: "#6B46C1",
-  lightPurple: "rgb(167, 145, 255)",
+  lightPurple: "rgb(124, 98, 231)",
   darkPurple: "#3a1d8bff",
   background: "#f2f2f7ff",
   lightBackground: "#ffffffcc",
@@ -12,8 +12,8 @@ const baseColors = {
   dark: "#000000ff",
   light: "#ffffffff",
   gray: "#8e8e93ff",
-  darkGray: "#222222",
-  lightGray: "#eeeeee",
+  darkGray: "#3a3a3a",
+  lightGray: "#c5c5c5",
   textSecondary: "#3c3c4399",
   errorRed: "#ff3b30ff",
   green: "#059669",
@@ -24,7 +24,6 @@ const baseColors = {
   borderGray: "#d1d1d6ff",
   blue: "#007AFF",
   lightBlue: "#F0E7FF",
-  accentOrange: "#f0f0f0",
   muted: "#999999",
   shadow: "#000000",
 };

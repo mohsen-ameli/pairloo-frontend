@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import React, { useCallback, useState } from "react";
-import CustomHeader from "@/src/components/CustomHeader";
 import { currPageAtom, flowAtom } from "@/src/store/pager-store";
 import CustomPager from "@/src/components/CustomPager";
 import { colors } from "@/src/utils/colors";
@@ -99,7 +98,6 @@ export default function CreatePost() {
 
   return (
     <>
-      <CustomHeader title="Create Post" />
       <LoadingIndicator loading={loading} />
 
       <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>

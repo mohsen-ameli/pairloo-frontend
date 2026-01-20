@@ -58,8 +58,6 @@ const newUserErrors = {
   emailVerify: "",
   phoneNumber: "",
   phoneVerify: "",
-  country: "",
-  city: "",
   general: "",
 };
 export const authErrorsAtom = atom(newUserErrors);
@@ -279,6 +277,8 @@ export const verifyEmailCodeAtom = atom(
           set(newUserAtom, { ...get(newUserAtom), emailVerified: true });
         } else {
           set(userAtom, data);
+          set(authErrorsAtom, newUserErrors);
+          set(returningUserAtom, returningUser);
           router.replace("/");
         }
       } else {

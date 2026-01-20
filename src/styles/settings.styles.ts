@@ -2,20 +2,6 @@ import { StyleSheet } from "react-native";
 import { colors } from "../utils/colors";
 
 export const styles = StyleSheet.create({
-  editInputContainer: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  editInput: {
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: colors.lightBackground,
-    fontSize: 14,
-    color: colors.dark,
-    width: "100%",
-  },
   fabContainer: {
     position: "absolute",
     left: 0,
@@ -125,6 +111,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.borderGray,
     marginVertical: 12,
   },
+  editableContainer: { gap: 12, marginTop: 8 },
   fieldRow: {
     flexDirection: "row",
     justifyContent: "space-between",

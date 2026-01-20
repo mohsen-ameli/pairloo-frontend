@@ -11,7 +11,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
 import { userAtom } from "@/src/store/auth-store";
 import { ConversationType } from "@/src/types/chat.type";
-import CustomHeader from "@/src/components/CustomHeader";
 import { chatSocketAtom } from "@/src/store/socket-store";
 
 export default function PostDetails() {
@@ -72,8 +71,6 @@ export default function PostDetails() {
 
   return (
     <>
-      <CustomHeader title="Post Details" />
-
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           {post.images && post.images.length != 0 && (

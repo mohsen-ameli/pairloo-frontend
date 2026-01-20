@@ -15,7 +15,6 @@ import {
   OtherUser,
 } from "@/src/types/chat.type";
 import Feather from "@expo/vector-icons/Feather";
-import CustomHeader from "@/src/components/CustomHeader";
 import { formatDate } from "@/src/utils/format-date";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import useGradualAnimation from "@/src/utils/gradual-animation";
@@ -24,6 +23,8 @@ import { userAtom } from "@/src/store/auth-store";
 import defaultProfilePicture from "@/assets/images/default_pfp.png";
 import { chatStyles } from "@/src/styles/chat.styles";
 import { chatSocketAtom } from "@/src/store/socket-store";
+import useCustomHeader from "@/src/utils/useCustomHeader";
+import { Stack } from "expo-router";
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,6 +40,7 @@ export default function Chat() {
   const chatRef = useRef<FlatList>(null!);
   const { height } = useGradualAnimation({ isAuthenticated: user !== null });
   const [otherUser, setOtherUser] = useState<OtherUser>(null!);
+  const detailOptions = useCustomHeader("", otherUser);
 
   useEffect(() => {
     if (!conversations || !user || !socket) return;
@@ -76,7 +78,7 @@ export default function Chat() {
 
   return (
     <View style={chatStyles.container}>
-      <CustomHeader otherUser={otherUser} />
+      <Stack.Screen options={detailOptions} />
 
       <FlatList
         data={messages}

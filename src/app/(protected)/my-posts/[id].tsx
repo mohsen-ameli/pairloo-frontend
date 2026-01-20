@@ -11,7 +11,6 @@ import ImageCarousel from "@/src/components/ImageCarousel";
 import { Image } from "expo-image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { errorStyles } from "@/src/styles/error.styles";
-import CustomHeader from "@/src/components/CustomHeader";
 
 export default function PostDetails() {
   const router = useRouter();
@@ -82,8 +81,6 @@ export default function PostDetails() {
 
   return (
     <>
-      <CustomHeader title="Post Details" />
-
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.postContainer}>
@@ -107,7 +104,7 @@ export default function PostDetails() {
                     style: "destructive",
                     onPress: () => mutate(),
                   },
-                ]
+                ],
               );
             }}
           >

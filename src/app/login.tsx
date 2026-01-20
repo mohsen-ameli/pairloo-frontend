@@ -1,7 +1,7 @@
 import CustomInput from "@/src/components/CustomInput";
-import { Link, useFocusEffect } from "expo-router";
+import { Link } from "expo-router";
 import { useAtom, useSetAtom } from "jotai";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 import { styles } from "@/src/styles/login.styles";
 import { colors } from "@/src/utils/colors";
@@ -25,17 +25,6 @@ export default function LoginPage() {
   const [returningUser, setReturningUser] = useAtom(returningUserAtom);
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom);
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom);
-
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        setReturningUser({ email: "", emailCode: "" });
-        setErrors({ ...errors, email: "", emailVerify: "" });
-        setCurrPage(0);
-        setTimeRemaining(0);
-      };
-    }, []),
-  );
 
   // Set next/back functions based on current page
   useEffect(() => {
@@ -61,7 +50,8 @@ export default function LoginPage() {
       <View style={styles.pageContainer} key="0">
         <Text style={styles.title}>Log In</Text>
         <CustomInput
-          placeholder="Email"
+          title="Email Address"
+          errors={errors.email}
           value={returningUser.email}
           autoFocus
           onChangeText={(text) => {
@@ -75,7 +65,6 @@ export default function LoginPage() {
           autoComplete="email"
           textContentType="emailAddress"
         />
-        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
         <Link push href="/forgot-email" style={styles.forgotLink}>
           Forgot email?
         </Link>
@@ -84,6 +73,8 @@ export default function LoginPage() {
       <View style={styles.pageContainer} key="1">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
+          title="Code"
+          errors={errors.emailVerify}
           autoFocus
           value={returningUser.emailCode}
           placeholder="6-digit code"
@@ -95,9 +86,6 @@ export default function LoginPage() {
           keyboardType="numeric"
           maxLength={6}
         />
-        {errors.emailVerify && (
-          <Text style={styles.errorText}>{errors.emailVerify}</Text>
-        )}
         <Text style={styles.verificationInfo}>
           Please check your email for the verification code.
         </Text>

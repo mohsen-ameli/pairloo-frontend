@@ -219,6 +219,7 @@ export default function CustomPager({
         </Animated.View>
       )}
 
+      {/* To push the content up when keyboard is visible */}
       <Animated.View style={[fakeView, { backgroundColor: colors.light }]} />
     </View>
   );

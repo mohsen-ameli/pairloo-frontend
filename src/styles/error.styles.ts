@@ -3,6 +3,7 @@ import { colors } from "../utils/colors";
 
 export const errorStyles = StyleSheet.create({
   errorText: {
+    color: colors.dark,
     fontSize: 16,
     textAlign: "center",
     marginTop: 20,
@@ -10,7 +11,7 @@ export const errorStyles = StyleSheet.create({
   retryButton: {
     marginTop: 16,
     alignSelf: "center",
-    backgroundColor: colors.accentOrange,
+    backgroundColor: colors.lightGray,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
