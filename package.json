@@ -2,6 +2,7 @@
   "name": "matcher",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "dev": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -10,6 +11,9 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -70,9 +74,5 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.0",
     "typescript": "~5.9.2"
-  },
-  "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
-  },
-  "private": true
+  }
 }
