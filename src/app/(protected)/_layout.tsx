@@ -1,64 +1,61 @@
-import { userAtom } from "@/src/store/auth-store";
-import { initChatAtom, unreadMessagesAtom } from "@/src/store/chat-store";
-import { initCreatePostAtom } from "@/src/store/create-post-store";
-import { pathStore } from "@/src/store/general-store";
-import { colors } from "@/src/utils/colors";
-import Feather from "@expo/vector-icons/Feather";
-import { Image } from "expo-image";
-import { Tabs, usePathname } from "expo-router";
-import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useState } from "react";
-import { useAudioPlayer } from "expo-audio";
-import { notificationSoundAtom } from "@/src/store/general-store";
-import { View } from "react-native";
+import { userAtom } from "@/src/store/auth-store"
+import { initChatAtom, unreadMessagesAtom } from "@/src/store/chat-store"
+import { initCreatePostAtom } from "@/src/store/create-post-store"
+import { pathStore } from "@/src/store/general-store"
+import { colors } from "@/src/utils/colors"
+import Feather from "@expo/vector-icons/Feather"
+import { Image } from "expo-image"
+import { Tabs, usePathname } from "expo-router"
+import { useAtomValue, useSetAtom } from "jotai"
+import { useEffect, useState } from "react"
+import { useAudioPlayer } from "expo-audio"
+import { notificationSoundAtom } from "@/src/store/general-store"
+import { View } from "react-native"
 
-const audioSource = require("@/assets/audio/new-notification.mp3");
+const audioSource = require("@/assets/audio/new-notification.mp3")
 
 export default function ProtectedLayout() {
-  const initChatConnection = useSetAtom(initChatAtom);
-  const initCreatePost = useSetAtom(initCreatePostAtom);
-  const user = useAtomValue(userAtom);
-  const pathname = usePathname();
-  const setPath = useSetAtom(pathStore);
-  const unreadMessages = useAtomValue(unreadMessagesAtom);
-  const [numUnreadMessages, setNumUnreadMessages] = useState(0);
-  const player = useAudioPlayer(audioSource);
-  const setNotificationSound = useSetAtom(notificationSoundAtom);
+  const initChatConnection = useSetAtom(initChatAtom)
+  const initCreatePost = useSetAtom(initCreatePostAtom)
+  const user = useAtomValue(userAtom)
+  const pathname = usePathname()
+  const setPath = useSetAtom(pathStore)
+  const unreadMessages = useAtomValue(unreadMessagesAtom)
+  const [numUnreadMessages, setNumUnreadMessages] = useState(0)
+  const player = useAudioPlayer(audioSource)
+  const setNotificationSound = useSetAtom(notificationSoundAtom)
 
   useEffect(() => {
-    setNotificationSound(player);
-  }, []);
+    setNotificationSound(player)
+  }, [])
 
   useEffect(() => {
     if (!unreadMessages) {
-      setNumUnreadMessages(0);
-      return;
+      setNumUnreadMessages(0)
+      return
     }
-    const total = Object.values(unreadMessages).reduce(
-      (sum, count) => sum + count,
-      0,
-    );
-    setNumUnreadMessages(total);
-  }, [unreadMessages]);
+    const total = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0)
+    setNumUnreadMessages(total)
+  }, [unreadMessages])
 
   useEffect(() => {
-    setPath(pathname);
-  }, [pathname]);
+    setPath(pathname)
+  }, [pathname])
 
   useEffect(() => {
     async function initialize() {
-      await initChatConnection();
-      await initCreatePost();
+      await initChatConnection()
+      await initCreatePost()
     }
-    initialize();
-  }, []);
+    initialize()
+  }, [])
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.purple,
         tabBarBackground() {
-          return <View style={{ backgroundColor: colors.light, flex: 1 }} />;
+          return <View style={{ backgroundColor: colors.light, flex: 1 }} />
         },
       }}
     >
@@ -70,9 +67,7 @@ export default function ProtectedLayout() {
           tabBarLabelStyle: {
             marginTop: 2,
           },
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Feather name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -83,9 +78,7 @@ export default function ProtectedLayout() {
           tabBarLabelStyle: {
             marginTop: 2,
           },
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="file-text" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Feather name="file-text" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -96,9 +89,7 @@ export default function ProtectedLayout() {
           tabBarLabelStyle: {
             marginTop: 2,
           },
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="plus-circle" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Feather name="plus-circle" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -144,5 +135,5 @@ export default function ProtectedLayout() {
         }}
       />
     </Tabs>
-  );
+  )
 }

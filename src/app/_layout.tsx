@@ -1,17 +1,17 @@
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useAtomValue } from "jotai";
-import { userAtom } from "@/src/store/auth-store";
-import { LogBox } from "react-native";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { KeyboardProvider } from "react-native-keyboard-controller";
-import { colors } from "@/src/utils/colors";
-import { maybeCompleteAuthSession } from "expo-web-browser";
-import Toast from "react-native-toast-message";
-import CustomToast from "@/src/components/CustomToast";
+import { Stack } from "expo-router"
+import { StatusBar } from "expo-status-bar"
+import { useAtomValue } from "jotai"
+import { userAtom } from "@/src/store/auth-store"
+import { LogBox } from "react-native"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { KeyboardProvider } from "react-native-keyboard-controller"
+import { colors } from "@/src/utils/colors"
+import { maybeCompleteAuthSession } from "expo-web-browser"
+import Toast from "react-native-toast-message"
+import CustomToast from "@/src/components/CustomToast"
 
-LogBox.ignoreAllLogs();
-maybeCompleteAuthSession();
+LogBox.ignoreAllLogs()
+maybeCompleteAuthSession()
 
 const toastConfig = {
   newMessage: ({
@@ -19,19 +19,19 @@ const toastConfig = {
     onPress,
   }: {
     props: {
-      username: string;
-      message: string;
-      picture?: string;
-    };
-    onPress: () => void;
+      username: string
+      message: string
+      picture?: string
+    }
+    onPress: () => void
   }) => {
-    return <CustomToast {...props} onPress={onPress} />;
+    return <CustomToast {...props} onPress={onPress} />
   },
-};
+}
 
 export default function RootLayout() {
-  const user = useAtomValue(userAtom);
-  const queryClient = new QueryClient();
+  const user = useAtomValue(userAtom)
+  const queryClient = new QueryClient()
 
   return (
     <>
@@ -48,22 +48,13 @@ export default function RootLayout() {
             }}
           >
             <Stack.Protected guard={user !== null}>
-              <Stack.Screen
-                name="(protected)"
-                options={{ headerShown: false }}
-              />
+              <Stack.Screen name="(protected)" options={{ headerShown: false }} />
             </Stack.Protected>
             <Stack.Protected guard={user === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="register"
-                options={{ title: "Create Account" }}
-              />
+              <Stack.Screen name="register" options={{ title: "Create Account" }} />
               <Stack.Screen name="login" options={{ title: "Log In" }} />
-              <Stack.Screen
-                name="forgot-email"
-                options={{ title: "Forgot Email" }}
-              />
+              <Stack.Screen name="forgot-email" options={{ title: "Forgot Email" }} />
             </Stack.Protected>
           </Stack>
         </QueryClientProvider>
@@ -71,5 +62,5 @@ export default function RootLayout() {
 
       <Toast config={toastConfig} />
     </>
-  );
+  )
 }

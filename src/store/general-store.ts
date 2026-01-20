@@ -1,6 +1,6 @@
-import { AudioPlayer } from "expo-audio";
-import { atom } from "jotai";
+import { AudioPlayer } from "expo-audio"
+import { atom } from "jotai"
 
-export const pathStore = atom("");
+export const pathStore = atom("")
 
-export const notificationSoundAtom = atom<AudioPlayer | null>(null);
+export const notificationSoundAtom = atom<AudioPlayer | null>(null)

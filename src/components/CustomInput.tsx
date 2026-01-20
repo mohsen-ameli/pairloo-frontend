@@ -1,19 +1,14 @@
-import React from "react";
-import { Text, TextInput, TextInputProps, View } from "react-native";
-import { colors } from "@/src/utils/colors";
+import React from "react"
+import { Text, TextInput, TextInputProps, View } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 interface Props extends TextInputProps {
-  title: string;
-  mandatory?: boolean;
-  errors?: string;
+  title: string
+  mandatory?: boolean
+  errors?: string
 }
 
-export default function CustomInput({
-  title,
-  mandatory,
-  errors,
-  ...rest
-}: Props) {
+export default function CustomInput({ title, mandatory, errors, ...rest }: Props) {
   return (
     <View>
       <Text style={{ fontSize: 14, marginBottom: 5, color: colors.dark }}>
@@ -34,9 +29,7 @@ export default function CustomInput({
         selectionColor={colors.purple}
         {...rest}
       />
-      {errors ? (
-        <Text style={{ color: colors.errorRed, marginTop: 5 }}>{errors}</Text>
-      ) : null}
+      {errors ? <Text style={{ color: colors.errorRed, marginTop: 5 }}>{errors}</Text> : null}
     </View>
-  );
+  )
 }

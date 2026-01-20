@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 const styles = StyleSheet.create({
   container: {
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
   closestPostUserInfo: {
     flexDirection: "column",
   },
-});
+})
 
-export default styles;
+export default styles

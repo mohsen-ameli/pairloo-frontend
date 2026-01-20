@@ -1,31 +1,18 @@
-import { colors } from "@/src/utils/colors";
-import React from "react";
-import {
-  Appearance,
-  Pressable,
-  PressableProps,
-  StyleProp,
-  Text,
-  ViewStyle,
-} from "react-native";
+import { colors } from "@/src/utils/colors"
+import React from "react"
+import { Appearance, Pressable, PressableProps, StyleProp, Text, ViewStyle } from "react-native"
 
 interface CustomProps extends PressableProps {
-  children: React.ReactNode;
-  color?: string;
-  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode
+  color?: string
+  style?: StyleProp<ViewStyle>
 }
 
-const colorScheme = Appearance.getColorScheme();
+const colorScheme = Appearance.getColorScheme()
 
-export default function ({
-  color,
-  children,
-  disabled,
-  style,
-  ...rest
-}: CustomProps) {
-  const backgroundColor = disabled ? colors.borderGray : color || colors.purple;
-  const shadowColor = disabled ? colors.borderGray : color || colors.purple;
+export default function ({ color, children, disabled, style, ...rest }: CustomProps) {
+  const backgroundColor = disabled ? colors.borderGray : color || colors.purple
+  const shadowColor = disabled ? colors.borderGray : color || colors.purple
   return (
     <Pressable
       style={[
@@ -57,5 +44,5 @@ export default function ({
         {children}
       </Text>
     </Pressable>
-  );
+  )
 }

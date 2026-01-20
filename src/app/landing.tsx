@@ -1,13 +1,13 @@
-import CustomLink from "@/src/components/CustomLink";
-import { colors } from "@/src/utils/colors";
-import { Link } from "expo-router";
-import { Text, View } from "react-native";
-import ContinueWithGoogle from "./continue-with-google";
-import { useState } from "react";
-import LoadingIndicator from "@/src/components/LoadingIndicator";
+import CustomLink from "@/src/components/CustomLink"
+import { colors } from "@/src/utils/colors"
+import { Link } from "expo-router"
+import { Text, View } from "react-native"
+import ContinueWithGoogle from "./continue-with-google"
+import { useState } from "react"
+import LoadingIndicator from "@/src/components/LoadingIndicator"
 
 export default function Landing() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   return (
     <>
@@ -70,5 +70,5 @@ export default function Landing() {
         </View>
       </View>
     </>
-  );
+  )
 }

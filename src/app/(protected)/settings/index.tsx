@@ -1,22 +1,22 @@
-import { useAtom, useSetAtom } from "jotai";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { Image } from "expo-image";
-import { userAtom, logOutAtom } from "@/src/store/auth-store";
-import { styles } from "@/src/styles/settings.styles";
-import CustomButton from "@/src/components/CustomButton";
-import CustomInput from "@/src/components/CustomInput";
-import LocationSelector from "@/src/components/LocationSelector";
-import { colors } from "@/src/utils/colors";
-import { useEffect, useState } from "react";
-import { authFetchAtom } from "@/src/utils/auth-fetch";
-import Feather from "@expo/vector-icons/Feather";
+import { useAtom, useSetAtom } from "jotai"
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { Image } from "expo-image"
+import { userAtom, logOutAtom } from "@/src/store/auth-store"
+import { styles } from "@/src/styles/settings.styles"
+import CustomButton from "@/src/components/CustomButton"
+import CustomInput from "@/src/components/CustomInput"
+import LocationSelector from "@/src/components/LocationSelector"
+import { colors } from "@/src/utils/colors"
+import { useEffect, useState } from "react"
+import { authFetchAtom } from "@/src/utils/auth-fetch"
+import Feather from "@expo/vector-icons/Feather"
 
-const defaultProfilePicture = require("@/assets/images/default_pfp.png");
+const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
 export default function SettingsScreen() {
-  const logout = useSetAtom(logOutAtom);
-  const [user, setUser] = useAtom(userAtom);
-  const [editMode, setEditMode] = useState(false);
+  const logout = useSetAtom(logOutAtom)
+  const [user, setUser] = useAtom(userAtom)
+  const [editMode, setEditMode] = useState(false)
   const [editFields, setEditFields] = useState({
     firstName: "",
     lastName: "",
@@ -27,46 +27,43 @@ export default function SettingsScreen() {
     longitude: 0,
     timezone: "",
     locationId: 0,
-  });
-  const authFetch = useSetAtom(authFetchAtom);
+  })
+  const authFetch = useSetAtom(authFetchAtom)
 
   useEffect(() => {
-    if (!user) return;
-    resetEdit();
-  }, [user]);
+    if (!user) return
+    resetEdit()
+  }, [user])
 
   async function handleSaveEdit() {
-    if (!user) return;
+    if (!user) return
     try {
       const response = await authFetch("/api/settings/update-profile", {
         method: "PATCH",
         body: JSON.stringify(editFields),
-      });
+      })
       if (!response.ok) {
-        let errorMessage = "Failed to update profile";
+        let errorMessage = "Failed to update profile"
         try {
-          const errorData = await response.json();
+          const errorData = await response.json()
           if (errorData && errorData.message) {
-            errorMessage = errorData.message;
+            errorMessage = errorData.message
           }
         } catch {}
-        Alert.alert("Update Failed", errorMessage);
-        return;
+        Alert.alert("Update Failed", errorMessage)
+        return
       }
-      const updatedUser = await response.json();
-      setUser({ ...user, ...updatedUser });
-      setEditMode(false);
-      Alert.alert("Profile Updated", "Your changes have been saved.");
+      const updatedUser = await response.json()
+      setUser({ ...user, ...updatedUser })
+      setEditMode(false)
+      Alert.alert("Profile Updated", "Your changes have been saved.")
     } catch (err: any) {
-      Alert.alert(
-        "Update Failed",
-        err?.message || "An unexpected error occurred.",
-      );
+      Alert.alert("Update Failed", err?.message || "An unexpected error occurred.")
     }
   }
 
   function resetEdit() {
-    if (!user) return;
+    if (!user) return
     setEditFields({
       firstName: user.firstName,
       lastName: user.lastName,
@@ -77,8 +74,8 @@ export default function SettingsScreen() {
       longitude: user.longitude,
       timezone: user.timezone,
       locationId: user.locationId,
-    });
-    setEditMode(false);
+    })
+    setEditMode(false)
   }
 
   function handleLogout() {
@@ -89,10 +86,10 @@ export default function SettingsScreen() {
         style: "destructive",
         onPress: logout,
       },
-    ]);
+    ])
   }
 
-  if (!user || !editFields) return null;
+  if (!user || !editFields) return null
 
   return (
     <View style={styles.container}>
@@ -164,19 +161,17 @@ export default function SettingsScreen() {
                   title="First Name"
                   defaultValue={editFields.firstName}
                   onChangeText={(text: string) => {
-                    setEditFields((f) => ({ ...f, firstName: text }));
+                    setEditFields(f => ({ ...f, firstName: text }))
                   }}
                 />
                 <CustomInput
                   title="Last Name"
                   defaultValue={editFields.lastName}
-                  onChangeText={(text: string) =>
-                    setEditFields((f) => ({ ...f, lastName: text }))
-                  }
+                  onChangeText={(text: string) => setEditFields(f => ({ ...f, lastName: text }))}
                 />
                 <LocationSelector
-                  onLocationChange={(location) => {
-                    setEditFields((f) => ({
+                  onLocationChange={location => {
+                    setEditFields(f => ({
                       ...f,
                       city: location.name,
                       state: location.state_name,
@@ -185,15 +180,12 @@ export default function SettingsScreen() {
                       longitude: location.longitude,
                       timezone: location.timezone,
                       locationId: location._id,
-                    }));
+                    }))
                   }}
                 />
                 <View style={styles.actionsRow}>
                   <View style={{ flex: 1 }}>
-                    <CustomButton
-                      onPress={handleSaveEdit}
-                      color={colors.purple}
-                    >
+                    <CustomButton onPress={handleSaveEdit} color={colors.purple}>
                       Save Changes
                     </CustomButton>
                   </View>
@@ -217,9 +209,7 @@ export default function SettingsScreen() {
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Phone</Text>
-                  <Text style={styles.fieldValue}>
-                    {user.phoneNumber || "—"}
-                  </Text>
+                  <Text style={styles.fieldValue}>{user.phoneNumber || "—"}</Text>
                 </View>
                 <View style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>Location</Text>
@@ -239,5 +229,5 @@ export default function SettingsScreen() {
         </CustomButton>
       </View>
     </View>
-  );
+  )
 }

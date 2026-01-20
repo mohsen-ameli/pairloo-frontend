@@ -7,26 +7,20 @@ import {
   Text,
   View,
   type ViewProps,
-} from "react-native";
-import type { AnimatedProps } from "react-native-reanimated";
-import Animated from "react-native-reanimated";
-import { colors } from "@/src/utils/colors";
-import Feather from "@expo/vector-icons/Feather";
+} from "react-native"
+import type { AnimatedProps } from "react-native-reanimated"
+import Animated from "react-native-reanimated"
+import { colors } from "@/src/utils/colors"
+import Feather from "@expo/vector-icons/Feather"
 
 interface Props extends AnimatedProps<ViewProps> {
-  style?: StyleProp<ImageStyle>;
-  index: number;
-  source: ImageSourcePropType;
-  setImages?: React.Dispatch<React.SetStateAction<string[]>>;
+  style?: StyleProp<ImageStyle>
+  index: number
+  source: ImageSourcePropType
+  setImages?: React.Dispatch<React.SetStateAction<string[]>>
 }
 
-export function SlideItem({
-  style,
-  index,
-  source,
-  setImages,
-  ...animatedViewProps
-}: Props) {
+export function SlideItem({ style, index, source, setImages, ...animatedViewProps }: Props) {
   return (
     <Animated.View {...animatedViewProps}>
       <Animated.Image style={[style, styles.container]} source={source} />
@@ -35,7 +29,7 @@ export function SlideItem({
           <Pressable
             style={styles.removeOverlayButton}
             onPress={() => {
-              setImages((prev) => prev.filter((_, i) => i !== index));
+              setImages(prev => prev.filter((_, i) => i !== index))
             }}
           >
             <Feather name="x" size={24} color={colors.dark} />
@@ -43,7 +37,7 @@ export function SlideItem({
         </View>
       )}
     </Animated.View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -74,4 +68,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: colors.gray,
   },
-});
+})

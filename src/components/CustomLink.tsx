@@ -1,14 +1,14 @@
-import { colors } from "@/src/utils/colors";
-import { Link, LinkProps } from "expo-router";
-import React from "react";
-import { Appearance, Pressable, Text } from "react-native";
+import { colors } from "@/src/utils/colors"
+import { Link, LinkProps } from "expo-router"
+import React from "react"
+import { Appearance, Pressable, Text } from "react-native"
 
 interface CustomProps extends LinkProps {
-  children: React.ReactNode;
-  color?: string;
+  children: React.ReactNode
+  color?: string
 }
 
-const colorScheme = Appearance.getColorScheme();
+const colorScheme = Appearance.getColorScheme()
 
 export default function CustomLink({ children, color, ...rest }: CustomProps) {
   return (
@@ -34,5 +34,5 @@ export default function CustomLink({ children, color, ...rest }: CustomProps) {
         </Text>
       </Pressable>
     </Link>
-  );
+  )
 }

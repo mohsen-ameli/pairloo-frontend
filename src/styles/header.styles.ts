@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   header: {
@@ -59,4 +59,4 @@ export const styles = StyleSheet.create({
     width: 35,
     height: 35,
   },
-});
+})

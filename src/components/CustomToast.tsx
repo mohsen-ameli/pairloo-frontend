@@ -1,7 +1,7 @@
-import Feather from "@expo/vector-icons/Feather";
-import { Image } from "expo-image";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors } from "@/src/utils/colors";
+import Feather from "@expo/vector-icons/Feather"
+import { Image } from "expo-image"
+import { Pressable, StyleSheet, Text, View } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export default function CustomToast({
   onPress,
@@ -9,18 +9,15 @@ export default function CustomToast({
   message,
   picture,
 }: {
-  onPress: () => void;
-  username: string;
-  message: string;
-  picture?: string;
+  onPress: () => void
+  username: string
+  message: string
+  picture?: string
 }) {
   return (
     <Pressable style={styles.customToast} onPress={onPress}>
       {picture ? (
-        <Image
-          source={{ uri: picture }}
-          style={{ width: 40, height: 40, borderRadius: 20 }}
-        />
+        <Image source={{ uri: picture }} style={{ width: 40, height: 40, borderRadius: 20 }} />
       ) : (
         <Feather name="user" size={40} color={colors.light} />
       )}
@@ -30,7 +27,7 @@ export default function CustomToast({
       </View>
       <Feather name="x" size={20} color={colors.light} />
     </Pressable>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -61,4 +58,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
-});
+})

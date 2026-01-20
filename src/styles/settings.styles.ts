@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   fabContainer: {
@@ -130,4 +130,4 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 12,
   },
-});
+})

@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const errorStyles = StyleSheet.create({
   errorText: {
@@ -21,4 +21,4 @@ export const errorStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-});
+})

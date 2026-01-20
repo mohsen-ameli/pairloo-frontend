@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/src/utils/colors";
+import { StyleSheet } from "react-native"
+import { colors } from "@/src/utils/colors"
 
 export const createPostStyles = StyleSheet.create({
   container: {
@@ -47,4 +47,4 @@ export const createPostStyles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.lightGray,
   },
-});
+})

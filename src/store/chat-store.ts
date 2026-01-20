@@ -1,125 +1,118 @@
-import { atom } from "jotai";
-import { userAtom } from "./auth-store";
-import io from "socket.io-client";
-import { ConversationType, MessageType } from "@/src/types/chat.type";
-import { chatSocketAtom } from "./socket-store";
-import { refreshAccessToken } from "@/src/utils/refresh-access-token";
-import { WS_BASE_URL } from "@/src/utils/constants";
-import { notificationSoundAtom, pathStore } from "./general-store";
-import { atomWithStorage, createJSONStorage } from "jotai/utils";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from "react-native-toast-message";
-import { router } from "expo-router";
+import { atom } from "jotai"
+import { userAtom } from "./auth-store"
+import io from "socket.io-client"
+import { ConversationType, MessageType } from "@/src/types/chat.type"
+import { chatSocketAtom } from "./socket-store"
+import { refreshAccessToken } from "@/src/utils/refresh-access-token"
+import { WS_BASE_URL } from "@/src/utils/constants"
+import { notificationSoundAtom, pathStore } from "./general-store"
+import { atomWithStorage, createJSONStorage } from "jotai/utils"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import Toast from "react-native-toast-message"
+import { router } from "expo-router"
 
 const unreadMsgStorage = createJSONStorage<{
-  [conversationId: string]: number;
-}>(() => AsyncStorage);
-export const unreadMessagesAtom = atomWithStorage(
-  "unread-messages",
-  {},
-  unreadMsgStorage,
-);
+  [conversationId: string]: number
+}>(() => AsyncStorage)
+export const unreadMessagesAtom = atomWithStorage("unread-messages", {}, unreadMsgStorage)
 
-export const conversationsAtom = atom<ConversationType[]>([]);
+export const conversationsAtom = atom<ConversationType[]>([])
 
-export const messagesAtom = atom<MessageType[]>([]);
+export const messagesAtom = atom<MessageType[]>([])
 
 export const initChatAtom = atom(null, async (get, set) => {
-  const user = await get(userAtom);
-  if (!user) return;
-  if (get(chatSocketAtom)) return;
+  const user = await get(userAtom)
+  if (!user) return
+  if (get(chatSocketAtom)) return
 
   const socket = io(WS_BASE_URL + "/chat", {
     auth: {
       token: user.accessToken,
     },
-  });
+  })
 
-  set(chatSocketAtom, socket);
+  set(chatSocketAtom, socket)
 
   socket.on("connected", () => {
-    console.log("Connected to WebSocket server for chatting");
-    socket.emit("getConversations");
-  });
+    console.log("Connected to WebSocket server for chatting")
+    socket.emit("getConversations")
+  })
 
   socket.on("disconnect", () => {
-    console.log("Disconnected from WebSocket server for chatting");
-    set(chatSocketAtom, null);
-    set(conversationsAtom, []);
-    set(messagesAtom, []);
-  });
+    console.log("Disconnected from WebSocket server for chatting")
+    set(chatSocketAtom, null)
+    set(conversationsAtom, [])
+    set(messagesAtom, [])
+  })
 
   socket.on("error", (err: any) => {
-    console.error("WebSocket error event:", err);
-  });
+    console.error("WebSocket error event:", err)
+  })
 
   socket.on("connect_error", async () => {
-    const accessToken = await refreshAccessToken(user.refreshToken);
+    const accessToken = await refreshAccessToken(user.refreshToken)
     if (accessToken === null) {
-      socket.disconnect();
-      set(userAtom, null);
-      return;
+      socket.disconnect()
+      set(userAtom, null)
+      return
     }
-    await set(userAtom, { ...user, accessToken });
-    socket.io.opts.auth = { token: accessToken };
-    socket.connect();
-  });
+    await set(userAtom, { ...user, accessToken })
+    socket.io.opts.auth = { token: accessToken }
+    socket.connect()
+  })
 
   // New conversation created
   socket.on("conversation", (conversation: ConversationType) => {
-    set(conversationsAtom, (prev) => [...prev, conversation]);
-  });
+    set(conversationsAtom, prev => [...prev, conversation])
+  })
 
   // Got all conversations
   socket.on("conversations", (conversations: ConversationType[]) => {
-    set(conversationsAtom, conversations);
-  });
+    set(conversationsAtom, conversations)
+  })
 
-  socket.on(
-    "lastMessageUpdated",
-    (conversationId: string, lastMessage: MessageType) => {
-      set(conversationsAtom, (prev) =>
-        prev.map((conv) => {
-          if (conv._id === conversationId) {
-            return { ...conv, lastMessage };
-          }
-          return conv;
-        }),
-      );
-    },
-  );
+  socket.on("lastMessageUpdated", (conversationId: string, lastMessage: MessageType) => {
+    set(conversationsAtom, prev =>
+      prev.map(conv => {
+        if (conv._id === conversationId) {
+          return { ...conv, lastMessage }
+        }
+        return conv
+      })
+    )
+  })
 
   // Got all messages for a conversation
   socket.on("messages", async (messages: MessageType[]) => {
-    set(messagesAtom, messages);
-    const unreadMsgs = await get(unreadMessagesAtom);
+    set(messagesAtom, messages)
+    const unreadMsgs = await get(unreadMessagesAtom)
     await set(unreadMessagesAtom, () => {
-      const updated = { ...unreadMsgs };
-      messages.forEach((msg) => {
+      const updated = { ...unreadMsgs }
+      messages.forEach(msg => {
         if (msg.conversationId in updated) {
-          delete updated[msg.conversationId];
+          delete updated[msg.conversationId]
         }
-      });
-      return updated;
-    });
-  });
+      })
+      return updated
+    })
+  })
 
   // Received a message from the server
   socket.on("message", async (message: MessageType) => {
-    let isOptimistic = false;
-    set(messagesAtom, (prev) =>
-      prev.map((msg) => {
+    let isOptimistic = false
+    set(messagesAtom, prev =>
+      prev.map(msg => {
         // This is our optimistic message, replace it
         if (msg.optimistic && msg.content === message.content) {
-          isOptimistic = true;
-          return message;
+          isOptimistic = true
+          return message
         }
-        return msg;
-      }),
-    );
+        return msg
+      })
+    )
     // we received a message from other user
     if (!isOptimistic) {
-      set(messagesAtom, (prev) => [...prev, message]);
+      set(messagesAtom, prev => [...prev, message])
 
       // If user is not in the chat that received the message
       if (get(pathStore) !== `/chat/${message.conversationId}`) {
@@ -134,42 +127,42 @@ export const initChatAtom = atom(null, async (get, set) => {
             router.replace({
               pathname: "/chat",
               params: { redirect: `/chat/${message.conversationId}` },
-            });
+            })
           },
-        });
-        const player = get(notificationSoundAtom);
+        })
+        const player = get(notificationSoundAtom)
         if (!player) {
-          console.warn("No audio player for notification sound");
+          console.warn("No audio player for notification sound")
         } else {
-          player.seekTo(0);
-          player.play();
+          player.seekTo(0)
+          player.play()
         }
-        const unreadMsgs = await get(unreadMessagesAtom);
+        const unreadMsgs = await get(unreadMessagesAtom)
         await set(unreadMessagesAtom, () => {
           if (message.conversationId in unreadMsgs) {
             return {
               ...unreadMsgs,
               [message.conversationId]: unreadMsgs[message.conversationId] + 1,
-            };
+            }
           } else {
             return {
               ...unreadMsgs,
               [message.conversationId]: 1,
-            };
+            }
           }
-        });
+        })
       }
     }
-  });
-});
+  })
+})
 
 // Sends a message in a conversation
 export const sendMessageAtom = atom(
   null,
   async (get, set, conversationId: string, content: string) => {
-    const socket = get(chatSocketAtom);
-    const user = await get(userAtom);
-    if (!socket || !user) return;
+    const socket = get(chatSocketAtom)
+    const user = await get(userAtom)
+    if (!socket || !user) return
 
     const optimisticMessage: MessageType = {
       _id: Math.random().toString(),
@@ -184,14 +177,14 @@ export const sendMessageAtom = atom(
       attachment: "",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    };
+    }
 
     // Optimistically add the message to the list
-    set(messagesAtom, (prev) => [...prev, optimisticMessage]);
+    set(messagesAtom, prev => [...prev, optimisticMessage])
 
     socket.emit("newMessage", {
       conversationId,
       content,
-    });
-  },
-);
+    })
+  }
+)

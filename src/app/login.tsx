@@ -1,30 +1,30 @@
-import CustomInput from "@/src/components/CustomInput";
-import { Link } from "expo-router";
-import { useAtom, useSetAtom } from "jotai";
-import { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
-import { styles } from "@/src/styles/login.styles";
-import { colors } from "@/src/utils/colors";
-import { currPageAtom, flowAtom } from "@/src/store/pager-store";
+import CustomInput from "@/src/components/CustomInput"
+import { Link } from "expo-router"
+import { useAtom, useSetAtom } from "jotai"
+import { useEffect } from "react"
+import { Pressable, Text, View } from "react-native"
+import { styles } from "@/src/styles/login.styles"
+import { colors } from "@/src/utils/colors"
+import { currPageAtom, flowAtom } from "@/src/store/pager-store"
 import {
   requestEmailVerificationAtom,
   resendTimerAtom,
   authErrorsAtom,
   verifyEmailCodeAtom,
   returningUserAtom,
-} from "@/src/store/auth-store";
-import CustomPager from "@/src/components/CustomPager";
+} from "@/src/store/auth-store"
+import CustomPager from "@/src/components/CustomPager"
 
-const INITIAL_PAGE_COUNT = 2;
+const INITIAL_PAGE_COUNT = 2
 
 export default function LoginPage() {
-  const [errors, setErrors] = useAtom(authErrorsAtom);
-  const [currPage, setCurrPage] = useAtom(currPageAtom);
-  const [flow, setFlow] = useAtom(flowAtom);
-  const [timeRemaining, setTimeRemaining] = useAtom(resendTimerAtom);
-  const [returningUser, setReturningUser] = useAtom(returningUserAtom);
-  const requestEmailVerification = useSetAtom(requestEmailVerificationAtom);
-  const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom);
+  const [errors, setErrors] = useAtom(authErrorsAtom)
+  const [currPage, setCurrPage] = useAtom(currPageAtom)
+  const [flow, setFlow] = useAtom(flowAtom)
+  const [timeRemaining, setTimeRemaining] = useAtom(resendTimerAtom)
+  const [returningUser, setReturningUser] = useAtom(returningUserAtom)
+  const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
+  const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
 
   // Set next/back functions based on current page
   useEffect(() => {
@@ -32,18 +32,18 @@ export default function LoginPage() {
       ...flow,
       back: () => {
         if (currPage === 1) {
-          setCurrPage(0);
+          setCurrPage(0)
         }
       },
       next: () => {
         if (currPage === 0) {
-          requestEmailVerification(false, false);
+          requestEmailVerification(false, false)
         } else if (currPage === 1) {
-          verifyEmailVerification(false);
+          verifyEmailVerification(false)
         }
       },
-    });
-  }, [currPage]);
+    })
+  }, [currPage])
 
   return (
     <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
@@ -54,11 +54,11 @@ export default function LoginPage() {
           errors={errors.email}
           value={returningUser.email}
           autoFocus
-          onChangeText={(text) => {
-            setReturningUser((prev) => ({ ...prev, email: text }));
-            setErrors({ ...errors, email: "" });
-            setFlow({ ...flow, nextEnabled: true });
-            timeRemaining > 0 && setTimeRemaining(0);
+          onChangeText={text => {
+            setReturningUser(prev => ({ ...prev, email: text }))
+            setErrors({ ...errors, email: "" })
+            setFlow({ ...flow, nextEnabled: true })
+            timeRemaining > 0 && setTimeRemaining(0)
           }}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -78,10 +78,10 @@ export default function LoginPage() {
           autoFocus
           value={returningUser.emailCode}
           placeholder="6-digit code"
-          onChangeText={(text) => {
-            setReturningUser((prev) => ({ ...prev, emailCode: text }));
-            setErrors({ ...errors, emailVerify: "" });
-            setFlow({ ...flow, nextEnabled: true });
+          onChangeText={text => {
+            setReturningUser(prev => ({ ...prev, emailCode: text }))
+            setErrors({ ...errors, emailVerify: "" })
+            setFlow({ ...flow, nextEnabled: true })
           }}
           keyboardType="numeric"
           maxLength={6}
@@ -97,19 +97,14 @@ export default function LoginPage() {
             style={[
               styles.resendText,
               {
-                color:
-                  !flow.nextEnabled || timeRemaining > 0
-                    ? colors.gray
-                    : colors.purple,
+                color: !flow.nextEnabled || timeRemaining > 0 ? colors.gray : colors.purple,
               },
             ]}
           >
-            {timeRemaining > 0
-              ? `Resend Code in ${timeRemaining} seconds`
-              : "Resend Code"}
+            {timeRemaining > 0 ? `Resend Code in ${timeRemaining} seconds` : "Resend Code"}
           </Text>
         </Pressable>
       </View>
     </CustomPager>
-  );
+  )
 }

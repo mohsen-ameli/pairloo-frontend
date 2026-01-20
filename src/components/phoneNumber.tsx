@@ -1,38 +1,34 @@
-import { colors } from "@/src/utils/colors";
-import { newUserAtom, authErrorsAtom } from "@/src/store/auth-store";
-import Feather from "@expo/vector-icons/Feather";
-import { useAtom } from "jotai";
-import React, { useEffect, useState } from "react";
-import { Appearance, Platform, Pressable, TextInput, View } from "react-native";
-import CountryPicker, { DARK_THEME } from "react-native-country-picker-modal";
-import {
-  Country,
-  CountryCode,
-} from "react-native-country-picker-modal/lib/types";
+import { colors } from "@/src/utils/colors"
+import { newUserAtom, authErrorsAtom } from "@/src/store/auth-store"
+import Feather from "@expo/vector-icons/Feather"
+import { useAtom } from "jotai"
+import React, { useEffect, useState } from "react"
+import { Appearance, Platform, Pressable, TextInput, View } from "react-native"
+import CountryPicker, { DARK_THEME } from "react-native-country-picker-modal"
+import { Country, CountryCode } from "react-native-country-picker-modal/lib/types"
 
-const colorScheme = Appearance.getColorScheme();
+const colorScheme = Appearance.getColorScheme()
 
 export default function PhoneNumber() {
-  const [countryCode, setCountryCode] = useState<CountryCode>("CA");
-  const [visible, setVisible] = useState<boolean>(false);
-  const [newUser, setNewUser] = useAtom(newUserAtom);
-  const [errors, setErrors] = useAtom(authErrorsAtom);
+  const [countryCode, setCountryCode] = useState<CountryCode>("CA")
+  const [visible, setVisible] = useState<boolean>(false)
+  const [newUser, setNewUser] = useAtom(newUserAtom)
+  const [errors, setErrors] = useAtom(authErrorsAtom)
 
   // Get country code from storage
   useEffect(() => {
-    if (newUser.cca2 && newUser.cca2 !== countryCode)
-      setCountryCode(newUser.cca2);
-  }, [newUser.cca2]);
+    if (newUser.cca2 && newUser.cca2 !== countryCode) setCountryCode(newUser.cca2)
+  }, [newUser.cca2])
 
   function onSelect(country: Country) {
-    setCountryCode(country.cca2);
+    setCountryCode(country.cca2)
     setNewUser({
       ...newUser,
       phoneVerified: false,
       country: country.name.toString(),
       cca2: country.cca2,
       callingCode: country.callingCode[0],
-    });
+    })
   }
 
   return (
@@ -102,13 +98,13 @@ export default function PhoneNumber() {
         keyboardType="number-pad"
         maxLength={14}
         defaultValue={newUser.phoneNumber}
-        onChangeText={(text) => {
+        onChangeText={text => {
           setNewUser({
             ...newUser,
             phoneNumber: text.trim(),
             phoneVerified: false,
-          });
-          setErrors({ ...errors, phoneNumber: "" });
+          })
+          setErrors({ ...errors, phoneNumber: "" })
         }}
       />
       {newUser.phoneNumber && (
@@ -121,12 +117,12 @@ export default function PhoneNumber() {
             borderRadius: 5,
           }}
           onPress={() => {
-            setNewUser({ ...newUser, phoneNumber: "" });
+            setNewUser({ ...newUser, phoneNumber: "" })
           }}
         >
           <Feather name="x" size={24} color={colors.darkGray} />
         </Pressable>
       )}
     </View>
-  );
+  )
 }
