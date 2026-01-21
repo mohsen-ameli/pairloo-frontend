@@ -28,7 +28,6 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     color: colors.dark,
-    alignSelf: "center",
   },
   otherHeaderTitle: {
     fontSize: 18,
