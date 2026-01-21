@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Pressable, TextInput } from "react-native"
+import { View, Text, Pressable, TextInput } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams } from "expo-router/build/hooks"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -15,6 +15,7 @@ import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
+import { FlashList, FlashListRef } from "@shopify/flash-list"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -27,8 +28,8 @@ export default function ChatDetails() {
   const user = useAtomValue(userAtom)
   const conversations = useAtomValue(conversationsAtom)
   const [conversation, setConversation] = useState<ConversationType | null>(null)
-  const chatRef = useRef<FlatList>(null!)
-  const { height } = useGradualAnimation({ isAuthenticated: user !== null })
+  const chatRef = useRef<FlashListRef<MessageType>>(null!)
+  const { height } = useGradualAnimation({ includeTabHeight: false })
   const [otherUser, setOtherUser] = useState<OtherUser>(null!)
   const detailOptions = useCustomHeader("", otherUser)
 
@@ -54,11 +55,11 @@ export default function ChatDetails() {
   // Animate fake view height
   const fakeView = useAnimatedStyle(() => {
     return {
-      height: Math.abs(height.value),
+      height: Math.abs(height.value) - 15,
     }
   }, [])
 
-  if (!conversation || !otherUser) {
+  if (!conversation || !otherUser || !messages) {
     return (
       <View style={chatStyles.notFoundContainer}>
         <Text>Conversation not found</Text>
@@ -67,23 +68,28 @@ export default function ChatDetails() {
   }
 
   return (
-    <View style={chatStyles.container}>
+    <>
       <Stack.Screen options={detailOptions} />
 
-      <FlatList
-        data={messages}
-        ref={chatRef}
-        onContentSizeChange={() => chatRef.current.scrollToEnd({ animated: false })}
-        keyboardDismissMode="on-drag"
-        onLayout={() => chatRef.current.scrollToEnd({ animated: false })}
-        keyExtractor={(item: MessageType) => item._id}
-        renderItem={({ item }: { item: MessageType }) => <MemoizedMessageItem item={item} />}
-      />
+      <View style={chatStyles.container}>
+        <FlashList
+          data={messages}
+          ref={chatRef}
+          onContentSizeChange={() => chatRef.current.scrollToEnd({ animated: false })}
+          keyboardDismissMode="on-drag"
+          onLayout={() => chatRef.current.scrollToEnd({ animated: false })}
+          keyExtractor={item => item._id}
+          renderItem={({ item }) => <MemoizedMessageItem item={item} />}
+        />
+      </View>
 
+      {/* Input Area */}
       <View style={chatStyles.inputContainer}>
+        <Feather name="plus" size={26} color={colors.dark} style={chatStyles.plusIcon} />
         <TextInput
           style={chatStyles.input}
           placeholder="Type a message..."
+          placeholderTextColor={colors.muted}
           value={message}
           onChangeText={text => setMessage(text)}
         />
@@ -95,8 +101,8 @@ export default function ChatDetails() {
         </Pressable>
       </View>
 
-      <Animated.View style={[fakeView, { backgroundColor: colors.light }]} />
-    </View>
+      <Animated.View style={[fakeView, { backgroundColor: colors.lightGray }]} />
+    </>
   )
 }
 

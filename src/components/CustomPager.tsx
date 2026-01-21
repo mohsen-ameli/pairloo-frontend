@@ -27,7 +27,7 @@ export default function CustomPager({
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const [flow, setFlow] = useAtom(flowAtom)
   const isAuthenticated = useAtomValue(userAtom) !== null
-  const { height } = useGradualAnimation({ isAuthenticated })
+  const { height } = useGradualAnimation({ includeTabHeight: isAuthenticated })
 
   useFocusEffect(
     useCallback(() => {

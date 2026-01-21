@@ -18,12 +18,12 @@ export const locSelecStyles = StyleSheet.create({
   },
   searchContainer: {
     paddingVertical: 15,
-    paddingRight: 10,
+    paddingRight: 25,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  dismissButton: { padding: 10 },
+  dismissButton: { paddingVertical: 10, paddingLeft: 20, paddingRight: 10 },
   searchInput: {
     borderWidth: 1,
     borderColor: colors.borderGray,
