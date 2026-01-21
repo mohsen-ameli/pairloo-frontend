@@ -71,17 +71,16 @@ export default function LocationSelector({
   }
 
   return (
-    <View>
-      <Pressable
-        onPress={() => {
-          setShowModal(true)
-          setCitySearchInput("")
-        }}
-      >
-        <CustomInput title="Location" editable={false} selectTextOnFocus={false}>
-          {locationInput}
-        </CustomInput>
-      </Pressable>
+    <Pressable
+      onPress={() => {
+        setShowModal(true)
+        setCitySearchInput("")
+      }}
+      style={{ width: "100%" }}
+    >
+      <CustomInput title="Location" editable={false} selectTextOnFocus={false} pointerEvents="none">
+        {locationInput}
+      </CustomInput>
 
       <Modal visible={showModal} animationType="slide" onRequestClose={() => setShowModal(false)}>
         <SafeAreaView style={locSelecStyles.modalContainer}>
@@ -123,6 +122,6 @@ export default function LocationSelector({
           />
         </SafeAreaView>
       </Modal>
-    </View>
+    </Pressable>
   )
 }
