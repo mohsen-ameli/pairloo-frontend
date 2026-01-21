@@ -1,6 +1,14 @@
-import { View, TextInput, TouchableWithoutFeedback, Keyboard, Text, Switch } from "react-native"
+import {
+  View,
+  TextInput,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Text,
+  Switch,
+  Pressable,
+} from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useState, useEffect } from "react"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
@@ -20,6 +28,7 @@ import {
   pickImageAtom,
   publicPostAtom,
   questionsAtom,
+  discardDraftAtom,
 } from "@/src/store/create-post-store"
 import { useFocusEffect } from "expo-router"
 
@@ -40,6 +49,7 @@ export default function CreatePost() {
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const forward = useSetAtom(forwardCreatePostAtom)
   const pickImage = useSetAtom(pickImageAtom)
+  const discardDraft = useSetAtom(discardDraftAtom)
 
   useFocusEffect(
     useCallback(() => {
@@ -55,6 +65,22 @@ export default function CreatePost() {
       })
     }, [currPage, socket])
   )
+
+  useEffect(() => {
+    const newMcqAnswers: string[] = []
+    const newMultiSelectAnswers: string[][] = []
+
+    questions.forEach((question, i) => {
+      if (question.type === "multiple_choice") {
+        newMcqAnswers[i] = inputs[i] || ""
+      } else if (question.type === "multi_select") {
+        newMultiSelectAnswers[i] = inputs[i] ? inputs[i].split(", ").filter(s => s) : []
+      }
+    })
+
+    setMcqAnswers(newMcqAnswers)
+    setMultiSelectAnswers(newMultiSelectAnswers)
+  }, [questions, inputs])
 
   const handleOptionSelect = (i: number, option: string) => {
     setInputs(prev => {
@@ -104,6 +130,15 @@ export default function CreatePost() {
                 <Text style={createPostStyles.questionText}>
                   {questions.length === 1 ? questionText : `Question: ${questionText}`}
                 </Text>
+                {pages.length > 1 && (
+                  <Pressable
+                    onPress={discardDraft}
+                    disabled={loading}
+                    style={createPostStyles.discardButton}
+                  >
+                    <Text style={createPostStyles.discardButtonText}>Discard Draft & Restart</Text>
+                  </Pressable>
+                )}
                 {type === "multiple_choice" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10 }}>
                     {options.map((option: string, idx: number) => {

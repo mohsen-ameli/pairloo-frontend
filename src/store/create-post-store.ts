@@ -72,6 +72,29 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(pageCountAtom, count => count + 1)
   })
 
+  socket.on(
+    "draft-restored",
+    (data: { context: { question: Question; answer: string }[]; initialPostText: string }) => {
+      // Restore all the questions and inputs from the draft
+      const questions = data.context.map(item => item.question)
+      const answers = data.context.map(item => item.answer)
+
+      set(questionsAtom, [DEFAULT_QUESTION, ...questions])
+      set(pagesAtom, [data.initialPostText, ...answers])
+      set(inputsAtom, [data.initialPostText, ...answers])
+      set(pageCountAtom, INITIAL_PAGE_COUNT + questions.length)
+
+      const firstUnansweredIdx = answers.findIndex(answer => answer === "")
+      if (firstUnansweredIdx !== -1) {
+        set(currPageAtom, firstUnansweredIdx + 1)
+      } else {
+        set(currPageAtom, INITIAL_PAGE_COUNT + questions.length - 1)
+      }
+
+      set(loadingAtom, false)
+    }
+  )
+
   socket.on("chat-finished", () => {
     set(currPageAtom, curr => curr + 1)
     set(loadingAtom, false)
@@ -92,6 +115,18 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
       pathname: "/my-posts",
       params: { redirect: `/my-posts/${postId}` },
     })
+  })
+
+  socket.on("draft-discarded", () => {
+    set(questionsAtom, [DEFAULT_QUESTION])
+    set(pagesAtom, [""])
+    set(currPageAtom, 0)
+    set(pageCountAtom, INITIAL_PAGE_COUNT)
+    set(numMatchesAtom, DEFAULT_NUM_MATCHES)
+    set(publicPostAtom, DEFAULT_PUBLIC_POST)
+    set(imagesAtom, [])
+    set(inputsAtom, [])
+    set(loadingAtom, false)
   })
 })
 
@@ -140,4 +175,11 @@ export const pickImageAtom = atom(null, async (get, set) => {
   if (!result.canceled) {
     set(imagesAtom, prev => [...prev, ...result.assets.map(asset => asset.uri)])
   }
+})
+
+export const discardDraftAtom = atom(null, async (get, set) => {
+  const socket = get(createPostSocketAtom)
+  if (!socket) return
+
+  socket.emit("discard-draft")
 })

@@ -45,8 +45,10 @@ export default function CustomPager({
   )
 
   useEffect(() => {
-    setPageCount(initialPageCount)
-  }, [initialPageCount])
+    if (pageCount === 0 || pageCount === initialPageCount) {
+      setPageCount(initialPageCount)
+    }
+  }, [initialPageCount, pageCount, setPageCount])
 
   // Animate scrollOffset when currPage changes (for dots)
   useEffect(() => {
