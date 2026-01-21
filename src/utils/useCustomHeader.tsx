@@ -22,9 +22,8 @@ export default function useCustomHeader(
   let options: ExtendedStackNavigationOptions = {
     title,
     headerShown: true,
-    headerStyle: {
-      backgroundColor: colors.light,
-    },
+    headerBackVisible: true,
+    headerBackButtonMenuEnabled: true,
     headerTintColor: colors.dark,
     headerBackButtonDisplayMode: "default",
     headerBackground() {

@@ -84,8 +84,7 @@ export default function CustomPager({
         style={{
           position: "absolute",
           top: 0,
-          paddingTop: 25,
-          paddingBottom: 10,
+          paddingTop: 15,
           width: "100%",
           zIndex: 1,
           backgroundColor: colors.light,

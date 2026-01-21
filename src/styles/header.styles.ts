@@ -11,8 +11,6 @@ export const styles = StyleSheet.create({
   headerBackground: {
     backgroundColor: colors.light,
     flex: 1,
-    borderBottomColor: colors.gray,
-    borderBottomWidth: 1,
   },
   otherHeader: {
     paddingHorizontal: 6,
