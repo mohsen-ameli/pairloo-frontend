@@ -8,6 +8,12 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  headerBackground: {
+    backgroundColor: colors.light,
+    flex: 1,
+    borderBottomColor: colors.gray,
+    borderBottomWidth: 1,
+  },
   otherHeader: {
     paddingHorizontal: 6,
     flexDirection: "row",
@@ -22,6 +28,7 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     color: colors.dark,
+    alignSelf: "center",
   },
   otherHeaderTitle: {
     fontSize: 18,

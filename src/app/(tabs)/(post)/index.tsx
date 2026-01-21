@@ -64,7 +64,7 @@ export default function Index() {
                 style={styles.postCard}
                 onPress={() => {
                   router.push({
-                    pathname: "/(details)/feed-post",
+                    pathname: "/feed-post",
                     params: { id: post._id },
                   })
                 }}

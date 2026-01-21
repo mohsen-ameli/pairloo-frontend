@@ -26,18 +26,9 @@ export default function useCustomHeader(
       backgroundColor: colors.light,
     },
     headerTintColor: colors.dark,
-    headerBackButtonDisplayMode: "minimal",
+    headerBackButtonDisplayMode: "default",
     headerBackground() {
-      return (
-        <View
-          style={{
-            backgroundColor: colors.light,
-            flex: 1,
-            borderBottomColor: colors.gray,
-            borderBottomWidth: 1,
-          }}
-        />
-      )
+      return <View style={styles.headerBackground} />
     },
     headerTitle: () => (
       <View style={styles.header}>
