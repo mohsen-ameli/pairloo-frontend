@@ -109,29 +109,23 @@ export default function PostDetails() {
               <Text style={styles.closestPostsTitle}>Similar Posts:</Text>
               {post.closestPosts.map(post => (
                 <View key={post._id} style={styles.closestPost}>
-                  <View style={styles.closestPostHeader}>
-                    {post.picture && (
-                      <View style={styles.closestPostAvatar}>
-                        <Image
-                          source={{ uri: post.picture }}
-                          style={styles.closestPostAvatarImage}
-                        />
+                  <View style={styles.closestPostHeaderContainer}>
+                    <View style={styles.closestPostHeader}>
+                      {post.picture && (
+                        <View style={styles.closestPostAvatar}>
+                          <Image
+                            source={{ uri: post.picture }}
+                            style={styles.closestPostAvatarImage}
+                          />
+                        </View>
+                      )}
+                      <View style={styles.closestPostUserInfo}>
+                        <Text style={styles.closestPostName}>
+                          {post.firstName} {post.lastName}
+                        </Text>
+                        <Text style={styles.closestPostUsername}>@{post.username}</Text>
                       </View>
-                    )}
-                    <View style={styles.closestPostUserInfo}>
-                      <Text style={styles.closestPostName}>
-                        {post.firstName} {post.lastName}
-                      </Text>
-                      <Text style={styles.closestPostUsername}>@{post.username}</Text>
                     </View>
-                  </View>
-                  <View style={styles.closestPostImage}>
-                    {post.images && post.images.length != 0 && (
-                      <ImageCarousel images={post.images} widthOffset={70} />
-                    )}
-                  </View>
-                  <View style={styles.closestPostItem}>
-                    <Text style={styles.closestPostName}>{post.content}</Text>
                     <Text
                       style={[
                         styles.closestPostScore,
@@ -140,6 +134,14 @@ export default function PostDetails() {
                     >
                       {Math.round(parseFloat(post.score) * 100)}% match
                     </Text>
+                  </View>
+                  <View style={styles.closestPostImage}>
+                    {post.images && post.images.length != 0 && (
+                      <ImageCarousel images={post.images} widthOffset={70} />
+                    )}
+                  </View>
+                  <View style={styles.closestPostItem}>
+                    <Text style={styles.closestPostName}>{post.content}</Text>
                   </View>
                   <CustomButton
                     onPress={() => {
