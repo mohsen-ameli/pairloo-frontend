@@ -74,8 +74,13 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
 
   socket.on(
     "draft-restored",
-    (data: { context: { question: Question; answer: string }[]; initialPostText: string }) => {
-      // Restore all the questions and inputs from the draft
+    (data: {
+      context: { question: Question; answer: string }[]
+      initialPostText: string
+      images: string[]
+      publicPost: boolean
+      numMatches: number
+    }) => {
       const questions = data.context.map(item => item.question)
       const answers = data.context.map(item => item.answer)
 
@@ -83,8 +88,12 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
       set(pagesAtom, [data.initialPostText, ...answers])
       set(inputsAtom, [data.initialPostText, ...answers])
       set(pageCountAtom, INITIAL_PAGE_COUNT + questions.length)
+      set(imagesAtom, data.images)
+      set(publicPostAtom, data.publicPost)
+      set(numMatchesAtom, data.numMatches)
 
-      const firstUnansweredIdx = answers.findIndex(answer => answer === "")
+      // Navigate to the first unanswered question, or to the settings page if all answered
+      const firstUnansweredIdx = answers.findIndex(answer => answer.trim() === "")
       if (firstUnansweredIdx !== -1) {
         set(currPageAtom, firstUnansweredIdx + 1)
       } else {
@@ -181,5 +190,34 @@ export const discardDraftAtom = atom(null, async (get, set) => {
   const socket = get(createPostSocketAtom)
   if (!socket) return
 
+  set(loadingAtom, true)
   socket.emit("discard-draft")
 })
+
+export const saveDraftSettingsAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      images,
+      publicPost,
+      numMatches,
+    }: { images: string[]; publicPost: boolean; numMatches: number }
+  ) => {
+    const socket = get(createPostSocketAtom)
+    if (!socket) return
+
+    socket.emit("update-draft-settings", { images, publicPost, numMatches })
+  }
+)
+
+export const saveDraftStateAtom = atom(
+  null,
+  async (get, set, { inputs, currPage }: { inputs: string[]; currPage: number }) => {
+    const socket = get(createPostSocketAtom)
+    if (!socket) return
+
+    socket.emit("update-draft-state", { inputs, currPage })
+  }
+)

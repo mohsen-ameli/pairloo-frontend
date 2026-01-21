@@ -6,6 +6,8 @@ import {
   Text,
   Switch,
   Pressable,
+  KeyboardAvoidingView,
+  ScrollView,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import React, { useCallback, useState, useEffect } from "react"
@@ -29,6 +31,8 @@ import {
   publicPostAtom,
   questionsAtom,
   discardDraftAtom,
+  saveDraftSettingsAtom,
+  saveDraftStateAtom,
 } from "@/src/store/create-post-store"
 import { useFocusEffect } from "expo-router"
 
@@ -44,12 +48,14 @@ export default function CreatePost() {
   const [publicPost, setPublicPost] = useAtom(publicPostAtom)
   const [images, setImages] = useAtom(imagesAtom)
   const [inputs, setInputs] = useAtom(inputsAtom)
-  const setNumMatches = useSetAtom(numMatchesAtom)
+  const [numMatches, setNumMatches] = useAtom(numMatchesAtom)
   const [flow, setFlow] = useAtom(flowAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const forward = useSetAtom(forwardCreatePostAtom)
   const pickImage = useSetAtom(pickImageAtom)
   const discardDraft = useSetAtom(discardDraftAtom)
+  const saveDraftSettings = useSetAtom(saveDraftSettingsAtom)
+  const saveDraftState = useSetAtom(saveDraftStateAtom)
 
   useFocusEffect(
     useCallback(() => {
@@ -81,6 +87,14 @@ export default function CreatePost() {
     setMcqAnswers(newMcqAnswers)
     setMultiSelectAnswers(newMultiSelectAnswers)
   }, [questions, inputs])
+
+  useEffect(() => {
+    saveDraftSettings({ images, publicPost, numMatches })
+  }, [images, publicPost, numMatches, saveDraftSettings])
+
+  useEffect(() => {
+    saveDraftState({ inputs, currPage })
+  }, [inputs, currPage, saveDraftState])
 
   const handleOptionSelect = (i: number, option: string) => {
     setInputs(prev => {
@@ -140,7 +154,7 @@ export default function CreatePost() {
                   </Pressable>
                 )}
                 {type === "multiple_choice" && options && options.length > 0 ? (
-                  <View style={{ marginVertical: 10 }}>
+                  <View style={{ marginVertical: 10, paddingBottom: 80 }}>
                     {options.map((option: string, idx: number) => {
                       const isSelected = mcqAnswers[i] === option
                       return (
@@ -173,7 +187,10 @@ export default function CreatePost() {
                     })}
                   </View>
                 ) : type === "multi_select" && options && options.length > 0 ? (
-                  <View style={{ marginVertical: 10 }}>
+                  <ScrollView
+                    style={{ marginVertical: 10, paddingBottom: 80 }}
+                    scrollEnabled={true}
+                  >
                     <Text style={{ marginBottom: 10 }}>Select all the options that apply:</Text>
                     {options.map((option: string, idx: number) => {
                       const selectedOptions = multiSelectAnswers[i] || []
@@ -211,7 +228,7 @@ export default function CreatePost() {
                         </View>
                       )
                     })}
-                  </View>
+                  </ScrollView>
                 ) : (
                   <TextInput
                     style={createPostStyles.textInput}
@@ -238,91 +255,84 @@ export default function CreatePost() {
         })}
 
         {/* The last page */}
-        <View
+        <KeyboardAvoidingView
           key={pages.length}
+          behavior="padding"
           style={{
             flex: 1,
-            gap: 10,
-            padding: 20,
-            paddingTop: 70,
-            borderColor: colors.borderGray,
-            borderRightWidth: 1,
           }}
         >
-          <View>
-            <CustomButton onPress={pickImage} disabled={loading}>
-              Choose images (optional)
-            </CustomButton>
-            {images.length != 0 && (
+          <ScrollView style={createPostStyles.scrollView} keyboardShouldPersistTaps="handled">
+            <View style={{ gap: 10 }}>
+              <View>
+                <CustomButton onPress={pickImage} disabled={loading}>
+                  Choose images (optional)
+                </CustomButton>
+                {images.length != 0 && (
+                  <View
+                    style={{
+                      marginTop: 10,
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      gap: 10,
+                    }}
+                  >
+                    <ImageCarousel images={images} setImages={setImages} />
+                  </View>
+                )}
+              </View>
               <View
                 style={{
-                  marginTop: 10,
+                  marginTop: 30,
                   flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 10,
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <ImageCarousel images={images} setImages={setImages} />
+                <Text
+                  style={{
+                    color: colors.dark,
+                    fontSize: 18,
+                    fontWeight: "600",
+                  }}
+                >
+                  Do you want this post to be public?
+                </Text>
+                <Switch
+                  trackColor={{ false: colors.gray, true: colors.purple }}
+                  thumbColor={publicPost ? colors.light : colors.dark}
+                  ios_backgroundColor={colors.light}
+                  onValueChange={setPublicPost}
+                  value={publicPost}
+                />
               </View>
-            )}
-          </View>
-          <View
-            style={{
-              marginTop: 30,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Text
-              style={{
-                color: colors.dark,
-                fontSize: 18,
-                fontWeight: "600",
-              }}
-            >
-              Do you want this post to be public?
-            </Text>
-            <Switch
-              trackColor={{ false: colors.gray, true: colors.purple }}
-              thumbColor={publicPost ? colors.light : colors.dark}
-              ios_backgroundColor={colors.light}
-              onValueChange={setPublicPost}
-              value={publicPost}
-            />
-          </View>
-          <View
-            style={{
-              marginTop: 30,
-            }}
-          >
-            <Text
-              style={{
-                color: colors.dark,
-                fontSize: 18,
-                fontWeight: "600",
-                marginBottom: 10,
-              }}
-            >
-              How many related posts do you want to see?
-            </Text>
-            <TextInput
-              style={{
-                color: colors.dark,
-                borderColor: colors.gray,
-                borderWidth: 1,
-                padding: 5,
-                width: 50,
-                textAlign: "center",
-                borderRadius: 5,
-              }}
-              defaultValue={"5"}
-              keyboardType="number-pad"
-              editable={!loading}
-              onChangeText={text => setNumMatches(parseInt(text) || 0)}
-            />
-          </View>
-        </View>
+              <View
+                style={{
+                  marginTop: 30,
+                  paddingBottom: 80,
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.dark,
+                    fontSize: 18,
+                    fontWeight: "600",
+                    marginBottom: 10,
+                  }}
+                >
+                  How many related posts do you want to see?
+                </Text>
+                <TextInput
+                  style={createPostStyles.numMatchesInput}
+                  value={numMatches.toString()}
+                  keyboardType="number-pad"
+                  editable={!loading}
+                  onChangeText={text => setNumMatches(parseInt(text) || 0)}
+                />
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </CustomPager>
     </>
   )

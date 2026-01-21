@@ -58,4 +58,21 @@ export const createPostStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  scrollView: {
+    flex: 1,
+    gap: 10,
+    padding: 20,
+    paddingTop: 70,
+    borderColor: colors.borderGray,
+    borderRightWidth: 1,
+  },
+  numMatchesInput: {
+    color: colors.dark,
+    borderColor: colors.gray,
+    borderWidth: 1,
+    padding: 10,
+    width: 80,
+    textAlign: "center",
+    borderRadius: 5,
+  },
 })
