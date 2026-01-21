@@ -9,6 +9,8 @@ import { useAtomValue } from "jotai"
 import { Pressable, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 
+const defaultProfilePicture = require("@/assets/images/default_pfp.png")
+
 export default function index() {
   const router = useRouter()
   const conversations = useAtomValue(conversationsAtom)
@@ -39,9 +41,10 @@ export default function index() {
                 })
               }}
             >
-              {otherPerson.picture && (
-                <Image source={{ uri: otherPerson.picture }} style={conversationStyles.image} />
-              )}
+              <Image
+                source={otherPerson.picture ? { uri: otherPerson.picture } : defaultProfilePicture}
+                style={conversationStyles.image}
+              />
               <View>
                 <Text style={conversationStyles.itemTitle}>{otherPerson.username}</Text>
                 {conversation.lastMessage && (

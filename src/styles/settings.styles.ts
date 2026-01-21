@@ -75,20 +75,11 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  avatarContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.lightGray,
-    overflow: "hidden",
-    marginRight: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   avatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
+    marginRight: 12,
   },
   profileTextContainer: {
     flex: 1,

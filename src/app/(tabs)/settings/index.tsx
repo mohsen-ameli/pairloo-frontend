@@ -98,17 +98,11 @@ export default function SettingsScreen() {
           <Text style={styles.sectionTitle}>Account</Text>
           <View style={styles.card}>
             <View style={styles.row}>
-              <View style={styles.avatarContainer}>
-                {user.picture && (
-                  <Image
-                    source={{
-                      uri: user.picture || defaultProfilePicture,
-                    }}
-                    style={styles.avatar}
-                    contentFit="cover"
-                  />
-                )}
-              </View>
+              <Image
+                source={user.picture ? { uri: user.picture } : defaultProfilePicture}
+                style={styles.avatar}
+                contentFit="cover"
+              />
               <View style={styles.profileTextContainer}>
                 <View
                   style={{
