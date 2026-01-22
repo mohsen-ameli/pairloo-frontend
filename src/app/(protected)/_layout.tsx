@@ -5,9 +5,9 @@ import { pathStore } from "@/src/store/general-store"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
-import { Tabs, usePathname } from "expo-router"
+import { Tabs, useFocusEffect, usePathname } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAudioPlayer } from "expo-audio"
 import { notificationSoundAtom } from "@/src/store/general-store"
 import { View } from "react-native"
@@ -42,13 +42,17 @@ export default function ProtectedLayout() {
     setPath(pathname)
   }, [pathname])
 
-  useEffect(() => {
-    async function initialize() {
-      await initChatConnection()
-      await initCreatePost()
-    }
-    initialize()
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      // This will run when the screen is focused
+      async function initialize() {
+        console.log("initializing")
+        await initChatConnection()
+        await initCreatePost()
+      }
+      initialize()
+    }, [])
+  )
 
   return (
     <Tabs

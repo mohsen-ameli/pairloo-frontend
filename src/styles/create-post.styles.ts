@@ -44,6 +44,7 @@ export const createPostStyles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderRadius: 8,
+    borderWidth: 1.5,
     backgroundColor: colors.lightGray,
   },
   discardButton: {

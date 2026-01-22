@@ -5,12 +5,11 @@ import {
   Keyboard,
   Text,
   Switch,
-  Pressable,
   ScrollView,
 } from "react-native"
 import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import React, { useCallback, useState, useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
@@ -23,30 +22,27 @@ import { createPostSocketAtom } from "@/src/store/socket-store"
 import {
   forwardCreatePostAtom,
   imagesAtom,
-  inputsAtom,
   loadingAtom,
   numMatchesAtom,
-  pagesAtom,
   pickImageAtom,
   publicPostAtom,
-  questionsAtom,
   discardDraftAtom,
   saveDraftSettingsAtom,
+  qnaAtom,
+  edittedAtom,
 } from "@/src/store/create-post-store"
 import { useFocusEffect } from "expo-router"
+import { Question } from "@/src/types/question.types"
+import useGradualAnimation from "@/src/utils/gradual-animation"
 
 const INITIAL_PAGE_COUNT = 2
 
 export default function CreatePost() {
-  const pages = useAtomValue(pagesAtom)
-  const questions = useAtomValue(questionsAtom)
+  const [QNAs, setQNAs] = useAtom(qnaAtom)
   const socket = useAtomValue(createPostSocketAtom)
   const loading = useAtomValue(loadingAtom)
-  const [mcqAnswers, setMcqAnswers] = useState<string[]>([""])
-  const [multiSelectAnswers, setMultiSelectAnswers] = useState<string[][]>([[]])
   const [publicPost, setPublicPost] = useAtom(publicPostAtom)
   const [images, setImages] = useAtom(imagesAtom)
-  const [inputs, setInputs] = useAtom(inputsAtom)
   const [numMatches, setNumMatches] = useAtom(numMatchesAtom)
   const [flow, setFlow] = useAtom(flowAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
@@ -54,11 +50,12 @@ export default function CreatePost() {
   const pickImage = useSetAtom(pickImageAtom)
   const discardDraft = useSetAtom(discardDraftAtom)
   const saveDraftSettings = useSetAtom(saveDraftSettingsAtom)
+  const setEditted = useSetAtom(edittedAtom)
+  const { height } = useGradualAnimation({ isAuthenticated: true })
 
-  const height = 50
   const fakeView = useAnimatedStyle(() => {
     return {
-      height: Math.abs(height),
+      height: Math.abs(height.value),
     }
   }, [])
 
@@ -78,54 +75,26 @@ export default function CreatePost() {
   )
 
   useEffect(() => {
-    const newMcqAnswers: string[] = []
-    const newMultiSelectAnswers: string[][] = []
-
-    questions.forEach((question, i) => {
-      if (question.type === "multiple_choice") {
-        newMcqAnswers[i] = inputs[i] || ""
-      } else if (question.type === "multi_select") {
-        newMultiSelectAnswers[i] = inputs[i] ? inputs[i].split(", ").filter(s => s) : []
-      }
-    })
-
-    setMcqAnswers(newMcqAnswers)
-    setMultiSelectAnswers(newMultiSelectAnswers)
-  }, [questions, inputs])
-
-  useEffect(() => {
-    saveDraftSettings({ images, publicPost, numMatches })
+    saveDraftSettings()
   }, [images, publicPost, numMatches, saveDraftSettings])
 
-  const handleOptionSelect = (i: number, option: string) => {
-    setInputs(prev => {
+  async function handleChange(i: number, option: string, type: Question["type"]) {
+    // await new Promise(resolve => setTimeout(resolve, 1000)) // wait for next tick
+    setQNAs(prev => {
       const updated = [...prev]
-      updated[i] = option
-      return updated
-    })
-    setMcqAnswers(prev => {
-      const updated = [...prev]
-      updated[i] = option
-      return updated
-    })
-  }
-
-  const handleMultiSelectOption = (i: number, option: string) => {
-    setMultiSelectAnswers(prev => {
-      const updated = [...prev]
-      const selected = updated[i] || []
-      if (selected.includes(option)) {
-        updated[i] = selected.filter(o => o !== option)
-      } else {
-        updated[i] = [...selected, option]
+      if (type === "multiple_choice" || type === "short_answer") {
+        updated[i].answer = [option]
+      } else if (type === "multi_select") {
+        const currentAnswers = updated[i].answer
+        if (currentAnswers.includes(option)) {
+          updated[i].answer = currentAnswers.filter(ans => ans !== option)
+        } else {
+          updated[i].answer = [...currentAnswers, option]
+        }
       }
-      setInputs(prev => {
-        const updatedInputs = [...prev]
-        updatedInputs[i] = updated[i].join(", ")
-        return updatedInputs
-      })
       return updated
     })
+    setEditted(true)
   }
 
   return (
@@ -133,35 +102,27 @@ export default function CreatePost() {
       <LoadingIndicator loading={loading} />
 
       <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
-        {pages.map((pageText, i) => {
-          const question = questions[i]
+        {QNAs.map((qna, i) => {
+          const question = qna.question
+          const answer = qna.answer
           const type = question.type
           const questionText = question.question
           const options = question.options
 
           return (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} key={i}>
-              <View style={createPostStyles.container}>
+              <ScrollView style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>
-                  {questions.length === 1 ? questionText : `Question: ${questionText}`}
+                  {QNAs.length === 1 ? questionText : `Question: ${questionText}`}
                 </Text>
-                {pages.length > 1 && (
-                  <Pressable
-                    onPress={discardDraft}
-                    disabled={loading}
-                    style={createPostStyles.discardButton}
-                  >
-                    <Text style={createPostStyles.discardButtonText}>Discard Draft & Restart</Text>
-                  </Pressable>
-                )}
                 {type === "multiple_choice" && options && options.length > 0 ? (
                   <View style={{ marginVertical: 10, paddingBottom: 80 }}>
                     {options.map((option: string, idx: number) => {
-                      const isSelected = mcqAnswers[i] === option
+                      const isSelected = answer.includes(option)
                       return (
                         <TouchableWithoutFeedback
                           key={option}
-                          onPress={() => handleOptionSelect(i, option)}
+                          onPress={() => handleChange(i, option, type)}
                         >
                           <View
                             style={[
@@ -176,7 +137,7 @@ export default function CreatePost() {
                               style={[
                                 createPostStyles.mcqOptionText,
                                 {
-                                  color: colors.dark,
+                                  color: isSelected ? colors.light : colors.dark,
                                 },
                               ]}
                             >
@@ -194,21 +155,21 @@ export default function CreatePost() {
                   >
                     <Text style={{ marginBottom: 10 }}>Select all the options that apply:</Text>
                     {options.map((option: string, idx: number) => {
-                      const selectedOptions = multiSelectAnswers[i] || []
-                      const isSelected = selectedOptions.includes(option)
+                      const isSelected = answer.includes(option)
                       return (
                         <View
                           key={option}
                           style={[
                             createPostStyles.multiSelect,
                             {
+                              borderColor: isSelected ? colors.purple : colors.lightGray,
                               backgroundColor: isSelected ? colors.lightPurple : colors.lightGray,
                             },
                           ]}
                         >
                           <BouncyCheckbox
                             isChecked={isSelected}
-                            onPress={() => handleMultiSelectOption(i, option)}
+                            onPress={() => handleChange(i, option, type)}
                             fillColor={colors.purple}
                             iconStyle={{
                               borderColor: colors.dark,
@@ -222,7 +183,7 @@ export default function CreatePost() {
                             text={option}
                             textStyle={{
                               ...createPostStyles.mcqOptionText,
-                              color: isSelected ? colors.purple : colors.dark,
+                              color: isSelected ? colors.light : colors.dark,
                               textDecorationLine: "none",
                             }}
                           />
@@ -234,29 +195,24 @@ export default function CreatePost() {
                   <TextInput
                     style={createPostStyles.textInput}
                     placeholderTextColor={colors.gray}
-                    defaultValue={pageText}
-                    value={inputs[i]}
-                    onChangeText={text => {
-                      setInputs(prev => {
-                        const updated = [...prev]
-                        updated[i] = text
-                        return updated
-                      })
-                    }}
+                    defaultValue={qna.answer[0]}
+                    value={qna.answer[0]}
+                    onChangeText={text => handleChange(i, text, type)}
                     placeholder="Write as little or as much details as you want..."
                     editable={!loading}
-                    multiline={type !== "multiple_choice"}
+                    multiline
+                    numberOfLines={10}
                     textAlignVertical="top"
                     scrollEnabled
                   />
                 )}
-              </View>
+              </ScrollView>
             </TouchableWithoutFeedback>
           )
         })}
 
         {/* The last page */}
-        <View key={pages.length} style={{ flex: 1 }}>
+        <View key={QNAs.length} style={{ flex: 1 }}>
           <ScrollView style={createPostStyles.scrollView} keyboardShouldPersistTaps="handled">
             <View style={{ gap: 10 }}>
               <View>
@@ -294,8 +250,7 @@ export default function CreatePost() {
                   Do you want this post to be public?
                 </Text>
                 <Switch
-                  trackColor={{ false: colors.gray, true: colors.purple }}
-                  thumbColor={publicPost ? colors.light : colors.dark}
+                  trackColor={{ true: colors.purple }}
                   ios_backgroundColor={colors.light}
                   onValueChange={setPublicPost}
                   value={publicPost}
