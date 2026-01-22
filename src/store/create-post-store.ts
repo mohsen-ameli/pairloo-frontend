@@ -147,12 +147,14 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   const images = get(imagesAtom)
   const numMatches = get(numMatchesAtom)
   const pageCount = get(pageCountAtom)
+  const pages = get(pagesAtom)
 
   if (!socket) {
     console.warn("[forward] Socket is not initialized!")
     return
   }
 
+  // If on the last page, submit
   set(loadingAtom, true)
   if (currPage === pageCount - 1) {
     socket.emit("submit", {
@@ -160,12 +162,22 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
       publicPost,
       images,
     })
-  } else if (!inputs[currPage] || inputs[currPage].trim() === "") {
+    return
+  }
+
+  if (!inputs[currPage] || inputs[currPage].trim() === "") {
     Alert.alert("Input required", "Please enter some text before continuing.")
     set(loadingAtom, false)
-  } else {
-    socket.emit("chat", inputs[currPage])
+    return
   }
+
+  if (pages[currPage] && pages[currPage] === inputs[currPage]) {
+    set(currPageAtom, currPage + 1)
+    set(loadingAtom, false)
+    return
+  }
+
+  socket.emit("chat", { value: inputs[currPage], questionIdx: currPage })
 })
 
 export const pickImageAtom = atom(null, async (get, set) => {
@@ -209,15 +221,5 @@ export const saveDraftSettingsAtom = atom(
     if (!socket) return
 
     socket.emit("update-draft-settings", { images, publicPost, numMatches })
-  }
-)
-
-export const saveDraftStateAtom = atom(
-  null,
-  async (get, set, { inputs, currPage }: { inputs: string[]; currPage: number }) => {
-    const socket = get(createPostSocketAtom)
-    if (!socket) return
-
-    socket.emit("update-draft-state", { inputs, currPage })
   }
 )

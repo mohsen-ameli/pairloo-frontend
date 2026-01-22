@@ -6,9 +6,9 @@ import {
   Text,
   Switch,
   Pressable,
-  KeyboardAvoidingView,
   ScrollView,
 } from "react-native"
+import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import React, { useCallback, useState, useEffect } from "react"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
@@ -32,7 +32,6 @@ import {
   questionsAtom,
   discardDraftAtom,
   saveDraftSettingsAtom,
-  saveDraftStateAtom,
 } from "@/src/store/create-post-store"
 import { useFocusEffect } from "expo-router"
 
@@ -55,7 +54,13 @@ export default function CreatePost() {
   const pickImage = useSetAtom(pickImageAtom)
   const discardDraft = useSetAtom(discardDraftAtom)
   const saveDraftSettings = useSetAtom(saveDraftSettingsAtom)
-  const saveDraftState = useSetAtom(saveDraftStateAtom)
+
+  const height = 50
+  const fakeView = useAnimatedStyle(() => {
+    return {
+      height: Math.abs(height),
+    }
+  }, [])
 
   useFocusEffect(
     useCallback(() => {
@@ -91,10 +96,6 @@ export default function CreatePost() {
   useEffect(() => {
     saveDraftSettings({ images, publicPost, numMatches })
   }, [images, publicPost, numMatches, saveDraftSettings])
-
-  useEffect(() => {
-    saveDraftState({ inputs, currPage })
-  }, [inputs, currPage, saveDraftState])
 
   const handleOptionSelect = (i: number, option: string) => {
     setInputs(prev => {
@@ -255,13 +256,7 @@ export default function CreatePost() {
         })}
 
         {/* The last page */}
-        <KeyboardAvoidingView
-          key={pages.length}
-          behavior="padding"
-          style={{
-            flex: 1,
-          }}
-        >
+        <View key={pages.length} style={{ flex: 1 }}>
           <ScrollView style={createPostStyles.scrollView} keyboardShouldPersistTaps="handled">
             <View style={{ gap: 10 }}>
               <View>
@@ -332,7 +327,9 @@ export default function CreatePost() {
               </View>
             </View>
           </ScrollView>
-        </KeyboardAvoidingView>
+          {/* Animated fake view for keyboard avoidance */}
+          <Animated.View style={[fakeView, { backgroundColor: colors.light }]} />
+        </View>
       </CustomPager>
     </>
   )

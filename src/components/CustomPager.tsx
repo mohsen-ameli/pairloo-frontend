@@ -29,21 +29,6 @@ export default function CustomPager({
   const isAuthenticated = useAtomValue(userAtom) !== null
   const { height } = useGradualAnimation({ isAuthenticated })
 
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        setCurrPage(0)
-        setPageCount(initialPageCount)
-        setFlow({
-          back: null,
-          next: null,
-          backEnabled: true,
-          nextEnabled: true,
-        })
-      }
-    }, [])
-  )
-
   useEffect(() => {
     if (pageCount === 0 || pageCount === initialPageCount) {
       setPageCount(initialPageCount)
