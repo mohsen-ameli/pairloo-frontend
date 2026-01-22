@@ -26,7 +26,6 @@ import {
   numMatchesAtom,
   pickImageAtom,
   publicPostAtom,
-  discardDraftAtom,
   saveDraftSettingsAtom,
   qnaAtom,
   edittedAtom,
@@ -48,7 +47,6 @@ export default function CreatePost() {
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const forward = useSetAtom(forwardCreatePostAtom)
   const pickImage = useSetAtom(pickImageAtom)
-  const discardDraft = useSetAtom(discardDraftAtom)
   const saveDraftSettings = useSetAtom(saveDraftSettingsAtom)
   const setEditted = useSetAtom(edittedAtom)
   const { height } = useGradualAnimation({ isAuthenticated: true })
