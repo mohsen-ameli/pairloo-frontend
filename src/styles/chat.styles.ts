@@ -12,8 +12,13 @@ export const chatStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: colors.light,
   },
   inputContainer: {
+    backgroundColor: colors.lightGray,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingBottom: 35,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
@@ -21,18 +26,16 @@ export const chatStyles = StyleSheet.create({
   input: {
     flex: 1,
     color: colors.dark,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.gray,
     borderRadius: 5,
-    paddingHorizontal: 15,
-    paddingVertical: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     paddingRight: 50,
   },
   sendButton: {
-    position: "absolute",
-    right: 5,
-    padding: 10,
-    borderRadius: 30,
+    padding: 6,
+    borderRadius: 10,
     backgroundColor: colors.purple,
   },
   messageItem: {
@@ -65,5 +68,8 @@ export const chatStyles = StyleSheet.create({
     marginTop: 2,
     paddingRight: 50,
     flexWrap: "wrap",
+  },
+  plusIcon: {
+    marginLeft: 5,
   },
 })

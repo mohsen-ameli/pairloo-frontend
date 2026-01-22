@@ -53,7 +53,8 @@ export default function RootLayout() {
             }}
           >
             <Stack.Protected guard={user !== null}>
-              <Stack.Screen name="(protected)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(details)" options={{ headerShown: false }} />
             </Stack.Protected>
             <Stack.Protected guard={user === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />

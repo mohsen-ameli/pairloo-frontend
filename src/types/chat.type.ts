@@ -5,7 +5,7 @@ export type MessageType = {
   sender: {
     _id: string
     username: string
-    picture?: string
+    picture?: string | null
   }
   content: string
   attachment: string
@@ -18,7 +18,7 @@ export interface ConversationType {
   members: {
     _id: string
     username: string
-    picture?: string
+    picture?: string | null
     email: string
   }[]
   lastMessage?: MessageType
@@ -27,6 +27,6 @@ export interface ConversationType {
 export type OtherUser = {
   _id: string
   username: string
-  picture?: string | undefined
+  picture?: string | null
   email: string
 }

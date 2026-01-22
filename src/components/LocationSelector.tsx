@@ -16,7 +16,7 @@ import Feather from "@expo/vector-icons/Feather"
 import { userAtom } from "@/src/store/auth-store"
 import { useAtomValue } from "jotai"
 import { locSelecStyles } from "@/src/styles/location-selector.styles"
-import CustomInput from "./CustomInput"
+import { inputStyles } from "@/src/styles/input.styles"
 
 interface City {
   _id: number
@@ -71,19 +71,23 @@ export default function LocationSelector({
   }
 
   return (
-    <View>
+    <>
       <Pressable
         onPress={() => {
           setShowModal(true)
           setCitySearchInput("")
         }}
       >
-        <CustomInput title="Location" editable={false} selectTextOnFocus={false}>
-          {locationInput}
-        </CustomInput>
+        <Text style={inputStyles.header}>Location</Text>
+        <Text style={inputStyles.input}>{locationInput}</Text>
       </Pressable>
 
-      <Modal visible={showModal} animationType="slide" onRequestClose={() => setShowModal(false)}>
+      <Modal
+        visible={showModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowModal(false)}
+      >
         <SafeAreaView style={locSelecStyles.modalContainer}>
           <View style={locSelecStyles.searchContainer}>
             <TouchableOpacity
@@ -97,7 +101,7 @@ export default function LocationSelector({
             </TouchableOpacity>
             <TextInput
               style={locSelecStyles.searchInput}
-              placeholder="Search cities..."
+              placeholder="Search for a city"
               placeholderTextColor={colors.gray}
               value={citySearchInput}
               onChangeText={handleCitySearch}
@@ -123,6 +127,6 @@ export default function LocationSelector({
           />
         </SafeAreaView>
       </Modal>
-    </View>
+    </>
   )
 }

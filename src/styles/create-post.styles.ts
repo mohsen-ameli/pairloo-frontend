@@ -5,7 +5,7 @@ export const createPostStyles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 10,
-    paddingTop: 55,
+    paddingTop: 45,
     paddingBottom: 100,
     paddingHorizontal: 20,
     borderColor: colors.borderGray,
