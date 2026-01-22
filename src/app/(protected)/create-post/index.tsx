@@ -109,12 +109,12 @@ export default function CreatePost() {
 
           return (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} key={i}>
-              <ScrollView style={createPostStyles.container}>
+              <View style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>
                   {QNAs.length === 1 ? questionText : `Question: ${questionText}`}
                 </Text>
                 {type === "multiple_choice" && options && options.length > 0 ? (
-                  <View style={{ marginVertical: 10, paddingBottom: 80 }}>
+                  <ScrollView style={{ marginVertical: 10, paddingBottom: 80 }}>
                     {options.map((option: string, idx: number) => {
                       const isSelected = answer.includes(option)
                       return (
@@ -145,7 +145,7 @@ export default function CreatePost() {
                         </TouchableWithoutFeedback>
                       )
                     })}
-                  </View>
+                  </ScrollView>
                 ) : type === "multi_select" && options && options.length > 0 ? (
                   <ScrollView
                     style={{ marginVertical: 10, paddingBottom: 80 }}
@@ -204,7 +204,7 @@ export default function CreatePost() {
                     scrollEnabled
                   />
                 )}
-              </ScrollView>
+              </View>
             </TouchableWithoutFeedback>
           )
         })}
@@ -280,7 +280,7 @@ export default function CreatePost() {
               </View>
             </View>
           </ScrollView>
-          {/* Animated fake view for keyboard avoidance */}
+
           <Animated.View style={[fakeView, { backgroundColor: colors.light }]} />
         </View>
       </CustomPager>
