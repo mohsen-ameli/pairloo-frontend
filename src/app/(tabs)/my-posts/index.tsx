@@ -1,8 +1,7 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { Image } from "expo-image"
-import { useLocalSearchParams, useRouter } from "expo-router"
+import { useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
-import { useEffect } from "react"
 import { ScrollView, Text, View, TouchableOpacity, RefreshControl, Pressable } from "react-native"
 import { styles } from "@/src/styles/index.styles"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -14,7 +13,6 @@ const imageNotAvailable = require("@/assets/images/image-not-available.png")
 
 export default function Index() {
   const router = useRouter()
-  const { redirect } = useLocalSearchParams<{ redirect?: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const {
@@ -22,12 +20,6 @@ export default function Index() {
     isError,
     isPending,
   } = useQuery({ queryKey: ["my-posts"], queryFn: fetchPosts })
-
-  useEffect(() => {
-    if (redirect) {
-      router.push(redirect as any)
-    }
-  }, [redirect])
 
   async function fetchPosts() {
     const res = await authFetch("/api/posts/my-posts")
@@ -74,7 +66,12 @@ export default function Index() {
             <TouchableOpacity
               key={index}
               style={[styles.postCard, styles.postCardShadow]}
-              onPress={() => router.push(`/my-posts/${post._id}`)}
+              onPress={() =>
+                router.push({
+                  pathname: "my-post",
+                  params: { id: post._id },
+                })
+              }
             >
               <View style={styles.postCardContent}>
                 <View style={[styles.postImage, styles.postImageBackground]}>

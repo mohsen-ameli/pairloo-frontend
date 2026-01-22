@@ -1,6 +1,7 @@
 import React from "react"
 import { Text, TextInput, TextInputProps, View } from "react-native"
 import { colors } from "@/src/utils/colors"
+import { inputStyles } from "@/src/styles/input.styles"
 
 interface Props extends TextInputProps {
   title: string
@@ -12,26 +13,18 @@ interface Props extends TextInputProps {
 export default function CustomInput({ title, mandatory, errors, inputRef, ...rest }: Props) {
   return (
     <View>
-      <Text style={{ fontSize: 14, marginBottom: 5, color: colors.dark }}>
+      <Text style={inputStyles.header}>
         {title}
-        {mandatory ? <Text style={{ color: colors.errorRed }}> *</Text> : null}
+        {mandatory ? <Text style={inputStyles.mandatory}> *</Text> : null}
       </Text>
       <TextInput
         ref={inputRef}
-        style={{
-          color: colors.dark,
-          fontSize: 16,
-          borderWidth: 1,
-          borderColor: colors.borderGray,
-          padding: 10,
-          borderRadius: 5,
-          width: "100%",
-        }}
+        style={inputStyles.input}
         placeholderTextColor={colors.gray}
         selectionColor={colors.purple}
         {...rest}
       />
-      {errors ? <Text style={{ color: colors.errorRed, marginTop: 5 }}>{errors}</Text> : null}
+      {errors ? <Text style={inputStyles.errors}>{errors}</Text> : null}
     </View>
   )
 }

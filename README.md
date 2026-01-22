@@ -16,30 +16,12 @@ npm i
 npx expo prebuild
 ```
 
-4. You can run the app in several ways.
+4. Expo has two modes: Expo Go, and Development Build.
+   Basically Expo Go is a watered down version of Development Build.
+   Dev build is typically better since it's essentially the final product users will download,
+   but Expo Go is a bit easier to set up.
 
-```bash
-npx expo run:android
-```
-
-or
-
-```bash
-npx expo run:ios
-```
-
-or when doing the following, make sure you are using "development build" mode and not "expo go".
-You can switch between them by pressing "s".
-
-```bash
-npm run dev
-```
-
-If you want to refresh the cache use
-
-```bash
-npm run dev --reset-cache
-```
+Amazing docs on how to set things up: https://docs.expo.dev/get-started/set-up-your-environment/
 
 ## Libraries and Assets used
 

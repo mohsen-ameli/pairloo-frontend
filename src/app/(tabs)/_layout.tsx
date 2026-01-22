@@ -13,6 +13,7 @@ import { notificationSoundAtom } from "@/src/store/general-store"
 import { View } from "react-native"
 
 const audioSource = require("@/assets/audio/new-notification.mp3")
+const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
 export default function ProtectedLayout() {
   const initChatConnection = useSetAtom(initChatAtom)
@@ -122,20 +123,17 @@ export default function ProtectedLayout() {
           tabBarLabelStyle: {
             marginTop: 2,
           },
-          tabBarIcon: ({ color, size }) =>
-            user?.picture ? (
-              <Image
-                source={user.picture}
-                style={{
-                  width: size + 3,
-                  height: size + 3,
-                  borderRadius: 25,
-                }}
-                contentFit="contain"
-              />
-            ) : (
-              <Feather name="settings" size={size} color={color} />
-            ),
+          tabBarIcon: ({ color, size }) => (
+            <Image
+              source={user?.picture ? { uri: user?.picture } : defaultProfilePicture}
+              style={{
+                width: size + 3,
+                height: size + 3,
+                borderRadius: 25,
+              }}
+              contentFit="contain"
+            />
+          ),
         }}
       />
     </Tabs>

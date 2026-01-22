@@ -93,22 +93,16 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           <View style={styles.card}>
             <View style={styles.row}>
-              <View style={styles.avatarContainer}>
-                {user.picture && (
-                  <Image
-                    source={{
-                      uri: user.picture || defaultProfilePicture,
-                    }}
-                    style={styles.avatar}
-                    contentFit="cover"
-                  />
-                )}
-              </View>
+              <Image
+                source={user.picture ? { uri: user.picture } : defaultProfilePicture}
+                style={styles.avatar}
+                contentFit="cover"
+              />
               <View style={styles.profileTextContainer}>
                 <View
                   style={{

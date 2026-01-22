@@ -41,9 +41,9 @@ export default function PostDetails() {
 
     socket.emit("newConversation", [user._id, post._id])
     socket.once("conversation", async (conversation: ConversationType) => {
-      router.replace({
-        pathname: "/chat",
-        params: { redirect: `/chat/${conversation._id}` },
+      router.push({
+        pathname: "/chat-details",
+        params: { id: conversation._id },
       })
     })
   }

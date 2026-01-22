@@ -113,8 +113,8 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(loadingAtom, false)
 
     router.navigate({
-      pathname: "/my-posts",
-      params: { redirect: `/my-posts/${postId}` },
+      pathname: "/my-post",
+      params: { id: postId },
     })
   })
 

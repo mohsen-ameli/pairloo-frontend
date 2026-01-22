@@ -3,20 +3,29 @@ import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   header: {
+    flex: 1,
     paddingHorizontal: 6,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "center",
+  },
+  headerBackground: {
+    backgroundColor: colors.light,
+    flex: 1,
+  },
+  headerBackIcon: {
+    position: "absolute",
+    left: 0,
+    marginRight: 10,
+    padding: 10,
   },
   otherHeader: {
+    flex: 1,
     paddingHorizontal: 6,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 10,
-    alignSelf: "center",
-  },
-  headerContent: {
-    flex: 1,
   },
   headerTitle: {
     fontSize: 24,

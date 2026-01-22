@@ -8,6 +8,7 @@ import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackC
 import { useAtomValue, useSetAtom } from "jotai"
 import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
+import { useRouter } from "expo-router"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -15,8 +16,11 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function useCustomHeader(
   title?: string,
   otherUser?: OtherUser,
-  createPost?: boolean
+  createPost?: boolean,
+  backButtonVisible: boolean = true
 ): ExtendedStackNavigationOptions {
+  const router = useRouter()
+
   function handleProfilePress() {}
   const discardDraft = useSetAtom(discardDraftAtom)
   const getNewQuestion = useSetAtom(getNewQuestionAtom)
@@ -25,28 +29,26 @@ export default function useCustomHeader(
   let options: ExtendedStackNavigationOptions = {
     title,
     headerShown: true,
-    headerStyle: {
-      backgroundColor: colors.light,
-    },
+    headerBackVisible: false,
+    headerBackButtonMenuEnabled: false,
     headerTintColor: colors.dark,
-    headerBackButtonDisplayMode: "minimal",
+    headerBackButtonDisplayMode: "default",
     headerBackground() {
-      return (
-        <View
-          style={{
-            backgroundColor: colors.light,
-            flex: 1,
-            borderBottomColor: colors.gray,
-            borderBottomWidth: 1,
-          }}
-        />
-      )
+      return <View style={styles.headerBackground} />
     },
     headerTitle: () => (
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>{title}</Text>
-        </View>
+        {backButtonVisible && (
+          <Pressable
+            style={styles.headerBackIcon}
+            onPress={() => {
+              router.back()
+            }}
+          >
+            <Feather name="arrow-left" size={26} color={colors.dark} />
+          </Pressable>
+        )}
+        <Text style={styles.headerTitle}>{title}</Text>
       </View>
     ),
   }
@@ -56,6 +58,16 @@ export default function useCustomHeader(
       ...options,
       headerTitle: () => (
         <View style={styles.otherHeader}>
+          {backButtonVisible && (
+            <Pressable
+              style={styles.headerBackIcon}
+              onPress={() => {
+                router.back()
+              }}
+            >
+              <Feather name="arrow-left" size={26} color={colors.dark} />
+            </Pressable>
+          )}
           <TouchableOpacity onPress={handleProfilePress} style={styles.otherProfileButton}>
             <Image
               source={otherUser.picture ? { uri: otherUser.picture } : defaultProfilePicture}

@@ -66,10 +66,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.purple,
     fontWeight: "600",
-    marginLeft: 8,
     flexShrink: 0,
     flexGrow: 0,
     textAlign: "right",
+  },
+  closestPostHeaderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   closestPostItem: {
     flexDirection: "row",
