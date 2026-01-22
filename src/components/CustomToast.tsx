@@ -3,27 +3,37 @@ import { Image } from "expo-image"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 
+const defaultProfilePicture = require("@/assets/images/default_pfp.png")
+
 export default function CustomToast({
   onPress,
   username,
   message,
+  attachmentUrl,
   picture,
 }: {
   onPress: () => void
   username: string
   message: string
   picture?: string
+  attachmentUrl?: string
 }) {
   return (
     <Pressable style={styles.customToast} onPress={onPress}>
-      {picture ? (
-        <Image source={{ uri: picture }} style={{ width: 40, height: 40, borderRadius: 20 }} />
-      ) : (
-        <Feather name="user" size={40} color={colors.light} />
-      )}
+      <Image
+        source={picture ? { uri: picture } : defaultProfilePicture}
+        style={{ width: 40, height: 40, borderRadius: 20 }}
+      />
       <View style={styles.textContainer}>
         <Text style={styles.customTitle}>{username}</Text>
         <Text style={styles.customMessage}>{message}</Text>
+        {attachmentUrl && (
+          <Image
+            source={{ uri: attachmentUrl }}
+            style={styles.messageAttachment}
+            contentFit="cover"
+          />
+        )}
       </View>
       <Feather name="x" size={20} color={colors.light} />
     </Pressable>
@@ -58,4 +68,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
+  messageAttachment: { width: 50, height: 50, borderRadius: 8 },
 })

@@ -7,8 +7,9 @@ export type MessageType = {
     username: string
     picture?: string | null
   }
-  content: string
-  attachment: string
+  content?: string
+  attachment?: string
+  attachmentUrl?: string
   createdAt: string
   updatedAt: string
 }

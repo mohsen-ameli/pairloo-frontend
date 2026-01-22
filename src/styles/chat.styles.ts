@@ -44,10 +44,17 @@ export const chatStyles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
+  messageAttachment: {
+    width: 200,
+    height: 200,
+    marginTop: 5,
+    borderRadius: 10,
+  },
   messageImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    alignSelf: "flex-start",
   },
   messageHeader: {
     flexDirection: "row",
@@ -69,7 +76,34 @@ export const chatStyles = StyleSheet.create({
     paddingRight: 50,
     flexWrap: "wrap",
   },
-  plusIcon: {
+  plusButton: {
     marginLeft: 5,
+  },
+  modalContainer: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    height: "25%",
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    flex: 1,
+    backgroundColor: colors.lightGray,
+    paddingTop: 25,
+    paddingHorizontal: 25,
+    alignItems: "center",
+  },
+  attachmentContainer: {
+    width: "100%",
+    paddingTop: 40,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 20,
+  },
+  dismissButton: {
+    position: "absolute",
+    top: 10,
+    left: 20,
+    padding: 10,
   },
 })
