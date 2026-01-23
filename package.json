@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "expo start",
+    "dev": "./copy_public_ip_to_env.sh && expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "android": "./copy_public_ip_to_env.sh && expo run:android",
+    "ios": "./copy_public_ip_to_env.sh && expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
     "prepare": "husky"
