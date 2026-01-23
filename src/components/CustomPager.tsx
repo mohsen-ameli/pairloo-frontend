@@ -29,24 +29,11 @@ export default function CustomPager({
   const isAuthenticated = useAtomValue(userAtom) !== null
   const { height } = useGradualAnimation({ includeTabHeight: isAuthenticated })
 
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        setCurrPage(0)
-        setPageCount(initialPageCount)
-        setFlow({
-          back: null,
-          next: null,
-          backEnabled: true,
-          nextEnabled: true,
-        })
-      }
-    }, [])
-  )
-
   useEffect(() => {
-    setPageCount(initialPageCount)
-  }, [initialPageCount])
+    if (pageCount === 0 || pageCount === initialPageCount) {
+      setPageCount(initialPageCount)
+    }
+  }, [initialPageCount, pageCount, setPageCount])
 
   // Animate scrollOffset when currPage changes (for dots)
   useEffect(() => {

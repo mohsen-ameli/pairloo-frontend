@@ -10,3 +10,14 @@ export const flowAtom = atom({
   backEnabled: true,
   nextEnabled: true,
 })
+
+export const resetPagerAtom = atom(null, (_get, set) => {
+  set(currPageAtom, 0)
+  set(pageCountAtom, 0)
+  set(flowAtom, {
+    back: null,
+    next: null,
+    backEnabled: true,
+    nextEnabled: true,
+  })
+})

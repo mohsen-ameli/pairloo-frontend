@@ -1,4 +1,4 @@
-import { useRouter, useLocalSearchParams } from "expo-router"
+import { useRouter, useLocalSearchParams, Stack } from "expo-router"
 import { View, Text, ScrollView, Alert, Pressable } from "react-native"
 import styles from "@/src/styles/id.styles"
 import { useSetAtom } from "jotai"
@@ -11,10 +11,12 @@ import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
+import useCustomHeader from "@/src/utils/useCustomHeader"
 
 export default function PostDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
+  const detailOptions = useCustomHeader("Details", true)
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const {
@@ -60,25 +62,32 @@ export default function PostDetails() {
 
   if (isPending || isPendingMutation) {
     return (
-      <View style={styles.container}>
-        <LoadingIndicator loading={true} />
-      </View>
+      <>
+        <Stack.Screen options={detailOptions} />
+        <View style={styles.container}>
+          <LoadingIndicator loading={true} />
+        </View>
+      </>
     )
   }
 
   if (isError) {
     return (
-      <View style={styles.container}>
-        <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
-        </Pressable>
-      </View>
+      <>
+        <Stack.Screen options={detailOptions} />
+        <View style={styles.container}>
+          <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
+          <Pressable style={errorStyles.retryButton} onPress={refresh}>
+            <Text style={errorStyles.retryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
+      </>
     )
   }
 
   return (
     <>
+      <Stack.Screen options={detailOptions} />
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.postContainer}>

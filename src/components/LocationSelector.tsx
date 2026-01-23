@@ -17,6 +17,7 @@ import { userAtom } from "@/src/store/auth-store"
 import { useAtomValue } from "jotai"
 import { locSelecStyles } from "@/src/styles/location-selector.styles"
 import { inputStyles } from "@/src/styles/input.styles"
+import CustomInput from "./CustomInput"
 
 interface City {
   _id: number
@@ -71,16 +72,16 @@ export default function LocationSelector({
   }
 
   return (
-    <>
-      <Pressable
-        onPress={() => {
-          setShowModal(true)
-          setCitySearchInput("")
-        }}
-      >
-        <Text style={inputStyles.header}>Location</Text>
-        <Text style={inputStyles.input}>{locationInput}</Text>
-      </Pressable>
+    <Pressable
+      onPress={() => {
+        setShowModal(true)
+        setCitySearchInput("")
+      }}
+      style={{ width: "100%" }}
+    >
+      <CustomInput title="Location" editable={false} selectTextOnFocus={false} pointerEvents="none">
+        {locationInput}
+      </CustomInput>
 
       <Modal
         visible={showModal}
@@ -127,6 +128,6 @@ export default function LocationSelector({
           />
         </SafeAreaView>
       </Modal>
-    </>
+    </Pressable>
   )
 }

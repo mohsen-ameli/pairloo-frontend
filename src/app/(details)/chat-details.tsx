@@ -31,7 +31,7 @@ export default function ChatDetails() {
   const chatRef = useRef<FlashListRef<MessageType>>(null!)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const [otherUser, setOtherUser] = useState<OtherUser>(null!)
-  const detailOptions = useCustomHeader("", otherUser)
+  const detailOptions = useCustomHeader("", true, otherUser)
 
   useEffect(() => {
     if (!conversations || !user || !socket) return
