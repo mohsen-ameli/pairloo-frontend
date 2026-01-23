@@ -14,10 +14,10 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
 // OtherUser is only passed when viewing another user's profile or chat
 export default function useCustomHeader(
-  title?: string,
+  title: string,
+  backButtonVisible: boolean = false,
   otherUser?: OtherUser,
-  createPost?: boolean,
-  backButtonVisible: boolean = true
+  createPost?: boolean
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
 
@@ -54,7 +54,7 @@ export default function useCustomHeader(
   }
 
   if (otherUser) {
-    options = {
+    return {
       ...options,
       headerTitle: () => (
         <View style={styles.otherHeader}>
@@ -81,7 +81,7 @@ export default function useCustomHeader(
   }
 
   if (createPost) {
-    options = {
+    return {
       ...options,
       headerTitle: () => (
         <View style={styles.header}>

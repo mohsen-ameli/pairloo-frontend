@@ -9,7 +9,7 @@ import { colors } from "@/src/utils/colors"
 import { maybeCompleteAuthSession } from "expo-web-browser"
 import Toast from "react-native-toast-message"
 import CustomToast from "@/src/components/CustomToast"
-import useCustomHeader from "../utils/useCustomHeader"
+import useCustomHeader from "@/src/utils/useCustomHeader"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -34,9 +34,9 @@ export default function RootLayout() {
   const user = useAtomValue(userAtom)
   const queryClient = new QueryClient()
 
-  const loginOptions = useCustomHeader("")
-  const registerOptions = useCustomHeader("Create Account")
-  const forgotEmailOptions = useCustomHeader("Forgot Email")
+  const loginOptions = useCustomHeader("Log In", true)
+  const registerOptions = useCustomHeader("Create Account", true)
+  const forgotEmailOptions = useCustomHeader("Forgot Email", true)
 
   return (
     <>

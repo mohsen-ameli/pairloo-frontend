@@ -2,7 +2,7 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 
 export default function Layout() {
-  const indexOptions = useCustomHeader("Create Post", undefined, true)
+  const indexOptions = useCustomHeader("Create Post", false, undefined, true)
 
   return (
     <Stack>

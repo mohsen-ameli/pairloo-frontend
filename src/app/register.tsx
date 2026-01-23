@@ -15,11 +15,12 @@ import {
   resendTimerAtom,
 } from "@/src/store/auth-store"
 import { styles } from "@/src/styles/register.styles"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { TextInput } from "react-native"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
-import { currPageAtom, flowAtom } from "@/src/store/pager-store"
+import { currPageAtom, flowAtom, resetPagerAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
+import { useFocusEffect } from "expo-router"
 
 const INITIAL_PAGE_COUNT = 5
 
@@ -36,6 +37,7 @@ export default function Register() {
   const verifyPhoneNumberVerification = useSetAtom(verifyPhoneNumberVerificationAtom)
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
+  const resetPager = useSetAtom(resetPagerAtom)
   const [avatar, setAvatar] = useState<string | null>(null)
 
   // Refs for manual focus
@@ -43,6 +45,14 @@ export default function Register() {
   const emailRef = useRef<TextInput>(null!)
   const emailCodeRef = useRef<TextInput>(null!)
   const usernameRef = useRef<TextInput>(null!)
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        resetPager()
+      }
+    }, [])
+  )
 
   // Set next/back functions based on current page
   useEffect(() => {
