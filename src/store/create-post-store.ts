@@ -64,7 +64,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   })
 
   socket.on("question", (qna: QnaType) => {
-    console.log(qna)
     set(qnaAtom, qna)
     set(loadingAtom, false)
     set(currPageAtom, qna.length - 1)

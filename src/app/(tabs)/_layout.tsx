@@ -47,7 +47,6 @@ export default function ProtectedLayout() {
     useCallback(() => {
       // This will run when the screen is focused
       async function initialize() {
-        console.log("initializing")
         await initChatConnection()
         await initCreatePost()
       }
