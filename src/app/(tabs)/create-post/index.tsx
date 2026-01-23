@@ -97,7 +97,7 @@ export default function CreatePost() {
 
   return (
     <>
-      <LoadingIndicator loading={loading} />
+      <LoadingIndicator loading={loading} opacity={0.5} />
 
       <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
         {QNAs.map((qna, i) => {
@@ -110,11 +110,9 @@ export default function CreatePost() {
           return (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} key={i}>
               <View style={createPostStyles.container}>
-                <Text style={createPostStyles.questionText}>
-                  {QNAs.length === 1 ? questionText : `Question: ${questionText}`}
-                </Text>
+                <Text style={createPostStyles.questionText}>{questionText}</Text>
                 {type === "multiple_choice" && options && options.length > 0 ? (
-                  <ScrollView style={{ marginVertical: 10, paddingBottom: 80 }}>
+                  <ScrollView showsVerticalScrollIndicator={false}>
                     {options.map((option: string, idx: number) => {
                       const isSelected = answer.includes(option)
                       return (
@@ -131,14 +129,7 @@ export default function CreatePost() {
                               },
                             ]}
                           >
-                            <Text
-                              style={[
-                                createPostStyles.mcqOptionText,
-                                {
-                                  color: isSelected ? colors.light : colors.dark,
-                                },
-                              ]}
-                            >
+                            <Text style={[createPostStyles.mcqOptionText, { color: colors.dark }]}>
                               {option}
                             </Text>
                           </View>
@@ -147,10 +138,7 @@ export default function CreatePost() {
                     })}
                   </ScrollView>
                 ) : type === "multi_select" && options && options.length > 0 ? (
-                  <ScrollView
-                    style={{ marginVertical: 10, paddingBottom: 80 }}
-                    scrollEnabled={true}
-                  >
+                  <ScrollView showsVerticalScrollIndicator={false}>
                     <Text style={{ marginBottom: 10 }}>Select all the options that apply:</Text>
                     {options.map((option: string, idx: number) => {
                       const isSelected = answer.includes(option)
@@ -181,7 +169,7 @@ export default function CreatePost() {
                             text={option}
                             textStyle={{
                               ...createPostStyles.mcqOptionText,
-                              color: isSelected ? colors.light : colors.dark,
+                              color: colors.dark,
                               textDecorationLine: "none",
                             }}
                           />
