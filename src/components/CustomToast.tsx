@@ -2,6 +2,7 @@ import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
+import useImageAspectRatio from "../utils/useImageAspectRatio"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -18,6 +19,8 @@ export default function CustomToast({
   picture?: string
   attachmentUrl?: string
 }) {
+  const aspectRatio = useImageAspectRatio(attachmentUrl || "")
+
   return (
     <Pressable style={styles.customToast} onPress={onPress}>
       <Image
@@ -30,7 +33,7 @@ export default function CustomToast({
         {attachmentUrl && (
           <Image
             source={{ uri: attachmentUrl }}
-            style={styles.messageAttachment}
+            style={[styles.messageAttachment, { aspectRatio }]}
             contentFit="cover"
           />
         )}
@@ -68,5 +71,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
-  messageAttachment: { width: 50, height: 50, borderRadius: 8 },
+  messageAttachment: { width: 200, height: 150, borderRadius: 8 },
 })

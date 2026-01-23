@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, Alert, Modal, TouchableOpacity } from "react-native"
+import { View, Text, Pressable, TextInput, Modal, TouchableOpacity } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -11,7 +11,7 @@ import {
   sendMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
-import { ConversationType, MessageType, OtherUser } from "@/src/types/chat.type"
+import { MessageType, OtherUser } from "@/src/types/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import { formatDate } from "@/src/utils/format-date"
 import Animated, { useAnimatedStyle } from "react-native-reanimated"
@@ -24,6 +24,7 @@ import { Stack, useFocusEffect } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import { SafeAreaView } from "react-native-safe-area-context"
 import CustomButton from "@/src/components/CustomButton"
+import useImageAspectRatio from "@/src/utils/useImageAspectRatio"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -66,6 +67,7 @@ export default function ChatDetails() {
     if (!msg) return
     setMessage("")
     await sendMessage(id, msg)
+    chatRef.current.scrollToEnd({ animated: false })
   }
 
   // Animate fake view height
@@ -91,7 +93,6 @@ export default function ChatDetails() {
         <FlashList
           data={messages}
           ref={chatRef}
-          onContentSizeChange={() => chatRef.current.scrollToEnd({ animated: false })}
           keyboardDismissMode="on-drag"
           onLayout={() => chatRef.current.scrollToEnd({ animated: false })}
           keyExtractor={item => item._id}
@@ -165,6 +166,7 @@ export default function ChatDetails() {
 }
 
 function MessageItem({ item }: { item: MessageType }) {
+  const aspectRatio = useImageAspectRatio(item.attachmentUrl || "")
   return (
     <View style={chatStyles.messageItem}>
       <Image
@@ -191,8 +193,12 @@ function MessageItem({ item }: { item: MessageType }) {
         {item.attachmentUrl && (
           <Image
             source={{ uri: item.attachmentUrl }}
-            style={chatStyles.messageAttachment}
-            contentFit="contain"
+            style={[
+              chatStyles.messageAttachment,
+              {
+                aspectRatio,
+              },
+            ]}
           />
         )}
       </View>

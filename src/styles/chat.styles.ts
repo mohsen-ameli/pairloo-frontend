@@ -6,7 +6,7 @@ export const chatStyles = StyleSheet.create({
     flex: 1,
     gap: 10,
     backgroundColor: colors.light,
-    padding: 10,
+    paddingHorizontal: 10,
   },
   notFoundContainer: {
     flex: 1,
@@ -47,6 +47,8 @@ export const chatStyles = StyleSheet.create({
   messageAttachment: {
     width: 200,
     height: 200,
+    maxWidth: 300,
+    maxHeight: 300,
     marginTop: 5,
     borderRadius: 10,
   },

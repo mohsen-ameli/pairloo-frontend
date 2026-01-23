@@ -131,7 +131,7 @@ export const initChatAtom = atom(null, async (get, set) => {
             attachmentUrl: message.attachmentUrl,
           },
           onPress: () => {
-            router.push({
+            router.replace({
               pathname: "/chat-details",
               params: { id: message.conversationId },
             })
