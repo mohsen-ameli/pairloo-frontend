@@ -40,7 +40,7 @@ export default function ChatDetails() {
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const [otherUser, setOtherUser] = useState<OtherUser>(null!)
   const [showModal, setShowModal] = useState<boolean>(false)
-  const detailOptions = useCustomHeader("", otherUser)
+  const detailOptions = useCustomHeader("", true, otherUser)
   const sendAttachment = useSetAtom(sendAttachmentAtom)
 
   useEffect(() => {

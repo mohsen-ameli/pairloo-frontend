@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router"
+import { Stack, useLocalSearchParams, useRouter } from "expo-router"
 import { View, Text, ScrollView, Pressable } from "react-native"
 import styles from "@/src/styles/id.styles"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -12,6 +12,7 @@ import { errorStyles } from "@/src/styles/error.styles"
 import { userAtom } from "@/src/store/auth-store"
 import { ConversationType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
+import useCustomHeader from "@/src/utils/useCustomHeader"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userAtom)
+  const detailOptions = useCustomHeader("Details", true)
   const queryClient = useQueryClient()
   const {
     data: post,
@@ -50,25 +52,33 @@ export default function PostDetails() {
 
   if (isPending) {
     return (
-      <View style={styles.container}>
-        <LoadingIndicator loading={true} />
-      </View>
+      <>
+        <Stack.Screen options={detailOptions} />
+        <View style={styles.container}>
+          <LoadingIndicator loading={true} />
+        </View>
+      </>
     )
   }
 
   if (isError) {
     return (
-      <View style={styles.container}>
-        <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
-        </Pressable>
-      </View>
+      <>
+        <Stack.Screen options={detailOptions} />
+        <View style={styles.container}>
+          <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
+          <Pressable style={errorStyles.retryButton} onPress={refresh}>
+            <Text style={errorStyles.retryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
+      </>
     )
   }
 
   return (
     <>
+      <Stack.Screen options={detailOptions} />
+
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}

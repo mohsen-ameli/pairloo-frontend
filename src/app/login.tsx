@@ -1,11 +1,11 @@
 import CustomInput from "@/src/components/CustomInput"
-import { Link } from "expo-router"
+import { Link, useFocusEffect } from "expo-router"
 import { useAtom, useSetAtom } from "jotai"
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { Pressable, Text, TextInput, View } from "react-native"
 import { styles } from "@/src/styles/login.styles"
 import { colors } from "@/src/utils/colors"
-import { currPageAtom, flowAtom } from "@/src/store/pager-store"
+import { currPageAtom, flowAtom, resetPagerAtom } from "@/src/store/pager-store"
 import {
   requestEmailVerificationAtom,
   resendTimerAtom,
@@ -25,9 +25,18 @@ export default function LoginPage() {
   const [returningUser, setReturningUser] = useAtom(returningUserAtom)
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
+  const resetPager = useSetAtom(resetPagerAtom)
 
   // Refs for manual focus
   const emailCodeRef = useRef<TextInput>(null!)
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        resetPager()
+      }
+    }, [])
+  )
 
   // Set next/back functions based on current page
   useEffect(() => {
@@ -58,7 +67,7 @@ export default function LoginPage() {
   return (
     <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
       <View style={styles.pageContainer} key="0">
-        <Text style={styles.title}>Log In</Text>
+        <Text style={styles.title}>Welcome Back!</Text>
         <CustomInput
           title="Email Address"
           errors={errors.email}

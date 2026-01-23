@@ -2,7 +2,15 @@ import { View, ActivityIndicator } from "react-native"
 import React from "react"
 import { colors } from "@/src/utils/colors"
 
-export default function LoadingIndicator({ loading }: { loading: boolean }) {
+export default function LoadingIndicator({
+  loading,
+  transparent = false,
+  opacity = 1,
+}: {
+  loading: boolean
+  transparent?: boolean
+  opacity?: number
+}) {
   if (!loading) return null
   return (
     <View
@@ -12,7 +20,8 @@ export default function LoadingIndicator({ loading }: { loading: boolean }) {
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: colors.light,
+        backgroundColor: transparent ? "transparent" : colors.light,
+        opacity,
         justifyContent: "center",
         alignItems: "center",
         zIndex: 10,

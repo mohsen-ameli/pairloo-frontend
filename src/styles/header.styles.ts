@@ -9,6 +9,9 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  headerContent: {
+    flex: 1,
+  },
   headerBackground: {
     backgroundColor: colors.light,
     flex: 1,

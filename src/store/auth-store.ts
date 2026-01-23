@@ -7,7 +7,7 @@ import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
 import { UserType } from "@/src/types/user.type"
 import { chatSocketAtom, createPostSocketAtom } from "./socket-store"
 import z from "zod"
-import { currPageAtom, flowAtom } from "./pager-store"
+import { currPageAtom, flowAtom, resetPagerAtom } from "./pager-store"
 import { Alert } from "react-native"
 import { router } from "expo-router"
 
@@ -110,8 +110,9 @@ export const signUpAtom = atom(null, async (get, set) => {
       set(userAtom, data)
       set(authErrorsAtom, newUserErrors)
       set(newUserAtom, newUser)
+      set(resetPagerAtom)
       Alert.alert("Success", "Account created successfully!")
-      router.push("/")
+      router.replace("/")
       return true
     }
   } catch (error: any) {
@@ -124,6 +125,7 @@ export const logOutAtom = atom(null, (get, set) => {
   set(userAtom, null)
   set(newUserAtom, newUser)
   set(authErrorsAtom, newUserErrors)
+  set(resetPagerAtom)
 
   // Clean chat socket
   const chatSocket = get(chatSocketAtom)
@@ -255,6 +257,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
         set(userAtom, data)
         set(authErrorsAtom, newUserErrors)
         set(returningUserAtom, returningUser)
+        set(resetPagerAtom)
         router.replace("/")
       }
     } else {
