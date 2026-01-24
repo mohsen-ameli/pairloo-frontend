@@ -6,6 +6,7 @@ import { Image } from "expo-image"
 import {
   conversationsAtom,
   currentConversationAtom,
+  loadingAtom,
   messagesAtom,
   sendMessageAtom,
 } from "@/src/store/chat-store"
@@ -19,7 +20,7 @@ import { userAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
-import { Stack, useFocusEffect } from "expo-router"
+import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import useImageAspectRatio from "@/src/utils/useImageAspectRatio"
 import ImageView from "react-native-image-viewing"
@@ -39,15 +40,14 @@ export default function ChatDetails() {
   const sendMessage = useSetAtom(sendMessageAtom)
   const user = useAtomValue(userAtom)
   const conversations = useAtomValue(conversationsAtom)
-  const [conversation, setConversation] = useAtom(currentConversationAtom)
+  const setCurrentConversation = useSetAtom(currentConversationAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
-  const [otherUser, setOtherUser] = useState<OtherUser>(null!)
-  const detailOptions = useCustomHeader("", true, otherUser)
+  const detailOptions = useCustomHeader("", true, true)
   const [visible, setIsVisible] = useAtom(visibleAtom)
   const imgIndex = useAtomValue(imgIndexAtom)
   const [images, setImages] = useState<{ uri: string }[]>([])
-  const [loading, setLoading] = useState(false)
+  const loading = useAtomValue(loadingAtom)
 
   useEffect(() => {
     if (messages) {
@@ -57,8 +57,7 @@ export default function ChatDetails() {
         .filter(msg => msg.attachmentUrl)
         .map(msg => ({ uri: msg.attachmentUrl! }))
       setImages(imgs)
-      chatRef.current?.scrollToEnd({ animated: false })
-      setLoading(false)
+      chatRef.current && chatRef.current.scrollToEnd({ animated: false })
     }
   }, [messages])
 
@@ -68,30 +67,27 @@ export default function ChatDetails() {
     // Find the current conversation
     const conv = conversations.find(conv => conv._id === id)
 
-    // If we already have messages, don't fetch again
-    if (!conv || messages.length > 0) return
+    if (!conv) return
+    setCurrentConversation(conv)
 
-    setConversation(conv)
-    setOtherUser(conv.members.find(member => member._id !== user._id)!)
-    setLoading(true)
+    if (messages.length > 0) return
+    // setLoading(true)
     socket.emit("getMessages", id)
-  }, [conversations, user, socket, id, messages])
+  }, [conversations, user, socket, id])
 
-  useFocusEffect(() => {
+  useEffect(() => {
     return () => {
-      setConversation(null)
-      setOtherUser(null!)
-      setLoading(false)
       setMessages([])
+      setCurrentConversation(null)
     }
-  })
+  }, [])
 
   async function handleSendMessage() {
     const msg = message.trim()
     if (!msg) return
     setMessage("")
     await sendMessage(id, msg)
-    chatRef.current?.scrollToEnd({ animated: false })
+    chatRef.current && chatRef.current.scrollToEnd({ animated: false })
   }
 
   // Animate fake view height
@@ -100,14 +96,6 @@ export default function ChatDetails() {
       height: Math.abs(height.value) - 15,
     }
   }, [])
-
-  if (!conversation || !otherUser || !messages) {
-    return (
-      <View style={chatStyles.notFoundContainer}>
-        <Text>Conversation not found</Text>
-      </View>
-    )
-  }
 
   return (
     <>
@@ -169,7 +157,7 @@ export default function ChatDetails() {
           data={messages}
           ref={chatRef}
           keyboardDismissMode="on-drag"
-          onLayout={() => chatRef.current?.scrollToEnd({ animated: false })}
+          onLayout={() => chatRef.current && chatRef.current.scrollToEnd({ animated: false })}
           keyExtractor={item => item._id}
           renderItem={({ item }) => (
             <MemoizedMessageItem

@@ -24,6 +24,8 @@ export const currentConversationAtom = atom<ConversationType | null>(null)
 
 export const messagesAtom = atom<MessageType[]>([])
 
+export const loadingAtom = atom(false)
+
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
   if (!user) return
@@ -101,6 +103,7 @@ export const initChatAtom = atom(null, async (get, set) => {
       })
       return updated
     })
+    set(loadingAtom, false)
   })
 
   // Received a message from the server
@@ -116,6 +119,7 @@ export const initChatAtom = atom(null, async (get, set) => {
         return msg
       })
     )
+
     // we received a message from other user
     if (!isOptimistic) {
       set(messagesAtom, prev => [...prev, message])
@@ -131,10 +135,12 @@ export const initChatAtom = atom(null, async (get, set) => {
             attachmentUrl: message.attachmentUrl,
           },
           onPress: () => {
-            router.replace({
+            router.push({
               pathname: "/chat-details",
               params: { id: message.conversationId },
             })
+            socket.emit("getMessages", message.conversationId)
+            Toast.hide()
           },
         })
         const player = get(notificationSoundAtom)

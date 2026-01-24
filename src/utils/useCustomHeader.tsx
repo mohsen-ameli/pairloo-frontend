@@ -9,6 +9,8 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
+import { currentConversationAtom } from "../store/chat-store"
+import { userAtom } from "../store/auth-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -16,7 +18,7 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function useCustomHeader(
   title: string,
   backButtonVisible: boolean = false,
-  otherUser?: OtherUser,
+  inChat: boolean = false,
   createPost?: boolean
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
@@ -24,6 +26,8 @@ export default function useCustomHeader(
   function handleProfilePress() {}
   const discardDraft = useSetAtom(discardDraftAtom)
   const getNewQuestion = useSetAtom(getNewQuestionAtom)
+  const currentConversation = useAtomValue(currentConversationAtom)
+  const user = useAtomValue(userAtom)
   const loading = useAtomValue(loadingAtom)
 
   let options: ExtendedStackNavigationOptions = {
@@ -53,7 +57,9 @@ export default function useCustomHeader(
     ),
   }
 
-  if (otherUser) {
+  if (inChat) {
+    const otherUser = currentConversation?.members.find(member => member._id !== user?._id)
+
     return {
       ...options,
       headerTitle: () => (
@@ -70,11 +76,11 @@ export default function useCustomHeader(
           )}
           <TouchableOpacity onPress={handleProfilePress} style={styles.otherProfileButton}>
             <Image
-              source={otherUser.picture ? { uri: otherUser.picture } : defaultProfilePicture}
+              source={otherUser?.picture ? { uri: otherUser?.picture } : defaultProfilePicture}
               style={styles.otherProfileImage}
             />
           </TouchableOpacity>
-          <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
+          <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
         </View>
       ),
     }
