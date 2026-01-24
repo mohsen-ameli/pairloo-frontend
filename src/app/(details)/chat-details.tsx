@@ -63,11 +63,13 @@ export default function ChatDetails() {
   }, [messages])
 
   useEffect(() => {
-    if (!conversations || !user || !socket || messages.length > 0) return
+    if (!conversations || !user || !socket) return
 
     // Find the current conversation
     const conv = conversations.find(conv => conv._id === id)
-    if (!conv) return
+
+    // If we already have messages, don't fetch again
+    if (!conv || messages.length > 0) return
 
     setConversation(conv)
     setOtherUser(conv.members.find(member => member._id !== user._id)!)
