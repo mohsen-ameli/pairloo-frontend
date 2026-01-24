@@ -8,6 +8,7 @@ import { useRouter } from "expo-router"
 import { useAtomValue } from "jotai"
 import { Pressable, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
+import { MessageType } from "@/src/types/chat.type"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -16,6 +17,25 @@ export default function index() {
   const conversations = useAtomValue(conversationsAtom)
   const user = useAtomValue(userAtom)
   const unreadMessages = useAtomValue(unreadMessagesAtom)
+
+  function getLastMessagePreview(lastMessage: MessageType): string {
+    if (!lastMessage || !lastMessage.sender || !user) return ""
+    let senderName = ""
+    if (lastMessage.sender._id === user._id) {
+      senderName = "You"
+    } else {
+      senderName = lastMessage.sender.username
+    }
+
+    let contentPreview = ""
+    if (lastMessage.attachment) {
+      contentPreview = "sent an attachment"
+    } else {
+      contentPreview = formatString(lastMessage.content, 32)
+    }
+
+    return `${senderName}: ${contentPreview}`
+  }
 
   return (
     <>
@@ -49,10 +69,7 @@ export default function index() {
                 <Text style={conversationStyles.itemTitle}>{otherPerson.username}</Text>
                 {conversation.lastMessage && (
                   <Text style={conversationStyles.lastMessage}>
-                    {conversation.lastMessage?.sender?._id === user?._id
-                      ? "You"
-                      : conversation.lastMessage?.sender?.username}
-                    : {formatString(conversation.lastMessage?.content, 32)}
+                    {getLastMessagePreview(conversation.lastMessage)}
                   </Text>
                 )}
               </View>

@@ -4,9 +4,8 @@ import { colors } from "@/src/utils/colors"
 export const chatStyles = StyleSheet.create({
   container: {
     flex: 1,
-    gap: 10,
     backgroundColor: colors.light,
-    padding: 10,
+    paddingHorizontal: 10,
   },
   notFoundContainer: {
     flex: 1,
@@ -44,10 +43,19 @@ export const chatStyles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
+  messageAttachment: {
+    width: 200,
+    height: 200,
+    maxWidth: 300,
+    maxHeight: 300,
+    marginTop: 5,
+    borderRadius: 10,
+  },
   messageImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    alignSelf: "flex-start",
   },
   messageHeader: {
     flexDirection: "row",
@@ -69,7 +77,59 @@ export const chatStyles = StyleSheet.create({
     paddingRight: 50,
     flexWrap: "wrap",
   },
-  plusIcon: {
+  plusButton: {
     marginLeft: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.light,
+    paddingTop: 20,
+    paddingHorizontal: 25,
+    alignItems: "center",
+  },
+  attachmentContainer: {
+    width: "100%",
+    paddingTop: 30,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 20,
+  },
+  dismissButton: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    padding: 4,
+    backgroundColor: colors.lightGray,
+    borderRadius: 20,
+  },
+  imageFooter: {
+    height: 120,
+    width: "100%",
+    backgroundColor: colors.light,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  imageFooterText: {
+    fontSize: 17,
+    color: colors.light,
+  },
+  imageHeader: {
+    backgroundColor: colors.light,
+    height: 100,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingLeft: 20,
+    paddingTop: 40,
+  },
+  imageHeaderButton: {
+    width: 45,
+    height: 45,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: colors.dark,
   },
 })

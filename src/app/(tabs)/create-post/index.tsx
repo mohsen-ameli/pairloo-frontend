@@ -49,7 +49,7 @@ export default function CreatePost() {
   const pickImage = useSetAtom(pickImageAtom)
   const saveDraftSettings = useSetAtom(saveDraftSettingsAtom)
   const setEditted = useSetAtom(edittedAtom)
-  const { height } = useGradualAnimation({ isAuthenticated: true })
+  const { height } = useGradualAnimation({ includeTabHeight: true })
 
   const fakeView = useAnimatedStyle(() => {
     return {
@@ -63,6 +63,7 @@ export default function CreatePost() {
       setFlow({
         ...flow,
         back: () => {
+          setEditted(false)
           setCurrPage(currPage - 1)
         },
         next: () => {
@@ -139,7 +140,9 @@ export default function CreatePost() {
                   </ScrollView>
                 ) : type === "multi_select" && options && options.length > 0 ? (
                   <ScrollView showsVerticalScrollIndicator={false}>
-                    <Text style={{ marginBottom: 10 }}>Select all the options that apply:</Text>
+                    <Text style={{ marginBottom: 10, color: colors.dark }}>
+                      Select all the options that apply:
+                    </Text>
                     {options.map((option: string, idx: number) => {
                       const isSelected = answer.includes(option)
                       return (
