@@ -198,10 +198,10 @@ export const sendMessageAtom = atom(
 
 export const sendAttachmentAtom = atom(
   null,
-  async (get, set, library: boolean, conversationId: string) => {
+  async (get, set, library: boolean, conversationId?: string) => {
     const socket = get(chatSocketAtom)
     const user = await get(userAtom)
-    if (!socket || !user) return
+    if (!socket || !user || !conversationId) return
 
     let result: ImagePicker.ImagePickerResult | null = null
 

@@ -1,13 +1,12 @@
-import { View, Text, Pressable, TextInput, Modal, TouchableOpacity } from "react-native"
+import { View, Text, Pressable, TextInput, Modal, TouchableOpacity, FlatList } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
-import { useLocalSearchParams } from "expo-router/build/hooks"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
 import {
   conversationsAtom,
   currentConversationAtom,
   messagesAtom,
-  sendAttachmentAtom,
   sendMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
@@ -22,30 +21,49 @@ import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack, useFocusEffect } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
-import { SafeAreaView } from "react-native-safe-area-context"
-import CustomButton from "@/src/components/CustomButton"
 import useImageAspectRatio from "@/src/utils/useImageAspectRatio"
+import ImageView from "react-native-image-viewing"
+import LoadingIndicator from "@/src/components/LoadingIndicator"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
+const visibleAtom = atom(false)
+const imgIndexAtom = atom(0)
+
 export default function ChatDetails() {
+  const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")
-  const messages = useAtomValue(messagesAtom)
+  const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
   const user = useAtomValue(userAtom)
   const conversations = useAtomValue(conversationsAtom)
   const [conversation, setConversation] = useAtom(currentConversationAtom)
-  const chatRef = useRef<FlashListRef<MessageType>>(null!)
+  const chatRef = useRef<FlashListRef<MessageType>>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const [otherUser, setOtherUser] = useState<OtherUser>(null!)
-  const [showModal, setShowModal] = useState<boolean>(false)
   const detailOptions = useCustomHeader("", true, otherUser)
-  const sendAttachment = useSetAtom(sendAttachmentAtom)
+  const [visible, setIsVisible] = useAtom(visibleAtom)
+  const imgIndex = useAtomValue(imgIndexAtom)
+  const [images, setImages] = useState<{ uri: string }[]>([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!conversations || !user || !socket) return
+    if (messages) {
+      // This runs every time new messages come in
+      // It can be improved for efficiency
+      const imgs = messages
+        .filter(msg => msg.attachmentUrl)
+        .map(msg => ({ uri: msg.attachmentUrl! }))
+      setImages(imgs)
+      chatRef.current?.scrollToEnd({ animated: false })
+      setLoading(false)
+    }
+  }, [messages])
+
+  useEffect(() => {
+    if (!conversations || !user || !socket || messages.length > 0) return
 
     // Find the current conversation
     const conv = conversations.find(conv => conv._id === id)
@@ -53,12 +71,16 @@ export default function ChatDetails() {
 
     setConversation(conv)
     setOtherUser(conv.members.find(member => member._id !== user._id)!)
+    setLoading(true)
     socket.emit("getMessages", id)
-  }, [conversations, user, socket, id])
+  }, [conversations, user, socket, id, messages])
 
   useFocusEffect(() => {
     return () => {
       setConversation(null)
+      setOtherUser(null!)
+      setLoading(false)
+      setMessages([])
     }
   })
 
@@ -67,7 +89,7 @@ export default function ChatDetails() {
     if (!msg) return
     setMessage("")
     await sendMessage(id, msg)
-    chatRef.current.scrollToEnd({ animated: false })
+    chatRef.current?.scrollToEnd({ animated: false })
   }
 
   // Animate fake view height
@@ -88,21 +110,80 @@ export default function ChatDetails() {
   return (
     <>
       <Stack.Screen options={detailOptions} />
+      <LoadingIndicator loading={loading} />
+
+      <ImageView
+        images={images}
+        imageIndex={imgIndex}
+        visible={visible}
+        onRequestClose={() => setIsVisible(false)}
+        HeaderComponent={({ imageIndex }) => (
+          <View style={chatStyles.imageHeader}>
+            <TouchableOpacity
+              style={chatStyles.imageHeaderButton}
+              onPress={() => setIsVisible(false)}
+            >
+              <Feather name="x" size={25} color={colors.dark} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={chatStyles.imageHeaderButton}
+              onPress={() => setIsVisible(false)}
+            >
+              <Feather name="menu" size={25} color={colors.dark} />
+            </TouchableOpacity>
+          </View>
+        )}
+        // FooterComponent={({ imageIndex }) => (
+        //   <View style={chatStyles.imageFooter}>
+        //     <FlatList
+        //       data={images}
+        //       horizontal
+        //       showsHorizontalScrollIndicator={false}
+        //       keyExtractor={(item, idx) => item.uri}
+        //       renderItem={({ item }) => (
+        //         <Pressable
+        //           onPress={() => {
+        //             setImgIdx(images.findIndex(img => img.uri === item.uri))
+        //           }}
+        //         >
+        //           <Image
+        //             source={{ uri: item.uri }}
+        //             style={{
+        //               width: 20,
+        //               height: 40,
+        //               marginHorizontal: item.uri === images[imageIndex].uri ? 10 : 1,
+        //             }}
+        //             allowDownscaling
+        //           />
+        //         </Pressable>
+        //       )}
+        //     />
+        //   </View>
+        // )}
+      />
 
       <View style={chatStyles.container}>
         <FlashList
           data={messages}
           ref={chatRef}
           keyboardDismissMode="on-drag"
-          onLayout={() => chatRef.current.scrollToEnd({ animated: false })}
+          onLayout={() => chatRef.current?.scrollToEnd({ animated: false })}
           keyExtractor={item => item._id}
-          renderItem={({ item }) => <MemoizedMessageItem item={item} />}
+          renderItem={({ item }) => (
+            <MemoizedMessageItem
+              item={item}
+              imageIndex={
+                item.attachmentUrl ? images.findIndex(img => img.uri === item.attachmentUrl) : null
+              }
+            />
+          )}
+          ListFooterComponent={<View style={{ height: 16 }} />}
         />
       </View>
 
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
-        <Pressable onPress={() => setShowModal(true)} style={chatStyles.plusButton}>
+        <Pressable onPress={() => router.push("/attachment-picker")} style={chatStyles.plusButton}>
           <Feather name="plus" size={26} color={colors.dark} />
         </Pressable>
         <TextInput
@@ -121,52 +202,15 @@ export default function ChatDetails() {
       </View>
 
       <Animated.View style={[fakeView, { backgroundColor: colors.lightGray }]} />
-
-      <Modal
-        visible={showModal}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setShowModal(false)}
-      >
-        <SafeAreaView style={chatStyles.modalContainer}>
-          <TouchableOpacity
-            onPress={() => {
-              setShowModal(false)
-            }}
-            style={chatStyles.dismissButton}
-          >
-            <Feather name="x" size={20} color={colors.dark} />
-          </TouchableOpacity>
-          <View style={chatStyles.attachmentContainer}>
-            <CustomButton
-              color={colors.blue}
-              onPress={() => {
-                sendAttachment(true, id)
-                setShowModal(false)
-              }}
-            >
-              <Feather name="image" size={20} color={colors.light} style={{ marginRight: 10 }} />{" "}
-              Upload Media
-            </CustomButton>
-            <CustomButton
-              color={colors.blue}
-              onPress={() => {
-                sendAttachment(false, id)
-                setShowModal(false)
-              }}
-            >
-              <Feather name="camera" size={20} color={colors.light} style={{ marginRight: 10 }} />{" "}
-              Open Camera
-            </CustomButton>
-          </View>
-        </SafeAreaView>
-      </Modal>
     </>
   )
 }
 
-function MessageItem({ item }: { item: MessageType }) {
+function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: number | null }) {
   const aspectRatio = useImageAspectRatio(item.attachmentUrl || "")
+  const setIsVisible = useSetAtom(visibleAtom)
+  const setImgIdx = useSetAtom(imgIndexAtom)
+
   return (
     <View style={chatStyles.messageItem}>
       <Image
@@ -190,16 +234,23 @@ function MessageItem({ item }: { item: MessageType }) {
             {item.content}
           </Text>
         )}
-        {item.attachmentUrl && (
-          <Image
-            source={{ uri: item.attachmentUrl }}
-            style={[
-              chatStyles.messageAttachment,
-              {
-                aspectRatio,
-              },
-            ]}
-          />
+        {item.attachmentUrl && imageIndex && (
+          <Pressable
+            onPress={() => {
+              setImgIdx(imageIndex)
+              setIsVisible(true)
+            }}
+          >
+            <Image
+              source={{ uri: item.attachmentUrl }}
+              style={[
+                chatStyles.messageAttachment,
+                {
+                  aspectRatio,
+                },
+              ]}
+            />
+          </Pressable>
         )}
       </View>
     </View>
