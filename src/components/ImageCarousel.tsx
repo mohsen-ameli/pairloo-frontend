@@ -1,19 +1,18 @@
-import { Dimensions, View } from "react-native"
+import { Dimensions, Platform, View } from "react-native"
 import { useSharedValue } from "react-native-reanimated"
 import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated-carousel"
 import { SlideItem } from "./SlideItem"
-import { Dispatch, useEffect, useRef, useState } from "react"
-import { SetStateAction } from "jotai"
+import { useEffect, useRef, useState } from "react"
 import { colors } from "@/src/utils/colors"
 
 export default function ImageCarousel({
   images,
-  setImages,
-  widthOffset = 40,
+  widthOffset = 0,
+  editable = false,
 }: {
   images: string[]
-  setImages?: Dispatch<SetStateAction<string[]>>
   widthOffset?: number
+  editable?: boolean
 }) {
   const ref = useRef<ICarouselInstance>(null)
   const progress = useSharedValue<number>(0)
@@ -32,14 +31,14 @@ export default function ImageCarousel({
 
   if (images.length === 1) {
     return (
-      <View style={{ width, height: 250, borderRadius: 15, overflow: "hidden" }}>
-        <SlideItem index={0} source={{ uri: images[0] }} setImages={setImages} />
+      <View style={{ width: "100%", height: 250, borderRadius: 15, overflow: "hidden" }}>
+        <SlideItem index={0} image={images[0]} />
       </View>
     )
   }
 
   return (
-    <View>
+    <View style={{ alignItems: "center", paddingBottom: 30, height: 300 }}>
       <Carousel
         autoPlayInterval={2000}
         data={images}
@@ -54,13 +53,14 @@ export default function ImageCarousel({
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,
-          parallaxScrollingOffset: 50,
+          parallaxScrollingOffset: Platform.OS === "ios" ? 60 : 65,
+          parallaxAdjacentItemScale: 0.75,
         }}
         onProgressChange={(offsetProgress, absoluteProgress) => {
           progress.value = absoluteProgress
         }}
         renderItem={({ index, item }) => (
-          <SlideItem index={index} source={{ uri: item }} setImages={setImages} />
+          <SlideItem index={index} image={item} editable={editable} />
         )}
         ref={ref}
       />
@@ -69,12 +69,12 @@ export default function ImageCarousel({
         progress={progress}
         data={images}
         dotStyle={{
-          backgroundColor: colors.lightGray,
+          backgroundColor: colors.borderGray,
           borderRadius: 50,
           width: 10,
           height: 10,
         }}
-        containerStyle={{ gap: 5, marginTop: 10 }}
+        containerStyle={{ gap: 5 }}
         onPress={onPressPagination}
       />
     </View>

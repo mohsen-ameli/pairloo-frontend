@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
     padding: 8,
   },
   postHeaderImage: {
-    width: 40,
+    width: 37,
     borderRadius: 25,
     aspectRatio: 1,
     resizeMode: "cover",

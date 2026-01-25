@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Animated as A, Platform, Pressable, Text, View } from "react-native"
 import PagerView, { usePagerView } from "react-native-pager-view"
 import { colors } from "@/src/utils/colors"
@@ -7,7 +7,6 @@ import useGradualAnimation from "@/src/utils/gradual-animation"
 import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import { userAtom } from "@/src/store/auth-store"
-import { useFocusEffect } from "expo-router"
 
 /**
  * Allows for creating a pager with multiple pages, navigation dots, and next/back buttons.
@@ -24,8 +23,8 @@ export default function CustomPager({
   const scrollOffset = useRef(new A.Value(0)).current
   const { setPage, ref } = usePagerView({ pagesAmount: pageCount })
   const [scrollEnabled, setScrollEnabled] = useState(true)
-  const [currPage, setCurrPage] = useAtom(currPageAtom)
-  const [flow, setFlow] = useAtom(flowAtom)
+  const currPage = useAtomValue(currPageAtom)
+  const flow = useAtomValue(flowAtom)
   const isAuthenticated = useAtomValue(userAtom) !== null
   const { height } = useGradualAnimation({ includeTabHeight: isAuthenticated })
 
@@ -61,17 +60,13 @@ export default function CustomPager({
   }, [])
 
   return (
-    <View
-      style={{
-        flex: 1,
-      }}
-    >
+    <View style={{ flex: 1 }}>
       {/* Dots */}
       <View
         style={{
           position: "absolute",
           top: 0,
-          paddingTop: 15,
+          paddingVertical: 15,
           width: "100%",
           zIndex: 1,
           backgroundColor: colors.light,

@@ -9,6 +9,9 @@ import { router } from "expo-router"
 import { Alert } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import { QnaType, Question } from "@/src/types/question.types"
+import { ImageType } from "@/src/types/post.type"
+import { atomWithStorage, createJSONStorage } from "jotai/utils"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 const INITIAL_PAGE_COUNT = 2
 const DEFAULT_NUM_MATCHES = 5
@@ -19,11 +22,16 @@ const DEFAULT_QUESTION: Question = {
   question: "Start by describing what you want to post about.",
 }
 
+const settings = {
+  images: [] as ImageType[],
+  publicPost: DEFAULT_PUBLIC_POST,
+  numMatches: DEFAULT_NUM_MATCHES,
+}
+const newUserStorage = createJSONStorage<typeof settings>(() => AsyncStorage)
+export const settingsAtom = atomWithStorage("post-settings", settings, newUserStorage)
+
 export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }])
 export const loadingAtom = atom(false)
-export const publicPostAtom = atom(DEFAULT_PUBLIC_POST)
-export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES)
-export const imagesAtom = atom<string[]>([])
 export const edittedAtom = atom(false)
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
@@ -81,9 +89,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     }) => {
       set(qnaAtom, data.qna)
       set(pageCountAtom, data.qna.length + 1)
-      set(imagesAtom, data.images)
-      set(publicPostAtom, data.publicPost)
-      set(numMatchesAtom, data.numMatches)
 
       // Navigate to the first unanswered question, or to the last page if all answered
       const firstUnansweredIdx = data.qna.findIndex(item => item.answer.length === 0)
@@ -106,9 +111,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
-    set(numMatchesAtom, DEFAULT_NUM_MATCHES)
-    set(publicPostAtom, DEFAULT_PUBLIC_POST)
-    set(imagesAtom, [])
+    set(settingsAtom, settings)
     set(loadingAtom, false)
 
     router.navigate({
@@ -121,9 +124,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
-    set(numMatchesAtom, DEFAULT_NUM_MATCHES)
-    set(publicPostAtom, DEFAULT_PUBLIC_POST)
-    set(imagesAtom, [])
+    set(settingsAtom, settings)
     set(loadingAtom, false)
   })
 })
@@ -132,11 +133,14 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   const qna = get(qnaAtom)
   const socket = get(createPostSocketAtom)
   const currPage = get(currPageAtom)
-  const publicPost = get(publicPostAtom)
-  const images = get(imagesAtom)
-  const numMatches = get(numMatchesAtom)
   const pageCount = get(pageCountAtom)
   const editted = get(edittedAtom)
+  const { images, publicPost, numMatches } = await get(settingsAtom)
+
+  if (!numMatches || numMatches < 1) {
+    Alert.alert("Invalid number of matches", "Please enter a valid number of matches (1-99).")
+    return
+  }
 
   if (!socket) {
     console.warn("[forward] Socket is not initialized!")
@@ -146,11 +150,13 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   // If on the last page, submit
   if (currPage === pageCount - 1) {
     set(loadingAtom, true)
-    socket.emit("submit", {
-      numMatches,
-      publicPost,
-      images,
-    })
+    const imagesWithFiles: { uri: string; file: Blob; mimeType: string }[] = []
+    for (const img of images) {
+      const response = await fetch(img.uri)
+      const blob = await response.blob()
+      imagesWithFiles.push({ uri: img.uri, file: blob, mimeType: img.mimeType })
+    }
+    socket.emit("submit", numMatches, publicPost, imagesWithFiles)
     return
   }
 
@@ -187,8 +193,15 @@ export const pickImageAtom = atom(null, async (get, set) => {
     allowsMultipleSelection: true,
   })
 
-  if (!result.canceled) {
-    set(imagesAtom, prev => [...prev, ...result.assets.map(asset => asset.uri)])
+  const images: ImageType[] = []
+  if (!result.canceled && result.assets.length > 0) {
+    for (const asset of result.assets) {
+      const uri = asset.uri
+      const mimeType = asset.mimeType || "image/jpeg"
+      images.push({ uri, mimeType })
+    }
+    const prevSettings = await get(settingsAtom)
+    await set(settingsAtom, { ...prevSettings, images })
   }
 })
 
@@ -234,14 +247,4 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
       },
     ])
   }
-})
-
-export const saveDraftSettingsAtom = atom(null, async (get, set) => {
-  const socket = get(createPostSocketAtom)
-  const images = get(imagesAtom)
-  const publicPost = get(publicPostAtom)
-  const numMatches = get(numMatchesAtom)
-  if (!socket) return
-
-  socket.emit("update-draft-settings", { images, publicPost, numMatches })
 })
