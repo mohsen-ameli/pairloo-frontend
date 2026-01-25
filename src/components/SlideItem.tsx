@@ -12,24 +12,32 @@ import Animated from "react-native-reanimated"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { s3Object } from "@/src/types/s3object.type"
+import { useAtom } from "jotai"
+import { settingsAtom } from "../store/create-post-store"
 
 interface Props extends AnimatedProps<ViewProps> {
   style?: StyleProp<ImageStyle>
   index: number
   source: ImageSourcePropType
   setImages?: React.Dispatch<React.SetStateAction<s3Object[]>>
+  editable?: boolean
 }
 
-export function SlideItem({ style, index, source, setImages, ...animatedViewProps }: Props) {
+export function SlideItem({ style, index, source, editable = false, ...animatedViewProps }: Props) {
+  const [settings, setSettings] = useAtom(settingsAtom)
+
   return (
     <Animated.View {...animatedViewProps}>
       <Animated.Image style={[style, styles.container]} source={source} />
-      {setImages && (
+      {editable && (
         <View style={styles.removeOverlay}>
           <Pressable
             style={styles.removeOverlayButton}
             onPress={() => {
-              setImages(prev => prev.filter((_, i) => i !== index))
+              setSettings({
+                ...settings,
+                images: settings.images.filter((_, i) => i !== index),
+              })
             }}
           >
             <Feather name="x" size={24} color={colors.dark} />
@@ -43,9 +51,8 @@ export function SlideItem({ style, index, source, setImages, ...animatedViewProp
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: "100%",
+    height: 250,
     borderRadius: 15,
-    resizeMode: "cover",
     backgroundColor: colors.lightGray,
   },
   removeOverlay: {

@@ -146,7 +146,7 @@ export default function PostDetails() {
                   </View>
                   <View style={styles.closestPostImage}>
                     {post.images && post.images.length != 0 && (
-                      <ImageCarousel images={post.images} widthOffset={70} />
+                      <ImageCarousel images={post.images} widthOffset={23} />
                     )}
                   </View>
                   <View style={styles.closestPostItem}>

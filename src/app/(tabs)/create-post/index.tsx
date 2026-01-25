@@ -6,10 +6,11 @@ import {
   Text,
   Switch,
   ScrollView,
+  Pressable,
+  Alert,
 } from "react-native"
-import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import { useCallback, useEffect } from "react"
+import { useCallback } from "react"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
@@ -21,18 +22,15 @@ import ImageCarousel from "@/src/components/ImageCarousel"
 import { createPostSocketAtom } from "@/src/store/socket-store"
 import {
   forwardCreatePostAtom,
-  imagesAtom,
   loadingAtom,
-  numMatchesAtom,
   pickImageAtom,
-  publicPostAtom,
-  saveDraftSettingsAtom,
   qnaAtom,
   edittedAtom,
+  settingsAtom,
 } from "@/src/store/create-post-store"
 import { useFocusEffect } from "expo-router"
 import { Question } from "@/src/types/question.types"
-import useGradualAnimation from "@/src/utils/gradual-animation"
+import Feather from "@expo/vector-icons/Feather"
 
 const INITIAL_PAGE_COUNT = 2
 
@@ -40,22 +38,14 @@ export default function CreatePost() {
   const [QNAs, setQNAs] = useAtom(qnaAtom)
   const socket = useAtomValue(createPostSocketAtom)
   const loading = useAtomValue(loadingAtom)
-  const [publicPost, setPublicPost] = useAtom(publicPostAtom)
-  const [images, setImages] = useAtom(imagesAtom)
-  const [numMatches, setNumMatches] = useAtom(numMatchesAtom)
+  const [settings, setSettings] = useAtom(settingsAtom)
   const [flow, setFlow] = useAtom(flowAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const forward = useSetAtom(forwardCreatePostAtom)
   const pickImage = useSetAtom(pickImageAtom)
-  const saveDraftSettings = useSetAtom(saveDraftSettingsAtom)
   const setEditted = useSetAtom(edittedAtom)
-  const { height } = useGradualAnimation({ includeTabHeight: true })
 
-  const fakeView = useAnimatedStyle(() => {
-    return {
-      height: Math.abs(height.value),
-    }
-  }, [])
+  console.log(settings.images)
 
   useFocusEffect(
     useCallback(() => {
@@ -73,12 +63,7 @@ export default function CreatePost() {
     }, [currPage, socket])
   )
 
-  useEffect(() => {
-    saveDraftSettings()
-  }, [images, publicPost, numMatches, saveDraftSettings])
-
   async function handleChange(i: number, option: string, type: Question["type"]) {
-    // await new Promise(resolve => setTimeout(resolve, 1000)) // wait for next tick
     setQNAs(prev => {
       const updated = [...prev]
       if (type === "multiple_choice" || type === "short_answer") {
@@ -201,79 +186,73 @@ export default function CreatePost() {
         })}
 
         {/* The last page */}
-        <View key={QNAs.length} style={{ flex: 1 }}>
-          <ScrollView style={createPostStyles.scrollView} keyboardShouldPersistTaps="handled">
-            <View style={{ gap: 10 }}>
-              <View>
-                <CustomButton onPress={pickImage} disabled={loading}>
-                  Choose images (optional)
-                </CustomButton>
-                {images.length != 0 && (
-                  <View
-                    style={{
-                      marginTop: 10,
-                      flexDirection: "row",
-                      flexWrap: "wrap",
-                      gap: 10,
-                    }}
+        <ScrollView
+          key={QNAs.length}
+          style={createPostStyles.scrollView}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={createPostStyles.gaptainer}>
+            <View>
+              <CustomButton onPress={pickImage} disabled={loading}>
+                Choose images (optional)
+              </CustomButton>
+              {settings.images.length != 0 && (
+                <View style={{ marginTop: 10 }}>
+                  <ImageCarousel images={settings.images} isLocalUri editable />
+                </View>
+              )}
+            </View>
+            <View style={createPostStyles.gaptainer}>
+              <View style={createPostStyles.lastPageRowContainer}>
+                <View style={createPostStyles.lastPageRowLabelContainer}>
+                  <Text style={createPostStyles.lastPageQuestion}>Public Post</Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        "Public Post",
+                        "Toggle this option to make your post visible to other users.\n\nYou can change this setting anytime."
+                      )
+                    }
                   >
-                    <ImageCarousel images={images} setImages={setImages} isLocalUri />
-                  </View>
-                )}
-              </View>
-              <View
-                style={{
-                  marginTop: 30,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.dark,
-                    fontSize: 18,
-                    fontWeight: "600",
-                  }}
-                >
-                  Do you want this post to be public?
-                </Text>
+                    <Feather name="info" size={20} color={colors.gray} />
+                  </Pressable>
+                </View>
                 <Switch
                   trackColor={{ true: colors.purple }}
-                  ios_backgroundColor={colors.light}
-                  onValueChange={setPublicPost}
-                  value={publicPost}
+                  thumbColor={colors.light}
+                  onValueChange={value => setSettings({ ...settings, publicPost: value })}
+                  value={settings.publicPost}
                 />
               </View>
-              <View
-                style={{
-                  marginTop: 30,
-                  paddingBottom: 80,
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors.dark,
-                    fontSize: 18,
-                    fontWeight: "600",
-                    marginBottom: 10,
-                  }}
-                >
-                  How many related posts do you want to see?
-                </Text>
+              <View style={createPostStyles.lastPageRowContainer}>
+                <View style={createPostStyles.lastPageRowLabelContainer}>
+                  <Text style={createPostStyles.lastPageQuestion}>Related matches</Text>
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert(
+                        "Related Matches",
+                        "Specify how many related matches you would like to receive for this post.\n\nYou can change this setting anytime."
+                      )
+                    }
+                  >
+                    <Feather name="info" size={20} color={colors.gray} />
+                  </Pressable>
+                </View>
                 <TextInput
                   style={createPostStyles.numMatchesInput}
-                  value={numMatches.toString()}
+                  value={settings.numMatches.toString()}
                   keyboardType="number-pad"
+                  placeholder="5"
                   editable={!loading}
-                  onChangeText={text => setNumMatches(parseInt(text) || 0)}
+                  maxLength={2}
+                  onChangeText={text => setSettings({ ...settings, numMatches: Number(text) })}
                 />
               </View>
             </View>
-          </ScrollView>
+          </View>
 
-          <Animated.View style={[fakeView, { backgroundColor: colors.light }]} />
-        </View>
+          <View style={{ height: 200 }} />
+        </ScrollView>
       </CustomPager>
     </>
   )

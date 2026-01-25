@@ -71,9 +71,31 @@ export const createPostStyles = StyleSheet.create({
     color: colors.dark,
     borderColor: colors.gray,
     borderWidth: 1,
-    padding: 10,
-    width: 80,
+    width: 50,
+    height: 40,
     textAlign: "center",
     borderRadius: 5,
+  },
+  gaptainer: {
+    gap: 10,
+  },
+  lastPageRowContainer: {
+    backgroundColor: colors.lightGray,
+    padding: 15,
+    borderRadius: 8,
+    height: 60,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  lastPageRowLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  lastPageQuestion: {
+    color: colors.dark,
+    fontSize: 18,
+    fontWeight: "600",
   },
 })
