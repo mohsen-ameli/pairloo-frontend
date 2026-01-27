@@ -1,4 +1,5 @@
 import { MyPostType } from "./post.type"
+import { s3Object } from "./s3object.type"
 
 export type UserType = null | {
   _id: string
@@ -15,7 +16,7 @@ export type UserType = null | {
   locationId: number // reference to Location _id
   email: string
   posts: MyPostType[]
-  picture?: string | undefined
+  picture?: s3Object | null
   createdAt: Date
   updatedAt: Date
   accessToken: string

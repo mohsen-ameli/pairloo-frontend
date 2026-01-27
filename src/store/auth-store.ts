@@ -122,20 +122,29 @@ export const signUpAtom = atom(null, async (get, set) => {
 })
 
 export const logOutAtom = atom(null, (get, set) => {
-  set(userAtom, null)
-  set(newUserAtom, newUser)
-  set(authErrorsAtom, newUserErrors)
-  set(resetPagerAtom)
+  Alert.alert("Logout", "Are you sure you want to logout?", [
+    { text: "Cancel", style: "cancel" },
+    {
+      text: "Logout",
+      style: "destructive",
+      onPress: () => {
+        set(userAtom, null)
+        set(newUserAtom, newUser)
+        set(authErrorsAtom, newUserErrors)
+        set(resetPagerAtom)
 
-  // Clean chat socket
-  const chatSocket = get(chatSocketAtom)
-  chatSocket?.disconnect()
-  set(chatSocketAtom, null)
+        // Clean chat socket
+        const chatSocket = get(chatSocketAtom)
+        chatSocket?.disconnect()
+        set(chatSocketAtom, null)
 
-  // Clean create post socket
-  const createPostSocket = get(createPostSocketAtom)
-  createPostSocket?.disconnect()
-  set(createPostSocketAtom, null)
+        // Clean create post socket
+        const createPostSocket = get(createPostSocketAtom)
+        createPostSocket?.disconnect()
+        set(createPostSocketAtom, null)
+      },
+    },
+  ])
 })
 
 export const requestEmailVerificationAtom = atom(

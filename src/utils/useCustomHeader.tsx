@@ -60,6 +60,10 @@ export default function useCustomHeader(
   if (inChat) {
     const otherUser = currentConversation?.members.find(member => member._id !== user?._id)
 
+    if (!otherUser) {
+      return options
+    }
+
     return {
       ...options,
       headerTitle: () => (
@@ -76,11 +80,15 @@ export default function useCustomHeader(
           )}
           <TouchableOpacity onPress={handleProfilePress} style={styles.otherProfileButton}>
             <Image
-              source={otherUser?.picture ? { uri: otherUser?.picture } : defaultProfilePicture}
+              source={
+                otherUser.picture && otherUser.picture.url
+                  ? { uri: otherUser.picture.url }
+                  : defaultProfilePicture
+              }
               style={styles.otherProfileImage}
             />
           </TouchableOpacity>
-          <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+          <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
         </View>
       ),
     }

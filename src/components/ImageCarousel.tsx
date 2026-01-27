@@ -5,14 +5,17 @@ import { SlideItem } from "./SlideItem"
 import { Dispatch, useEffect, useRef, useState } from "react"
 import { SetStateAction } from "jotai"
 import { colors } from "@/src/utils/colors"
+import { s3Object } from "@/src/types/s3object.type"
 
 export default function ImageCarousel({
   images,
   setImages,
+  isLocalUri = false,
   widthOffset = 40,
 }: {
-  images: string[]
-  setImages?: Dispatch<SetStateAction<string[]>>
+  images: s3Object[]
+  setImages?: Dispatch<SetStateAction<s3Object[]>>
+  isLocalUri?: boolean
   widthOffset?: number
 }) {
   const ref = useRef<ICarouselInstance>(null)
@@ -33,7 +36,11 @@ export default function ImageCarousel({
   if (images.length === 1) {
     return (
       <View style={{ width, height: 250, borderRadius: 15, overflow: "hidden" }}>
-        <SlideItem index={0} source={{ uri: images[0] }} setImages={setImages} />
+        <SlideItem
+          index={0}
+          source={{ uri: isLocalUri ? images[0].localUri : images[0].url }}
+          setImages={setImages}
+        />
       </View>
     )
   }
@@ -60,7 +67,11 @@ export default function ImageCarousel({
           progress.value = absoluteProgress
         }}
         renderItem={({ index, item }) => (
-          <SlideItem index={index} source={{ uri: item }} setImages={setImages} />
+          <SlideItem
+            index={index}
+            source={{ uri: isLocalUri ? item.localUri : item.url }}
+            setImages={setImages}
+          />
         )}
         ref={ref}
       />

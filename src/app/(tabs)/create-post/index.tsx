@@ -217,7 +217,7 @@ export default function CreatePost() {
                       gap: 10,
                     }}
                   >
-                    <ImageCarousel images={images} setImages={setImages} />
+                    <ImageCarousel images={images} setImages={setImages} isLocalUri />
                   </View>
                 )}
               </View>

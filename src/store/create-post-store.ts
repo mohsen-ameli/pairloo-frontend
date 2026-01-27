@@ -9,6 +9,7 @@ import { router } from "expo-router"
 import { Alert } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import { QnaType, Question } from "@/src/types/question.types"
+import { s3Object } from "../types/s3object.type"
 
 const INITIAL_PAGE_COUNT = 2
 const DEFAULT_NUM_MATCHES = 5
@@ -23,7 +24,7 @@ export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }
 export const loadingAtom = atom(false)
 export const publicPostAtom = atom(DEFAULT_PUBLIC_POST)
 export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES)
-export const imagesAtom = atom<string[]>([])
+export const imagesAtom = atom<s3Object[]>([])
 export const edittedAtom = atom(false)
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
@@ -75,7 +76,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     (data: {
       qna: QnaType
       initialPostText: string
-      images: string[]
+      images: s3Object[]
       publicPost: boolean
       numMatches: number
     }) => {
@@ -188,7 +189,15 @@ export const pickImageAtom = atom(null, async (get, set) => {
   })
 
   if (!result.canceled) {
-    set(imagesAtom, prev => [...prev, ...result.assets.map(asset => asset.uri)])
+    set(imagesAtom, prev => [
+      ...prev,
+      ...result.assets.map(asset => ({
+        localUri: asset.uri,
+        key: "",
+        url: "",
+        createdAt: new Date().toISOString(),
+      })),
+    ])
   }
 })
 

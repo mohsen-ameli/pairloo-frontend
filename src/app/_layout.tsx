@@ -55,6 +55,21 @@ export default function RootLayout() {
             <Stack.Protected guard={user !== null}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="attachment-picker"
+                options={{
+                  presentation: "formSheet",
+                  gestureDirection: "vertical",
+                  animation: "slide_from_bottom",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: false,
+                  sheetGrabberVisible: false,
+                  sheetInitialDetentIndex: 0,
+                  sheetAllowedDetents: [0.3],
+                  sheetExpandsWhenScrolledToEdge: false,
+                  sheetElevation: 24,
+                }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={user === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />

@@ -5,13 +5,11 @@ import { ConversationType, MessageType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "./socket-store"
 import { refreshAccessToken } from "@/src/utils/refresh-access-token"
 import { WS_BASE_URL } from "@/src/utils/constants"
-import { notificationSoundAtom } from "./general-store"
+import { getAttachmentAtom, notificationSoundAtom } from "./general-store"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import Toast from "react-native-toast-message"
 import { router } from "expo-router"
-import * as ImagePicker from "expo-image-picker"
-import { Alert } from "react-native"
 
 const unreadMsgStorage = createJSONStorage<{
   [conversationId: string]: number
@@ -132,7 +130,7 @@ export const initChatAtom = atom(null, async (get, set) => {
             username: message.sender.username,
             message: message.content,
             picture: message.sender.picture,
-            attachmentUrl: message.attachmentUrl,
+            attachmentUrl: message.attachment?.url,
           },
           onPress: () => {
             router.push({
@@ -187,7 +185,7 @@ export const sendMessageAtom = atom(
         picture: user.picture,
       },
       content,
-      attachment: "",
+      attachment: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -202,55 +200,18 @@ export const sendMessageAtom = atom(
   }
 )
 
-export const sendAttachmentAtom = atom(
-  null,
-  async (get, set, library: boolean, conversationId?: string) => {
-    const socket = get(chatSocketAtom)
-    const user = await get(userAtom)
-    if (!socket || !user || !conversationId) return
+export const sendAttachmentAtom = atom(null, async (get, set, option: "library" | "camera") => {
+  const socket = get(chatSocketAtom)
+  const user = await get(userAtom)
+  const conversationId = get(currentConversationAtom)?._id
+  if (!socket || !user) return
 
-    let result: ImagePicker.ImagePickerResult | null = null
+  // get the attachments
+  const attachments = await set(getAttachmentAtom, false, option, false)
 
-    if (library) {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
-
-      if (!permissionResult.granted) {
-        Alert.alert("Permission required", "Permission to access the media library is required.")
-        return
-      }
-
-      result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsMultipleSelection: false,
-      })
-    }
-
-    if (!library) {
-      const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
-
-      if (!permissionResult.granted) {
-        Alert.alert("Permission required", "Camera access is required to take photos.")
-        return
-      }
-
-      result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ["images"],
-        allowsMultipleSelection: false,
-      })
-    }
-
-    if (!result) return
-
-    if (!result.canceled && result.assets.length > 0) {
-      const uri = result.assets[0].uri
-      const mimeType = result.assets[0].mimeType || "image/jpeg"
-      const response = await fetch(uri)
-      const file = await response.blob()
-      socket.emit("newMessage", {
-        conversationId,
-        file,
-        mimeType,
-      })
-    }
-  }
-)
+  socket.emit("newMessage", {
+    conversationId,
+    file: attachments[0].file,
+    mimeType: attachments[0].mimeType,
+  })
+})

@@ -1,3 +1,5 @@
+import { s3Object } from "./s3object.type"
+
 export type GeneralPostType = {
   _id: string // userId of the poster
   username: string
@@ -5,8 +7,8 @@ export type GeneralPostType = {
   lastName: string
   content: string
   summary: string
-  picture: string
-  images?: string[] | null | undefined
+  picture?: s3Object | null
+  images?: s3Object[] | null | undefined
   createdAt: string
 }
 

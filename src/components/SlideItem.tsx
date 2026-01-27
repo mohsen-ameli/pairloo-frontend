@@ -4,7 +4,6 @@ import {
   Pressable,
   type StyleProp,
   StyleSheet,
-  Text,
   View,
   type ViewProps,
 } from "react-native"
@@ -12,12 +11,13 @@ import type { AnimatedProps } from "react-native-reanimated"
 import Animated from "react-native-reanimated"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
+import { s3Object } from "@/src/types/s3object.type"
 
 interface Props extends AnimatedProps<ViewProps> {
   style?: StyleProp<ImageStyle>
   index: number
   source: ImageSourcePropType
-  setImages?: React.Dispatch<React.SetStateAction<string[]>>
+  setImages?: React.Dispatch<React.SetStateAction<s3Object[]>>
 }
 
 export function SlideItem({ style, index, source, setImages, ...animatedViewProps }: Props) {
