@@ -9,9 +9,9 @@ import { router } from "expo-router"
 import { Alert } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import { QnaType, Question } from "@/src/types/question.types"
-import { s3Object } from "../types/s3object.type"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { s3Object } from "../types/s3object.type"
 
 const INITIAL_PAGE_COUNT = 2
 const DEFAULT_NUM_MATCHES = 5

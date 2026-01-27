@@ -11,16 +11,16 @@ import type { AnimatedProps } from "react-native-reanimated"
 import Animated from "react-native-reanimated"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
-import { s3Object } from "@/src/types/s3object.type"
 import { useAtom } from "jotai"
 import { settingsAtom } from "../store/create-post-store"
+import { s3Object } from "@/src/types/s3object.type"
 
 interface Props extends AnimatedProps<ViewProps> {
   style?: StyleProp<ImageStyle>
   index: number
+  editable?: boolean
   source: ImageSourcePropType
   setImages?: React.Dispatch<React.SetStateAction<s3Object[]>>
-  editable?: boolean
 }
 
 export function SlideItem({ style, index, source, editable = false, ...animatedViewProps }: Props) {

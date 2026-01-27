@@ -217,6 +217,24 @@ export default function CreatePost() {
                     <Feather name="info" size={20} color={colors.gray} />
                   </Pressable>
                 </View>
+              </View>
+              <View
+                style={{
+                  marginTop: 30,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.dark,
+                    fontSize: 18,
+                    fontWeight: "600",
+                  }}
+                >
+                  Do you want this post to be public?
+                </Text>
                 <Switch
                   trackColor={{ true: colors.purple }}
                   thumbColor={colors.light}

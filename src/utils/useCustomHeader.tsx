@@ -64,6 +64,10 @@ export default function useCustomHeader(
       return options
     }
 
+    if (!otherUser) {
+      return options
+    }
+
     return {
       ...options,
       headerTitle: () => (
