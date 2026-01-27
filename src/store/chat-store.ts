@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { userAtom } from "./auth-store"
+import { logOutAtom, userAtom, userJwtAtom } from "./auth-store"
 import io from "socket.io-client"
 import { ConversationType, MessageType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "./socket-store"
@@ -26,12 +26,13 @@ export const loadingAtom = atom(false)
 
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
-  if (!user) return
+  const userJwt = await get(userJwtAtom)
+  if (!user || !userJwt) return
   if (get(chatSocketAtom)) return
 
   const socket = io(WS_BASE_URL + "/chat", {
     auth: {
-      token: user.accessToken,
+      token: userJwt.accessToken,
     },
   })
 
@@ -54,10 +55,9 @@ export const initChatAtom = atom(null, async (get, set) => {
   })
 
   socket.on("connect_error", async () => {
-    const accessToken = await refreshAccessToken(user.refreshToken)
+    const accessToken = await refreshAccessToken(userJwt.refreshToken)
     if (accessToken === null) {
-      socket.disconnect()
-      set(userAtom, null)
+      set(logOutAtom)
       return
     }
     await set(userAtom, { ...user, accessToken })

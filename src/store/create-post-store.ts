@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { userAtom } from "./auth-store"
+import { logOutAtom, userJwtAtom } from "./auth-store"
 import { WS_BASE_URL } from "@/src/utils/constants"
 import { createPostSocketAtom } from "./socket-store"
 import { refreshAccessToken } from "@/src/utils/refresh-access-token"
@@ -28,7 +28,7 @@ export const imagesAtom = atom<s3Object[]>([])
 export const edittedAtom = atom(false)
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
-  const user = await get(userAtom)
+  const user = await get(userJwtAtom)
   if (!user) return
   if (get(createPostSocketAtom)) return
 
@@ -55,11 +55,10 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("connect_error", async () => {
     const accessToken = await refreshAccessToken(user.refreshToken)
     if (accessToken === null) {
-      socket.disconnect()
-      set(userAtom, null)
+      set(logOutAtom)
       return
     }
-    await set(userAtom, { ...user, accessToken })
+    await set(userJwtAtom, { ...user, accessToken })
     socket.io.opts.auth = { token: accessToken }
     socket.connect()
   })

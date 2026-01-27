@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { userAtom } from "./auth-store"
+import { userAtom, userJwtAtom } from "./auth-store"
 import { authFetchAtom } from "../utils/auth-fetch"
 import { Alert } from "react-native"
 import { getAttachmentAtom } from "./general-store"
@@ -25,8 +25,9 @@ export const loadingAtom = atom(false)
 
 export const handleSaveEditAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
+  const userJwt = await get(userJwtAtom)
   const editFields = get(editFieldsAtom)
-  if (!user) return
+  if (!user || !userJwt) return
 
   try {
     set(loadingAtom, true)
@@ -38,7 +39,7 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
     })
 
     if (editFields.pictureBlob) {
-      formData.append("picture", editFields.pictureBlob, user._id)
+      formData.append("picture", editFields.pictureBlob, userJwt._id)
     }
 
     const response = await set(authFetchAtom, "/api/settings/update-profile", {

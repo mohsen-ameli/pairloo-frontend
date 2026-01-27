@@ -2,7 +2,7 @@ import { conversationStyles } from "@/src/styles/conversation.style"
 import { conversationsAtom, unreadMessagesAtom } from "@/src/store/chat-store"
 import { sinceNow } from "@/src/utils/format-date"
 import { formatString } from "@/src/utils/format-string"
-import { userAtom } from "@/src/store/auth-store"
+import { userJwtAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { useAtomValue } from "jotai"
@@ -15,7 +15,7 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function index() {
   const router = useRouter()
   const conversations = useAtomValue(conversationsAtom)
-  const user = useAtomValue(userAtom)
+  const user = useAtomValue(userJwtAtom)
   const unreadMessages = useAtomValue(unreadMessagesAtom)
 
   function getLastMessagePreview(lastMessage: MessageType): string {

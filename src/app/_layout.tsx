@@ -1,7 +1,7 @@
 import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useAtomValue } from "jotai"
-import { userAtom } from "@/src/store/auth-store"
+import { userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { LogBox } from "react-native"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { KeyboardProvider } from "react-native-keyboard-controller"
@@ -32,6 +32,7 @@ const toastConfig = {
 
 export default function RootLayout() {
   const user = useAtomValue(userAtom)
+  const userJwt = useAtomValue(userJwtAtom)
   const queryClient = new QueryClient()
 
   const loginOptions = useCustomHeader("Log In", true)
@@ -52,7 +53,7 @@ export default function RootLayout() {
               headerTintColor: colors.dark,
             }}
           >
-            <Stack.Protected guard={user !== null}>
+            <Stack.Protected guard={user !== null && userJwt !== null}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)" options={{ headerShown: false }} />
               <Stack.Screen
@@ -71,7 +72,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack.Protected>
-            <Stack.Protected guard={user === null}>
+            <Stack.Protected guard={user === null || userJwt === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />
               <Stack.Screen name="register" options={registerOptions} />
               <Stack.Screen name="login" options={loginOptions} />

@@ -198,7 +198,7 @@ export default function SettingsScreen() {
         </ScrollView>
 
         <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
-          <CustomButton onPress={logout} color={colors.errorRed}>
+          <CustomButton onPress={async () => await logout(true)} color={colors.errorRed}>
             Log Out
           </CustomButton>
         </View>

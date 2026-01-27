@@ -9,8 +9,9 @@ import { useAtom, useSetAtom } from "jotai"
 import { useEffect } from "react"
 import { Platform, View } from "react-native"
 import CustomButton from "@/src/components/CustomButton"
-import { newUserAtom, userAtom } from "@/src/store/auth-store"
+import { newUserAtom, userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { BASE_URL } from "@/src/utils/constants"
+import { NewUserType, RegisteredUserType } from "../types/user.type"
 
 const config: AuthRequestConfig = {
   clientId: "google",
@@ -29,6 +30,7 @@ export default function ContinueWithGoogle({
   setLoading: (loading: boolean) => void
 }) {
   const setUser = useSetAtom(userAtom)
+  const setUserJwt = useSetAtom(userJwtAtom)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [request, response, promptAsync] = useAuthRequest(config, discovery)
   const router = useRouter()
@@ -52,16 +54,39 @@ export default function ContinueWithGoogle({
 
     // If user not found, redirect to registration with prefilled data
     if (res.status === 409) {
-      const userData = await res.json()
+      const userData: Partial<NewUserType> = await res.json()
       setLoading(false)
       setNewUser({ ...newUser, ...userData })
       router.push("/register")
       return
     }
 
-    const userData = await res.json()
+    const userData: RegisteredUserType = await res.json()
 
-    setUser(userData)
+    setUserJwt({
+      _id: userData._id,
+      accessToken: userData.accessToken,
+      refreshToken: userData.refreshToken,
+    })
+
+    setUser({
+      username: userData.username,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      picture: userData.picture,
+      phoneNumber: userData.phoneNumber,
+      country: userData.country,
+      city: userData.city,
+      state: userData.state,
+      latitude: userData.latitude,
+      longitude: userData.longitude,
+      timezone: userData.timezone,
+      locationId: userData.locationId,
+      email: userData.email,
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
+      posts: [],
+    })
 
     router.replace("/")
   }

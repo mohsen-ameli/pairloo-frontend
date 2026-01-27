@@ -70,7 +70,7 @@ export default function LoginPage() {
         <Text style={styles.title}>Welcome Back!</Text>
         <CustomInput
           title="Email Address"
-          errors={errors.email}
+          errors={errors?.email}
           value={returningUser.email}
           autoFocus
           onChangeText={text => {
@@ -93,7 +93,7 @@ export default function LoginPage() {
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
           title="Code"
-          errors={errors.emailVerify}
+          errors={errors?.emailVerify}
           value={returningUser.emailCode}
           inputRef={emailCodeRef}
           placeholder="6-digit code"
