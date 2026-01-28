@@ -10,7 +10,7 @@ import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/crea
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { currentConversationAtom } from "../store/chat-store"
-import { userAtom } from "../store/auth-store"
+import { userAtom, userJwtAtom } from "../store/auth-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -27,7 +27,7 @@ export default function useCustomHeader(
   const discardDraft = useSetAtom(discardDraftAtom)
   const getNewQuestion = useSetAtom(getNewQuestionAtom)
   const currentConversation = useAtomValue(currentConversationAtom)
-  const user = useAtomValue(userAtom)
+  const user = useAtomValue(userJwtAtom)
   const loading = useAtomValue(loadingAtom)
 
   let options: ExtendedStackNavigationOptions = {
@@ -57,8 +57,8 @@ export default function useCustomHeader(
     ),
   }
 
-  if (inChat) {
-    const otherUser = currentConversation?.members.find(member => member._id !== user?._id)
+  if (inChat && user && currentConversation) {
+    const otherUser = currentConversation.members.find(member => member._id !== user._id)
 
     if (!otherUser) {
       return options
