@@ -54,9 +54,7 @@ export default function PostDetails() {
     return (
       <>
         <Stack.Screen options={detailOptions} />
-        <View style={styles.container}>
-          <LoadingIndicator loading={true} />
-        </View>
+        <LoadingIndicator loading={true} />
       </>
     )
   }
@@ -81,7 +79,7 @@ export default function PostDetails() {
 
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
-          {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
+          {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}
           <Text style={styles.title}>{post.content}</Text>
           <Text style={styles.subtitle}>{post.summary}</Text>
 

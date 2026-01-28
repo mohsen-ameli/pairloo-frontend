@@ -8,6 +8,8 @@ import { GeneralPostType } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 
+const defaultProfilePicture = require("@/assets/images/default_pfp.png")
+
 export default function Index() {
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
@@ -70,9 +72,11 @@ export default function Index() {
                 }}
               >
                 <View style={styles.postHeader}>
-                  {post.picture && (
-                    <Image source={{ uri: post.picture }} style={styles.postHeaderImage} />
-                  )}
+                  <Image
+                    source={post.picture ? { uri: post.picture } : defaultProfilePicture}
+                    style={styles.postHeaderImage}
+                  />
+
                   <View style={styles.postHeaderTextContainer}>
                     <Text style={styles.postHeaderName}>
                       {post.firstName} {post.lastName}

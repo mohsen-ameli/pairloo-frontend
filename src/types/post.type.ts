@@ -1,3 +1,5 @@
+export type ImageType = { uri: string; mimeType: string }
+
 export type GeneralPostType = {
   _id: string // userId of the poster
   username: string
