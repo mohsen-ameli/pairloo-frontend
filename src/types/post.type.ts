@@ -5,9 +5,9 @@ export type GeneralPostType = {
   username: string
   firstName: string
   lastName: string
+  picture?: s3Object | null
   content: string
   summary: string
-  picture?: s3Object | null
   images?: s3Object[] | null | undefined
   createdAt: string
 }
@@ -19,4 +19,10 @@ export interface ClosestPostType extends GeneralPostType {
 
 export interface MyPostType extends GeneralPostType {
   closestPosts?: ClosestPostType[]
+}
+
+export interface MyPosts {
+  _id: string
+  content: string
+  createdAt: string
 }

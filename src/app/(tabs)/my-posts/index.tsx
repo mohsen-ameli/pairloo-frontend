@@ -5,7 +5,7 @@ import { useSetAtom } from "jotai"
 import { ScrollView, Text, View, TouchableOpacity, RefreshControl, Pressable } from "react-native"
 import { styles } from "@/src/styles/index.styles"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { MyPostType } from "@/src/types/post.type"
+import { MyPosts } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 
@@ -23,7 +23,7 @@ export default function Index() {
 
   async function fetchPosts() {
     const res = await authFetch("/api/posts/my-posts")
-    const data: MyPostType[] = await res.json()
+    const data: MyPosts[] = await res.json()
     return data
   }
 
