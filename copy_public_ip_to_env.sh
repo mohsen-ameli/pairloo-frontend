@@ -6,3 +6,6 @@ cat > .env<< EOF
 EXPO_PUBLIC_SERVER_URL="http://$ip:8000"
 EXPO_PUBLIC_WS_SERVER_URL="ws://$ip:8000"
 EOF
+
+
+echo ":: Running on IP: $ip"

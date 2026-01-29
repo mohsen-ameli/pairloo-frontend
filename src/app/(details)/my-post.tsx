@@ -123,7 +123,7 @@ export default function PostDetails() {
                       {post.picture && (
                         <View style={styles.closestPostAvatar}>
                           <Image
-                            source={{ uri: post.picture }}
+                            source={{ uri: post.picture.url }}
                             style={styles.closestPostAvatarImage}
                           />
                         </View>

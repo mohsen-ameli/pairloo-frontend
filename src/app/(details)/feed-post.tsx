@@ -9,7 +9,7 @@ import { GeneralPostType } from "@/src/types/post.type"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
-import { userAtom } from "@/src/store/auth-store"
+import { userJwtAtom } from "@/src/store/auth-store"
 import { ConversationType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
@@ -19,7 +19,7 @@ export default function PostDetails() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
-  const user = useAtomValue(userAtom)
+  const user = useAtomValue(userJwtAtom)
   const detailOptions = useCustomHeader("Details", true)
   const queryClient = useQueryClient()
   const {

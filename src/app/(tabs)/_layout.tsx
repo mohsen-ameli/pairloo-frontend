@@ -53,6 +53,8 @@ export default function ProtectedLayout() {
     }, [])
   )
 
+  if (!user) return null
+
   return (
     <Tabs
       screenOptions={{
@@ -123,7 +125,9 @@ export default function ProtectedLayout() {
           },
           tabBarIcon: ({ color, size }) => (
             <Image
-              source={user?.picture ? { uri: user?.picture } : defaultProfilePicture}
+              source={
+                user.picture && user.picture.url ? { uri: user.picture.url } : defaultProfilePicture
+              }
               style={{
                 width: size + 3,
                 height: size + 3,

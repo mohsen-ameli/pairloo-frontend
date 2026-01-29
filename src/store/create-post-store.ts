@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { userAtom } from "./auth-store"
+import { logOutAtom, userJwtAtom } from "./auth-store"
 import { WS_BASE_URL } from "@/src/utils/constants"
 import { createPostSocketAtom } from "./socket-store"
 import { refreshAccessToken } from "@/src/utils/refresh-access-token"
@@ -9,9 +9,10 @@ import { router } from "expo-router"
 import { Alert } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import { QnaType, Question } from "@/src/types/question.types"
-import { ImageType } from "@/src/types/post.type"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { s3Object } from "../types/s3object.type"
+import { queryClientAtom } from "./general-store"
 
 const INITIAL_PAGE_COUNT = 2
 const DEFAULT_NUM_MATCHES = 5
@@ -23,7 +24,7 @@ const DEFAULT_QUESTION: Question = {
 }
 
 const settings = {
-  images: [] as ImageType[],
+  images: [] as s3Object[],
   publicPost: DEFAULT_PUBLIC_POST,
   numMatches: DEFAULT_NUM_MATCHES,
 }
@@ -32,10 +33,13 @@ export const settingsAtom = atomWithStorage("post-settings", settings, newUserSt
 
 export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }])
 export const loadingAtom = atom(false)
+export const publicPostAtom = atom(DEFAULT_PUBLIC_POST)
+export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES)
+export const imagesAtom = atom<s3Object[]>([])
 export const edittedAtom = atom(false)
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
-  const user = await get(userAtom)
+  const user = await get(userJwtAtom)
   if (!user) return
   if (get(createPostSocketAtom)) return
 
@@ -62,11 +66,10 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("connect_error", async () => {
     const accessToken = await refreshAccessToken(user.refreshToken)
     if (accessToken === null) {
-      socket.disconnect()
-      set(userAtom, null)
+      set(logOutAtom)
       return
     }
-    await set(userAtom, { ...user, accessToken })
+    await set(userJwtAtom, { ...user, accessToken })
     socket.io.opts.auth = { token: accessToken }
     socket.connect()
   })
@@ -83,7 +86,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     (data: {
       qna: QnaType
       initialPostText: string
-      images: string[]
+      images: s3Object[]
       publicPost: boolean
       numMatches: number
     }) => {
@@ -118,6 +121,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
       pathname: "/my-post",
       params: { id: postId },
     })
+    get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   })
 
   socket.on("draft-discarded", () => {
@@ -152,9 +156,9 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
     set(loadingAtom, true)
     const imagesWithFiles: { uri: string; file: Blob; mimeType: string }[] = []
     for (const img of images) {
-      const response = await fetch(img.uri)
+      const response = await fetch(img.localUri)
       const blob = await response.blob()
-      imagesWithFiles.push({ uri: img.uri, file: blob, mimeType: img.mimeType })
+      imagesWithFiles.push({ uri: img.localUri, file: blob, mimeType: img.mimeType })
     }
     socket.emit("submit", numMatches, publicPost, imagesWithFiles)
     return
@@ -193,12 +197,12 @@ export const pickImageAtom = atom(null, async (get, set) => {
     allowsMultipleSelection: true,
   })
 
-  const images: ImageType[] = []
+  const images: s3Object[] = []
   if (!result.canceled && result.assets.length > 0) {
     for (const asset of result.assets) {
-      const uri = asset.uri
+      const localUri = asset.uri
       const mimeType = asset.mimeType || "image/jpeg"
-      images.push({ uri, mimeType })
+      images.push({ localUri, mimeType, url: "", key: "" })
     }
     const prevSettings = await get(settingsAtom)
     await set(settingsAtom, { ...prevSettings, images })

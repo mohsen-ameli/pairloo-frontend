@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react"
 import { Image } from "react-native"
 
-export default function useImageAspectRatio(imageUrl: string) {
+export default function useImageAspectRatio(imageUrl: string | null | undefined) {
   const [aspectRatio, setAspectRatio] = useState(1)
 
   useEffect(() => {

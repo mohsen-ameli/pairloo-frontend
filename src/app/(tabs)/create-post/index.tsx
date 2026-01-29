@@ -196,7 +196,7 @@ export default function CreatePost() {
               </CustomButton>
               {settings.images.length != 0 && (
                 <View style={{ marginTop: 10 }}>
-                  <ImageCarousel images={settings.images.map(img => img.uri)} editable />
+                  <ImageCarousel images={settings.images} isLocalUri editable />
                 </View>
               )}
             </View>

@@ -1,4 +1,5 @@
 import {
+  ImageSourcePropType,
   type ImageStyle,
   Pressable,
   type StyleProp,
@@ -12,20 +13,22 @@ import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useAtom } from "jotai"
 import { settingsAtom } from "../store/create-post-store"
+import { s3Object } from "@/src/types/s3object.type"
 
 interface Props extends AnimatedProps<ViewProps> {
   style?: StyleProp<ImageStyle>
   index: number
-  image: string
   editable?: boolean
+  source: ImageSourcePropType
+  setImages?: React.Dispatch<React.SetStateAction<s3Object[]>>
 }
 
-export function SlideItem({ style, index, image, editable = false, ...animatedViewProps }: Props) {
+export function SlideItem({ style, index, source, editable = false, ...animatedViewProps }: Props) {
   const [settings, setSettings] = useAtom(settingsAtom)
 
   return (
     <Animated.View {...animatedViewProps}>
-      <Animated.Image style={[style, styles.container]} source={{ uri: image }} />
+      <Animated.Image style={[style, styles.container]} source={source} />
       {editable && (
         <View style={styles.removeOverlay}>
           <Pressable

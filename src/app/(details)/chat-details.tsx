@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, Modal, TouchableOpacity, FlatList } from "react-native"
+import { View, Text, Pressable, TextInput, TouchableOpacity } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -11,7 +11,7 @@ import {
   sendMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
-import { MessageType, OtherUser } from "@/src/types/chat.type"
+import { MessageType } from "@/src/types/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import { formatDate } from "@/src/utils/format-date"
 import Animated, { useAnimatedStyle } from "react-native-reanimated"
@@ -53,9 +53,7 @@ export default function ChatDetails() {
     if (messages) {
       // This runs every time new messages come in
       // It can be improved for efficiency
-      const imgs = messages
-        .filter(msg => msg.attachmentUrl)
-        .map(msg => ({ uri: msg.attachmentUrl! }))
+      const imgs = messages.filter(msg => msg.attachment).map(msg => ({ uri: msg.attachment!.url }))
       setImages(imgs)
       chatRef.current && chatRef.current.scrollToEnd({ animated: false })
     }
@@ -163,7 +161,9 @@ export default function ChatDetails() {
             <MemoizedMessageItem
               item={item}
               imageIndex={
-                item.attachmentUrl ? images.findIndex(img => img.uri === item.attachmentUrl) : null
+                item.attachment && item.attachment.url
+                  ? images.findIndex(img => img.uri === item.attachment?.url)
+                  : null
               }
             />
           )}
@@ -173,7 +173,15 @@ export default function ChatDetails() {
 
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
-        <Pressable onPress={() => router.push("/attachment-picker")} style={chatStyles.plusButton}>
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: "/attachment-picker",
+              params: { intent: "chat" },
+            })
+          }
+          style={chatStyles.plusButton}
+        >
           <Feather name="plus" size={26} color={colors.dark} />
         </Pressable>
         <TextInput
@@ -197,14 +205,18 @@ export default function ChatDetails() {
 }
 
 function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: number | null }) {
-  const aspectRatio = useImageAspectRatio(item.attachmentUrl || "")
+  const aspectRatio = useImageAspectRatio(item.attachment?.url)
   const setIsVisible = useSetAtom(visibleAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
 
   return (
     <View style={chatStyles.messageItem}>
       <Image
-        source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
+        source={
+          item.sender.picture && item.sender.picture.url
+            ? { uri: item.sender.picture.url }
+            : defaultProfilePicture
+        }
         style={chatStyles.messageImage}
       />
       <View>
@@ -224,7 +236,7 @@ function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: numb
             {item.content}
           </Text>
         )}
-        {item.attachmentUrl && imageIndex && (
+        {item.attachment && item.attachment.url && imageIndex && (
           <Pressable
             onPress={() => {
               setImgIdx(imageIndex)
@@ -232,7 +244,7 @@ function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: numb
             }}
           >
             <Image
-              source={{ uri: item.attachmentUrl }}
+              source={{ uri: item.attachment.url }}
               style={[
                 chatStyles.messageAttachment,
                 {

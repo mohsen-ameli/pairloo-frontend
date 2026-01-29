@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { userAtom } from "@/src/store/auth-store"
+import { logOutAtom, userJwtAtom } from "@/src/store/auth-store"
 import { BASE_URL } from "./constants"
 import { fetch, FetchRequestInit } from "expo/fetch"
 import { refreshAccessToken } from "./refresh-access-token"
@@ -18,7 +18,7 @@ export const authFetchAtom = atom(
         },
       })
 
-    const user = await get(userAtom)
+    const user = await get(userJwtAtom)
 
     if (!user) {
       throw new Error("User is not authenticated")
@@ -35,10 +35,10 @@ export const authFetchAtom = atom(
       const accessToken = await refreshAccessToken(user.refreshToken)
 
       if (accessToken !== null) {
-        set(userAtom, { ...user, accessToken })
+        set(userJwtAtom, { ...user, accessToken })
         res = await fetchWithToken(accessToken)
       } else {
-        set(userAtom, null)
+        set(logOutAtom)
         throw new Error("Session expired. Please log in again.")
       }
     }

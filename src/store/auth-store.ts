@@ -2,9 +2,14 @@ import { atom } from "jotai"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as SecureStore from "expo-secure-store"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
-import { CountryCode } from "react-native-country-picker-modal"
 import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
-import { UserType } from "@/src/types/user.type"
+import {
+  AuthErrorType,
+  NewUserType,
+  RegisteredUserType,
+  UserJwtType,
+  UserType,
+} from "@/src/types/user.type"
 import { chatSocketAtom, createPostSocketAtom } from "./socket-store"
 import z from "zod"
 import { currPageAtom, flowAtom, resetPagerAtom } from "./pager-store"
@@ -23,47 +28,36 @@ export const returningUserAtom = atomWithStorage(
 )
 
 // For the sign up process
-const newUser = {
+const newUser: NewUserType = {
   username: "",
   firstName: "",
   lastName: "",
   picture: "",
   email: "",
-  emailCode: "",
   emailVerified: false,
+  emailCode: "",
   phoneNumber: "",
-  phoneCode: "",
   phoneVerified: false,
-  country: "Canada",
-  city: "",
+  phoneCode: "",
   state: "",
+  city: "",
   latitude: 0,
   longitude: 0,
   timezone: "",
   locationId: 0,
-  cca2: "CA" as CountryCode,
+  country: "Canada",
+  cca2: "CA",
   callingCode: "1",
 }
-const newUserStorage = createJSONStorage<typeof newUser>(() => AsyncStorage)
+const newUserStorage = createJSONStorage<NewUserType>(() => AsyncStorage)
 export const newUserAtom = atomWithStorage("new-user", newUser, newUserStorage)
 
-// For sign up errors
-const newUserErrors = {
-  username: "",
-  firstName: "",
-  lastName: "",
-  email: "",
-  emailVerify: "",
-  phoneNumber: "",
-  phoneVerify: "",
-  general: "",
-}
-export const authErrorsAtom = atom(newUserErrors)
+export const authErrorsAtom = atom<AuthErrorType | null>(null)
 
 export const resendTimerAtom = atom(0)
 
 // user atom
-const userSecureStorage = createJSONStorage<UserType>(() => ({
+const userSecureStorage = createJSONStorage<UserJwtType>(() => ({
   getItem: async (key: string) => {
     return await SecureStore.getItemAsync(key)
   },
@@ -74,7 +68,10 @@ const userSecureStorage = createJSONStorage<UserType>(() => ({
     await SecureStore.deleteItemAsync(key)
   },
 }))
-export const userAtom = atomWithStorage("user", null, userSecureStorage)
+export const userJwtAtom = atomWithStorage("user-jwt", null, userSecureStorage)
+
+const userAsyncStorage = createJSONStorage<UserType>(() => AsyncStorage)
+export const userAtom = atomWithStorage("user-profile", null, userAsyncStorage)
 
 export const signUpAtom = atom(null, async (get, set) => {
   try {
@@ -101,14 +98,36 @@ export const signUpAtom = atom(null, async (get, set) => {
       },
       body: JSON.stringify(payload),
     })
-    const data = await res.json()
+    const data: RegisteredUserType = await res.json()
 
-    if (!res.ok) {
+    if (!res.ok && data.errors) {
       set(authErrorsAtom, data.errors)
       return false
     } else {
-      set(userAtom, data)
-      set(authErrorsAtom, newUserErrors)
+      set(userJwtAtom, {
+        _id: data._id,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      })
+      set(userAtom, {
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber,
+        picture: data.picture,
+        country: data.country,
+        city: data.city,
+        state: data.state,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        timezone: data.timezone,
+        locationId: data.locationId,
+        email: data.email,
+        posts: [],
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      })
+      set(authErrorsAtom, null)
       set(newUserAtom, newUser)
       set(resetPagerAtom)
       Alert.alert("Success", "Account created successfully!")
@@ -121,21 +140,38 @@ export const signUpAtom = atom(null, async (get, set) => {
   }
 })
 
-export const logOutAtom = atom(null, (get, set) => {
-  set(userAtom, null)
-  set(newUserAtom, newUser)
-  set(authErrorsAtom, newUserErrors)
-  set(resetPagerAtom)
+export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false) => {
+  async function logout() {
+    await set(userAtom, null)
+    await set(userJwtAtom, null)
+    await set(newUserAtom, newUser)
+    set(authErrorsAtom, null)
+    set(resetPagerAtom)
 
-  // Clean chat socket
-  const chatSocket = get(chatSocketAtom)
-  chatSocket?.disconnect()
-  set(chatSocketAtom, null)
+    // Clean chat socket
+    const chatSocket = get(chatSocketAtom)
+    chatSocket?.disconnect()
+    set(chatSocketAtom, null)
 
-  // Clean create post socket
-  const createPostSocket = get(createPostSocketAtom)
-  createPostSocket?.disconnect()
-  set(createPostSocketAtom, null)
+    // Clean create post socket
+    const createPostSocket = get(createPostSocketAtom)
+    createPostSocket?.disconnect()
+    set(createPostSocketAtom, null)
+  }
+
+  if (!showAlert) {
+    await logout()
+    return
+  }
+
+  Alert.alert("Logout", "Are you sure you want to logout?", [
+    { text: "Cancel", style: "cancel" },
+    {
+      text: "Logout",
+      style: "destructive",
+      onPress: logout,
+    },
+  ])
 })
 
 export const requestEmailVerificationAtom = atom(
@@ -247,23 +283,45 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
       },
       body: JSON.stringify({ email, code, isSignUp }),
     })
-    const data = await res.json()
+    const data: RegisteredUserType = await res.json()
 
     if (res.ok) {
       if (isSignUp) {
         set(currPageAtom, get(currPageAtom) + 1)
         set(newUserAtom, { ...get(newUserAtom), emailVerified: true })
       } else {
-        set(userAtom, data)
-        set(authErrorsAtom, newUserErrors)
+        set(userJwtAtom, {
+          _id: data._id,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        })
+        set(userAtom, {
+          username: data.username,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          picture: data.picture,
+          phoneNumber: data.phoneNumber,
+          country: data.country,
+          city: data.city,
+          state: data.state,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          timezone: data.timezone,
+          locationId: data.locationId,
+          email: data.email,
+          posts: [],
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        })
+        set(authErrorsAtom, null)
         set(returningUserAtom, returningUser)
         set(resetPagerAtom)
         router.replace("/")
       }
-    } else {
+    } else if (data.errors && data.errors.general) {
       set(authErrorsAtom, {
         ...errors,
-        emailVerify: data.error,
+        emailVerify: data.errors.general,
       })
     }
   } catch {

@@ -73,10 +73,13 @@ export default function Index() {
               >
                 <View style={styles.postHeader}>
                   <Image
-                    source={post.picture ? { uri: post.picture } : defaultProfilePicture}
+                    source={
+                      post.picture && post.picture.url
+                        ? { uri: post.picture.url }
+                        : defaultProfilePicture
+                    }
                     style={styles.postHeaderImage}
                   />
-
                   <View style={styles.postHeaderTextContainer}>
                     <Text style={styles.postHeaderName}>
                       {post.firstName} {post.lastName}

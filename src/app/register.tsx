@@ -127,7 +127,7 @@ export default function Register() {
         <CustomButton onPress={generateAvatar}>Generate Avatar</CustomButton> */}
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
-        {errors.phoneNumber && <Text style={styles.error}>{errors.phoneNumber}</Text>}
+        {errors?.phoneNumber && <Text style={styles.error}>{errors?.phoneNumber}</Text>}
         {!newUser.phoneVerified && (
           <Text style={styles.note}>We will send you a verification code.</Text>
         )}
@@ -137,7 +137,7 @@ export default function Register() {
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
           title="Code"
-          errors={errors.phoneVerify}
+          errors={errors?.phoneVerify}
           placeholder="6-digit code"
           onChangeText={text => {
             setErrors({ ...errors, phoneVerify: "" })
@@ -179,7 +179,7 @@ export default function Register() {
         </Text>
         <CustomInput
           title="Email Address"
-          errors={errors.email}
+          errors={errors?.email}
           onChangeText={text => {
             setNewUser({ ...newUser, email: text.trim().toLowerCase() })
             setErrors({ ...errors, email: "" })
@@ -201,7 +201,7 @@ export default function Register() {
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
           title="Code"
-          errors={errors.emailVerify}
+          errors={errors?.emailVerify}
           placeholder="6-digit code"
           onChangeText={text => {
             setErrors({ ...errors, emailVerify: "" })
@@ -244,14 +244,14 @@ export default function Register() {
           </Text>
           <CustomInput
             title="Username"
-            errors={errors.username}
+            errors={errors?.username}
             onChangeText={handleUsername}
             defaultValue={newUser.username}
             inputRef={usernameRef}
           />
           <CustomInput
             title="First Name"
-            errors={errors.firstName}
+            errors={errors?.firstName}
             onChangeText={text => {
               setNewUser({ ...newUser, firstName: text })
               setErrors({ ...errors, firstName: "" })
@@ -260,7 +260,7 @@ export default function Register() {
           />
           <CustomInput
             title="Last Name"
-            errors={errors.lastName}
+            errors={errors?.lastName}
             onChangeText={text => {
               setNewUser({ ...newUser, lastName: text })
               setErrors({ ...errors, lastName: "" })

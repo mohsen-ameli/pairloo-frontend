@@ -118,4 +118,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 12,
   },
+  avatarContainer: {
+    position: "relative",
+  },
 })

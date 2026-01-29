@@ -1,16 +1,18 @@
 import CustomButton from "@/src/components/CustomButton"
-import { currentConversationAtom, sendAttachmentAtom } from "@/src/store/chat-store"
+import { sendAttachmentAtom } from "@/src/store/chat-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
-import { useRouter } from "expo-router"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useLocalSearchParams, useRouter } from "expo-router"
+import { useSetAtom } from "jotai"
 import { Text, TouchableOpacity, View } from "react-native"
+import { setUserPfpAtom } from "../store/settings-store"
 
 export default function AttachmentPicker() {
   const router = useRouter()
-  const conversationId = useAtomValue(currentConversationAtom)?._id
+  const { intent } = useLocalSearchParams<{ intent: "chat" | "pfp" }>()
   const sendAttachment = useSetAtom(sendAttachmentAtom)
+  const setPfp = useSetAtom(setUserPfpAtom)
 
   return (
     <View style={chatStyles.modalContainer}>
@@ -22,22 +24,28 @@ export default function AttachmentPicker() {
         <CustomButton
           color={colors.blue}
           onPress={() => {
-            sendAttachment(true, conversationId)
+            if (intent === "chat") {
+              sendAttachment("library")
+            } else if (intent === "pfp") {
+              setPfp("library")
+            }
             router.back()
           }}
         >
-          <Feather name="image" size={20} color={colors.light} style={{ marginRight: 10 }} /> Upload
-          Media
+          <Feather name="image" size={20} style={{ marginRight: 10 }} /> Upload Media
         </CustomButton>
         <CustomButton
           color={colors.blue}
           onPress={() => {
-            sendAttachment(false, conversationId)
+            if (intent === "chat") {
+              sendAttachment("camera")
+            } else if (intent === "pfp") {
+              setPfp("camera")
+            }
             router.back()
           }}
         >
-          <Feather name="camera" size={20} color={colors.light} style={{ marginRight: 10 }} /> Open
-          Camera
+          <Feather name="camera" size={20} style={{ marginRight: 10 }} /> Open Camera
         </CustomButton>
       </View>
     </View>
