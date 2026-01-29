@@ -205,7 +205,7 @@ export default function ChatDetails() {
 }
 
 function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: number | null }) {
-  const aspectRatio = useImageAspectRatio(item.attachment?.url || "")
+  const aspectRatio = useImageAspectRatio(item.attachment?.url)
   const setIsVisible = useSetAtom(visibleAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
 

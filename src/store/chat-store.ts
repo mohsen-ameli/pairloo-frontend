@@ -47,7 +47,9 @@ export const initChatAtom = atom(null, async (get, set) => {
     console.log("Disconnected from WebSocket server for chatting")
     set(chatSocketAtom, null)
     set(conversationsAtom, [])
+    set(currentConversationAtom, null)
     set(messagesAtom, [])
+    set(loadingAtom, false)
   })
 
   socket.on("error", (err: any) => {
