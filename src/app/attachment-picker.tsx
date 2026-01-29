@@ -32,8 +32,7 @@ export default function AttachmentPicker() {
             router.back()
           }}
         >
-          <Feather name="image" size={20} color={colors.light} style={{ marginRight: 10 }} /> Upload
-          Media
+          <Feather name="image" size={20} style={{ marginRight: 10 }} /> Upload Media
         </CustomButton>
         <CustomButton
           color={colors.blue}
@@ -46,8 +45,7 @@ export default function AttachmentPicker() {
             router.back()
           }}
         >
-          <Feather name="camera" size={20} color={colors.light} style={{ marginRight: 10 }} /> Open
-          Camera
+          <Feather name="camera" size={20} style={{ marginRight: 10 }} /> Open Camera
         </CustomButton>
       </View>
     </View>

@@ -2,6 +2,9 @@ import { AudioPlayer } from "expo-audio"
 import { atom } from "jotai"
 import * as ImagePicker from "expo-image-picker"
 import { Alert } from "react-native"
+import { QueryClient } from "@tanstack/react-query"
+
+export const queryClientAtom = atom(new QueryClient())
 
 export const pathStore = atom("")
 

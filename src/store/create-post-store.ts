@@ -12,6 +12,7 @@ import { QnaType, Question } from "@/src/types/question.types"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { s3Object } from "../types/s3object.type"
+import { queryClientAtom } from "./general-store"
 
 const INITIAL_PAGE_COUNT = 2
 const DEFAULT_NUM_MATCHES = 5
@@ -120,6 +121,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
       pathname: "/my-post",
       params: { id: postId },
     })
+    get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   })
 
   socket.on("draft-discarded", () => {
@@ -200,7 +202,7 @@ export const pickImageAtom = atom(null, async (get, set) => {
     for (const asset of result.assets) {
       const localUri = asset.uri
       const mimeType = asset.mimeType || "image/jpeg"
-      images.push({ localUri, mimeType, url: "", key: "", createdAt: new Date().toISOString() })
+      images.push({ localUri, mimeType, url: "", key: "" })
     }
     const prevSettings = await get(settingsAtom)
     await set(settingsAtom, { ...prevSettings, images })

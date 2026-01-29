@@ -37,7 +37,7 @@ export default function ImageCarousel({
 
   if (images.length === 1) {
     return (
-      <View style={{ width, height: 250, borderRadius: 15, overflow: "hidden" }}>
+      <View style={{ width: "auto", height: 250, borderRadius: 15, overflow: "hidden" }}>
         <SlideItem
           index={0}
           source={{ uri: isLocalUri ? images[0].localUri : images[0].url }}

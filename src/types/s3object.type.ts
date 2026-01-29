@@ -3,5 +3,4 @@ export type s3Object = {
   mimeType: string
   key: string
   url: string
-  createdAt: string
 }

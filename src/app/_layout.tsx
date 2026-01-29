@@ -3,13 +3,14 @@ import { StatusBar } from "expo-status-bar"
 import { useAtomValue } from "jotai"
 import { userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { LogBox } from "react-native"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { colors } from "@/src/utils/colors"
 import { maybeCompleteAuthSession } from "expo-web-browser"
 import Toast from "react-native-toast-message"
 import CustomToast from "@/src/components/CustomToast"
 import useCustomHeader from "@/src/utils/useCustomHeader"
+import { queryClientAtom } from "../store/general-store"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -33,7 +34,7 @@ const toastConfig = {
 export default function RootLayout() {
   const user = useAtomValue(userAtom)
   const userJwt = useAtomValue(userJwtAtom)
-  const queryClient = new QueryClient()
+  const queryClient = useAtomValue(queryClientAtom)
 
   const loginOptions = useCustomHeader("Log In", true)
   const registerOptions = useCustomHeader("Create Account", true)
