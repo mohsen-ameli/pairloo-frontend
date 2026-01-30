@@ -6,6 +6,7 @@ export type GeneralPostType = {
   firstName: string
   lastName: string
   picture?: s3Object | null
+  title: string
   content: string
   summary: string
   images?: s3Object[] | null | undefined
@@ -23,6 +24,7 @@ export interface MyPostType extends GeneralPostType {
 
 export interface MyPosts {
   _id: string
+  title: string
   content: string
   createdAt: string
 }

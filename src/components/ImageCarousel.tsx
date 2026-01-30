@@ -42,13 +42,14 @@ export default function ImageCarousel({
           index={0}
           source={{ uri: isLocalUri ? images[0].localUri : images[0].url }}
           setImages={setImages}
+          editable={editable}
         />
       </View>
     )
   }
 
   return (
-    <View style={{ alignItems: "center", paddingBottom: 30, height: 300 }}>
+    <View style={{ alignItems: "center", paddingBottom: 30, height: 270 }}>
       <Carousel
         autoPlayInterval={2000}
         data={images}
