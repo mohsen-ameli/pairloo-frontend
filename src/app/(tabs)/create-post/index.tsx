@@ -27,11 +27,13 @@ import {
   qnaAtom,
   edittedAtom,
   settingsAtom,
+  initCreatePostAtom,
 } from "@/src/store/create-post-store"
 import { useFocusEffect } from "expo-router"
 import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
+import { errorStyles } from "@/src/styles/error.styles"
 
 const INITIAL_PAGE_COUNT = 2
 
@@ -45,6 +47,7 @@ export default function CreatePost() {
   const forward = useSetAtom(forwardCreatePostAtom)
   const pickImage = useSetAtom(pickImageAtom)
   const setEditted = useSetAtom(edittedAtom)
+  const initCreatePost = useSetAtom(initCreatePostAtom)
 
   useFocusEffect(
     useCallback(() => {
@@ -83,6 +86,35 @@ export default function CreatePost() {
       return updated
     })
     setEditted(true)
+  }
+
+  async function refresh() {
+    await initCreatePost()
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [])
+  )
+
+  if (loading) {
+    return (
+      <View style={errorStyles.container}>
+        <LoadingIndicator loading={true} />
+      </View>
+    )
+  }
+
+  if (!socket || socket.connected === false) {
+    return (
+      <View style={errorStyles.container}>
+        <Text style={errorStyles.errorText}>An error occured. Please try again.</Text>
+        <Pressable style={errorStyles.retryButton} onPress={refresh}>
+          <Text style={errorStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    )
   }
 
   return (

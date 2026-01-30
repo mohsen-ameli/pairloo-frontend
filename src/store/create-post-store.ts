@@ -41,18 +41,30 @@ export const edittedAtom = atom(false)
 export const initCreatePostAtom = atom(null, async (get, set) => {
   const user = await get(userJwtAtom)
   if (!user) return
-  if (get(createPostSocketAtom)) return
+  const currSocket = get(createPostSocketAtom)
+  if (currSocket && (currSocket.connected || get(loadingAtom))) return
+
+  set(loadingAtom, true)
 
   const socket = io(WS_BASE_URL + "/create-post", {
     auth: {
       token: user.accessToken,
     },
+    reconnection: true,
+    reconnectionAttempts: 3,
+    reconnectionDelay: 2000,
+    transports: ["websocket", "polling"],
   })
 
   set(createPostSocketAtom, socket)
 
+  socket.io.on("reconnect_failed", () => {
+    set(loadingAtom, false)
+  })
+
   socket.on("connect", () => {
     console.log("Connected to WebSocket server for create-post")
+    set(loadingAtom, false)
   })
 
   socket.on("disconnect", () => {

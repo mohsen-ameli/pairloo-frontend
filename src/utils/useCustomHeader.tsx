@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity, Pressable } from "react-native"
 import React from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
-import { OtherUser } from "@/src/types/chat.type"
 import { colors } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -10,7 +9,8 @@ import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/crea
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { currentConversationAtom } from "../store/chat-store"
-import { userAtom, userJwtAtom } from "../store/auth-store"
+import { userJwtAtom } from "../store/auth-store"
+import { createPostSocketAtom } from "../store/socket-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -29,6 +29,7 @@ export default function useCustomHeader(
   const currentConversation = useAtomValue(currentConversationAtom)
   const user = useAtomValue(userJwtAtom)
   const loading = useAtomValue(loadingAtom)
+  const createPostSocket = useAtomValue(createPostSocketAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,
@@ -105,19 +106,21 @@ export default function useCustomHeader(
         <View style={styles.header}>
           <View
             style={[
-              styles.headerContent,
+              createPostSocket?.connected && styles.headerContent,
               { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
             ]}
           >
             <Text style={styles.headerTitle}>Create Post</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
-                <Feather name="rotate-ccw" size={24} color={colors.dark} />
-              </Pressable>
-              <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
-                <Feather name="trash-2" size={24} color={colors.dark} />
-              </Pressable>
-            </View>
+            {createPostSocket?.connected && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
+                  <Feather name="rotate-ccw" size={24} color={colors.dark} />
+                </Pressable>
+                <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
+                  <Feather name="trash-2" size={24} color={colors.dark} />
+                </Pressable>
+              </View>
+            )}
           </View>
         </View>
       ),

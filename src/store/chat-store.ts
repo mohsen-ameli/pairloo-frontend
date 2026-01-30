@@ -28,15 +28,26 @@ export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
   const userJwt = await get(userJwtAtom)
   if (!user || !userJwt) return
-  if (get(chatSocketAtom)) return
+  const currSocket = get(chatSocketAtom)
+  if (currSocket && (currSocket.connected || get(loadingAtom))) return
+
+  set(loadingAtom, true)
 
   const socket = io(WS_BASE_URL + "/chat", {
     auth: {
       token: userJwt.accessToken,
     },
+    reconnection: true,
+    reconnectionAttempts: 3,
+    reconnectionDelay: 2000,
+    transports: ["websocket", "polling"],
   })
 
   set(chatSocketAtom, socket)
+
+  socket.io.on("reconnect_failed", () => {
+    set(loadingAtom, false)
+  })
 
   socket.on("connected", () => {
     console.log("Connected to WebSocket server for chatting")
@@ -77,6 +88,7 @@ export const initChatAtom = atom(null, async (get, set) => {
   // Got all conversations
   socket.on("conversations", (conversations: ConversationType[]) => {
     set(conversationsAtom, conversations)
+    set(loadingAtom, false)
   })
 
   socket.on("lastMessageUpdated", (conversationId: string, lastMessage: MessageType) => {
