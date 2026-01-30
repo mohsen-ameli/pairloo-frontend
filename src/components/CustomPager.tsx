@@ -48,7 +48,7 @@ export default function CustomPager({
   // Animate fake view height
   const fakeView = useAnimatedStyle(() => {
     return {
-      height: Math.abs(height.value),
+      height: Math.abs(height.value) + (Platform.OS === "ios" ? 0 : 20),
     }
   }, [])
 
@@ -140,7 +140,8 @@ export default function CustomPager({
             marginLeft: "auto",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: !flow.nextEnabled ? colors.gray : colors.purple,
+            backgroundColor: colors.purple,
+            opacity: flow.nextEnabled ? 1 : 0.5,
             borderRadius: "50%",
           }}
           onPress={() => {
@@ -179,13 +180,12 @@ export default function CustomPager({
               height: 70,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: !flow.backEnabled ? colors.gray : colors.purple,
+              backgroundColor: colors.purple,
               borderRadius: "50%",
             }}
             onPress={() => {
               flow.back && flow.back()
             }}
-            disabled={!flow.backEnabled}
           >
             <Text
               style={{

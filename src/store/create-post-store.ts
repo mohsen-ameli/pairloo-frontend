@@ -1,6 +1,6 @@
 import { atom } from "jotai"
 import { logOutAtom, userJwtAtom } from "./auth-store"
-import { WS_BASE_URL } from "@/src/utils/constants"
+import { MINIMUM_SHORT_ANSWER_LENGTH, WS_BASE_URL } from "@/src/utils/constants"
 import { createPostSocketAtom } from "./socket-store"
 import { refreshAccessToken } from "@/src/utils/refresh-access-token"
 import io from "socket.io-client"
@@ -20,7 +20,7 @@ const DEFAULT_PUBLIC_POST = false
 
 const DEFAULT_QUESTION: Question = {
   type: "short_answer",
-  question: "Start by describing what you want to post about.",
+  question: "Start by describing what you are looking for.",
 }
 
 const settings = {
@@ -129,6 +129,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     set(settingsAtom, settings)
+    set(edittedAtom, false)
     set(loadingAtom, false)
   })
 })
@@ -164,8 +165,13 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
     return
   }
 
-  if (!qna[currPage] || qna[currPage].answer.length === 0) {
-    Alert.alert("Input required", "Please enter some text before continuing.")
+  // Validate current answer
+  if (
+    !qna[currPage] ||
+    qna[currPage].answer.length === 0 ||
+    (qna[currPage].question.type === "short_answer" &&
+      qna[currPage].answer[0].length < MINIMUM_SHORT_ANSWER_LENGTH)
+  ) {
     return
   }
 
@@ -237,7 +243,7 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
   if (currPage >= qna.length) return
 
   {
-    Alert.alert("Redo Post", "Are you sure you want to get a different question?", [
+    Alert.alert("Get New Question", "Are you sure you want to get a different question?", [
       {
         text: "Cancel",
         style: "cancel",
@@ -246,7 +252,9 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
         text: "Redo",
         style: "default",
         onPress: () => {
-          Alert.alert("NOT IMPLEMENTED")
+          set(loadingAtom, true)
+          const qnaSlice = qna.slice(0, currPage)
+          socket.emit("chat", qnaSlice)
         },
       },
     ])

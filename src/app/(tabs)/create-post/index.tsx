@@ -31,6 +31,7 @@ import {
 import { useFocusEffect } from "expo-router"
 import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
+import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 
 const INITIAL_PAGE_COUNT = 2
 
@@ -39,7 +40,7 @@ export default function CreatePost() {
   const socket = useAtomValue(createPostSocketAtom)
   const loading = useAtomValue(loadingAtom)
   const [settings, setSettings] = useAtom(settingsAtom)
-  const [flow, setFlow] = useAtom(flowAtom)
+  const setFlow = useSetAtom(flowAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const forward = useSetAtom(forwardCreatePostAtom)
   const pickImage = useSetAtom(pickImageAtom)
@@ -49,7 +50,7 @@ export default function CreatePost() {
     useCallback(() => {
       if (!socket) return
       setFlow({
-        ...flow,
+        nextEnabled: currPage < QNAs.length ? QNAs[currPage].answer.length > 0 : true,
         back: () => {
           setEditted(false)
           setCurrPage(currPage - 1)
@@ -62,6 +63,11 @@ export default function CreatePost() {
   )
 
   async function handleChange(i: number, option: string, type: Question["type"]) {
+    if (type === "short_answer" && option.length < MINIMUM_SHORT_ANSWER_LENGTH) {
+      setFlow(prev => ({ ...prev, nextEnabled: false }))
+    } else {
+      setFlow(prev => ({ ...prev, nextEnabled: true }))
+    }
     setQNAs(prev => {
       const updated = [...prev]
       if (type === "multiple_choice" || type === "short_answer") {
@@ -129,8 +135,19 @@ export default function CreatePost() {
                     {options.map((option: string, idx: number) => {
                       const isSelected = answer.includes(option)
                       return (
-                        <View
+                        <BouncyCheckbox
                           key={option}
+                          isChecked={isSelected}
+                          onPress={() => handleChange(i, option, type)}
+                          fillColor={colors.purple}
+                          iconStyle={{
+                            borderColor: colors.dark,
+                            borderRadius: 2,
+                          }}
+                          innerIconStyle={{
+                            borderWidth: 2,
+                            borderRadius: 5,
+                          }}
                           style={[
                             createPostStyles.multiSelect,
                             {
@@ -138,28 +155,13 @@ export default function CreatePost() {
                               backgroundColor: isSelected ? colors.lightPurple : colors.lightGray,
                             },
                           ]}
-                        >
-                          <BouncyCheckbox
-                            isChecked={isSelected}
-                            onPress={() => handleChange(i, option, type)}
-                            fillColor={colors.purple}
-                            iconStyle={{
-                              borderColor: colors.dark,
-                              borderRadius: 2,
-                            }}
-                            innerIconStyle={{
-                              borderWidth: 2,
-                              borderRadius: 5,
-                            }}
-                            style={{ marginRight: 5 }}
-                            text={option}
-                            textStyle={{
-                              ...createPostStyles.mcqOptionText,
-                              color: colors.dark,
-                              textDecorationLine: "none",
-                            }}
-                          />
-                        </View>
+                          text={option}
+                          textStyle={{
+                            ...createPostStyles.mcqOptionText,
+                            color: colors.dark,
+                            textDecorationLine: "none",
+                          }}
+                        />
                       )
                     })}
                   </ScrollView>
@@ -170,7 +172,7 @@ export default function CreatePost() {
                     defaultValue={qna.answer[0]}
                     value={qna.answer[0]}
                     onChangeText={text => handleChange(i, text, type)}
-                    placeholder="Write as little or as much details as you want..."
+                    placeholder="Write as little or as much details as you want"
                     editable={!loading}
                     multiline
                     numberOfLines={10}
