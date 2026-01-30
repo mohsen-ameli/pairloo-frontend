@@ -57,6 +57,13 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     textTransform: "capitalize",
   },
+  draftIcon: {
+    backgroundColor: colors.yellow,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
   postPrice: {
     fontSize: 18,
     fontWeight: "700",

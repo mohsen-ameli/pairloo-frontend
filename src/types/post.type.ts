@@ -28,4 +28,5 @@ export interface MyPosts {
   content: string
   createdAt: string
   images?: s3Object[] | null
+  isDraft?: boolean
 }

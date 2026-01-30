@@ -70,16 +70,24 @@ export default function Index() {
               flatImages = flatImages.flat()
             }
 
+            console.log(flatImages)
+
             return (
               <TouchableOpacity
                 key={index}
                 style={styles.postCard}
-                onPress={() =>
-                  router.push({
-                    pathname: "my-post",
-                    params: { id: post._id },
-                  })
-                }
+                onPress={() => {
+                  if (post.isDraft) {
+                    router.push({
+                      pathname: "/create-post",
+                    })
+                  } else {
+                    router.push({
+                      pathname: "my-post",
+                      params: { id: post._id },
+                    })
+                  }
+                }}
               >
                 {/* Image Section */}
                 {flatImages && flatImages.length > 0 && flatImages[0].url && (
@@ -94,9 +102,18 @@ export default function Index() {
 
                 {/* Content Section */}
                 <View style={styles.postCardContent}>
-                  <Text style={styles.postTitle} numberOfLines={2}>
-                    {post.title || post.content}
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                    <Text style={styles.postTitle} numberOfLines={2}>
+                      {post.title || post.content}
+                    </Text>
+                    {post.isDraft && (
+                      <View style={styles.draftIcon}>
+                        <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>
+                          Draft
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   <Text style={styles.postCategory} numberOfLines={2}>
                     {post.content}
                   </Text>
