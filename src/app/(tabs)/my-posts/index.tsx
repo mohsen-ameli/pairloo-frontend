@@ -8,6 +8,7 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { MyPosts } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
+import { colors } from "@/src/utils/colors"
 
 const imageNotAvailable = require("@/assets/images/image-not-available.png")
 
@@ -62,33 +63,50 @@ export default function Index() {
             <Text style={styles.emptyStateText}>No posts yet. Create one to get started!</Text>
           </View>
         ) : (
-          posts.map((post, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.postCard, styles.postCardShadow]}
-              onPress={() =>
-                router.push({
-                  pathname: "my-post",
-                  params: { id: post._id },
-                })
-              }
-            >
-              <View style={styles.postCardContent}>
-                <View style={[styles.postImage, styles.postImageBackground]}>
-                  <Image
-                    source={imageNotAvailable}
-                    style={styles.postImageFill}
-                    contentFit="cover"
-                  />
-                </View>
-                <View style={styles.postTextContainer}>
-                  <Text style={styles.postTitle} numberOfLines={1}>
+          posts.map((post, index) => {
+            // Handle both flat and nested image arrays
+            let flatImages = post.images || []
+            if (flatImages.length > 0 && Array.isArray(flatImages[0])) {
+              flatImages = flatImages.flat()
+            }
+
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.postCard}
+                onPress={() =>
+                  router.push({
+                    pathname: "my-post",
+                    params: { id: post._id },
+                  })
+                }
+              >
+                {/* Image Section */}
+                {flatImages && flatImages.length > 0 && flatImages[0].url && (
+                  <View style={styles.postCardImage}>
+                    <Image
+                      source={{ uri: flatImages[0].url }}
+                      style={styles.postCardImageFill}
+                      contentFit="cover"
+                    />
+                  </View>
+                )}
+
+                {/* Content Section */}
+                <View style={styles.postCardContent}>
+                  <Text style={styles.postTitle} numberOfLines={2}>
+                    {post.title || post.content}
+                  </Text>
+                  <Text style={styles.postCategory} numberOfLines={2}>
                     {post.content}
                   </Text>
+                  <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </Text>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))
+              </TouchableOpacity>
+            )
+          })
         )}
       </ScrollView>
     </View>

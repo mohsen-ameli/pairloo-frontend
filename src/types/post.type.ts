@@ -27,4 +27,5 @@ export interface MyPosts {
   title: string
   content: string
   createdAt: string
+  images?: s3Object[] | null
 }

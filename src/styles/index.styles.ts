@@ -21,41 +21,29 @@ export const styles = StyleSheet.create({
     color: colors.muted,
   },
   postCard: {
-    marginBottom: 12,
+    marginBottom: 16,
     backgroundColor: colors.light,
     borderRadius: 12,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: colors.borderGray,
-    elevation: 2,
-  },
-  postCardShadow: {
+    elevation: 1,
     shadowColor: colors.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowOpacity: 1,
+    shadowRadius: 2,
     shadowOffset: { width: 0, height: 2 },
   },
-  postCardContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-  },
-  postImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    overflow: "hidden",
-    marginRight: 12,
-  },
-  postImageBackground: {
+  postCardImage: {
+    width: "100%",
+    height: 220,
     backgroundColor: colors.lightGray,
   },
-  postImageFill: {
+  postCardImageFill: {
     width: "100%",
     height: "100%",
   },
-  postTextContainer: {
-    flex: 1,
+  postCardContent: {
+    padding: 14,
   },
   postTitle: {
     fontSize: 16,

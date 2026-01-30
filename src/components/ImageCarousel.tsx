@@ -49,7 +49,7 @@ export default function ImageCarousel({
   }
 
   return (
-    <View style={{ alignItems: "center", paddingBottom: 30, height: 270 }}>
+    <View style={{ alignItems: "center", paddingBottom: 20, height: 280 }}>
       <Carousel
         autoPlayInterval={2000}
         data={images}
