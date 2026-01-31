@@ -29,4 +29,5 @@ export interface MyPosts {
   createdAt: string
   images?: s3Object[] | null
   isDraft?: boolean
+  closestPosts?: Array<{ score: number; item: string }> | null
 }

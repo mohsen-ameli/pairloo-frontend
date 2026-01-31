@@ -7,6 +7,7 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import CustomButton from "@/src/components/CustomButton"
 import { MyPostType } from "@/src/types/post.type"
 import { colors } from "@/src/utils/colors"
+import { getScoreColor } from "@/src/utils/getScoreColor"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -48,16 +49,6 @@ export default function PostDetails() {
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
-  }
-
-  function getScoreColor(score: number) {
-    if (score < 0.25) {
-      return colors.errorRed
-    } else if (score < 0.75) {
-      return colors.yellow
-    } else {
-      return colors.successGreen
-    }
   }
 
   if (isPending || isPendingMutation) {

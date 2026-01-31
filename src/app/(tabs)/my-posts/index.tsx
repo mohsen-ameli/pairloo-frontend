@@ -5,12 +5,12 @@ import { useSetAtom } from "jotai"
 import { ScrollView, Text, View, TouchableOpacity, RefreshControl, Pressable } from "react-native"
 import { styles } from "@/src/styles/index.styles"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
+import CustomLabel from "@/src/components/CustomLabel"
 import { MyPosts } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import { colors } from "@/src/utils/colors"
-
-const imageNotAvailable = require("@/assets/images/image-not-available.png")
+import { getScoreColor } from "@/src/utils/getScoreColor"
 
 export default function Index() {
   const router = useRouter()
@@ -70,8 +70,6 @@ export default function Index() {
               flatImages = flatImages.flat()
             }
 
-            console.log(flatImages)
-
             return (
               <TouchableOpacity
                 key={index}
@@ -102,24 +100,30 @@ export default function Index() {
 
                 {/* Content Section */}
                 <View style={styles.postCardContent}>
-                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                    <Text style={styles.postTitle} numberOfLines={2}>
-                      {post.title || post.content}
+                  <Text style={styles.postTitle} numberOfLines={2}>
+                    {post.title || post.content}
+                  </Text>
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
+                      {new Date(post.createdAt).toLocaleDateString()}
                     </Text>
-                    {post.isDraft && (
-                      <View style={styles.draftIcon}>
-                        <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>
-                          Draft
-                        </Text>
-                      </View>
-                    )}
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      {post.closestPosts && post.closestPosts.length > 0 && (
+                        <CustomLabel
+                          text={`${Math.round(post.closestPosts[0].score * 100)}% match`}
+                          backgroundColor={getScoreColor(post.closestPosts[0].score)}
+                        />
+                      )}
+                      {post.isDraft && <CustomLabel text="Draft" backgroundColor={colors.purple} />}
+                    </View>
                   </View>
-                  <Text style={styles.postCategory} numberOfLines={2}>
-                    {post.content}
-                  </Text>
-                  <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </Text>
                 </View>
               </TouchableOpacity>
             )
