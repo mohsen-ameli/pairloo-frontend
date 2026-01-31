@@ -14,9 +14,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { s3Object } from "../types/s3object.type"
 import { queryClientAtom } from "./general-store"
 
-const INITIAL_PAGE_COUNT = 2
+export const INITIAL_PAGE_COUNT = 2 // Starting page + last page
 const DEFAULT_NUM_MATCHES = 5
-const DEFAULT_PUBLIC_POST = false
+const DEFAULT_PUBLIC_POST = true
 
 const DEFAULT_QUESTION: Question = {
   type: "short_answer",
@@ -89,8 +89,8 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("question", (qna: QnaType) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
-    set(currPageAtom, qna.length - 1)
-    set(pageCountAtom, qna.length + 1)
+    set(currPageAtom, curr => curr + 1)
+    set(pageCountAtom, curr => curr + 1)
   })
 
   socket.on(

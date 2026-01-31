@@ -29,7 +29,6 @@ export default function useCustomHeader(
   const currentConversation = useAtomValue(currentConversationAtom)
   const user = useAtomValue(userJwtAtom)
   const loading = useAtomValue(loadingAtom)
-  const createPostSocket = useAtomValue(createPostSocketAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,
@@ -106,21 +105,19 @@ export default function useCustomHeader(
         <View style={styles.header}>
           <View
             style={[
-              createPostSocket?.connected && styles.headerContent,
+              styles.headerContent,
               { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
             ]}
           >
             <Text style={styles.headerTitle}>Create Post</Text>
-            {createPostSocket?.connected && (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
-                  <Feather name="rotate-ccw" size={24} color={colors.dark} />
-                </Pressable>
-                <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
-                  <Feather name="trash-2" size={24} color={colors.dark} />
-                </Pressable>
-              </View>
-            )}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
+                <Feather name="rotate-ccw" size={24} color={colors.dark} />
+              </Pressable>
+              <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
+                <Feather name="trash-2" size={24} color={colors.dark} />
+              </Pressable>
+            </View>
           </View>
         </View>
       ),
