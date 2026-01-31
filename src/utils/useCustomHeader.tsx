@@ -19,7 +19,10 @@ export default function useCustomHeader(
   title: string,
   backButtonVisible: boolean = false,
   inChat: boolean = false,
-  createPost?: boolean
+  createPost?: boolean,
+  myPostsPage?: boolean,
+  deletePost?: () => void,
+  editPost?: () => void
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
 
@@ -117,6 +120,48 @@ export default function useCustomHeader(
               <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
                 <Feather name="trash-2" size={24} color={colors.dark} />
               </Pressable>
+            </View>
+          </View>
+        </View>
+      ),
+    }
+  }
+
+  if (myPostsPage) {
+    return {
+      ...options,
+      headerTitle: () => (
+        <View style={styles.header}>
+          <View
+            style={[
+              styles.headerContent,
+              { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+            ]}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              {backButtonVisible && (
+                <Pressable
+                  style={styles.headerBackIcon}
+                  onPress={() => {
+                    router.back()
+                  }}
+                >
+                  <Feather name="arrow-left" size={26} color={colors.dark} />
+                </Pressable>
+              )}
+              <Text style={[styles.headerTitle, { marginLeft: 50 }]}>{title}</Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              {editPost && (
+                <Pressable onPress={editPost} style={{ padding: 6 }}>
+                  <Feather name="edit" size={24} color={colors.dark} />
+                </Pressable>
+              )}
+              {deletePost && (
+                <Pressable onPress={deletePost} style={{ padding: 6 }}>
+                  <Feather name="trash-2" size={24} color={colors.dark} />
+                </Pressable>
+              )}
             </View>
           </View>
         </View>

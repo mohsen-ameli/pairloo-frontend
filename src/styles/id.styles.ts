@@ -32,6 +32,58 @@ const styles = StyleSheet.create({
   postContainer: {
     marginBottom: 20,
   },
+  description: {
+    fontSize: 16,
+    color: colors.darkGray,
+    lineHeight: 22,
+    marginBottom: 16,
+    marginLeft: 5,
+  },
+  qnaSection: {
+    marginBottom: 24,
+  },
+  qnaCard: {
+    backgroundColor: colors.light,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    shadowColor: colors.dark,
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  qnaCardHeader: {
+    marginBottom: 12,
+  },
+  qnaCardQuestion: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.darkGray,
+    lineHeight: 20,
+  },
+  qnaLabel: {
+    fontWeight: "700",
+    color: colors.purple,
+  },
+  qnaCardAnswerSection: {
+    marginTop: 8,
+  },
+  qnaAnswerLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.gray,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  qnaCardAnswer: {
+    fontSize: 13,
+    color: colors.dark,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
   fieldLine: {
     fontSize: 16,
     color: colors.darkGray,

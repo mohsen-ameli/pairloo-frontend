@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import { colors } from "@/src/utils/colors"
 import { getScoreColor } from "@/src/utils/getScoreColor"
+import { formatDate } from "@/src/utils/format-date"
 
 export default function Index() {
   const router = useRouter()
@@ -112,7 +113,7 @@ export default function Index() {
                     }}
                   >
                     <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
-                      {new Date(post.createdAt).toLocaleDateString()}
+                      {formatDate(post.createdAt)}
                     </Text>
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
                       {post.closestPosts && post.closestPosts.length > 0 && (

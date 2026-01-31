@@ -14,6 +14,10 @@ export default function CustomLabel({ text, backgroundColor }: CustomLabelProps)
         paddingVertical: 4,
         borderRadius: 12,
         marginLeft: 8,
+        borderTopLeftRadius: 50,
+        borderTopRightRadius: 50,
+        borderBottomLeftRadius: 50,
+        borderBottomRightRadius: 50,
       }}
     >
       <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>{text}</Text>

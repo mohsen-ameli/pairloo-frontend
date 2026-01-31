@@ -13,11 +13,12 @@ import { Image } from "expo-image"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import useCustomHeader from "@/src/utils/useCustomHeader"
+import CustomLabel from "@/src/components/CustomLabel"
+import { de } from "zod/v4/locales"
 
 export default function PostDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const detailOptions = useCustomHeader("Details", true)
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const {
@@ -26,8 +27,33 @@ export default function PostDetails() {
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
   const { mutate, isPending: isPendingMutation } = useMutation({
-    mutationFn: removePost,
+    mutationFn: deletePost,
   })
+
+  const handleDelete = () => {
+    Alert.alert("Confirm", "Are you sure you want to delete this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => mutate(),
+      },
+    ])
+  }
+
+  const handleEdit = () => {
+    Alert.alert("Edit", "Edit Functionality Will Be Added Soon")
+  }
+
+  const detailOptions = useCustomHeader(
+    "Details",
+    true,
+    false,
+    false,
+    true,
+    handleDelete,
+    handleEdit
+  )
 
   async function fetchPost() {
     const res = await authFetch(`/api/posts/my-posts/${id}`)
@@ -35,7 +61,7 @@ export default function PostDetails() {
     return data
   }
 
-  async function removePost() {
+  async function deletePost() {
     const res = await authFetch(`/api/posts/${id}`, {
       method: "DELETE",
     })
@@ -83,25 +109,40 @@ export default function PostDetails() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.postContainer}>
             {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
-            <Text style={styles.title}>{post.content}</Text>
-            <Text style={styles.subtitle}>{post.summary}</Text>
+            <Text style={styles.title}>{post.title || post.content}</Text>
           </View>
 
-          <CustomButton
-            color={colors.errorRed}
-            onPress={() => {
-              Alert.alert("Confirm", "Are you sure you want to remove this post?", [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Remove",
-                  style: "destructive",
-                  onPress: () => mutate(),
-                },
-              ])
-            }}
-          >
-            Remove Post
-          </CustomButton>
+          {/* QNA Information */}
+          {post.qna && post.qna.length > 0 && (
+            <View style={styles.qnaSection}>
+              <Text style={styles.description}>Your Q&A Response:</Text>
+              {post.qna.map((item: any, index: number) => (
+                <View key={item._id} style={styles.qnaCard}>
+                  <View style={styles.qnaCardHeader}>
+                    <Text style={styles.qnaCardQuestion}>
+                      <Text style={styles.qnaLabel}>Q: </Text>
+                      {item.question.question}
+                    </Text>
+                  </View>
+                  <View style={styles.qnaCardAnswerSection}>
+                    {Array.isArray(item.answer) ? (
+                      item.answer.map((ans: any, idx: number) => (
+                        <Text key={idx} style={styles.qnaCardAnswer}>
+                          <Text style={styles.qnaLabel}>A: </Text>
+                          {ans}
+                        </Text>
+                      ))
+                    ) : (
+                      <Text style={styles.qnaCardAnswer}>
+                        <Text style={styles.qnaLabel}>A: </Text>
+                        {item.answer}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
 
           {/* Closest posts */}
           {post.closestPosts && post.closestPosts.length > 0 && (
@@ -126,14 +167,10 @@ export default function PostDetails() {
                         <Text style={styles.closestPostUsername}>@{post.username}</Text>
                       </View>
                     </View>
-                    <Text
-                      style={[
-                        styles.closestPostScore,
-                        { color: getScoreColor(parseFloat(post.score)) },
-                      ]}
-                    >
-                      {Math.round(parseFloat(post.score) * 100)}% match
-                    </Text>
+                    <CustomLabel
+                      text={`${Math.round(parseFloat(post.score) * 100)}% match`}
+                      backgroundColor={getScoreColor(parseFloat(post.score))}
+                    />
                   </View>
                   <View style={styles.closestPostImage}>
                     {post.images && post.images.length != 0 && (
