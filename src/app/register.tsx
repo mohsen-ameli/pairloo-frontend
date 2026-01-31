@@ -18,7 +18,7 @@ import { styles } from "@/src/styles/register.styles"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { TextInput } from "react-native"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
-import { currPageAtom, flowAtom, resetPagerAtom } from "@/src/store/pager-store"
+import { currPageAtom, flowAtom, pageCountAtom, resetPagerAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { useFocusEffect } from "expo-router"
 
@@ -26,6 +26,7 @@ const INITIAL_PAGE_COUNT = 5
 
 export default function Register() {
   const signUp = useSetAtom(signUpAtom)
+  const setPageCount = useSetAtom(pageCountAtom)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [errors, setErrors] = useAtom(authErrorsAtom)
   const requested = useRef(false)
@@ -56,6 +57,7 @@ export default function Register() {
 
   // Set next/back functions based on current page
   useEffect(() => {
+    setPageCount(INITIAL_PAGE_COUNT)
     setFlow({
       ...flow,
       back: () => {
@@ -121,7 +123,7 @@ export default function Register() {
   }
 
   return (
-    <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
+    <CustomPager>
       <View style={styles.pageContainer} key="0">
         {/* {avatar && <SvgXml xml={avatar} />}
         <CustomButton onPress={generateAvatar}>Generate Avatar</CustomButton> */}

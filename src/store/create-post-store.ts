@@ -89,36 +89,27 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("question", (qna: QnaType) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
-    set(currPageAtom, curr => curr + 1)
-    set(pageCountAtom, curr => curr + 1)
+    set(currPageAtom, get(currPageAtom) + 1)
+    set(pageCountAtom, get(pageCountAtom) + 1)
   })
 
-  socket.on(
-    "draft-restored",
-    (data: {
-      qna: QnaType
-      initialPostText: string
-      images: s3Object[]
-      publicPost: boolean
-      numMatches: number
-    }) => {
-      set(qnaAtom, data.qna)
-      set(pageCountAtom, data.qna.length + 1)
+  socket.on("draft-restored", (qna: QnaType) => {
+    set(qnaAtom, qna)
+    set(pageCountAtom, qna.length + 1)
 
-      // Navigate to the first unanswered question, or to the last page if all answered
-      const firstUnansweredIdx = data.qna.findIndex(item => item.answer.length === 0)
-      if (firstUnansweredIdx !== -1) {
-        set(currPageAtom, firstUnansweredIdx)
-      } else {
-        set(currPageAtom, data.qna.length)
-      }
-
-      set(loadingAtom, false)
+    // Navigate to the first unanswered question, or to the last page if all answered
+    const firstUnansweredIdx = qna.findIndex(item => item.answer.length === 0)
+    if (firstUnansweredIdx !== -1) {
+      set(currPageAtom, firstUnansweredIdx)
+    } else {
+      set(currPageAtom, qna.length)
     }
-  )
+
+    set(loadingAtom, false)
+  })
 
   socket.on("chat-finished", () => {
-    set(currPageAtom, curr => curr + 1)
+    set(currPageAtom, get(currPageAtom) + 1)
     set(loadingAtom, false)
   })
 
@@ -189,7 +180,7 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
 
   // if not changed, do nothing
   if (!editted) {
-    set(currPageAtom, curr => curr + 1)
+    set(currPageAtom, get(currPageAtom) + 1)
     return
   }
 
@@ -198,8 +189,9 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   // If user went back to change something, we need to get rid of their subsequent QAs
   // If they are just doing next normally, this will have no effect
   const qnaSlice = qna.slice(0, currPage + 1)
-  socket.emit("chat", qnaSlice)
   set(qnaAtom, qnaSlice)
+  set(pageCountAtom, qnaSlice.length + 1)
+  socket.emit("chat", qnaSlice)
 })
 
 export const pickImageAtom = atom(null, async (get, set) => {

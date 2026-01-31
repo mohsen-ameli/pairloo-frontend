@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Animated as A, Platform, Pressable, Text, View } from "react-native"
 import PagerView, { usePagerView } from "react-native-pager-view"
 import { colors } from "@/src/utils/colors"
-import { useAtom, useAtomValue } from "jotai"
+import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
@@ -12,14 +12,8 @@ import { userAtom } from "@/src/store/auth-store"
  * Allows for creating a pager with multiple pages, navigation dots, and next/back buttons.
  * You can also set the page count dynamically.
  */
-export default function CustomPager({
-  initialPageCount,
-  children,
-}: {
-  initialPageCount: number
-  children: React.ReactNode
-}) {
-  const [pageCount, setPageCount] = useAtom(pageCountAtom)
+export default function CustomPager({ children }: { children: React.ReactNode }) {
+  const pageCount = useAtomValue(pageCountAtom)
   const scrollOffset = useRef(new A.Value(0)).current
   const { setPage, ref } = usePagerView({ pagesAmount: pageCount })
   const [scrollEnabled, setScrollEnabled] = useState(true)
@@ -27,12 +21,6 @@ export default function CustomPager({
   const flow = useAtomValue(flowAtom)
   const isAuthenticated = useAtomValue(userAtom) !== null
   const { height } = useGradualAnimation({ includeTabHeight: isAuthenticated })
-
-  useEffect(() => {
-    if (pageCount === 0 || pageCount === initialPageCount) {
-      setPageCount(initialPageCount)
-    }
-  }, [initialPageCount, pageCount, setPageCount])
 
   // Animate scrollOffset when currPage changes (for dots)
   useEffect(() => {
