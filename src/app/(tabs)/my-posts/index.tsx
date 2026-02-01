@@ -65,12 +65,6 @@ export default function Index() {
           </View>
         ) : (
           posts.map((post, index) => {
-            // Extract [object] from nested image array
-            let flatImages = post.images || []
-            if (flatImages.length > 0 && Array.isArray(flatImages[0])) {
-              flatImages = flatImages.flat()
-            }
-
             return (
               <TouchableOpacity
                 key={index}
@@ -88,10 +82,10 @@ export default function Index() {
                   }
                 }}
               >
-                {flatImages && flatImages.length > 0 && flatImages[0].url && (
+                {post.images && post.images.length > 0 && (
                   <View style={styles.postCardImage}>
                     <Image
-                      source={{ uri: flatImages[0].url }}
+                      source={{ uri: post.images[0].url }}
                       style={styles.postCardImageFill}
                       contentFit="cover"
                     />
