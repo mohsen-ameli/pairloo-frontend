@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Animated as A, Platform, Pressable, Text, View } from "react-native"
+import { Animated as A, Keyboard, Pressable, Text, View } from "react-native"
 import PagerView, { usePagerView } from "react-native-pager-view"
 import { colors } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
@@ -48,7 +48,7 @@ export default function CustomPager({ children }: { children: React.ReactNode })
   }, [])
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.light }}>
       {/* Dots */}
       <View
         style={{
@@ -132,7 +132,9 @@ export default function CustomPager({ children }: { children: React.ReactNode })
             opacity: flow.nextEnabled ? 1 : 0.5,
             borderRadius: "50%",
           }}
-          onPress={() => {
+          onPress={async () => {
+            Keyboard.dismiss()
+            await new Promise(resolve => setTimeout(resolve, 100))
             flow.next && flow.next()
           }}
           disabled={!flow.nextEnabled}
@@ -171,7 +173,9 @@ export default function CustomPager({ children }: { children: React.ReactNode })
               backgroundColor: colors.purple,
               borderRadius: "50%",
             }}
-            onPress={() => {
+            onPress={async () => {
+              Keyboard.dismiss()
+              await new Promise(resolve => setTimeout(resolve, 100))
               flow.back && flow.back()
             }}
           >
