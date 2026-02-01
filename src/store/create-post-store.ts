@@ -131,6 +131,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     set(settingsAtom, settings)
     set(loadingAtom, false)
+    get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   })
 })
 
@@ -178,6 +179,10 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   if (!editted) {
     set(currPageAtom, curr => curr + 1)
     return
+  }
+
+  if (currPage === 0) {
+    get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   }
 
   set(loadingAtom, true)
