@@ -65,7 +65,7 @@ export default function Index() {
           </View>
         ) : (
           posts.map((post, index) => {
-            // Handle both flat and nested image arrays
+            // Extract [object] from nested image array
             let flatImages = post.images || []
             if (flatImages.length > 0 && Array.isArray(flatImages[0])) {
               flatImages = flatImages.flat()
@@ -88,7 +88,6 @@ export default function Index() {
                   }
                 }}
               >
-                {/* Image Section */}
                 {flatImages && flatImages.length > 0 && flatImages[0].url && (
                   <View style={styles.postCardImage}>
                     <Image
@@ -99,7 +98,6 @@ export default function Index() {
                   </View>
                 )}
 
-                {/* Content Section */}
                 <View style={styles.postCardContent}>
                   <Text style={styles.postTitle} numberOfLines={2}>
                     {post.title || post.content}

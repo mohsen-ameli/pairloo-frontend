@@ -6,7 +6,6 @@ import { authFetchAtom } from "@/src/utils/auth-fetch"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import CustomButton from "@/src/components/CustomButton"
 import { MyPostType } from "@/src/types/post.type"
-import { colors } from "@/src/utils/colors"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
@@ -14,7 +13,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import CustomLabel from "@/src/components/CustomLabel"
-import { de } from "zod/v4/locales"
 
 export default function PostDetails() {
   const router = useRouter()
