@@ -90,7 +90,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
     set(currPageAtom, get(currPageAtom) + 1)
-    set(pageCountAtom, get(pageCountAtom) + 1)
+    set(pageCountAtom, qna.length + 1)
   })
 
   socket.on("draft-restored", (qna: QnaType) => {
@@ -189,8 +189,6 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   // If user went back to change something, we need to get rid of their subsequent QAs
   // If they are just doing next normally, this will have no effect
   const qnaSlice = qna.slice(0, currPage + 1)
-  set(qnaAtom, qnaSlice)
-  set(pageCountAtom, qnaSlice.length + 1)
   socket.emit("chat", qnaSlice)
 })
 
@@ -256,8 +254,19 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
         text: "Redo",
         style: "default",
         onPress: () => {
+          if (currPage === 0) {
+            // If on the first page, just restart
+            set(loadingAtom, true)
+            socket.emit("discard-draft")
+            return
+          } else if (currPage === qna.length + 1) {
+            // If on the last page, do nothing
+            return
+          }
+
           set(loadingAtom, true)
           const qnaSlice = qna.slice(0, currPage)
+          set(currPageAtom, get(currPageAtom) - 1)
           socket.emit("chat", qnaSlice)
         },
       },
