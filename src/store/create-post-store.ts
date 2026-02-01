@@ -65,6 +65,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("connect", () => {
     console.log("Connected to WebSocket server for create-post")
     set(loadingAtom, false)
+    set(pageCountAtom, INITIAL_PAGE_COUNT)
   })
 
   socket.on("disconnect", () => {

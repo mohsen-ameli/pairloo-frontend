@@ -36,14 +36,14 @@ export default function CustomPager({ children }: { children: React.ReactNode })
   // Animate fake view height
   const fakeView = useAnimatedStyle(() => {
     return {
-      height: Math.abs(height.value) + (Platform.OS === "ios" ? 0 : 20),
+      height: Math.abs(height.value) + 20,
     }
   }, [])
 
   // Animate next/back (flow) buttons position
   const flowButtons = useAnimatedStyle(() => {
     return {
-      bottom: height.value + (Platform.OS === "ios" ? 10 : 20),
+      bottom: height.value + 20,
     }
   }, [])
 

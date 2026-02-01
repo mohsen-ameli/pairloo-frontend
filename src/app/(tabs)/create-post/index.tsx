@@ -28,7 +28,6 @@ import {
   edittedAtom,
   settingsAtom,
   initCreatePostAtom,
-  INITIAL_PAGE_COUNT,
 } from "@/src/store/create-post-store"
 import { useFocusEffect } from "expo-router"
 import { Question } from "@/src/types/question.types"
@@ -112,7 +111,7 @@ export default function CreatePost() {
     <>
       <LoadingIndicator loading={loading} opacity={0.5} />
 
-      <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
+      <CustomPager>
         {QNAs.map((qna, i) => {
           const question = qna.question
           const answer = qna.answer
