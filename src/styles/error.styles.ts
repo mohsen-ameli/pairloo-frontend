@@ -2,6 +2,10 @@ import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
 export const errorStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.light,
+  },
   errorText: {
     color: colors.dark,
     fontSize: 16,

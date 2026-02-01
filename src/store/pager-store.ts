@@ -7,7 +7,6 @@ export const pageCountAtom = atom(0)
 export const flowAtom = atom({
   back: null as null | (() => void),
   next: null as null | (() => void),
-  backEnabled: true,
   nextEnabled: true,
 })
 
@@ -17,7 +16,6 @@ export const resetPagerAtom = atom(null, (_get, set) => {
   set(flowAtom, {
     back: null,
     next: null,
-    backEnabled: true,
     nextEnabled: true,
   })
 })

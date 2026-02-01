@@ -1,14 +1,23 @@
 import { conversationStyles } from "@/src/styles/conversation.style"
-import { conversationsAtom, unreadMessagesAtom } from "@/src/store/chat-store"
+import {
+  conversationsAtom,
+  initChatAtom,
+  loadingAtom,
+  unreadMessagesAtom,
+} from "@/src/store/chat-store"
 import { sinceNow } from "@/src/utils/format-date"
 import { formatString } from "@/src/utils/format-string"
 import { userJwtAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
-import { useRouter } from "expo-router"
-import { useAtomValue } from "jotai"
+import { useFocusEffect, useRouter } from "expo-router"
+import { useAtomValue, useSetAtom } from "jotai"
 import { Pressable, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
+import { chatSocketAtom } from "@/src/store/socket-store"
+import { errorStyles } from "@/src/styles/error.styles"
+import LoadingIndicator from "@/src/components/LoadingIndicator"
+import { useCallback } from "react"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -17,6 +26,9 @@ export default function index() {
   const conversations = useAtomValue(conversationsAtom)
   const user = useAtomValue(userJwtAtom)
   const unreadMessages = useAtomValue(unreadMessagesAtom)
+  const socket = useAtomValue(chatSocketAtom)
+  const initChat = useSetAtom(initChatAtom)
+  const loading = useAtomValue(loadingAtom)
 
   function getLastMessagePreview(lastMessage: MessageType): string {
     if (!lastMessage || !lastMessage.sender || !user) return ""
@@ -35,6 +47,35 @@ export default function index() {
     }
 
     return `${senderName}: ${contentPreview}`
+  }
+
+  async function refresh() {
+    await initChat()
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [])
+  )
+
+  if (loading) {
+    return (
+      <View style={errorStyles.container}>
+        <LoadingIndicator loading={true} />
+      </View>
+    )
+  }
+
+  if (!socket || socket.connected === false) {
+    return (
+      <View style={errorStyles.container}>
+        <Text style={errorStyles.errorText}>An error occured. Please try again.</Text>
+        <Pressable style={errorStyles.retryButton} onPress={refresh}>
+          <Text style={errorStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    )
   }
 
   return (

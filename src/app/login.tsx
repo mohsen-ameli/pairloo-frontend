@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef } from "react"
 import { Pressable, Text, TextInput, View } from "react-native"
 import { styles } from "@/src/styles/login.styles"
 import { colors } from "@/src/utils/colors"
-import { currPageAtom, flowAtom, resetPagerAtom } from "@/src/store/pager-store"
+import { currPageAtom, flowAtom, pageCountAtom, resetPagerAtom } from "@/src/store/pager-store"
 import {
   requestEmailVerificationAtom,
   resendTimerAtom,
@@ -18,6 +18,7 @@ import CustomPager from "@/src/components/CustomPager"
 const INITIAL_PAGE_COUNT = 2
 
 export default function LoginPage() {
+  const setPageCount = useSetAtom(pageCountAtom)
   const [errors, setErrors] = useAtom(authErrorsAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const [flow, setFlow] = useAtom(flowAtom)
@@ -40,6 +41,7 @@ export default function LoginPage() {
 
   // Set next/back functions based on current page
   useEffect(() => {
+    setPageCount(INITIAL_PAGE_COUNT)
     setFlow({
       ...flow,
       back: () => {
@@ -65,7 +67,7 @@ export default function LoginPage() {
   }, [currPage])
 
   return (
-    <CustomPager initialPageCount={INITIAL_PAGE_COUNT}>
+    <CustomPager>
       <View style={styles.pageContainer} key="0">
         <Text style={styles.title}>Welcome Back!</Text>
         <CustomInput

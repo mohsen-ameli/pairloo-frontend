@@ -75,7 +75,7 @@ export default function PostDetails() {
     return (
       <>
         <Stack.Screen options={detailOptions} />
-        <View style={styles.container}>
+        <View style={errorStyles.container}>
           <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
           <Pressable style={errorStyles.retryButton} onPress={refresh}>
             <Text style={errorStyles.retryButtonText}>Retry</Text>

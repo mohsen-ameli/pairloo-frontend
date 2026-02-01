@@ -1,6 +1,6 @@
 import { atom } from "jotai"
 import { logOutAtom, userJwtAtom } from "./auth-store"
-import { WS_BASE_URL } from "@/src/utils/constants"
+import { MINIMUM_SHORT_ANSWER_LENGTH, WS_BASE_URL } from "@/src/utils/constants"
 import { createPostSocketAtom } from "./socket-store"
 import { refreshAccessToken } from "@/src/utils/refresh-access-token"
 import io from "socket.io-client"
@@ -14,13 +14,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { s3Object } from "../types/s3object.type"
 import { queryClientAtom } from "./general-store"
 
-const INITIAL_PAGE_COUNT = 2
+export const INITIAL_PAGE_COUNT = 2 // Starting page + last page
 const DEFAULT_NUM_MATCHES = 5
-const DEFAULT_PUBLIC_POST = false
+const DEFAULT_PUBLIC_POST = true
 
 const DEFAULT_QUESTION: Question = {
   type: "short_answer",
-  question: "Start by describing what you want to post about.",
+  question: "Start by describing what you are looking for.",
 }
 
 const settings = {
@@ -41,18 +41,31 @@ export const edittedAtom = atom(false)
 export const initCreatePostAtom = atom(null, async (get, set) => {
   const user = await get(userJwtAtom)
   if (!user) return
-  if (get(createPostSocketAtom)) return
+  const currSocket = get(createPostSocketAtom)
+  if (currSocket && (currSocket.connected || get(loadingAtom))) return
+
+  set(loadingAtom, true)
 
   const socket = io(WS_BASE_URL + "/create-post", {
     auth: {
       token: user.accessToken,
     },
+    reconnection: true,
+    reconnectionAttempts: 3,
+    reconnectionDelay: 2000,
+    transports: ["websocket", "polling"],
   })
 
   set(createPostSocketAtom, socket)
 
+  socket.io.on("reconnect_failed", () => {
+    set(loadingAtom, false)
+  })
+
   socket.on("connect", () => {
     console.log("Connected to WebSocket server for create-post")
+    set(loadingAtom, false)
+    set(pageCountAtom, INITIAL_PAGE_COUNT)
   })
 
   socket.on("disconnect", () => {
@@ -77,36 +90,27 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("question", (qna: QnaType) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
-    set(currPageAtom, qna.length - 1)
+    set(currPageAtom, get(currPageAtom) + 1)
     set(pageCountAtom, qna.length + 1)
   })
 
-  socket.on(
-    "draft-restored",
-    (data: {
-      qna: QnaType
-      initialPostText: string
-      images: s3Object[]
-      publicPost: boolean
-      numMatches: number
-    }) => {
-      set(qnaAtom, data.qna)
-      set(pageCountAtom, data.qna.length + 1)
+  socket.on("draft-restored", (qna: QnaType) => {
+    set(qnaAtom, qna)
+    set(pageCountAtom, qna.length + 1)
 
-      // Navigate to the first unanswered question, or to the last page if all answered
-      const firstUnansweredIdx = data.qna.findIndex(item => item.answer.length === 0)
-      if (firstUnansweredIdx !== -1) {
-        set(currPageAtom, firstUnansweredIdx)
-      } else {
-        set(currPageAtom, data.qna.length)
-      }
-
-      set(loadingAtom, false)
+    // Navigate to the first unanswered question, or to the last page if all answered
+    const firstUnansweredIdx = qna.findIndex(item => item.answer.length === 0)
+    if (firstUnansweredIdx !== -1) {
+      set(currPageAtom, firstUnansweredIdx)
+    } else {
+      set(currPageAtom, qna.length)
     }
-  )
+
+    set(loadingAtom, false)
+  })
 
   socket.on("chat-finished", () => {
-    set(currPageAtom, curr => curr + 1)
+    set(currPageAtom, get(currPageAtom) + 1)
     set(loadingAtom, false)
   })
 
@@ -129,6 +133,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     set(settingsAtom, settings)
+    set(edittedAtom, false)
     set(loadingAtom, false)
   })
 })
@@ -164,14 +169,19 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
     return
   }
 
-  if (!qna[currPage] || qna[currPage].answer.length === 0) {
-    Alert.alert("Input required", "Please enter some text before continuing.")
+  // Validate current answer
+  if (
+    !qna[currPage] ||
+    qna[currPage].answer.length === 0 ||
+    (qna[currPage].question.type === "short_answer" &&
+      qna[currPage].answer[0].length < MINIMUM_SHORT_ANSWER_LENGTH)
+  ) {
     return
   }
 
   // if not changed, do nothing
   if (!editted) {
-    set(currPageAtom, curr => curr + 1)
+    set(currPageAtom, get(currPageAtom) + 1)
     return
   }
 
@@ -181,7 +191,6 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   // If they are just doing next normally, this will have no effect
   const qnaSlice = qna.slice(0, currPage + 1)
   socket.emit("chat", qnaSlice)
-  set(qnaAtom, qnaSlice)
 })
 
 export const pickImageAtom = atom(null, async (get, set) => {
@@ -237,7 +246,7 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
   if (currPage >= qna.length) return
 
   {
-    Alert.alert("Redo Post", "Are you sure you want to get a different question?", [
+    Alert.alert("Get New Question", "Are you sure you want to get a different question?", [
       {
         text: "Cancel",
         style: "cancel",
@@ -246,7 +255,20 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
         text: "Redo",
         style: "default",
         onPress: () => {
-          Alert.alert("NOT IMPLEMENTED")
+          if (currPage === 0) {
+            // If on the first page, just restart
+            set(loadingAtom, true)
+            socket.emit("discard-draft")
+            return
+          } else if (currPage === qna.length + 1) {
+            // If on the last page, do nothing
+            return
+          }
+
+          set(loadingAtom, true)
+          const qnaSlice = qna.slice(0, currPage)
+          set(currPageAtom, get(currPageAtom) - 1)
+          socket.emit("chat", qnaSlice)
         },
       },
     ])

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { Animated as A, Platform, Pressable, Text, View } from "react-native"
+import { Animated as A, Keyboard, Pressable, Text, View } from "react-native"
 import PagerView, { usePagerView } from "react-native-pager-view"
 import { colors } from "@/src/utils/colors"
-import { useAtom, useAtomValue } from "jotai"
+import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
@@ -12,14 +12,8 @@ import { userAtom } from "@/src/store/auth-store"
  * Allows for creating a pager with multiple pages, navigation dots, and next/back buttons.
  * You can also set the page count dynamically.
  */
-export default function CustomPager({
-  initialPageCount,
-  children,
-}: {
-  initialPageCount: number
-  children: React.ReactNode
-}) {
-  const [pageCount, setPageCount] = useAtom(pageCountAtom)
+export default function CustomPager({ children }: { children: React.ReactNode }) {
+  const pageCount = useAtomValue(pageCountAtom)
   const scrollOffset = useRef(new A.Value(0)).current
   const { setPage, ref } = usePagerView({ pagesAmount: pageCount })
   const [scrollEnabled, setScrollEnabled] = useState(true)
@@ -27,12 +21,6 @@ export default function CustomPager({
   const flow = useAtomValue(flowAtom)
   const isAuthenticated = useAtomValue(userAtom) !== null
   const { height } = useGradualAnimation({ includeTabHeight: isAuthenticated })
-
-  useEffect(() => {
-    if (pageCount === 0 || pageCount === initialPageCount) {
-      setPageCount(initialPageCount)
-    }
-  }, [initialPageCount, pageCount, setPageCount])
 
   // Animate scrollOffset when currPage changes (for dots)
   useEffect(() => {
@@ -48,19 +36,19 @@ export default function CustomPager({
   // Animate fake view height
   const fakeView = useAnimatedStyle(() => {
     return {
-      height: Math.abs(height.value),
+      height: Math.abs(height.value) + 20,
     }
   }, [])
 
   // Animate next/back (flow) buttons position
   const flowButtons = useAnimatedStyle(() => {
     return {
-      bottom: height.value + (Platform.OS === "ios" ? 10 : 20),
+      bottom: height.value + 20,
     }
   }, [])
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.light }}>
       {/* Dots */}
       <View
         style={{
@@ -140,10 +128,13 @@ export default function CustomPager({
             marginLeft: "auto",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: !flow.nextEnabled ? colors.gray : colors.purple,
+            backgroundColor: colors.purple,
+            opacity: flow.nextEnabled ? 1 : 0.5,
             borderRadius: "50%",
           }}
-          onPress={() => {
+          onPress={async () => {
+            Keyboard.dismiss()
+            await new Promise(resolve => setTimeout(resolve, 100))
             flow.next && flow.next()
           }}
           disabled={!flow.nextEnabled}
@@ -179,13 +170,14 @@ export default function CustomPager({
               height: 70,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: !flow.backEnabled ? colors.gray : colors.purple,
+              backgroundColor: colors.purple,
               borderRadius: "50%",
             }}
-            onPress={() => {
+            onPress={async () => {
+              Keyboard.dismiss()
+              await new Promise(resolve => setTimeout(resolve, 100))
               flow.back && flow.back()
             }}
-            disabled={!flow.backEnabled}
           >
             <Text
               style={{

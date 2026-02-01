@@ -41,7 +41,7 @@ export default function Index() {
 
   if (isError) {
     return (
-      <View style={styles.container}>
+      <View style={errorStyles.container}>
         <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
         <Pressable style={errorStyles.retryButton} onPress={refresh}>
           <Text style={errorStyles.retryButtonText}>Retry</Text>

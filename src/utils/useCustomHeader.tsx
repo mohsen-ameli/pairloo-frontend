@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity, Pressable } from "react-native"
 import React from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
-import { OtherUser } from "@/src/types/chat.type"
 import { colors } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -10,7 +9,8 @@ import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/crea
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { currentConversationAtom } from "../store/chat-store"
-import { userAtom, userJwtAtom } from "../store/auth-store"
+import { userJwtAtom } from "../store/auth-store"
+import { createPostSocketAtom } from "../store/socket-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
