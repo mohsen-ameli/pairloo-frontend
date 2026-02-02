@@ -1,5 +1,5 @@
 import { useRouter, useLocalSearchParams, Stack } from "expo-router"
-import { View, Text, ScrollView, Alert, Pressable, Animated } from "react-native"
+import { View, Text, ScrollView, Pressable, Animated } from "react-native"
 import { useState, useEffect, useRef } from "react"
 import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/id.styles"
@@ -107,6 +107,7 @@ export default function PostDetails() {
                   <Feather name="arrow-down" size={20} color={colors.darkGray} />
                 </Animated.View>
               </Pressable>
+
               <Animated.View
                 style={{
                   opacity: animatedHeight,
@@ -117,7 +118,7 @@ export default function PostDetails() {
                   overflow: "hidden",
                 }}
               >
-                {post.qna.map((item: any, index: number) => (
+                {post.qna.map((item, i) => (
                   <View key={item._id} style={styles.qnaCard}>
                     <View style={styles.qnaCardHeader}>
                       <Text style={styles.qnaCardQuestion}>
@@ -126,19 +127,12 @@ export default function PostDetails() {
                       </Text>
                     </View>
                     <View style={styles.qnaCardAnswerSection}>
-                      {Array.isArray(item.answer) ? (
-                        item.answer.map((ans: any, idx: number) => (
-                          <Text key={idx} style={styles.qnaCardAnswer}>
-                            <Text style={styles.qnaLabel}>A: </Text>
-                            {ans}
-                          </Text>
-                        ))
-                      ) : (
-                        <Text style={styles.qnaCardAnswer}>
+                      {item.answer.map(ans => (
+                        <Text key={ans} style={styles.qnaCardAnswer}>
                           <Text style={styles.qnaLabel}>A: </Text>
-                          {item.answer}
+                          {ans}
                         </Text>
-                      )}
+                      ))}
                     </View>
                   </View>
                 ))}

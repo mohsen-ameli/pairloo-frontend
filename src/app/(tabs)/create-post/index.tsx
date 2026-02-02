@@ -217,6 +217,7 @@ export default function CreatePost() {
             <View>
               <CustomInput
                 title="Title"
+                headerStyles={{ fontSize: 16, fontWeight: "600" }}
                 value={settings.title}
                 onChangeText={text => setSettings({ ...settings, title: text })}
                 editable={!loading}

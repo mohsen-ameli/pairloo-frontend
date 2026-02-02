@@ -7,7 +7,7 @@ export type QnaItemType = {
     question: string
     options?: string[]
   }
-  answer: string | string[]
+  answer: string[]
 }
 
 export type GeneralPostType = {
