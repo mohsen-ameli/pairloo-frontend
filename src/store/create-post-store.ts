@@ -75,6 +75,13 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     socket.connect()
   })
 
+  socket.on("draft-saved", () => {
+    // If on first page, invalidate my-posts to show the new draft
+    if (get(currPageAtom) <= 1) {
+      get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
+    }
+  })
+
   socket.on("question", (qna: QnaType) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
@@ -179,10 +186,6 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   if (!editted) {
     set(currPageAtom, curr => curr + 1)
     return
-  }
-
-  if (currPage === 0) {
-    get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   }
 
   set(loadingAtom, true)
