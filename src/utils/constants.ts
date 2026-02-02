@@ -6,3 +6,5 @@ export const VERIFICATION_RESEND_TIME = 60 // seconds
 
 export const TAB_HEIGHT = 83
 export const REGISTER_USERNAME_CHECK_INTERVAL = 500 // milliseconds
+
+export const MINIMUM_SHORT_ANSWER_LENGTH = 1
