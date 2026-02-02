@@ -6,12 +6,11 @@ import styles from "@/src/styles/id.styles"
 import { useSetAtom } from "jotai"
 import { authFetchAtom } from "@/src/utils/auth-fetch"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import CustomButton from "@/src/components/CustomButton"
 import { MyPostType } from "@/src/types/post.type"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import CustomLabel from "@/src/components/CustomLabel"
@@ -29,9 +28,6 @@ export default function PostDetails() {
     isError,
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
-  const { mutate, isPending: isPendingMutation } = useMutation({
-    mutationFn: deletePost,
-  })
 
   useEffect(() => {
     Animated.timing(animatedHeight, {
@@ -41,30 +37,7 @@ export default function PostDetails() {
     }).start()
   }, [isQnaExpanded, animatedHeight])
 
-  const handleDelete = () => {
-    Alert.alert("Confirm", "Are you sure you want to delete this post?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => mutate(),
-      },
-    ])
-  }
-
-  const handleEdit = () => {
-    Alert.alert("Edit", "Edit Functionality Will Be Added Soon")
-  }
-
-  const detailOptions = useCustomHeader(
-    "Details",
-    true,
-    false,
-    false,
-    true,
-    handleDelete,
-    handleEdit
-  )
+  const detailOptions = useCustomHeader("Details", true, false, false, true, id)
 
   async function fetchPost() {
     const res = await authFetch(`/api/posts/my-posts/${id}`)
@@ -72,23 +45,11 @@ export default function PostDetails() {
     return data
   }
 
-  async function deletePost() {
-    const res = await authFetch(`/api/posts/${id}`, {
-      method: "DELETE",
-    })
-    if (res.ok) {
-      router.back()
-      queryClient.invalidateQueries({ queryKey: ["my-posts"] })
-    } else {
-      Alert.alert("Error", "Could not remove post. Please try again later.")
-    }
-  }
-
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
   }
 
-  if (isPending || isPendingMutation) {
+  if (isPending) {
     return (
       <>
         <Stack.Screen options={detailOptions} />
@@ -120,7 +81,7 @@ export default function PostDetails() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.postContainer}>
             {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
-            <Text style={styles.title}>{post.title || post.content}</Text>
+            <Text style={styles.title}>{post.title}</Text>
           </View>
 
           {/* QNA Information */}
@@ -190,7 +151,16 @@ export default function PostDetails() {
             <View style={styles.closestPostsContainer}>
               <Text style={styles.closestPostsTitle}>Top Matches</Text>
               {post.closestPosts.map(post => (
-                <View key={post._id} style={styles.closestPost}>
+                <Pressable
+                  key={post._id}
+                  style={styles.closestPost}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/feed-post",
+                      params: { id: post._id },
+                    })
+                  }}
+                >
                   <View style={styles.closestPostHeaderContainer}>
                     <View style={styles.closestPostHeader}>
                       {post.picture && (
@@ -219,19 +189,9 @@ export default function PostDetails() {
                     )}
                   </View>
                   <View style={styles.closestPostItem}>
-                    <Text style={styles.closestPostName}>{post.content}</Text>
+                    <Text style={styles.closestPostName}>{post.title}</Text>
                   </View>
-                  <CustomButton
-                    onPress={() => {
-                      router.push({
-                        pathname: "/feed-post",
-                        params: { id: post._id },
-                      })
-                    }}
-                  >
-                    View Post
-                  </CustomButton>
-                </View>
+                </Pressable>
               ))}
             </View>
           )}

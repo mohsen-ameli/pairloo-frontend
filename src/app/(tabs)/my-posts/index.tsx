@@ -100,7 +100,7 @@ export default function Index() {
 
                 <View style={styles.postCardContent}>
                   <Text style={styles.postTitle} numberOfLines={2}>
-                    {post.title || post.content}
+                    {post.isDraft ? post.title || post.content : post.title}
                   </Text>
 
                   <View style={styles.postCardFooter}>

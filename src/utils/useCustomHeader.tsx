@@ -7,10 +7,11 @@ import { colors } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtomValue, useSetAtom } from "jotai"
 import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/create-post-store"
+import { deletePostAtom, editPostAtom } from "../store/post-detail-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { currentConversationAtom } from "../store/chat-store"
-import { userAtom, userJwtAtom } from "../store/auth-store"
+import { userJwtAtom } from "../store/auth-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -21,8 +22,7 @@ export default function useCustomHeader(
   inChat: boolean = false,
   createPost?: boolean,
   myPostsPage?: boolean,
-  deletePost?: () => void,
-  editPost?: () => void
+  id?: string | null
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
 
@@ -32,6 +32,8 @@ export default function useCustomHeader(
   const currentConversation = useAtomValue(currentConversationAtom)
   const user = useAtomValue(userJwtAtom)
   const loading = useAtomValue(loadingAtom)
+  const deletePost = useSetAtom(deletePostAtom)
+  const editPost = useSetAtom(editPostAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,
@@ -127,7 +129,7 @@ export default function useCustomHeader(
     }
   }
 
-  if (myPostsPage) {
+  if (myPostsPage && id) {
     return {
       ...options,
       headerTitle: () => (
@@ -152,16 +154,12 @@ export default function useCustomHeader(
               <Text style={[styles.headerTitle, { marginLeft: 50 }]}>{title}</Text>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              {editPost && (
-                <Pressable onPress={editPost} style={{ padding: 6 }}>
-                  <Feather name="edit" size={24} color={colors.dark} />
-                </Pressable>
-              )}
-              {deletePost && (
-                <Pressable onPress={deletePost} style={{ padding: 6 }}>
-                  <Feather name="trash-2" size={24} color={colors.dark} />
-                </Pressable>
-              )}
+              <Pressable onPress={() => editPost()} style={{ padding: 6 }}>
+                <Feather name="edit" size={24} color={colors.dark} />
+              </Pressable>
+              <Pressable onPress={() => deletePost({ id })} style={{ padding: 6 }}>
+                <Feather name="trash-2" size={24} color={colors.dark} />
+              </Pressable>
             </View>
           </View>
         </View>
