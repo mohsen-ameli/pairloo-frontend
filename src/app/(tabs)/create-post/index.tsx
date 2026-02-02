@@ -14,7 +14,7 @@ import { useCallback } from "react"
 import { currPageAtom, flowAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
-import CustomButton from "@/src/components/CustomButton"
+import CustomInput from "@/src/components/CustomInput"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { createPostStyles } from "@/src/styles/create-post.styles"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -215,13 +215,41 @@ export default function CreatePost() {
         >
           <View style={createPostStyles.gaptainer}>
             <View>
-              <CustomButton onPress={pickImage} disabled={loading}>
-                Choose images (optional)
-              </CustomButton>
-              {settings.images.length != 0 && (
-                <View style={{ marginTop: 10 }}>
+              <CustomInput
+                title="Title"
+                headerStyles={{ fontSize: 16, fontWeight: "600" }}
+                value={settings.title}
+                onChangeText={text => setSettings({ ...settings, title: text })}
+                editable={!loading}
+                mandatory
+              />
+            </View>
+            <View>
+              {settings.images.length != 0 ? (
+                <>
                   <ImageCarousel images={settings.images} isLocalUri editable />
-                </View>
+                  <Pressable
+                    onPress={pickImage}
+                    disabled={loading}
+                    style={createPostStyles.addMoreImagesButton}
+                  >
+                    <Feather name="plus" size={24} color={colors.purple} />
+                    <Text style={{ color: colors.purple, fontSize: 16, fontWeight: "500" }}>
+                      Add More Images
+                    </Text>
+                  </Pressable>
+                </>
+              ) : (
+                <Pressable
+                  onPress={pickImage}
+                  disabled={loading}
+                  style={createPostStyles.uploadImageButton}
+                >
+                  <Feather name="upload" size={40} color={colors.purple} />
+                  <Text style={{ marginTop: 10, color: colors.dark, fontSize: 16 }}>
+                    Upload Images (Optional)
+                  </Text>
+                </Pressable>
               )}
             </View>
             <View style={createPostStyles.gaptainer}>

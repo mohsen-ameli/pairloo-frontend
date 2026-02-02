@@ -24,6 +24,7 @@ const DEFAULT_QUESTION: Question = {
 }
 
 const settings = {
+  title: "",
   images: [] as s3Object[],
   publicPost: DEFAULT_PUBLIC_POST,
   numMatches: DEFAULT_NUM_MATCHES,
@@ -87,6 +88,13 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     socket.connect()
   })
 
+  socket.on("draft-saved", () => {
+    // If on first page, invalidate my-posts to show the new draft
+    if (get(currPageAtom) <= 1) {
+      get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
+    }
+  })
+
   socket.on("question", (qna: QnaType) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
@@ -135,6 +143,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(settingsAtom, settings)
     set(edittedAtom, false)
     set(loadingAtom, false)
+    get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   })
 })
 
@@ -144,7 +153,7 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   const currPage = get(currPageAtom)
   const pageCount = get(pageCountAtom)
   const editted = get(edittedAtom)
-  const { images, publicPost, numMatches } = await get(settingsAtom)
+  const { title, images, publicPost, numMatches } = await get(settingsAtom)
 
   if (!numMatches || numMatches < 1) {
     Alert.alert("Invalid number of matches", "Please enter a valid number of matches (1-99).")
@@ -158,6 +167,10 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
 
   // If on the last page, submit
   if (currPage === pageCount - 1) {
+    if (!title || title.trim() === "") {
+      Alert.alert("Title required", "Please enter a title for your post.")
+      return
+    }
     set(loadingAtom, true)
     const imagesWithFiles: { uri: string; file: Blob; mimeType: string }[] = []
     for (const img of images) {
@@ -165,7 +178,7 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
       const blob = await response.blob()
       imagesWithFiles.push({ uri: img.localUri, file: blob, mimeType: img.mimeType })
     }
-    socket.emit("submit", numMatches, publicPost, imagesWithFiles)
+    socket.emit("submit", title, numMatches, publicPost, imagesWithFiles)
     return
   }
 
@@ -206,15 +219,15 @@ export const pickImageAtom = atom(null, async (get, set) => {
     allowsMultipleSelection: true,
   })
 
-  const images: s3Object[] = []
+  const newImages: s3Object[] = []
   if (!result.canceled && result.assets.length > 0) {
     for (const asset of result.assets) {
       const localUri = asset.uri
       const mimeType = asset.mimeType || "image/jpeg"
-      images.push({ localUri, mimeType, url: "", key: "" })
+      newImages.push({ localUri, mimeType, url: "", key: "" })
     }
     const prevSettings = await get(settingsAtom)
-    await set(settingsAtom, { ...prevSettings, images })
+    await set(settingsAtom, { ...prevSettings, images: [...prevSettings.images, ...newImages] })
   }
 })
 

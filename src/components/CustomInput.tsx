@@ -8,12 +8,20 @@ interface Props extends TextInputProps {
   mandatory?: boolean
   errors?: string
   inputRef?: React.RefObject<TextInput>
+  headerStyles?: TextInputProps["style"]
 }
 
-export default function CustomInput({ title, mandatory, errors, inputRef, ...rest }: Props) {
+export default function CustomInput({
+  title,
+  mandatory,
+  errors,
+  inputRef,
+  headerStyles,
+  ...rest
+}: Props) {
   return (
     <View>
-      <Text style={inputStyles.header}>
+      <Text style={[inputStyles.header, headerStyles]}>
         {title}
         {mandatory ? <Text style={inputStyles.mandatory}> *</Text> : null}
       </Text>

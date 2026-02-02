@@ -6,11 +6,11 @@ import { colors } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtomValue, useSetAtom } from "jotai"
 import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/create-post-store"
+import { deletePostAtom, editPostAtom } from "../store/post-detail-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { currentConversationAtom } from "../store/chat-store"
 import { userJwtAtom } from "../store/auth-store"
-import { createPostSocketAtom } from "../store/socket-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -19,7 +19,9 @@ export default function useCustomHeader(
   title: string,
   backButtonVisible: boolean = false,
   inChat: boolean = false,
-  createPost?: boolean
+  createPost?: boolean,
+  myPostsPage?: boolean,
+  id?: string | null
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
 
@@ -29,6 +31,8 @@ export default function useCustomHeader(
   const currentConversation = useAtomValue(currentConversationAtom)
   const user = useAtomValue(userJwtAtom)
   const loading = useAtomValue(loadingAtom)
+  const deletePost = useSetAtom(deletePostAtom)
+  const editPost = useSetAtom(editPostAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,
@@ -115,6 +119,44 @@ export default function useCustomHeader(
                 <Feather name="rotate-ccw" size={24} color={colors.dark} />
               </Pressable>
               <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
+                <Feather name="trash-2" size={24} color={colors.dark} />
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      ),
+    }
+  }
+
+  if (myPostsPage && id) {
+    return {
+      ...options,
+      headerTitle: () => (
+        <View style={styles.header}>
+          <View
+            style={[
+              styles.headerContent,
+              { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+            ]}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              {backButtonVisible && (
+                <Pressable
+                  style={styles.headerBackIcon}
+                  onPress={() => {
+                    router.back()
+                  }}
+                >
+                  <Feather name="arrow-left" size={26} color={colors.dark} />
+                </Pressable>
+              )}
+              <Text style={[styles.headerTitle, { marginLeft: 50 }]}>{title}</Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Pressable onPress={() => editPost()} style={{ padding: 6 }}>
+                <Feather name="edit" size={24} color={colors.dark} />
+              </Pressable>
+              <Pressable onPress={() => deletePost({ id })} style={{ padding: 6 }}>
                 <Feather name="trash-2" size={24} color={colors.dark} />
               </Pressable>
             </View>

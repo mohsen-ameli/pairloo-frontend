@@ -11,10 +11,12 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   title: {
-    fontSize: 28,
+    fontSize: 25,
     fontWeight: "bold",
     color: colors.dark,
     marginBottom: 8,
+    marginTop: 10,
+    marginLeft: 5,
   },
   subtitle: {
     fontSize: 18,
@@ -30,6 +32,78 @@ const styles = StyleSheet.create({
   },
   postContainer: {
     marginBottom: 20,
+  },
+  description: {
+    fontSize: 16,
+    color: colors.darkGray,
+    lineHeight: 22,
+    marginBottom: 16,
+    marginLeft: 5,
+  },
+  qnaSection: {
+    marginBottom: 24,
+    backgroundColor: colors.lightGray,
+    borderRadius: 12,
+  },
+  qnaCollapsibleHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: colors.lightGray,
+    borderRadius: 12,
+    borderColor: colors.borderGray,
+  },
+  qnaHeaderText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.darkGray,
+  },
+  qnaCollapseIcon: {
+    fontSize: 16,
+    color: colors.darkGray,
+    fontWeight: "600",
+  },
+  qnaCard: {
+    padding: 14,
+    borderTopWidth: 3,
+    borderColor: colors.borderGray,
+    shadowColor: colors.dark,
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  qnaCardHeader: {
+    marginBottom: 12,
+  },
+  qnaCardQuestion: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.darkGray,
+    lineHeight: 21,
+  },
+  qnaLabel: {
+    fontWeight: "700",
+    color: colors.purple,
+  },
+  qnaCardAnswerSection: {
+    marginTop: 8,
+  },
+  qnaAnswerLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.gray,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  qnaCardAnswer: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.dark,
+    lineHeight: 19,
+    marginBottom: 4,
   },
   fieldLine: {
     fontSize: 16,
@@ -57,10 +131,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
   },
   closestPostsTitle: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: "bold",
     color: colors.darkGray,
-    marginBottom: 10,
+    marginBottom: 15,
+    textAlign: "center",
   },
   closestPostScore: {
     fontSize: 14,
