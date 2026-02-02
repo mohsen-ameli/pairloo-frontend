@@ -1,5 +1,7 @@
 import { useRouter, useLocalSearchParams, Stack } from "expo-router"
-import { View, Text, ScrollView, Alert, Pressable } from "react-native"
+import { View, Text, ScrollView, Alert, Pressable, Animated } from "react-native"
+import { useState, useEffect, useRef } from "react"
+import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/id.styles"
 import { useSetAtom } from "jotai"
 import { authFetchAtom } from "@/src/utils/auth-fetch"
@@ -13,12 +15,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import CustomLabel from "@/src/components/CustomLabel"
+import { colors } from "@/src/utils/colors"
 
 export default function PostDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
+  const [isQnaExpanded, setIsQnaExpanded] = useState(false)
+  const animatedHeight = useRef(new Animated.Value(0)).current
   const {
     data: post,
     isError,
@@ -27,6 +32,14 @@ export default function PostDetails() {
   const { mutate, isPending: isPendingMutation } = useMutation({
     mutationFn: deletePost,
   })
+
+  useEffect(() => {
+    Animated.timing(animatedHeight, {
+      toValue: isQnaExpanded ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start()
+  }, [isQnaExpanded, animatedHeight])
 
   const handleDelete = () => {
     Alert.alert("Confirm", "Are you sure you want to delete this post?", [
@@ -113,39 +126,69 @@ export default function PostDetails() {
           {/* QNA Information */}
           {post.qna && post.qna.length > 0 && (
             <View style={styles.qnaSection}>
-              <Text style={styles.description}>Your Q&A Response:</Text>
-              {post.qna.map((item: any, index: number) => (
-                <View key={item._id} style={styles.qnaCard}>
-                  <View style={styles.qnaCardHeader}>
-                    <Text style={styles.qnaCardQuestion}>
-                      <Text style={styles.qnaLabel}>Q: </Text>
-                      {item.question.question}
-                    </Text>
-                  </View>
-                  <View style={styles.qnaCardAnswerSection}>
-                    {Array.isArray(item.answer) ? (
-                      item.answer.map((ans: any, idx: number) => (
-                        <Text key={idx} style={styles.qnaCardAnswer}>
-                          <Text style={styles.qnaLabel}>A: </Text>
-                          {ans}
-                        </Text>
-                      ))
-                    ) : (
-                      <Text style={styles.qnaCardAnswer}>
-                        <Text style={styles.qnaLabel}>A: </Text>
-                        {item.answer}
+              <Pressable
+                style={styles.qnaCollapsibleHeader}
+                onPress={() => setIsQnaExpanded(!isQnaExpanded)}
+              >
+                <Text style={styles.qnaHeaderText}>Show Your Q&A Response</Text>
+                <Animated.View
+                  style={{
+                    transform: [
+                      {
+                        rotate: animatedHeight.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["0deg", "180deg"],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <Feather name="arrow-down" size={20} color={colors.darkGray} />
+                </Animated.View>
+              </Pressable>
+              <Animated.View
+                style={{
+                  opacity: animatedHeight,
+                  maxHeight: animatedHeight.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1000],
+                  }),
+                  overflow: "hidden",
+                }}
+              >
+                {post.qna.map((item: any, index: number) => (
+                  <View key={item._id} style={styles.qnaCard}>
+                    <View style={styles.qnaCardHeader}>
+                      <Text style={styles.qnaCardQuestion}>
+                        <Text style={styles.qnaLabel}>Q: </Text>
+                        {item.question.question}
                       </Text>
-                    )}
+                    </View>
+                    <View style={styles.qnaCardAnswerSection}>
+                      {Array.isArray(item.answer) ? (
+                        item.answer.map((ans: any, idx: number) => (
+                          <Text key={idx} style={styles.qnaCardAnswer}>
+                            <Text style={styles.qnaLabel}>A: </Text>
+                            {ans}
+                          </Text>
+                        ))
+                      ) : (
+                        <Text style={styles.qnaCardAnswer}>
+                          <Text style={styles.qnaLabel}>A: </Text>
+                          {item.answer}
+                        </Text>
+                      )}
+                    </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </Animated.View>
             </View>
           )}
 
           {/* Closest posts */}
           {post.closestPosts && post.closestPosts.length > 0 && (
             <View style={styles.closestPostsContainer}>
-              <Text style={styles.closestPostsTitle}>Similar Posts:</Text>
+              <Text style={styles.closestPostsTitle}>Top Matches</Text>
               {post.closestPosts.map(post => (
                 <View key={post._id} style={styles.closestPost}>
                   <View style={styles.closestPostHeaderContainer}>

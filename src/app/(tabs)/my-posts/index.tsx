@@ -103,17 +103,11 @@ export default function Index() {
                     {post.title || post.content}
                   </Text>
 
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
+                  <View style={styles.postCardFooter}>
                     <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
                       {formatDate(post.createdAt)}
                     </Text>
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <View style={styles.postCardLabelContainer}>
                       {post.closestPosts && post.closestPosts.length > 0 && (
                         <CustomLabel
                           text={`${Math.round(post.closestPosts[0].score * 100)}% match`}

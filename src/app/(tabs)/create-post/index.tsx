@@ -192,7 +192,7 @@ export default function CreatePost() {
           <View style={createPostStyles.gaptainer}>
             <View>
               <CustomInput
-                title="Enter a Title for Your Post"
+                title="Title"
                 value={settings.title}
                 onChangeText={text => setSettings({ ...settings, title: text })}
                 editable={!loading}

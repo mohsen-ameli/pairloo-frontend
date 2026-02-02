@@ -45,6 +45,15 @@ export const styles = StyleSheet.create({
   postCardContent: {
     padding: 14,
   },
+  postCardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  postCardLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   postTitle: {
     fontSize: 16,
     fontWeight: "600",
