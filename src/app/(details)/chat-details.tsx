@@ -53,7 +53,7 @@ export default function ChatDetails() {
     if (messages) {
       // This runs every time new messages come in
       // It can be improved for efficiency
-      const imgs = messages.filter(msg => msg.attachment).map(msg => ({ uri: msg.attachment!.url }))
+      const imgs = messages.filter(msg => msg.attachment).map(msg => ({ uri: msg.attachment! }))
       setImages(imgs)
       chatRef.current && chatRef.current.scrollToEnd({ animated: false })
     }
@@ -161,9 +161,7 @@ export default function ChatDetails() {
             <MemoizedMessageItem
               item={item}
               imageIndex={
-                item.attachment && item.attachment.url
-                  ? images.findIndex(img => img.uri === item.attachment?.url)
-                  : null
+                item.attachment ? images.findIndex(img => img.uri === item.attachment) : null
               }
             />
           )}
@@ -205,18 +203,14 @@ export default function ChatDetails() {
 }
 
 function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: number | null }) {
-  const aspectRatio = useImageAspectRatio(item.attachment?.url)
+  const aspectRatio = useImageAspectRatio(item.attachment)
   const setIsVisible = useSetAtom(visibleAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
 
   return (
     <View style={chatStyles.messageItem}>
       <Image
-        source={
-          item.sender.picture && item.sender.picture.url
-            ? { uri: item.sender.picture.url }
-            : defaultProfilePicture
-        }
+        source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
         style={chatStyles.messageImage}
       />
       <View>
@@ -236,7 +230,7 @@ function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: numb
             {item.content}
           </Text>
         )}
-        {item.attachment && item.attachment.url && imageIndex && (
+        {item.attachment && imageIndex && (
           <Pressable
             onPress={() => {
               setImgIdx(imageIndex)
@@ -244,7 +238,7 @@ function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: numb
             }}
           >
             <Image
-              source={{ uri: item.attachment.url }}
+              source={{ uri: item.attachment }}
               style={[
                 chatStyles.messageAttachment,
                 {

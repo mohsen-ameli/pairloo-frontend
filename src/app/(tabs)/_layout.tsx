@@ -125,9 +125,7 @@ export default function ProtectedLayout() {
           },
           tabBarIcon: ({ color, size }) => (
             <Image
-              source={
-                user.picture && user.picture.url ? { uri: user.picture.url } : defaultProfilePicture
-              }
+              source={user.picture ? { uri: user.picture } : defaultProfilePicture}
               style={{
                 width: size + 3,
                 height: size + 3,

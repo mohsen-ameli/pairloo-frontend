@@ -227,7 +227,7 @@ export default function CreatePost() {
             <View>
               {settings.images.length != 0 ? (
                 <>
-                  <ImageCarousel images={settings.images} isLocalUri editable />
+                  <ImageCarousel images={settings.images.map(img => img.localUri)} editable />
                   <Pressable
                     onPress={pickImage}
                     disabled={loading}

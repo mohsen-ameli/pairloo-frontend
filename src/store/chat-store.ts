@@ -144,7 +144,7 @@ export const initChatAtom = atom(null, async (get, set) => {
             username: message.sender.username,
             message: message.content,
             picture: message.sender.picture,
-            attachmentUrl: message.attachment?.url,
+            attachmentUrl: message.attachment,
           },
           onPress: () => {
             router.push({

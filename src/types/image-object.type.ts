@@ -1,4 +1,4 @@
-export type s3Object = {
+export type ImageObject = {
   localUri: string
   mimeType: string
   key: string

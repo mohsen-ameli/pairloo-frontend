@@ -1,13 +1,12 @@
 import { CountryCode } from "react-native-country-picker-modal"
 import { MyPostType } from "./post.type"
-import { s3Object } from "./s3object.type"
 
 // User profile type stored in async storage
 export type UserType = null | {
   username: string
   firstName: string
   lastName: string
-  picture: s3Object
+  picture: string
   phoneNumber: string
   country: string
   city: string
@@ -49,7 +48,7 @@ export type RegisteredUserType = {
   username: string
   firstName: string
   lastName: string
-  picture: s3Object
+  picture: string
   phoneNumber: string
   country: string
   city: string
