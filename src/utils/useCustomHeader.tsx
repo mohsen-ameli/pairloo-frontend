@@ -89,8 +89,8 @@ export default function useCustomHeader(
           <TouchableOpacity onPress={handleProfilePress} style={styles.otherProfileButton}>
             <Image
               source={
-                otherUser.picture && otherUser.picture.url
-                  ? { uri: otherUser.picture.url }
+                otherUser.picture && otherUser.picture
+                  ? { uri: otherUser.picture }
                   : defaultProfilePicture
               }
               style={styles.otherProfileImage}

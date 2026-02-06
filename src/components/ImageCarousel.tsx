@@ -4,19 +4,16 @@ import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated
 import { SlideItem } from "./SlideItem"
 import { Dispatch, useEffect, useRef, useState } from "react"
 import { colors } from "@/src/utils/colors"
-import { s3Object } from "@/src/types/s3object.type"
 import { SetStateAction } from "jotai"
 
 export default function ImageCarousel({
   images,
   setImages,
-  isLocalUri = false,
   widthOffset = 0,
   editable = false,
 }: {
-  images: s3Object[]
-  setImages?: Dispatch<SetStateAction<s3Object[]>>
-  isLocalUri?: boolean
+  images: string[]
+  setImages?: Dispatch<SetStateAction<string[]>>
   widthOffset?: number
   editable?: boolean
 }) {
@@ -40,7 +37,7 @@ export default function ImageCarousel({
       <View style={{ width: "auto", height: 250, borderRadius: 15, overflow: "hidden" }}>
         <SlideItem
           index={0}
-          source={{ uri: isLocalUri ? images[0].localUri : images[0].url }}
+          source={{ uri: images[0] }}
           setImages={setImages}
           editable={editable}
         />
@@ -73,7 +70,7 @@ export default function ImageCarousel({
         renderItem={({ index, item }) => (
           <SlideItem
             index={index}
-            source={{ uri: isLocalUri ? item.localUri : item.url }}
+            source={{ uri: item }}
             setImages={setImages}
             editable={editable}
           />

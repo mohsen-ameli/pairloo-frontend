@@ -103,11 +103,7 @@ export default function index() {
               }}
             >
               <Image
-                source={
-                  otherPerson.picture && otherPerson.picture.url
-                    ? { uri: otherPerson.picture.url }
-                    : defaultProfilePicture
-                }
+                source={otherPerson.picture ? { uri: otherPerson.picture } : defaultProfilePicture}
                 style={conversationStyles.image}
               />
               <View>

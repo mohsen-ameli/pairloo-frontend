@@ -1,5 +1,3 @@
-import { s3Object } from "./s3object.type"
-
 export type QnaItemType = {
   _id: string
   question: {
@@ -15,11 +13,11 @@ export type GeneralPostType = {
   username: string
   firstName: string
   lastName: string
-  picture?: s3Object | null
+  picture?: string | null
   title: string
   content: string
   summary: string
-  images?: s3Object[] | null | undefined
+  images?: string[] | null | undefined
   createdAt: string
 }
 
@@ -39,7 +37,7 @@ export interface MyPosts {
   title: string
   content: string
   createdAt: string
-  images?: s3Object[] | null
+  images?: string[] | null
   isDraft?: boolean
   closestPosts?: Array<{ score: number; item: string }> | null
 }

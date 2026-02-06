@@ -11,7 +11,7 @@ import * as ImagePicker from "expo-image-picker"
 import { QnaType, Question } from "@/src/types/question.types"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import { s3Object } from "../types/s3object.type"
+import { ImageObject } from "@/src/types/image-object.type"
 import { queryClientAtom } from "./general-store"
 
 export const INITIAL_PAGE_COUNT = 2 // Starting page + last page
@@ -25,7 +25,7 @@ const DEFAULT_QUESTION: Question = {
 
 const settings = {
   title: "",
-  images: [] as s3Object[],
+  images: [] as ImageObject[],
   publicPost: DEFAULT_PUBLIC_POST,
   numMatches: DEFAULT_NUM_MATCHES,
 }
@@ -36,7 +36,7 @@ export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }
 export const loadingAtom = atom(false)
 export const publicPostAtom = atom(DEFAULT_PUBLIC_POST)
 export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES)
-export const imagesAtom = atom<s3Object[]>([])
+export const imagesAtom = atom<ImageObject[]>([])
 export const edittedAtom = atom(false)
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
@@ -219,7 +219,7 @@ export const pickImageAtom = atom(null, async (get, set) => {
     allowsMultipleSelection: true,
   })
 
-  const newImages: s3Object[] = []
+  const newImages: ImageObject[] = []
   if (!result.canceled && result.assets.length > 0) {
     for (const asset of result.assets) {
       const localUri = asset.uri

@@ -80,7 +80,7 @@ export const resetEditAtom = atom(null, async (get, set) => {
     ...curr,
     firstName: user.firstName,
     lastName: user.lastName,
-    picture: user.picture?.url || "",
+    picture: user.picture,
     country: user.country,
     city: user.city,
     state: user.state,

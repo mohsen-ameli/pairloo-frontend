@@ -1,5 +1,3 @@
-import { s3Object } from "./s3object.type"
-
 export type MessageType = {
   _id: string
   conversationId: string
@@ -7,10 +5,10 @@ export type MessageType = {
   sender: {
     _id: string
     username: string
-    picture?: s3Object | null
+    picture?: string | null
   }
   content?: string
-  attachment?: s3Object | null
+  attachment?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -20,7 +18,7 @@ export interface ConversationType {
   members: {
     _id: string
     username: string
-    picture?: s3Object | null
+    picture?: string | null
     email: string
   }[]
   lastMessage?: MessageType

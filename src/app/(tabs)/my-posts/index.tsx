@@ -85,7 +85,7 @@ export default function Index() {
                 {post.images && post.images.length > 0 && (
                   <View style={styles.postCardImage}>
                     <Image
-                      source={{ uri: post.images[0].url }}
+                      source={{ uri: post.images[0] }}
                       style={styles.postCardImageFill}
                       contentFit="cover"
                     />
