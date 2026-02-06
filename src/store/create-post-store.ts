@@ -95,6 +95,12 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     }
   })
 
+  socket.on("ai-title-generated", async (title: string) => {
+    const prevSettings = await get(settingsAtom)
+    await set(settingsAtom, { ...prevSettings, title })
+    set(loadingAtom, false)
+  })
+
   socket.on("question", (qna: QnaType) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
