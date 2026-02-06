@@ -52,8 +52,14 @@ export default function CreatePost() {
   useFocusEffect(
     useCallback(() => {
       if (!socket) return
+
+      const isLastPage = currPage >= QNAs.length
+      const nextEnabled = isLastPage
+        ? settings.title.trim().length > 0
+        : QNAs[currPage]?.answer.length > 0
+
       setFlow({
-        nextEnabled: currPage < QNAs.length ? QNAs[currPage].answer.length > 0 : true,
+        nextEnabled,
         back: () => {
           setEditted(false)
           setCurrPage(currPage - 1)
@@ -62,7 +68,7 @@ export default function CreatePost() {
           forward()
         },
       })
-    }, [currPage, socket])
+    }, [currPage, socket, settings.title])
   )
 
   async function handleChange(i: number, option: string, type: Question["type"]) {
