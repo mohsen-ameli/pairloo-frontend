@@ -32,6 +32,7 @@ import {
 import { useFocusEffect } from "expo-router"
 import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
+import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
 
@@ -39,6 +40,7 @@ export default function CreatePost() {
   const [QNAs, setQNAs] = useAtom(qnaAtom)
   const socket = useAtomValue(createPostSocketAtom)
   const loading = useAtomValue(loadingAtom)
+  const setLoading = useSetAtom(loadingAtom)
   const [settings, setSettings] = useAtom(settingsAtom)
   const setFlow = useSetAtom(flowAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
@@ -50,8 +52,14 @@ export default function CreatePost() {
   useFocusEffect(
     useCallback(() => {
       if (!socket) return
+
+      const isLastPage = currPage >= QNAs.length
+      const nextEnabled = isLastPage
+        ? settings.title.trim().length > 0
+        : QNAs[currPage]?.answer.length > 0
+
       setFlow({
-        nextEnabled: currPage < QNAs.length ? QNAs[currPage].answer.length > 0 : true,
+        nextEnabled,
         back: () => {
           setEditted(false)
           setCurrPage(currPage - 1)
@@ -60,7 +68,7 @@ export default function CreatePost() {
           forward()
         },
       })
-    }, [currPage, socket])
+    }, [currPage, socket, settings.title])
   )
 
   async function handleChange(i: number, option: string, type: Question["type"]) {
@@ -88,6 +96,14 @@ export default function CreatePost() {
 
   async function refresh() {
     await initCreatePost()
+  }
+
+  async function handleGenerateAITitle() {
+    if (socket && socket.connected) {
+      setFlow(prev => ({ ...prev, nextEnabled: false }))
+      setLoading(true)
+      socket.emit("ai-title")
+    }
   }
 
   useFocusEffect(
@@ -214,15 +230,24 @@ export default function CreatePost() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={createPostStyles.gaptainer}>
-            <View>
-              <CustomInput
-                title="Title"
-                headerStyles={{ fontSize: 16, fontWeight: "600" }}
-                value={settings.title}
-                onChangeText={text => setSettings({ ...settings, title: text })}
-                editable={!loading}
-                mandatory
-              />
+            <View style={createPostStyles.titleInputContainer}>
+              <View style={{ flex: 1 }}>
+                <CustomInput
+                  title="Title"
+                  headerStyles={{ fontSize: 16, fontWeight: "600" }}
+                  value={settings.title}
+                  onChangeText={text => setSettings({ ...settings, title: text })}
+                  editable={!loading}
+                  mandatory
+                />
+              </View>
+              <Pressable
+                onPress={handleGenerateAITitle}
+                disabled={loading}
+                style={{ paddingBottom: 12 }}
+              >
+                <Octicons name="sparkles-fill" size={24} color={colors.purple} />
+              </Pressable>
             </View>
             <View>
               {settings.images.length != 0 ? (

@@ -119,4 +119,9 @@ export const createPostStyles = StyleSheet.create({
     borderRadius: 25,
     gap: 8,
   },
+  titleInputContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 12,
+  },
 })
