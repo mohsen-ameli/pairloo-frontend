@@ -1,15 +1,18 @@
-import { View, Text, Pressable, TextInput, TouchableOpacity } from "react-native"
+import { View, Text, Pressable, TextInput, TouchableOpacity, FlatList } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
 import {
+  bigImageViewAtom,
   chatAttachmentsAtom,
   conversationsAtom,
   currentConversationAtom,
+  imgIndexAtom,
   loadingAtom,
   messagesAtom,
   sendMessageAtom,
+  visibleAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
@@ -23,15 +26,10 @@ import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
-import ImageView from "react-native-image-viewing"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { FlatList } from "react-native-gesture-handler"
+import ImageGallery from "@/src/components/ImageGallery"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
-
-const visibleAtom = atom(false)
-const imgIndexAtom = atom(0)
-const bigImageViewAtom = atom<{ uri: string; idx: number }[]>([])
 
 export default function ChatDetails() {
   const router = useRouter()
@@ -48,6 +46,7 @@ export default function ChatDetails() {
   const detailOptions = useCustomHeader("", true, true)
   const loading = useAtomValue(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
+  const visible = useAtomValue(visibleAtom)
 
   useEffect(() => {
     if (!conversations || !user || !socket) return
@@ -63,12 +62,12 @@ export default function ChatDetails() {
     socket.emit("getMessages", id)
   }, [conversations, user, socket, id])
 
-  useEffect(() => {
-    return () => {
-      setMessages([])
-      setCurrentConversation(null)
-    }
-  }, [])
+  // useEffect(() => {
+  //   return () => {
+  //     setMessages([])
+  //     setCurrentConversation(null)
+  //   }
+  // }, [])
 
   async function handleSendMessage() {
     const msg = message.trim()
@@ -87,7 +86,7 @@ export default function ChatDetails() {
 
   return (
     <>
-      <Stack.Screen options={detailOptions} />
+      <Stack.Screen options={{ ...detailOptions, headerShown: !visible }} />
       <LoadingIndicator loading={loading} />
 
       <BigImagePreview />
@@ -183,7 +182,12 @@ function MessageItem({ item }: { item: MessageType }) {
                     onPress={() => {
                       setImgIdx(idx)
                       setIsVisible(true)
-                      setImages(item.attachments!.map((att, idx) => ({ uri: att, idx })))
+                      setImages(
+                        item.attachments!.map((att, id) => ({
+                          uri: att,
+                          id: id.toString(),
+                        }))
+                      )
                     }}
                   >
                     <Image
@@ -251,57 +255,41 @@ function AttachmentPreview() {
 
 function BigImagePreview() {
   const [visible, setIsVisible] = useAtom(visibleAtom)
-  const [imgIndex, setImgIdx] = useAtom(imgIndexAtom)
-  const images = useAtomValue(bigImageViewAtom)
+
+  if (!visible) return null
 
   return (
-    <ImageView
-      images={images}
-      imageIndex={imgIndex}
-      visible={visible}
-      onRequestClose={() => setIsVisible(false)}
-      HeaderComponent={({ imageIndex }) => (
-        <View style={chatStyles.imageHeader}>
-          <TouchableOpacity
-            style={chatStyles.imageHeaderButton}
-            onPress={() => setIsVisible(false)}
-          >
-            <Feather name="x" size={25} color={colors.dark} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={chatStyles.imageHeaderButton}
-            onPress={() => setIsVisible(false)}
-          >
-            <Feather name="menu" size={25} color={colors.dark} />
-          </TouchableOpacity>
-        </View>
-      )}
-      FooterComponent={({ imageIndex }) =>
-        images.length > 1 && (
-          <View style={chatStyles.imageFooter}>
-            <FlatList
-              data={images}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={item => item.uri}
-              renderItem={({ item }) => (
-                <Pressable onPress={() => setImgIdx(item.idx)}>
-                  <Image
-                    source={{ uri: item.uri }}
-                    style={{
-                      width: 30,
-                      height: 60,
-                      marginHorizontal: item.uri === images[imageIndex].uri ? 10 : 1,
-                      opacity: item.uri === images[imageIndex].uri ? 1 : 0.5,
-                    }}
-                    allowDownscaling
-                  />
-                </Pressable>
-              )}
-            />
-          </View>
-        )
-      }
-    />
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0,0,0,0.9)",
+        zIndex: 2,
+      }}
+    >
+      {/* Header */}
+      <View style={chatStyles.imageHeader}>
+        <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => setIsVisible(false)}>
+          <Feather name="x" size={25} color={colors.dark} />
+        </TouchableOpacity>
+        <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => setIsVisible(false)}>
+          <Feather name="menu" size={25} color={colors.dark} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Gallery */}
+      <ImageGallery
+        isDarkMode={true}
+        showTitles
+        doubleTapScale={2}
+        minZoomScale={1}
+        maxZoomScale={5}
+      />
+    </View>
   )
 }

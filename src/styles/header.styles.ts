@@ -29,6 +29,8 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
+    zIndex: 0,
+    elevation: 0,
   },
   headerTitle: {
     fontSize: 24,
