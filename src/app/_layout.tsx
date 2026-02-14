@@ -11,6 +11,7 @@ import Toast from "react-native-toast-message"
 import CustomToast from "@/src/components/CustomToast"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { queryClientAtom } from "../store/general-store"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -41,7 +42,7 @@ export default function RootLayout() {
   const forgotEmailOptions = useCustomHeader("Forgot Email", true)
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />
 
       <KeyboardProvider>
@@ -84,6 +85,6 @@ export default function RootLayout() {
       </KeyboardProvider>
 
       <Toast config={toastConfig} />
-    </>
+    </GestureHandlerRootView>
   )
 }

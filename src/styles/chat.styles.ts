@@ -37,19 +37,17 @@ export const chatStyles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: colors.purple,
   },
+  messageAttachmentContainer: {
+    marginHorizontal: "auto",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    columnGap: 6,
+  },
   messageItem: {
     marginVertical: 10,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-  },
-  messageAttachment: {
-    width: 200,
-    height: 200,
-    maxWidth: 300,
-    maxHeight: 300,
-    marginTop: 5,
-    borderRadius: 10,
   },
   messageImage: {
     width: 40,
@@ -95,6 +93,19 @@ export const chatStyles = StyleSheet.create({
     justifyContent: "center",
     gap: 20,
   },
+  attachmentRemoveButton: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: colors.lightGray,
+    borderRadius: 15,
+    padding: 2,
+  },
+  attachmentPreviewImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
   dismissButton: {
     position: "absolute",
     top: 20,
@@ -109,6 +120,7 @@ export const chatStyles = StyleSheet.create({
     backgroundColor: colors.light,
     alignItems: "center",
     justifyContent: "center",
+    paddingTop: 10,
   },
   imageFooterText: {
     fontSize: 17,
