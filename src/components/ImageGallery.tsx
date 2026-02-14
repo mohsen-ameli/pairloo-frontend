@@ -8,15 +8,18 @@ import {
   type ViewStyle,
   type LayoutChangeEvent,
   Pressable,
-  ScrollView,
+  TouchableOpacity,
 } from "react-native"
 import { FlatList } from "react-native-gesture-handler"
 import { Image } from "expo-image"
 import Zoom from "react-native-zoom-reanimated"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { bigImageViewAtom, imgIndexAtom, visibleAtom } from "@/src/store/chat-store"
 import { chatStyles } from "../styles/chat.styles"
 import { colors } from "../utils/colors"
+import Feather from "@expo/vector-icons/Feather"
+
+const isZoomedAtom = atom(false)
 
 /**
  * Image item interface for gallery
@@ -30,7 +33,6 @@ export interface ImageItem {
  * Props for ImageGallery component
  */
 export interface ImageGalleryProps {
-  isDarkMode?: boolean
   showTitles?: boolean
   doubleTapScale?: number
   minZoomScale?: number
@@ -52,7 +54,6 @@ interface GalleryImageItemProps {
   index: number
   deviceWidth: number
   deviceHeight: number
-  isDarkMode: boolean
   doubleTapScale: number
   minZoomScale: number
   maxZoomScale: number
@@ -69,7 +70,6 @@ function GalleryImageItem({
   index,
   deviceWidth,
   deviceHeight,
-  isDarkMode,
   doubleTapScale,
   minZoomScale,
   maxZoomScale,
@@ -79,6 +79,7 @@ function GalleryImageItem({
 }: GalleryImageItemProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const setIsZoomed = useSetAtom(isZoomedAtom)
 
   // Item container includes gap, but image displays at deviceWidth
   return (
@@ -97,6 +98,7 @@ function GalleryImageItem({
         parentScrollRef={flatListRef}
         currentIndex={index}
         itemWidth={itemWidth}
+        onZoomStateChange={z => setIsZoomed(z)}
       >
         <Image
           source={{ uri: item.uri }}
@@ -131,19 +133,19 @@ function GalleryImageItem({
 }
 
 export default function ImageGallery({
-  isDarkMode = false,
   doubleTapScale = 2,
   minZoomScale = 1,
   maxZoomScale = 5,
   containerStyle,
   imageGap = 20,
-}: ImageGalleryProps): React.JSX.Element {
+}: ImageGalleryProps) {
   const { width: deviceWidth } = useWindowDimensions()
   const [currentIndex, setCurrentIndex] = useAtom(imgIndexAtom)
   const [containerHeight, setContainerHeight] = useState(0)
   const flatListRef = useRef<FlatList<ImageItem> | null>(null)
   const images = useAtomValue(bigImageViewAtom)
-  const setIsVisible = useSetAtom(visibleAtom)
+  const isZoomed = useAtomValue(isZoomedAtom)
+  const [isVisible, setIsVisible] = useAtom(visibleAtom)
 
   // Item width includes gap for proper snapping
   const itemWidth = deviceWidth + imageGap
@@ -157,8 +159,29 @@ export default function ImageGallery({
     if (index !== currentIndex && index >= 0 && index < images.length) setCurrentIndex(index)
   }
 
+  if (!isVisible) return null
+
   return (
-    <View style={[styles.container, containerStyle]} onLayout={handleLayout}>
+    <View style={styles.container} onLayout={handleLayout}>
+      {/* Header */}
+      {!isZoomed && (
+        <View style={chatStyles.imageHeader}>
+          <TouchableOpacity
+            style={chatStyles.imageHeaderButton}
+            onPress={() => setIsVisible(false)}
+          >
+            <Feather name="x" size={25} color={colors.dark} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={chatStyles.imageHeaderButton}
+            onPress={() => setIsVisible(false)}
+          >
+            <Feather name="menu" size={25} color={colors.dark} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Gallery */}
       {containerHeight > 0 && (
         <FlatList
           ref={flatListRef}
@@ -169,7 +192,6 @@ export default function ImageGallery({
               index={index}
               deviceWidth={deviceWidth}
               deviceHeight={containerHeight}
-              isDarkMode={isDarkMode}
               doubleTapScale={doubleTapScale}
               minZoomScale={minZoomScale}
               maxZoomScale={maxZoomScale}
@@ -193,12 +215,12 @@ export default function ImageGallery({
           scrollEventThrottle={16}
           snapToInterval={itemWidth}
           decelerationRate="fast"
-          contentContainerStyle={{ paddingRight: imageGap }}
+          contentContainerStyle={{ paddingRight: imageGap, backgroundColor: "cyan" }}
         />
       )}
 
       {/* Footer */}
-      {images.length > 1 && (
+      {images.length > 1 && !isZoomed && (
         <View style={chatStyles.imageFooter}>
           <FlatList
             data={images}
@@ -234,11 +256,18 @@ export default function ImageGallery({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: colors.light,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: "100%",
+    height: "100%",
+    zIndex: 2,
   },
   flatList: {
     flex: 1,
+    backgroundColor: "#f0f0f0",
   },
   imageContainer: {
     justifyContent: "center",

@@ -128,12 +128,16 @@ export const chatStyles = StyleSheet.create({
   },
   imageHeader: {
     backgroundColor: colors.light,
+    position: "absolute",
+    top: 0,
+    width: "100%",
     height: 100,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingLeft: 20,
     paddingTop: 60,
+    zIndex: 3,
   },
   imageHeaderButton: {
     width: 45,

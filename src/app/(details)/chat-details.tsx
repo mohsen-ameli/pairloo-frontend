@@ -62,12 +62,12 @@ export default function ChatDetails() {
     socket.emit("getMessages", id)
   }, [conversations, user, socket, id])
 
-  // useEffect(() => {
-  //   return () => {
-  //     setMessages([])
-  //     setCurrentConversation(null)
-  //   }
-  // }, [])
+  useEffect(() => {
+    return () => {
+      setMessages([])
+      setCurrentConversation(null)
+    }
+  }, [])
 
   async function handleSendMessage() {
     const msg = message.trim()
@@ -89,7 +89,7 @@ export default function ChatDetails() {
       <Stack.Screen options={{ ...detailOptions, headerShown: !visible }} />
       <LoadingIndicator loading={loading} />
 
-      <BigImagePreview />
+      <ImageGallery />
 
       {/* Main chat */}
       <View style={chatStyles.container}>
@@ -248,47 +248,6 @@ function AttachmentPreview() {
             </Pressable>
           </View>
         )}
-      />
-    </View>
-  )
-}
-
-function BigImagePreview() {
-  const [visible, setIsVisible] = useAtom(visibleAtom)
-
-  if (!visible) return null
-
-  return (
-    <View
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0,0,0,0.9)",
-        zIndex: 2,
-      }}
-    >
-      {/* Header */}
-      <View style={chatStyles.imageHeader}>
-        <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => setIsVisible(false)}>
-          <Feather name="x" size={25} color={colors.dark} />
-        </TouchableOpacity>
-        <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => setIsVisible(false)}>
-          <Feather name="menu" size={25} color={colors.dark} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Gallery */}
-      <ImageGallery
-        isDarkMode={true}
-        showTitles
-        doubleTapScale={2}
-        minZoomScale={1}
-        maxZoomScale={5}
       />
     </View>
   )
