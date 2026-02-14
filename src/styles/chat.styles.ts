@@ -133,7 +133,7 @@ export const chatStyles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingLeft: 20,
-    paddingTop: 40,
+    paddingTop: 60,
   },
   imageHeaderButton: {
     width: 45,

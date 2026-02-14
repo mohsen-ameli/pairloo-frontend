@@ -251,9 +251,8 @@ function AttachmentPreview() {
 
 function BigImagePreview() {
   const [visible, setIsVisible] = useAtom(visibleAtom)
-  const imgIndex = useAtomValue(imgIndexAtom)
+  const [imgIndex, setImgIdx] = useAtom(imgIndexAtom)
   const images = useAtomValue(bigImageViewAtom)
-  const setImgIdx = useSetAtom(imgIndexAtom)
 
   return (
     <ImageView
@@ -277,30 +276,32 @@ function BigImagePreview() {
           </TouchableOpacity>
         </View>
       )}
-      FooterComponent={({ imageIndex }) => (
-        <View style={chatStyles.imageFooter}>
-          <FlatList
-            data={images}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.uri}
-            renderItem={({ item }) => (
-              <Pressable onPress={() => setImgIdx(item.idx)}>
-                <Image
-                  source={{ uri: item.uri }}
-                  style={{
-                    width: 30,
-                    height: 60,
-                    marginHorizontal: item.uri === images[imageIndex].uri ? 10 : 1,
-                    opacity: item.uri === images[imageIndex].uri ? 1 : 0.5,
-                  }}
-                  allowDownscaling
-                />
-              </Pressable>
-            )}
-          />
-        </View>
-      )}
+      FooterComponent={({ imageIndex }) =>
+        images.length > 1 && (
+          <View style={chatStyles.imageFooter}>
+            <FlatList
+              data={images}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={item => item.uri}
+              renderItem={({ item }) => (
+                <Pressable onPress={() => setImgIdx(item.idx)}>
+                  <Image
+                    source={{ uri: item.uri }}
+                    style={{
+                      width: 30,
+                      height: 60,
+                      marginHorizontal: item.uri === images[imageIndex].uri ? 10 : 1,
+                      opacity: item.uri === images[imageIndex].uri ? 1 : 0.5,
+                    }}
+                    allowDownscaling
+                  />
+                </Pressable>
+              )}
+            />
+          </View>
+        )
+      }
     />
   )
 }
