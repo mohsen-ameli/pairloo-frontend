@@ -14,10 +14,11 @@ import { FlatList } from "react-native-gesture-handler"
 import { Image } from "expo-image"
 import Zoom from "react-native-zoom-reanimated"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
-import { bigImageViewAtom, imgIndexAtom, visibleAtom } from "@/src/store/chat-store"
+import { bigImageViewAtom, imgIndexAtom } from "@/src/store/chat-store"
 import { chatStyles } from "../styles/chat.styles"
 import { colors } from "../utils/colors"
 import Feather from "@expo/vector-icons/Feather"
+import { useRouter } from "expo-router"
 
 const isZoomedAtom = atom(false)
 
@@ -145,7 +146,7 @@ export default function ImageGallery({
   const flatListRef = useRef<FlatList<ImageItem> | null>(null)
   const images = useAtomValue(bigImageViewAtom)
   const isZoomed = useAtomValue(isZoomedAtom)
-  const [isVisible, setIsVisible] = useAtom(visibleAtom)
+  const router = useRouter()
 
   // Item width includes gap for proper snapping
   const itemWidth = deviceWidth + imageGap
@@ -159,23 +160,15 @@ export default function ImageGallery({
     if (index !== currentIndex && index >= 0 && index < images.length) setCurrentIndex(index)
   }
 
-  if (!isVisible) return null
-
   return (
     <View style={styles.container} onLayout={handleLayout}>
       {/* Header */}
       {!isZoomed && (
         <View style={chatStyles.imageHeader}>
-          <TouchableOpacity
-            style={chatStyles.imageHeaderButton}
-            onPress={() => setIsVisible(false)}
-          >
+          <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => router.back()}>
             <Feather name="x" size={25} color={colors.dark} />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={chatStyles.imageHeaderButton}
-            onPress={() => setIsVisible(false)}
-          >
+          <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => {}}>
             <Feather name="menu" size={25} color={colors.dark} />
           </TouchableOpacity>
         </View>
@@ -196,8 +189,8 @@ export default function ImageGallery({
               minZoomScale={minZoomScale}
               maxZoomScale={maxZoomScale}
               flatListRef={flatListRef}
-              imageGap={imageGap}
-              itemWidth={itemWidth}
+              imageGap={index === images.length - 1 ? 0 : imageGap}
+              itemWidth={index === images.length - 1 ? deviceWidth : itemWidth}
             />
           )}
           getItemLayout={(_, index) => ({
@@ -214,8 +207,8 @@ export default function ImageGallery({
           onScroll={handleScroll}
           scrollEventThrottle={16}
           snapToInterval={itemWidth}
+          snapToAlignment="start"
           decelerationRate="fast"
-          contentContainerStyle={{ paddingRight: imageGap, backgroundColor: "cyan" }}
         />
       )}
 
@@ -256,14 +249,8 @@ export default function ImageGallery({
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
     width: "100%",
     height: "100%",
-    zIndex: 2,
   },
   flatList: {
     flex: 1,

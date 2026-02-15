@@ -27,8 +27,6 @@ export const chatAttachmentsAtom = atom<Attachment[]>([])
 
 export const loadingAtom = atom(false)
 
-export const visibleAtom = atom(false)
-
 export const imgIndexAtom = atom(0)
 
 export const bigImageViewAtom = atom<{ uri: string; id: string }[]>([])

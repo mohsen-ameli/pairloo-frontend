@@ -12,7 +12,6 @@ import {
   loadingAtom,
   messagesAtom,
   sendMessageAtom,
-  visibleAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
@@ -27,7 +26,6 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import ImageGallery from "@/src/components/ImageGallery"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -46,7 +44,6 @@ export default function ChatDetails() {
   const detailOptions = useCustomHeader("", true, true)
   const loading = useAtomValue(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
-  const visible = useAtomValue(visibleAtom)
 
   useEffect(() => {
     if (!conversations || !user || !socket) return
@@ -86,10 +83,8 @@ export default function ChatDetails() {
 
   return (
     <>
-      <Stack.Screen options={{ ...detailOptions, headerShown: !visible }} />
+      <Stack.Screen options={detailOptions} />
       <LoadingIndicator loading={loading} />
-
-      <ImageGallery />
 
       {/* Main chat */}
       <View style={chatStyles.container}>
@@ -144,9 +139,9 @@ export default function ChatDetails() {
 }
 
 function MessageItem({ item }: { item: MessageType }) {
-  const setIsVisible = useSetAtom(visibleAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
+  const router = useRouter()
 
   return (
     <View style={chatStyles.messageItem}>
@@ -181,13 +176,13 @@ function MessageItem({ item }: { item: MessageType }) {
                   <Pressable
                     onPress={() => {
                       setImgIdx(idx)
-                      setIsVisible(true)
                       setImages(
                         item.attachments!.map((att, id) => ({
                           uri: att,
                           id: id.toString(),
                         }))
                       )
+                      router.push("/image-gallery")
                     }}
                   >
                     <Image

@@ -2,24 +2,34 @@ import { Dimensions, Platform, View } from "react-native"
 import { useSharedValue } from "react-native-reanimated"
 import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated-carousel"
 import { SlideItem } from "./SlideItem"
-import { Dispatch, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { colors } from "@/src/utils/colors"
-import { SetStateAction } from "jotai"
+import { useSetAtom } from "jotai"
+import { bigImageViewAtom } from "../store/chat-store"
+import ImageGallery from "../app/image-gallery"
 
 export default function ImageCarousel({
   images,
-  setImages,
   widthOffset = 0,
   editable = false,
 }: {
   images: string[]
-  setImages?: Dispatch<SetStateAction<string[]>>
   widthOffset?: number
   editable?: boolean
 }) {
   const ref = useRef<ICarouselInstance>(null)
   const progress = useSharedValue<number>(0)
   const [width, setWidth] = useState(Dimensions.get("window").width - widthOffset)
+  const setImages = useSetAtom(bigImageViewAtom)
+
+  useEffect(() => {
+    setImages(
+      images.map((att, id) => ({
+        uri: att,
+        id: id.toString(),
+      }))
+    )
+  }, [images])
 
   useEffect(() => {
     setWidth(Dimensions.get("window").width - widthOffset)
@@ -35,12 +45,7 @@ export default function ImageCarousel({
   if (images.length === 1) {
     return (
       <View style={{ width: "auto", height: 250, borderRadius: 15, overflow: "hidden" }}>
-        <SlideItem
-          index={0}
-          source={{ uri: images[0] }}
-          setImages={setImages}
-          editable={editable}
-        />
+        <SlideItem index={0} source={{ uri: images[0] }} editable={editable} />
       </View>
     )
   }
@@ -68,12 +73,7 @@ export default function ImageCarousel({
           progress.value = absoluteProgress
         }}
         renderItem={({ index, item }) => (
-          <SlideItem
-            index={index}
-            source={{ uri: item }}
-            setImages={setImages}
-            editable={editable}
-          />
+          <SlideItem index={index} source={{ uri: item }} editable={editable} />
         )}
         ref={ref}
       />

@@ -73,6 +73,15 @@ export default function RootLayout() {
                   sheetElevation: 24,
                 }}
               />
+              <Stack.Screen
+                name="image-gallery"
+                options={{
+                  presentation: "fullScreenModal",
+                  animation: "fade",
+                  contentStyle: { backgroundColor: colors.dark },
+                  headerShown: false,
+                }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={user === null || userJwt === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />
