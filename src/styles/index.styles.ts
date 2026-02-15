@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
   postCardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   postCardImage: {
     width: "100%",
@@ -49,6 +49,7 @@ export const styles = StyleSheet.create({
   },
   postCardContent: {
     padding: 14,
+    paddingTop: 12,
   },
   postCardFooter: {
     flexDirection: "row",
