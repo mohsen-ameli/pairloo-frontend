@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, Animated } from "react-native"
 import { useState, useEffect, useRef } from "react"
 import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/id.styles"
-import { useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { authFetchAtom } from "@/src/utils/auth-fetch"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { MyPostType } from "@/src/types/post.type"
@@ -15,6 +15,7 @@ import { errorStyles } from "@/src/styles/error.styles"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import CustomLabel from "@/src/components/CustomLabel"
 import { colors } from "@/src/utils/colors"
+import { loadingAtom } from "@/src/store/post-detail-store"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -22,6 +23,7 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const [isQnaExpanded, setIsQnaExpanded] = useState(false)
+  const loading = useAtomValue(loadingAtom)
   const animatedHeight = useRef(new Animated.Value(0)).current
   const {
     data: post,
@@ -49,7 +51,7 @@ export default function PostDetails() {
     queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
   }
 
-  if (isPending) {
+  if (isPending || loading) {
     return (
       <>
         <Stack.Screen options={detailOptions} />

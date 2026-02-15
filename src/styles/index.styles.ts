@@ -33,6 +33,11 @@ export const styles = StyleSheet.create({
     shadowRadius: 2,
     shadowOffset: { width: 0, height: 2 },
   },
+  postCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
   postCardImage: {
     width: "100%",
     height: 220,
@@ -59,6 +64,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.dark,
     marginBottom: 4,
+    width: "90%",
   },
   postCategory: {
     fontSize: 13,

@@ -5,12 +5,12 @@ import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtomValue, useSetAtom } from "jotai"
-import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "../store/create-post-store"
-import { deletePostAtom, editPostAtom } from "../store/post-detail-store"
+import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "@/src/store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
-import { currentConversationAtom } from "../store/chat-store"
-import { userJwtAtom } from "../store/auth-store"
+import { currentConversationAtom } from "@/src/store/chat-store"
+import { userJwtAtom } from "@/src/store/auth-store"
+import { MyPostMenu } from "@/src/components/MyPostMenu"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -31,8 +31,6 @@ export default function useCustomHeader(
   const currentConversation = useAtomValue(currentConversationAtom)
   const user = useAtomValue(userJwtAtom)
   const loading = useAtomValue(loadingAtom)
-  const deletePost = useSetAtom(deletePostAtom)
-  const editPost = useSetAtom(editPostAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,
@@ -152,14 +150,7 @@ export default function useCustomHeader(
               )}
               <Text style={[styles.headerTitle, { marginLeft: 50 }]}>{title}</Text>
             </View>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Pressable onPress={() => editPost()} style={{ padding: 6 }}>
-                <Feather name="edit" size={24} color={colors.dark} />
-              </Pressable>
-              <Pressable onPress={() => deletePost({ id })} style={{ padding: 6 }}>
-                <Feather name="trash-2" size={24} color={colors.dark} />
-              </Pressable>
-            </View>
+            <MyPostMenu id={id} />
           </View>
         </View>
       ),
