@@ -24,7 +24,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.matcher"
+      "package": "com.matcher",
+      "permissions": ["android.permission.RECORD_AUDIO", "android.permission.MODIFY_AUDIO_SETTINGS"]
     },
     "web": {
       "output": "server",
@@ -58,7 +59,10 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "62045e96-3ca5-473a-9367-8f246b148fa1"
+      }
     }
   }
 }

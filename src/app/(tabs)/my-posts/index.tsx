@@ -1,8 +1,8 @@
 import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { Image } from "expo-image"
 import { useRouter } from "expo-router"
-import { useSetAtom } from "jotai"
-import { ScrollView, Text, View, TouchableOpacity, RefreshControl, Pressable } from "react-native"
+import { useAtomValue, useSetAtom } from "jotai"
+import { ScrollView, Text, View, RefreshControl, Pressable, TouchableHighlight } from "react-native"
 import { styles } from "@/src/styles/index.styles"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import CustomLabel from "@/src/components/CustomLabel"
@@ -12,10 +12,13 @@ import { errorStyles } from "@/src/styles/error.styles"
 import { colors } from "@/src/utils/colors"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import { formatDate } from "@/src/utils/format-date"
+import { MyPostMenu } from "@/src/components/MyPostMenu"
+import { loadingAtom } from "@/src/store/post-detail-store"
 
 export default function Index() {
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
+  const loading = useAtomValue(loadingAtom)
   const queryClient = useQueryClient()
   const {
     data: posts,
@@ -33,7 +36,7 @@ export default function Index() {
     queryClient.invalidateQueries({ queryKey: ["my-posts"] })
   }
 
-  if (isPending) {
+  if (isPending || loading) {
     return (
       <View style={styles.container}>
         <LoadingIndicator loading={true} />
@@ -66,53 +69,65 @@ export default function Index() {
         ) : (
           posts.map((post, index) => {
             return (
-              <TouchableOpacity
-                key={index}
-                style={styles.postCard}
-                onPress={() => {
-                  if (post.isDraft) {
-                    router.push({
-                      pathname: "/create-post",
-                    })
-                  } else {
-                    router.push({
-                      pathname: "my-post",
-                      params: { id: post._id },
-                    })
-                  }
-                }}
-              >
-                {post.images && post.images.length > 0 && (
-                  <View style={styles.postCardImage}>
-                    <Image
-                      source={{ uri: post.images[0] }}
-                      style={styles.postCardImageFill}
-                      contentFit="cover"
-                    />
-                  </View>
-                )}
-
-                <View style={styles.postCardContent}>
-                  <Text style={styles.postTitle} numberOfLines={2}>
-                    {post.isDraft ? post.title || post.content : post.title}
-                  </Text>
-
-                  <View style={styles.postCardFooter}>
-                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
-                      {formatDate(post.createdAt)}
-                    </Text>
-                    <View style={styles.postCardLabelContainer}>
-                      {post.closestPosts && post.closestPosts.length > 0 && (
-                        <CustomLabel
-                          text={`${Math.round(post.closestPosts[0].score * 100)}% match`}
-                          backgroundColor={getScoreColor(post.closestPosts[0].score)}
+              <View key={post._id} style={{ position: "relative" }}>
+                <TouchableHighlight
+                  underlayColor={colors.lightGray}
+                  key={index}
+                  style={styles.postCard}
+                  onPress={() => {
+                    if (post.isDraft) {
+                      router.push({
+                        pathname: "/create-post",
+                      })
+                    } else {
+                      router.push({
+                        pathname: "my-post",
+                        params: { id: post._id },
+                      })
+                    }
+                  }}
+                >
+                  <View>
+                    {post.images && post.images.length > 0 && (
+                      <View style={styles.postCardImage}>
+                        <Image
+                          source={{ uri: post.images[0] }}
+                          style={styles.postCardImageFill}
+                          contentFit="cover"
                         />
-                      )}
-                      {post.isDraft && <CustomLabel text="Draft" backgroundColor={colors.purple} />}
+                      </View>
+                    )}
+
+                    <View style={styles.postCardContent}>
+                      <View style={styles.postCardHeader}>
+                        <Text style={styles.postTitle} numberOfLines={2}>
+                          {post.isDraft ? post.title || post.content : post.title}
+                        </Text>
+                        <TouchableHighlight>
+                          <MyPostMenu id={post._id} />
+                        </TouchableHighlight>
+                      </View>
+
+                      <View style={styles.postCardFooter}>
+                        <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
+                          {formatDate(post.createdAt)}
+                        </Text>
+                        <View style={styles.postCardLabelContainer}>
+                          {post.closestPosts && post.closestPosts.length > 0 && (
+                            <CustomLabel
+                              text={`${Math.round(post.closestPosts[0].score * 100)}% match`}
+                              backgroundColor={getScoreColor(post.closestPosts[0].score)}
+                            />
+                          )}
+                          {post.isDraft && (
+                            <CustomLabel text="Draft" backgroundColor={colors.purple} />
+                          )}
+                        </View>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
+                </TouchableHighlight>
+              </View>
             )
           })
         )}
