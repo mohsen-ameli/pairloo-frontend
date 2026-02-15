@@ -8,7 +8,7 @@ export type MessageType = {
     picture?: string | null
   }
   content?: string
-  attachment?: string | null
+  attachments?: string[]
   createdAt: string
   updatedAt: string
 }

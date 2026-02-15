@@ -3,6 +3,7 @@ import { atom } from "jotai"
 import * as ImagePicker from "expo-image-picker"
 import { Alert } from "react-native"
 import { QueryClient } from "@tanstack/react-query"
+import { Attachment } from "../types/attachment.type"
 
 export const queryClientAtom = atom(new QueryClient())
 
@@ -15,7 +16,7 @@ export const getAttachmentAtom = atom(
   null,
   async (get, set, pfp: boolean, option: "library" | "camera", multi: boolean) => {
     let results: ImagePicker.ImagePickerResult | null = null
-    const res: { uri: string; mimeType: string; file: Blob }[] = []
+    const res: Attachment[] = []
 
     if (option === "library") {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()

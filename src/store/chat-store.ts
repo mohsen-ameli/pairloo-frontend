@@ -10,6 +10,7 @@ import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import Toast from "react-native-toast-message"
 import { router } from "expo-router"
+import { Attachment } from "../types/attachment.type"
 
 const unreadMsgStorage = createJSONStorage<{
   [conversationId: string]: number
@@ -22,7 +23,13 @@ export const currentConversationAtom = atom<ConversationType | null>(null)
 
 export const messagesAtom = atom<MessageType[]>([])
 
+export const chatAttachmentsAtom = atom<Attachment[]>([])
+
 export const loadingAtom = atom(false)
+
+export const imgIndexAtom = atom(0)
+
+export const bigImageViewAtom = atom<{ uri: string; id: string }[]>([])
 
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
@@ -144,7 +151,10 @@ export const initChatAtom = atom(null, async (get, set) => {
             username: message.sender.username,
             message: message.content,
             picture: message.sender.picture,
-            attachmentUrl: message.attachment,
+            attachmentUrl:
+              message.attachments && message.attachments.length > 0
+                ? message.attachments[0]
+                : undefined,
           },
           onPress: () => {
             router.push({
@@ -189,6 +199,8 @@ export const sendMessageAtom = atom(
     const user = await get(userAtom)
     if (!socket || !user) return
 
+    const attachments = get(chatAttachmentsAtom)
+
     const optimisticMessage: MessageType = {
       _id: Math.random().toString(),
       conversationId,
@@ -199,7 +211,7 @@ export const sendMessageAtom = atom(
         picture: user.picture,
       },
       content,
-      attachment: null,
+      attachments: attachments.map(att => att.uri),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -210,22 +222,28 @@ export const sendMessageAtom = atom(
     socket.emit("newMessage", {
       conversationId,
       content,
+      attachments,
     })
+
+    set(chatAttachmentsAtom, [])
   }
 )
 
 export const sendAttachmentAtom = atom(null, async (get, set, option: "library" | "camera") => {
   const socket = get(chatSocketAtom)
   const user = await get(userAtom)
-  const conversationId = get(currentConversationAtom)?._id
   if (!socket || !user) return
 
   // get the attachments
-  const attachments = await set(getAttachmentAtom, false, option, false)
+  const attachments = await set(getAttachmentAtom, false, option, true)
 
-  socket.emit("newMessage", {
-    conversationId,
-    file: attachments[0].file,
-    mimeType: attachments[0].mimeType,
-  })
+  if (!attachments) return
+  set(chatAttachmentsAtom, attachments)
+
+  // const conversationId = get(currentConversationAtom)?._id
+  // socket.emit("newMessage", {
+  //   conversationId,
+  //   file: attachments[0].file,
+  //   mimeType: attachments[0].mimeType,
+  // })
 })

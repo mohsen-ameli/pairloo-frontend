@@ -1,11 +1,14 @@
-import { View, Text, Pressable, TextInput, TouchableOpacity } from "react-native"
+import { View, Text, Pressable, TextInput, TouchableOpacity, FlatList } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
 import {
+  bigImageViewAtom,
+  chatAttachmentsAtom,
   conversationsAtom,
   currentConversationAtom,
+  imgIndexAtom,
   loadingAtom,
   messagesAtom,
   sendMessageAtom,
@@ -22,14 +25,9 @@ import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
-import useImageAspectRatio from "@/src/utils/useImageAspectRatio"
-import ImageView from "react-native-image-viewing"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
-
-const visibleAtom = atom(false)
-const imgIndexAtom = atom(0)
 
 export default function ChatDetails() {
   const router = useRouter()
@@ -44,20 +42,8 @@ export default function ChatDetails() {
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader("", true, true)
-  const [visible, setIsVisible] = useAtom(visibleAtom)
-  const imgIndex = useAtomValue(imgIndexAtom)
-  const [images, setImages] = useState<{ uri: string }[]>([])
   const loading = useAtomValue(loadingAtom)
-
-  useEffect(() => {
-    if (messages) {
-      // This runs every time new messages come in
-      // It can be improved for efficiency
-      const imgs = messages.filter(msg => msg.attachment).map(msg => ({ uri: msg.attachment! }))
-      setImages(imgs)
-      chatRef.current && chatRef.current.scrollToEnd({ animated: false })
-    }
-  }, [messages])
+  const attachments = useAtomValue(chatAttachmentsAtom)
 
   useEffect(() => {
     if (!conversations || !user || !socket) return
@@ -82,7 +68,7 @@ export default function ChatDetails() {
 
   async function handleSendMessage() {
     const msg = message.trim()
-    if (!msg) return
+    if (!msg && attachments.length === 0) return
     setMessage("")
     await sendMessage(id, msg)
     chatRef.current && chatRef.current.scrollToEnd({ animated: false })
@@ -100,56 +86,7 @@ export default function ChatDetails() {
       <Stack.Screen options={detailOptions} />
       <LoadingIndicator loading={loading} />
 
-      <ImageView
-        images={images}
-        imageIndex={imgIndex}
-        visible={visible}
-        onRequestClose={() => setIsVisible(false)}
-        HeaderComponent={({ imageIndex }) => (
-          <View style={chatStyles.imageHeader}>
-            <TouchableOpacity
-              style={chatStyles.imageHeaderButton}
-              onPress={() => setIsVisible(false)}
-            >
-              <Feather name="x" size={25} color={colors.dark} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={chatStyles.imageHeaderButton}
-              onPress={() => setIsVisible(false)}
-            >
-              <Feather name="menu" size={25} color={colors.dark} />
-            </TouchableOpacity>
-          </View>
-        )}
-        // FooterComponent={({ imageIndex }) => (
-        //   <View style={chatStyles.imageFooter}>
-        //     <FlatList
-        //       data={images}
-        //       horizontal
-        //       showsHorizontalScrollIndicator={false}
-        //       keyExtractor={(item, idx) => item.uri}
-        //       renderItem={({ item }) => (
-        //         <Pressable
-        //           onPress={() => {
-        //             setImgIdx(images.findIndex(img => img.uri === item.uri))
-        //           }}
-        //         >
-        //           <Image
-        //             source={{ uri: item.uri }}
-        //             style={{
-        //               width: 20,
-        //               height: 40,
-        //               marginHorizontal: item.uri === images[imageIndex].uri ? 10 : 1,
-        //             }}
-        //             allowDownscaling
-        //           />
-        //         </Pressable>
-        //       )}
-        //     />
-        //   </View>
-        // )}
-      />
-
+      {/* Main chat */}
       <View style={chatStyles.container}>
         <FlashList
           data={messages}
@@ -157,17 +94,12 @@ export default function ChatDetails() {
           keyboardDismissMode="on-drag"
           onLayout={() => chatRef.current && chatRef.current.scrollToEnd({ animated: false })}
           keyExtractor={item => item._id}
-          renderItem={({ item }) => (
-            <MemoizedMessageItem
-              item={item}
-              imageIndex={
-                item.attachment ? images.findIndex(img => img.uri === item.attachment) : null
-              }
-            />
-          )}
+          renderItem={({ item }) => <MemoizedMessageItem item={item} />}
           ListFooterComponent={<View style={{ height: 16 }} />}
         />
       </View>
+
+      <AttachmentPreview />
 
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
@@ -190,22 +122,26 @@ export default function ChatDetails() {
           onChangeText={text => setMessage(text)}
         />
         <Pressable
-          style={[chatStyles.sendButton, { display: message.trim() ? "flex" : "none" }]}
+          style={[
+            chatStyles.sendButton,
+            { display: message.trim() || attachments.length > 0 ? "flex" : "none" },
+          ]}
           onPress={handleSendMessage}
         >
           <Feather name="send" size={22} color={colors.lightGray} />
         </Pressable>
       </View>
 
+      {/* Push the content up after keyboard appears */}
       <Animated.View style={[fakeView, { backgroundColor: colors.lightGray }]} />
     </>
   )
 }
 
-function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: number | null }) {
-  const aspectRatio = useImageAspectRatio(item.attachment)
-  const setIsVisible = useSetAtom(visibleAtom)
+function MessageItem({ item }: { item: MessageType }) {
   const setImgIdx = useSetAtom(imgIndexAtom)
+  const setImages = useSetAtom(bigImageViewAtom)
+  const router = useRouter()
 
   return (
     <View style={chatStyles.messageItem}>
@@ -230,27 +166,84 @@ function MessageItem({ item, imageIndex }: { item: MessageType; imageIndex: numb
             {item.content}
           </Text>
         )}
-        {item.attachment && imageIndex && (
-          <Pressable
-            onPress={() => {
-              setImgIdx(imageIndex)
-              setIsVisible(true)
-            }}
-          >
-            <Image
-              source={{ uri: item.attachment }}
-              style={[
-                chatStyles.messageAttachment,
-                {
-                  aspectRatio,
-                },
-              ]}
-            />
-          </Pressable>
+        {item.attachments && (
+          <View style={chatStyles.messageAttachmentContainer}>
+            {item.attachments.map((att, idx) => {
+              const l = item.attachments?.length
+              const width = l === 1 ? 200 : l === 2 ? 150 : 100
+              return (
+                <View key={idx} style={{ marginTop: 8 }}>
+                  <Pressable
+                    onPress={() => {
+                      setImgIdx(idx)
+                      setImages(
+                        item.attachments!.map((att, id) => ({
+                          uri: att,
+                          id: id.toString(),
+                        }))
+                      )
+                      router.push("/image-gallery")
+                    }}
+                  >
+                    <Image
+                      source={{ uri: att }}
+                      style={{
+                        width: width,
+                        height: width,
+                        maxWidth: 300,
+                        maxHeight: 300,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </Pressable>
+                </View>
+              )
+            })}
+          </View>
         )}
       </View>
     </View>
   )
 }
-
 const MemoizedMessageItem = memo(MessageItem)
+
+function AttachmentPreview() {
+  const [attachments, setAttachments] = useAtom(chatAttachmentsAtom)
+
+  useEffect(() => {
+    return () => {
+      setAttachments([])
+    }
+  }, [])
+
+  if (attachments.length === 0) return null
+
+  return (
+    <View style={{ backgroundColor: colors.light, padding: 8 }}>
+      <FlatList
+        data={attachments}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={item => item.uri}
+        renderItem={({ item }) => (
+          <View style={{ marginRight: 10 }}>
+            <Image
+              source={{ uri: item.uri }}
+              style={chatStyles.attachmentPreviewImage}
+              contentFit="cover"
+              allowDownscaling
+            />
+            <Pressable
+              style={chatStyles.attachmentRemoveButton}
+              onPress={() => {
+                setAttachments(attachments.filter(att => att.uri !== item.uri))
+              }}
+            >
+              <Feather name="x" size={20} color={colors.dark} />
+            </Pressable>
+          </View>
+        )}
+      />
+    </View>
+  )
+}
