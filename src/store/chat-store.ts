@@ -44,9 +44,6 @@ export const initChatAtom = atom(null, async (get, set) => {
     auth: {
       token: userJwt.accessToken,
     },
-    reconnection: true,
-    reconnectionAttempts: 3,
-    reconnectionDelay: 2000,
     transports: ["websocket", "polling"],
   })
 

@@ -55,7 +55,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     auth: {
       token: user.accessToken,
     },
-    reconnection: true,
     transports: ["websocket", "polling"],
   })
 

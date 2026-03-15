@@ -19,6 +19,7 @@ import { settingsAtom } from "@/src/store/create-post-store"
 import { useAtom, useAtomValue } from "jotai"
 import { userAtom } from "@/src/store/auth-store"
 import { currPageAtom } from "@/src/store/pager-store"
+import FontAwesome from "@expo/vector-icons/FontAwesome"
 
 type CameraEvent = {
   coordinates: {
@@ -277,23 +278,77 @@ export default function MapSelector() {
           }}
         />
       ) : (
-        <AppleMaps.View
-          style={{ flex: 1 }}
-          cameraPosition={{
-            coordinates: {
-              latitude: region.current.latitude,
-              longitude: region.current.longitude,
-            },
-            zoom: region.current.zoom,
-          }}
-          ref={appleMapRef}
-          onCameraMove={handleCameraMove}
-          onMapClick={() => {
-            Keyboard.dismiss()
-            setCitySearchInput("")
-            setCities([])
-          }}
-        />
+        <>
+          <AppleMaps.View
+            style={{ flex: 1 }}
+            cameraPosition={{
+              coordinates: {
+                latitude: region.current.latitude,
+                longitude: region.current.longitude,
+              },
+              zoom: region.current.zoom,
+            }}
+            ref={appleMapRef}
+            onCameraMove={handleCameraMove}
+            onMapClick={() => {
+              Keyboard.dismiss()
+              setCitySearchInput("")
+              setCities([])
+            }}
+            uiSettings={{
+              myLocationButtonEnabled: true,
+              togglePitchEnabled: true,
+            }}
+          />
+
+          {/* zoom in/out since apple maps doesn't have this */}
+          <View
+            style={{
+              position: "absolute",
+              bottom: 15,
+              right: 12,
+              backgroundColor: colors.darkTransparent,
+              borderRadius: 5,
+              overflow: "hidden",
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                const newZoom = region.current.zoom + 1
+                region.current.zoom = newZoom
+                region.current.distance = zoomToRadiusMeters(newZoom, region.current.latitude)
+                setSettings({
+                  ...settings,
+                  distance: region.current.distance,
+                  zoom: region.current.zoom,
+                })
+              }}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.borderGray,
+              }}
+            >
+              <FontAwesome name="plus" size={18} color={colors.lightTransparent} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                const newZoom = region.current.zoom - 1
+                region.current.zoom = newZoom
+                region.current.distance = zoomToRadiusMeters(newZoom, region.current.latitude)
+                setSettings({
+                  ...settings,
+                  distance: region.current.distance,
+                  zoom: region.current.zoom,
+                })
+              }}
+              style={{ paddingVertical: 10, paddingHorizontal: 12 }}
+            >
+              <FontAwesome name="minus" size={18} color={colors.lightTransparent} />
+            </TouchableOpacity>
+          </View>
+        </>
       )}
 
       <View
