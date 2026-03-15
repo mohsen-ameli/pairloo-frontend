@@ -83,7 +83,7 @@ export default function Index() {
                     <Text style={styles.postUsername}>@{post.username}</Text>
                   </View>
                 </View>
-                <Text style={styles.postContent}>{post.content}</Text>
+                <Text style={styles.postContent}>{post.initialPostText}</Text>
               </Pressable>
             ))}
           </View>

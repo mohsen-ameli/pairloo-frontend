@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
-export const locSelecStyles = StyleSheet.create({
+export const locSelectStyles = StyleSheet.create({
   inputContainer: {
     borderWidth: 1,
     borderColor: colors.borderGray,
@@ -35,7 +35,8 @@ export const locSelecStyles = StyleSheet.create({
   },
   cityItem: {
     padding: 15,
-    marginBottom: 5,
+    borderBottomColor: colors.borderGray,
+    borderBottomWidth: 0.5,
   },
   cityText: { color: colors.dark, fontSize: 16 },
   stateCountryText: { color: colors.gray, fontSize: 14 },

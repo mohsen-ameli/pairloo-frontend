@@ -25,7 +25,7 @@ import {
   loadingAtom,
   pickImageAtom,
   qnaAtom,
-  edittedAtom,
+  editedAtom,
   settingsAtom,
   initCreatePostAtom,
 } from "@/src/store/create-post-store"
@@ -35,6 +35,7 @@ import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
+import MapSelector from "../../map-selector"
 
 export default function CreatePost() {
   const [QNAs, setQNAs] = useAtom(qnaAtom)
@@ -46,22 +47,29 @@ export default function CreatePost() {
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const forward = useSetAtom(forwardCreatePostAtom)
   const pickImage = useSetAtom(pickImageAtom)
-  const setEditted = useSetAtom(edittedAtom)
+  const setEdited = useSetAtom(editedAtom)
   const initCreatePost = useSetAtom(initCreatePostAtom)
 
   useFocusEffect(
     useCallback(() => {
       if (!socket) return
 
-      const isLastPage = currPage >= QNAs.length
-      const nextEnabled = isLastPage
-        ? settings.title.trim().length > 0
-        : QNAs[currPage]?.answer.length > 0
+      let nextEnabled = false
+      if (currPage === QNAs.length + 1) {
+        // last page
+        nextEnabled = settings.title.trim().length > 0
+      } else if (currPage === QNAs.length) {
+        // location page
+        nextEnabled = true
+      } else {
+        // question pages
+        nextEnabled = QNAs[currPage]?.answer.length > 0
+      }
 
       setFlow({
         nextEnabled,
         back: () => {
-          setEditted(false)
+          setEdited(false)
           setCurrPage(currPage - 1)
         },
         next: () => {
@@ -91,15 +99,17 @@ export default function CreatePost() {
       }
       return updated
     })
-    setEditted(true)
+    setEdited(true)
   }
 
   async function refresh() {
     await initCreatePost()
   }
 
-  async function handleGenerateAITitle() {
+  function generateTitle() {
+    console.log("check")
     if (socket && socket.connected) {
+      console.log("here")
       setFlow(prev => ({ ...prev, nextEnabled: false }))
       setLoading(true)
       socket.emit("ai-title")
@@ -115,7 +125,7 @@ export default function CreatePost() {
   if (!socket || socket.connected === false) {
     return (
       <View style={errorStyles.container}>
-        <Text style={errorStyles.errorText}>An error occured. Please try again.</Text>
+        <Text style={errorStyles.errorText}>An error occurred. Please try again.</Text>
         <Pressable style={errorStyles.retryButton} onPress={refresh}>
           <Text style={errorStyles.retryButtonText}>Retry</Text>
         </Pressable>
@@ -223,13 +233,23 @@ export default function CreatePost() {
           )
         })}
 
+        <View key={QNAs.length}>
+          <View style={createPostStyles.container}>
+            <Text style={{ fontSize: 20, fontWeight: "600", color: colors.dark }}>
+              Location (Optional)
+            </Text>
+            <MapSelector />
+          </View>
+        </View>
+
         {/* The last page */}
         <ScrollView
-          key={QNAs.length}
+          key={QNAs.length + 1}
           style={createPostStyles.scrollView}
           keyboardShouldPersistTaps="handled"
         >
           <View style={createPostStyles.gaptainer}>
+            {/* Title */}
             <View style={createPostStyles.titleInputContainer}>
               <View style={{ flex: 1 }}>
                 <CustomInput
@@ -241,14 +261,12 @@ export default function CreatePost() {
                   mandatory
                 />
               </View>
-              <Pressable
-                onPress={handleGenerateAITitle}
-                disabled={loading}
-                style={{ paddingBottom: 12 }}
-              >
+              <Pressable onPress={generateTitle} disabled={loading} style={{ paddingBottom: 12 }}>
                 <Octicons name="sparkles-fill" size={24} color={colors.purple} />
               </Pressable>
             </View>
+
+            {/* Images */}
             <View>
               {settings.images.length != 0 ? (
                 <>
@@ -277,6 +295,8 @@ export default function CreatePost() {
                 </Pressable>
               )}
             </View>
+
+            {/* Other settings */}
             <View style={createPostStyles.gaptainer}>
               <View style={createPostStyles.lastPageRowContainer}>
                 <View style={createPostStyles.lastPageRowLabelContainer}>

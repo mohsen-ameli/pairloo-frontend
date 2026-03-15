@@ -15,21 +15,9 @@ import { BASE_URL } from "@/src/utils/constants"
 import Feather from "@expo/vector-icons/Feather"
 import { userAtom } from "@/src/store/auth-store"
 import { useAtomValue } from "jotai"
-import { locSelecStyles } from "@/src/styles/location-selector.styles"
-import { inputStyles } from "@/src/styles/input.styles"
+import { locSelectStyles } from "@/src/styles/location-selector.styles"
 import CustomInput from "./CustomInput"
-
-interface City {
-  _id: number
-  name: string
-  country_name: string
-  state_name: string
-  population: number
-  latitude: number
-  longitude: number
-  timezone: string
-  score: number
-}
+import { City } from "@/src/types/city.types"
 
 export default function LocationSelector({
   onLocationChange,
@@ -89,19 +77,19 @@ export default function LocationSelector({
         presentationStyle="pageSheet"
         onRequestClose={() => setShowModal(false)}
       >
-        <SafeAreaView style={locSelecStyles.modalContainer}>
-          <View style={locSelecStyles.searchContainer}>
+        <SafeAreaView style={locSelectStyles.modalContainer}>
+          <View style={locSelectStyles.searchContainer}>
             <TouchableOpacity
               onPress={() => {
                 setShowModal(false)
                 setCitySearchInput("")
               }}
-              style={locSelecStyles.dismissButton}
+              style={locSelectStyles.dismissButton}
             >
               <Feather name="x" size={20} color={colors.dark} />
             </TouchableOpacity>
             <TextInput
-              style={locSelecStyles.searchInput}
+              style={locSelectStyles.searchInput}
               placeholder="Search for a city"
               placeholderTextColor={colors.gray}
               value={citySearchInput}
@@ -116,10 +104,10 @@ export default function LocationSelector({
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="on-drag"
             renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handleSelect(item)} style={locSelecStyles.cityItem}>
-                <Text style={locSelecStyles.cityText}>
+              <TouchableOpacity onPress={() => handleSelect(item)} style={locSelectStyles.cityItem}>
+                <Text style={locSelectStyles.cityText}>
                   {item.name}{" "}
-                  <Text style={locSelecStyles.stateCountryText}>
+                  <Text style={locSelectStyles.stateCountryText}>
                     ({item.state_name}, {item.country_name})
                   </Text>
                 </Text>

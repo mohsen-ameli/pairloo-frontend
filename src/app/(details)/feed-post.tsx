@@ -80,7 +80,7 @@ export default function PostDetails() {
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
           {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}
-          <Text style={styles.title}>{post.content}</Text>
+          <Text style={styles.title}>{post.initialPostText}</Text>
           <Text style={styles.subtitle}>{post.summary}</Text>
 
           <View style={{ height: 20 }} />
