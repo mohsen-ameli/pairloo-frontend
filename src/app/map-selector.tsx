@@ -226,8 +226,6 @@ export default function MapSelector() {
                     zoom: settings.zoom,
                   }
 
-                  console.log(region.current)
-
                   try {
                     if (Platform.OS === "android") {
                       androidMapRef.current?.setCameraPosition(newPosition)
@@ -290,6 +288,11 @@ export default function MapSelector() {
           }}
           ref={appleMapRef}
           onCameraMove={handleCameraMove}
+          onMapClick={() => {
+            Keyboard.dismiss()
+            setCitySearchInput("")
+            setCities([])
+          }}
         />
       )}
 
