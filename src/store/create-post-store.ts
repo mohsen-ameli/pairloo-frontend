@@ -111,14 +111,14 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
 
   socket.on("draft-restored", (qna: QnaType) => {
     set(qnaAtom, qna)
-    set(pageCountAtom, qna.length + 1)
+    set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT - 1) // -1 because the first question is already counted in INITIAL_PAGE_COUNT
 
     // Navigate to the first unanswered question, or to the last page if all answered
     const firstUnansweredIdx = qna.findIndex(item => item.answer.length === 0)
     if (firstUnansweredIdx !== -1) {
       set(currPageAtom, firstUnansweredIdx)
     } else {
-      set(currPageAtom, qna.length)
+      set(currPageAtom, get(pageCountAtom) - 1)
     }
 
     set(loadingAtom, false)
