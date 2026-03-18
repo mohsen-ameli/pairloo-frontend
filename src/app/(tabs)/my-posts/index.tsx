@@ -101,7 +101,7 @@ export default function Index() {
                     <View style={styles.postCardContent}>
                       <View style={styles.postCardHeader}>
                         <Text style={styles.postTitle} numberOfLines={2}>
-                          {post.isDraft ? post.title || post.content : post.title}
+                          {post.isDraft ? post.title || post.initialPostText : post.title}
                         </Text>
                         <TouchableHighlight>
                           <MyPostMenu id={post._id} />

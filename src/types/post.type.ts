@@ -15,27 +15,40 @@ export type GeneralPostType = {
   lastName: string
   picture?: string | null
   title: string
-  content: string
+  initialPostText: string
   summary: string
   images?: string[] | null | undefined
   createdAt: string
 }
 
-export interface ClosestPostType extends GeneralPostType {
-  item: string
-  score: string
+export interface MyPostType {
+  _id: string
+  images: string[]
+  title: string
+  publicPost: boolean
+  numMatches: number
+  initialPostText: string
   qna?: QnaItemType[]
-}
-
-export interface MyPostType extends GeneralPostType {
-  qna?: QnaItemType[]
-  closestPosts?: ClosestPostType[]
+  createdAt: Date
+  closestPosts?: Array<{
+    postId: string
+    userId: string
+    picture?: string | null
+    username: string
+    firstName: string
+    lastName: string
+    initialPostText: string
+    title: string
+    images?: string[] | null
+    score: number
+    createdAt: Date
+  }>
 }
 
 export interface MyPosts {
   _id: string
   title: string
-  content: string
+  initialPostText: string
   createdAt: string
   images?: string[] | null
   isDraft?: boolean

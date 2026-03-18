@@ -93,7 +93,7 @@ export default function PostDetails() {
                 style={styles.qnaCollapsibleHeader}
                 onPress={() => setIsQnaExpanded(!isQnaExpanded)}
               >
-                <Text style={styles.qnaHeaderText}>Show Your Q&A Response</Text>
+                <Text style={styles.qnaHeaderText}>Questionnaire Response</Text>
                 <Animated.View
                   style={{
                     transform: [
@@ -148,12 +148,12 @@ export default function PostDetails() {
               <Text style={styles.closestPostsTitle}>Top Matches</Text>
               {post.closestPosts.map(post => (
                 <Pressable
-                  key={post._id}
+                  key={post.postId}
                   style={styles.closestPost}
                   onPress={() => {
                     router.push({
                       pathname: "/feed-post",
-                      params: { id: post._id },
+                      params: { id: post.postId },
                     })
                   }}
                 >
@@ -175,8 +175,8 @@ export default function PostDetails() {
                       </View>
                     </View>
                     <CustomLabel
-                      text={`${Math.round(parseFloat(post.score) * 100)}% match`}
-                      backgroundColor={getScoreColor(parseFloat(post.score))}
+                      text={`${Math.round(post.score * 100)}% match`}
+                      backgroundColor={getScoreColor(post.score)}
                     />
                   </View>
                   <View style={styles.closestPostImage}>

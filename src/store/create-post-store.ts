@@ -13,8 +13,9 @@ import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { ImageObject } from "@/src/types/image-object.type"
 import { queryClientAtom } from "./general-store"
+import { LocationType } from "@/src/types/location.type"
 
-export const INITIAL_PAGE_COUNT = 2 // Starting page + last page
+export const INITIAL_PAGE_COUNT = 3 // Starting page + location page + last page
 const DEFAULT_NUM_MATCHES = 5
 const DEFAULT_PUBLIC_POST = true
 
@@ -28,6 +29,9 @@ const settings = {
   images: [] as ImageObject[],
   publicPost: DEFAULT_PUBLIC_POST,
   numMatches: DEFAULT_NUM_MATCHES,
+  location: null as LocationType,
+  distance: 5_000,
+  zoom: 12,
 }
 const newUserStorage = createJSONStorage<typeof settings>(() => AsyncStorage)
 export const settingsAtom = atomWithStorage("post-settings", settings, newUserStorage)
@@ -37,7 +41,7 @@ export const loadingAtom = atom(false)
 export const publicPostAtom = atom(DEFAULT_PUBLIC_POST)
 export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES)
 export const imagesAtom = atom<ImageObject[]>([])
-export const edittedAtom = atom(false)
+export const editedAtom = atom(false)
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
   const user = await get(userJwtAtom)
@@ -51,9 +55,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     auth: {
       token: user.accessToken,
     },
-    reconnection: true,
-    reconnectionAttempts: 3,
-    reconnectionDelay: 2000,
     transports: ["websocket", "polling"],
   })
 
@@ -105,19 +106,19 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
     set(currPageAtom, get(currPageAtom) + 1)
-    set(pageCountAtom, qna.length + 1)
+    set(pageCountAtom, get(pageCountAtom) + 1)
   })
 
   socket.on("draft-restored", (qna: QnaType) => {
     set(qnaAtom, qna)
-    set(pageCountAtom, qna.length + 1)
+    set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT - 1) // -1 because the first question is already counted in INITIAL_PAGE_COUNT
 
     // Navigate to the first unanswered question, or to the last page if all answered
     const firstUnansweredIdx = qna.findIndex(item => item.answer.length === 0)
     if (firstUnansweredIdx !== -1) {
       set(currPageAtom, firstUnansweredIdx)
     } else {
-      set(currPageAtom, qna.length)
+      set(currPageAtom, get(pageCountAtom) - 1)
     }
 
     set(loadingAtom, false)
@@ -147,7 +148,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     set(settingsAtom, settings)
-    set(edittedAtom, false)
+    set(editedAtom, false)
     set(loadingAtom, false)
     get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   })
@@ -157,9 +158,8 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   const qna = get(qnaAtom)
   const socket = get(createPostSocketAtom)
   const currPage = get(currPageAtom)
-  const pageCount = get(pageCountAtom)
-  const editted = get(edittedAtom)
-  const { title, images, publicPost, numMatches } = await get(settingsAtom)
+  const edited = get(editedAtom)
+  const { title, images, publicPost, numMatches, location, distance } = await get(settingsAtom)
 
   if (!numMatches || numMatches < 1) {
     Alert.alert("Invalid number of matches", "Please enter a valid number of matches (1-99).")
@@ -172,7 +172,7 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   }
 
   // If on the last page, submit
-  if (currPage === pageCount - 1) {
+  if (currPage === qna.length + 1) {
     if (!title || title.trim() === "") {
       Alert.alert("Title required", "Please enter a title for your post.")
       return
@@ -184,7 +184,18 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
       const blob = await response.blob()
       imagesWithFiles.push({ uri: img.localUri, file: blob, mimeType: img.mimeType })
     }
-    socket.emit("submit", title, numMatches, publicPost, imagesWithFiles)
+    socket.emit("submit", {
+      title,
+      numMatches,
+      publicPost,
+      images: imagesWithFiles,
+      location,
+      distance,
+    })
+    return
+  } else if (currPage === qna.length) {
+    // location page
+    set(currPageAtom, get(currPageAtom) + 1)
     return
   }
 
@@ -199,13 +210,13 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   }
 
   // if not changed, do nothing
-  if (!editted) {
+  if (!edited) {
     set(currPageAtom, get(currPageAtom) + 1)
     return
   }
 
   set(loadingAtom, true)
-  set(edittedAtom, false)
+  set(editedAtom, false)
   // If user went back to change something, we need to get rid of their subsequent QAs
   // If they are just doing next normally, this will have no effect
   const qnaSlice = qna.slice(0, currPage + 1)

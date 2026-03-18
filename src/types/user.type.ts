@@ -64,7 +64,7 @@ export type RegisteredUserType = {
   refreshToken: string
 }
 
-// Registering new user type
+// Type of a new user being registered
 export type NewUserType = {
   username: string
   firstName: string

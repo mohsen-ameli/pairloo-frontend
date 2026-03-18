@@ -59,6 +59,15 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)" options={{ headerShown: false }} />
               <Stack.Screen
+                name="map-selector"
+                options={{
+                  headerShown: false,
+                  presentation: "fullScreenModal",
+                  animation: "default",
+                  contentStyle: { backgroundColor: colors.light },
+                }}
+              />
+              <Stack.Screen
                 name="attachment-picker"
                 options={{
                   presentation: "formSheet",

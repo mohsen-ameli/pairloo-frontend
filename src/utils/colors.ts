@@ -19,6 +19,8 @@ const baseColors = {
   warningYellow: "#ffcc00",
   yellow: "#c76e00ff",
   borderGray: "#d1d1d6",
+  lightTransparent: "#ffffff8e",
+  darkTransparent: "#0000008e",
   blue: "#007AFF",
   lightBlue: "#5ac8ff",
   muted: "#999999",
@@ -34,6 +36,8 @@ if (colorScheme === "dark") {
   colors.light = baseColors.dark
   colors.dark = baseColors.light
   colors.lightGray = "#3a3a3aff"
+  colors.darkTransparent = baseColors.lightTransparent
+  colors.lightTransparent = baseColors.darkTransparent
   colors.gray = baseColors.lightGray
   colors.darkGray = baseColors.lightGray
   colors.purple = baseColors.lightPurple
