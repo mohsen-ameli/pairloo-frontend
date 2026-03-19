@@ -35,6 +35,8 @@ export default function PostDetails() {
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
 
+  // console.log("Post map zoom:", post?.firstName, post?.location, post?.zoom)
+
   async function fetchPost() {
     const res = await authFetch(`/api/posts/${id}`)
     const data: GeneralPostType = await res.json()
