@@ -20,6 +20,7 @@ import { useAtom, useAtomValue } from "jotai"
 import { userAtom } from "@/src/store/auth-store"
 import { currPageAtom } from "@/src/store/pager-store"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
+import { zoomToRadiusMeters } from "@/src/utils/map-utils"
 
 type CameraEvent = {
   coordinates: {
@@ -63,11 +64,6 @@ export default function MapSelector() {
     } catch (error) {
       setCities([])
     }
-  }
-
-  function zoomToRadiusMeters(zoom: number, latitude: number, circleRadiusPx = 150): number {
-    const metersPerPixel = (156543.03392 * Math.cos((latitude * Math.PI) / 180)) / Math.pow(2, zoom)
-    return Math.round(metersPerPixel * circleRadiusPx)
   }
 
   function handleCameraMove(event: CameraEvent) {

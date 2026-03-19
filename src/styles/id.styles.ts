@@ -105,6 +105,13 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 4,
   },
+  locationText: {
+    fontSize: 16,
+    color: colors.dark,
+    marginBottom: 10,
+    marginTop: 15,
+    marginLeft: 5,
+  },
   fieldLine: {
     fontSize: 16,
     color: colors.darkGray,
