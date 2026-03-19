@@ -19,6 +19,11 @@ export type GeneralPostType = {
   summary: string
   images?: string[] | null | undefined
   createdAt: string
+  location?: {
+    latitude: number
+    longitude: number
+  }
+  distance?: number
 }
 
 export interface MyPostType {
