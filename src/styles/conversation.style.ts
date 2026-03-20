@@ -8,6 +8,16 @@ export const conversationStyles = StyleSheet.create({
     padding: 10,
     backgroundColor: colors.light,
   },
+  emptyStateContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: colors.muted,
+  },
+
   item: {
     flexDirection: "row",
     alignItems: "center",

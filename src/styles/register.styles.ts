@@ -39,4 +39,13 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     alignSelf: "center",
   },
+  avatarContainer: {
+    position: "relative",
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginRight: 12,
+  },
 })

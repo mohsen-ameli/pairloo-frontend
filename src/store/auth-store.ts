@@ -15,6 +15,7 @@ import z from "zod"
 import { currPageAtom, flowAtom, resetPagerAtom } from "./pager-store"
 import { Alert } from "react-native"
 import { router } from "expo-router"
+import { getAttachmentAtom } from "./general-store"
 
 const returningUser = {
   email: "",
@@ -33,6 +34,8 @@ const newUser: NewUserType = {
   firstName: "",
   lastName: "",
   picture: "",
+  pictureBlob: null as Blob | null,
+  pictureMimeType: "",
   email: "",
   emailVerified: false,
   emailCode: "",
@@ -91,12 +94,26 @@ export const signUpAtom = atom(null, async (get, set) => {
       locationId: userData.locationId,
     }
 
+    const formData = new FormData()
+
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value) formData.append(key, value.toString())
+    })
+
+    if (userData.picture) {
+      const extension = (userData.pictureMimeType || "image/jpeg").split("/")[1] || "jpg"
+      formData.append("picture", {
+        uri: userData.picture,
+        name: `profile.${extension}`,
+        type: userData.pictureMimeType || "image/jpeg",
+      } as any)
+    } else if (userData.pictureBlob) {
+      formData.append("picture", userData.pictureBlob, "profile.jpg")
+    }
+
     const res = await fetch(`${BASE_URL}/api/auth/signup`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+      body: formData,
     })
     const data: RegisteredUserType = await res.json()
 
@@ -444,4 +461,35 @@ export const verifyPhoneNumberVerificationAtom = atom(null, async (get, set) => 
       phoneVerify: "Invalid verification code",
     })
   }
+})
+
+export const verifyUserInfoAtom = atom(null, async (get, set) => {
+  const errors = get(authErrorsAtom)
+  const newUser = await get(newUserAtom)
+  if (!newUser.username) {
+    set(authErrorsAtom, { ...errors, username: "Username is required" })
+    return
+  } else if (!newUser.firstName) {
+    set(authErrorsAtom, { ...errors, firstName: "First name is required" })
+    return
+  } else if (!newUser.lastName) {
+    set(authErrorsAtom, { ...errors, lastName: "Last name is required" })
+    return
+  } else if (!newUser.locationId) {
+    set(authErrorsAtom, { ...errors, location: "Location is required" })
+    return
+  }
+  set(currPageAtom, get(currPageAtom) + 1)
+})
+
+export const setUserPictureAtom = atom(null, async (get, set, option: "library" | "camera") => {
+  const attachments = await set(getAttachmentAtom, true, option, false)
+  if (!attachments) return
+
+  set(newUserAtom, f => ({
+    ...f,
+    picture: attachments[0].uri,
+    pictureBlob: attachments[0].file,
+    pictureMimeType: attachments[0].mimeType,
+  }))
 })

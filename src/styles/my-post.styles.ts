@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
-export const styles = StyleSheet.create({
+export const myPostStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.light,

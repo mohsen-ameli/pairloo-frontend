@@ -3,7 +3,7 @@ import { Image } from "expo-image"
 import { useRouter } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
 import { ScrollView, Text, View, RefreshControl, Pressable, TouchableHighlight } from "react-native"
-import { styles } from "@/src/styles/index.styles"
+import { myPostStyles } from "@/src/styles/my-post.styles"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import CustomLabel from "@/src/components/CustomLabel"
 import { MyPosts } from "@/src/types/post.type"
@@ -38,7 +38,7 @@ export default function Index() {
 
   if (isPending || loading) {
     return (
-      <View style={styles.container}>
+      <View style={myPostStyles.container}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -56,15 +56,17 @@ export default function Index() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={myPostStyles.container}>
       {/* Posts List */}
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={myPostStyles.scrollContent}
         refreshControl={<RefreshControl refreshing={isPending} onRefresh={refresh} />}
       >
         {posts.length === 0 ? (
-          <View style={styles.emptyStateContainer}>
-            <Text style={styles.emptyStateText}>No posts yet. Create one to get started!</Text>
+          <View style={myPostStyles.emptyStateContainer}>
+            <Text style={myPostStyles.emptyStateText}>
+              No posts yet. Create one to get started!
+            </Text>
           </View>
         ) : (
           posts.map((post, index) => {
@@ -73,7 +75,7 @@ export default function Index() {
                 <TouchableHighlight
                   underlayColor={colors.lightGray}
                   key={index}
-                  style={styles.postCard}
+                  style={myPostStyles.postCard}
                   onPress={() => {
                     if (post.isDraft) {
                       router.push({
@@ -89,18 +91,18 @@ export default function Index() {
                 >
                   <View>
                     {post.images && post.images.length > 0 && (
-                      <View style={styles.postCardImage}>
+                      <View style={myPostStyles.postCardImage}>
                         <Image
                           source={{ uri: post.images[0] }}
-                          style={styles.postCardImageFill}
+                          style={myPostStyles.postCardImageFill}
                           contentFit="cover"
                         />
                       </View>
                     )}
 
-                    <View style={styles.postCardContent}>
-                      <View style={styles.postCardHeader}>
-                        <Text style={styles.postTitle} numberOfLines={2}>
+                    <View style={myPostStyles.postCardContent}>
+                      <View style={myPostStyles.postCardHeader}>
+                        <Text style={myPostStyles.postTitle} numberOfLines={2}>
                           {post.isDraft ? post.title || post.initialPostText : post.title}
                         </Text>
                         <TouchableHighlight>
@@ -108,11 +110,11 @@ export default function Index() {
                         </TouchableHighlight>
                       </View>
 
-                      <View style={styles.postCardFooter}>
+                      <View style={myPostStyles.postCardFooter}>
                         <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
                           {formatDate(post.createdAt)}
                         </Text>
-                        <View style={styles.postCardLabelContainer}>
+                        <View style={myPostStyles.postCardLabelContainer}>
                           {post.closestPosts && post.closestPosts.length > 0 && (
                             <CustomLabel
                               text={`${Math.round(post.closestPosts[0].score * 100)}% match`}
