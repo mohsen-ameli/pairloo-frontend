@@ -135,7 +135,7 @@ export default function PostDetails() {
 
         {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}
 
-        <Text style={styles.locationText}>Approximate Location</Text>
+        {post.location && <Text style={styles.locationText}>Approximate Location</Text>}
 
         {/* Location Map */}
         {post.location && (
