@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.light,
@@ -40,6 +40,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginLeft: 5,
   },
+  locationText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.dark,
+    marginBottom: 10,
+    marginTop: 15,
+    marginLeft: 5,
+    textAlign: "center",
+  },
+  fieldLine: {
+    fontSize: 16,
+    color: colors.darkGray,
+    marginBottom: 10,
+    lineHeight: 22,
+  },
+  fieldLabel: {
+    fontWeight: "bold",
+    color: colors.darkGray,
+    textTransform: "capitalize",
+  },
+  // Q&A Section Styles
   qnaSection: {
     marginBottom: 24,
     backgroundColor: colors.lightGray,
@@ -105,24 +126,7 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 4,
   },
-  locationText: {
-    fontSize: 16,
-    color: colors.dark,
-    marginBottom: 10,
-    marginTop: 15,
-    marginLeft: 5,
-  },
-  fieldLine: {
-    fontSize: 16,
-    color: colors.darkGray,
-    marginBottom: 10,
-    lineHeight: 22,
-  },
-  fieldLabel: {
-    fontWeight: "bold",
-    color: colors.darkGray,
-    textTransform: "capitalize",
-  },
+  // Closest Posts / Matching Styles
   closestPostsContainer: {
     marginTop: 28,
     borderRadius: 10,
@@ -213,6 +217,122 @@ const styles = StyleSheet.create({
   },
   closestPostUserInfo: {
     flexDirection: "column",
+  },
+  // Modal Container Override
+  modalContainer: {
+    paddingTop: 0,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
+    flex: 1,
+  },
+  // Android Header
+  androidHeaderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    zIndex: 100,
+  },
+  headerUserRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  headerUserImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  headerUserName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.dark,
+  },
+  headerUserUsername: {
+    fontSize: 14,
+    color: "#666",
+  },
+  headerCloseButton: {
+    marginLeft: 16,
+  },
+  // iOS Close Button
+  iosCloseButton: {
+    position: "absolute",
+    top: 24,
+    right: 16,
+    zIndex: 101,
+    padding: 8,
+  },
+  // ScrollView
+  scrollViewContainer: {
+    flex: 1,
+  },
+  // iOS User Info
+  iosUserInfoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  iosUserImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  iosUserName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.dark,
+  },
+  iosUserUsername: {
+    fontSize: 14,
+    color: "#666",
+  },
+  // Map Styles
+  mapContainer: {
+    height: 280,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 20,
+  },
+  mapFlexContainer: {
+    flex: 1,
+  },
+  mapOverlayContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  radiusCircle: {
+    width: 250,
+    height: 250,
+    borderRadius: 150,
+    backgroundColor: "rgba(128, 0, 128, 0.2)",
+    borderColor: colors.purple,
+    borderWidth: 2,
+  },
+  // Timestamp
+  timestampText: {
+    fontSize: 12,
+    color: colors.darkGray,
+    marginLeft: 5,
+    marginBottom: 16,
+  },
+  // Contact Button Container
+  contactButtonContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  // Close Icon Container (for loading/error states)
+  closeIconContainer: {
+    position: "absolute",
+    top: 12,
+    right: 16,
+    zIndex: 10,
   },
 })
 

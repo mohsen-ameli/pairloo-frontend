@@ -68,6 +68,18 @@ export default function RootLayout() {
                 }}
               />
               <Stack.Screen
+                name="feed-post"
+                options={{
+                  presentation: "formSheet",
+                  gestureDirection: "vertical",
+                  animation: "slide_from_bottom",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: false,
+                  sheetGrabberVisible: true,
+                  sheetAllowedDetents: [0.95],
+                }}
+              />
+              <Stack.Screen
                 name="attachment-picker"
                 options={{
                   presentation: "formSheet",
