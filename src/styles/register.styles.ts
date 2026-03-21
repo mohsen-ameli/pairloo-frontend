@@ -6,6 +6,12 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.light,
   },
+  containerCenter: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   pageContainer: {
     flex: 1,
     gap: 10,
@@ -40,12 +46,31 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
   },
   avatarContainer: {
-    position: "relative",
+    position: "absolute",
+    bottom: -5,
+    right: -15,
+    backgroundColor: colors.purple,
+    width: 70,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+    flexDirection: "row",
+    gap: 6,
   },
   avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
     marginRight: 12,
+  },
+  avatarEdit: {
+    fontSize: 14,
+    color: colors.light,
+  },
+  usernameDisplay: {
+    marginTop: 20,
+    color: colors.dark,
+    fontSize: 16,
   },
 })
