@@ -138,8 +138,6 @@ export default function Register() {
   return (
     <CustomPager>
       <View style={styles.pageContainer} key="0">
-        {/* {avatar && <SvgXml xml={avatar} />}
-        <CustomButton onPress={generateAvatar}>Generate Avatar</CustomButton> */}
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
         {errors?.phoneNumber && <Text style={styles.error}>{errors?.phoneNumber}</Text>}
@@ -263,6 +261,7 @@ export default function Register() {
             onChangeText={handleUsername}
             defaultValue={newUser.username}
             inputRef={usernameRef}
+            maxLength={20}
           />
           <CustomInput
             title="First Name*"
@@ -304,8 +303,7 @@ export default function Register() {
 
       <View style={styles.pageContainer} key="5">
         <Text style={styles.title}>Finally, add a picture!</Text>
-        {/* Finish your profile */}
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View style={styles.containerCenter}>
           <Pressable
             onPress={() => {
               skipResetOnNextBlur.current = true
@@ -314,35 +312,18 @@ export default function Register() {
                 params: { intent: "signup" },
               })
             }}
-            style={styles.avatarContainer}
           >
             <Image
               source={newUser.picture ? { uri: newUser.picture } : defaultProfilePicture}
               style={styles.avatar}
               contentFit="cover"
             />
-            <View
-              style={{
-                position: "absolute",
-                bottom: -5,
-                right: -15,
-                backgroundColor: colors.purple,
-                width: 70,
-                height: 40,
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 20,
-                flexDirection: "row",
-                gap: 6,
-              }}
-            >
+            <View style={styles.avatarContainer}>
               <Feather name="edit-2" size={18} color={colors.light} />
-              <Text style={{ fontSize: 14, color: colors.light }}>Edit</Text>
+              <Text style={styles.avatarEdit}>Edit</Text>
             </View>
           </Pressable>
-          <Text style={{ marginTop: 20, color: colors.dark, fontSize: 16 }}>
-            @{newUser.username}
-          </Text>
+          <Text style={styles.usernameDisplay}>@{newUser.username}</Text>
         </View>
       </View>
     </CustomPager>
