@@ -1,6 +1,6 @@
 import { ExpoConfig } from "expo/config"
 
-const name = "matcher"
+const name = "pairloo"
 const identifier = `com.${name}`
 
 module.exports = ({ config }: { config: ExpoConfig }) => {

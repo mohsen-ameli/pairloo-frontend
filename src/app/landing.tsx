@@ -39,7 +39,7 @@ export default function Landing() {
               fontWeight: "bold",
             }}
           >
-            Matcher
+            Pairloo
           </Text>
           <Text
             style={{
@@ -49,7 +49,7 @@ export default function Landing() {
               textAlign: "center",
             }}
           >
-            Connect with people automatically
+            Connect with people
           </Text>
         </View>
 
