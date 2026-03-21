@@ -33,6 +33,7 @@ export type AuthErrorType = {
   username?: string
   firstName?: string
   lastName?: string
+  location?: string
   email?: string
   emailVerify?: string
   phoneNumber?: string
@@ -70,6 +71,8 @@ export type NewUserType = {
   firstName: string
   lastName: string
   picture: string
+  pictureBlob: Blob | null
+  pictureMimeType: string
   email: string
   emailCode: string
   emailVerified: boolean

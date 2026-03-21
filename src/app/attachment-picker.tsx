@@ -6,13 +6,15 @@ import Feather from "@expo/vector-icons/Feather"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
 import { Text, TouchableOpacity, View } from "react-native"
-import { setUserPfpAtom } from "../store/settings-store"
+import { setUserPfpAtom } from "@/src/store/settings-store"
+import { setUserPictureAtom } from "@/src/store/auth-store"
 
 export default function AttachmentPicker() {
   const router = useRouter()
-  const { intent } = useLocalSearchParams<{ intent: "chat" | "pfp" }>()
+  const { intent } = useLocalSearchParams<{ intent: "chat" | "pfp" | "signup" }>()
   const sendAttachment = useSetAtom(sendAttachmentAtom)
   const setPfp = useSetAtom(setUserPfpAtom)
+  const setPicture = useSetAtom(setUserPictureAtom)
 
   return (
     <View style={chatStyles.modalContainer}>
@@ -28,6 +30,8 @@ export default function AttachmentPicker() {
               sendAttachment("library")
             } else if (intent === "pfp") {
               setPfp("library")
+            } else if (intent === "signup") {
+              setPicture("library")
             }
             router.back()
           }}
@@ -41,6 +45,8 @@ export default function AttachmentPicker() {
               sendAttachment("camera")
             } else if (intent === "pfp") {
               setPfp("camera")
+            } else if (intent === "signup") {
+              setPicture("camera")
             }
             router.back()
           }}

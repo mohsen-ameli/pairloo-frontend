@@ -18,11 +18,16 @@ import { useAtomValue } from "jotai"
 import { locSelectStyles } from "@/src/styles/location-selector.styles"
 import CustomInput from "./CustomInput"
 import { City } from "@/src/types/city.types"
+import { inputStyles } from "../styles/input.styles"
 
 export default function LocationSelector({
   onLocationChange,
+  mandatory = false,
+  errors,
 }: {
   onLocationChange: (locationObj: City) => void
+  mandatory?: boolean
+  errors?: string
 }) {
   const user = useAtomValue(userAtom)
   const [locationInput, setLocationInput] = useState("Select Your Location")
@@ -67,9 +72,15 @@ export default function LocationSelector({
       }}
       style={{ width: "100%" }}
     >
-      <CustomInput title="Location" editable={false} selectTextOnFocus={false} pointerEvents="none">
+      <CustomInput
+        title={"Location" + (mandatory ? "*" : "")}
+        editable={false}
+        selectTextOnFocus={false}
+        pointerEvents="none"
+      >
         {locationInput}
       </CustomInput>
+      {errors ? <Text style={inputStyles.errors}>{errors}</Text> : null}
 
       <Modal
         visible={showModal}

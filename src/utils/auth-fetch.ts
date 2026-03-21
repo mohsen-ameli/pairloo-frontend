@@ -27,8 +27,8 @@ export const authFetchAtom = atom(
     let res
     try {
       res = await fetchWithToken(user.accessToken)
-    } catch (error) {
-      throw new Error("Network error occurred")
+    } catch (error: any) {
+      throw new Error("Network error occurred: ", error)
     }
 
     if (res.status === 401 || res.status === 403) {

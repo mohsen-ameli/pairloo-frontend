@@ -68,21 +68,6 @@ export default function RootLayout() {
                 }}
               />
               <Stack.Screen
-                name="attachment-picker"
-                options={{
-                  presentation: "formSheet",
-                  gestureDirection: "vertical",
-                  animation: "slide_from_bottom",
-                  contentStyle: { backgroundColor: colors.light },
-                  headerShown: false,
-                  sheetGrabberVisible: false,
-                  sheetInitialDetentIndex: 0,
-                  sheetAllowedDetents: [0.3],
-                  sheetExpandsWhenScrolledToEdge: false,
-                  sheetElevation: 24,
-                }}
-              />
-              <Stack.Screen
                 name="image-gallery"
                 options={{
                   presentation: "fullScreenModal",
@@ -98,6 +83,21 @@ export default function RootLayout() {
               <Stack.Screen name="login" options={loginOptions} />
               <Stack.Screen name="forgot-email" options={forgotEmailOptions} />
             </Stack.Protected>
+            <Stack.Screen
+              name="attachment-picker"
+              options={{
+                presentation: "formSheet",
+                gestureDirection: "vertical",
+                animation: "slide_from_bottom",
+                contentStyle: { backgroundColor: colors.light },
+                headerShown: false,
+                sheetGrabberVisible: false,
+                sheetInitialDetentIndex: 0,
+                sheetAllowedDetents: [0.3],
+                sheetExpandsWhenScrolledToEdge: false,
+                sheetElevation: 24,
+              }}
+            />
           </Stack>
         </QueryClientProvider>
       </KeyboardProvider>
