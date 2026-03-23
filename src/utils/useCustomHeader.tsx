@@ -25,7 +25,9 @@ export default function useCustomHeader(
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
 
-  function handleProfilePress() {}
+  function handleProfilePress(id: string) {
+    router.push("(profile)/" + id)
+  }
   const discardDraft = useSetAtom(discardDraftAtom)
   const getNewQuestion = useSetAtom(getNewQuestionAtom)
   const currentConversation = useAtomValue(currentConversationAtom)
@@ -84,7 +86,10 @@ export default function useCustomHeader(
               <Feather name="arrow-left" size={26} color={colors.dark} />
             </Pressable>
           )}
-          <TouchableOpacity onPress={handleProfilePress} style={styles.otherProfileButton}>
+          <TouchableOpacity
+            onPress={() => handleProfilePress(otherUser._id)}
+            style={styles.otherProfileButton}
+          >
             <Image
               source={
                 otherUser.picture && otherUser.picture
@@ -93,8 +98,8 @@ export default function useCustomHeader(
               }
               style={styles.otherProfileImage}
             />
+            <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
           </TouchableOpacity>
-          <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
         </View>
       ),
     }

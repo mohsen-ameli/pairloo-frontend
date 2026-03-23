@@ -76,6 +76,22 @@ export default function RootLayout() {
                   headerShown: false,
                 }}
               />
+              <Stack.Screen
+                name="(profile)/[id]"
+                options={{
+                  presentation: "fullScreenModal",
+                  gestureDirection: "vertical",
+                  animation: "default",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: true,
+                  headerTitle: "",
+                  sheetGrabberVisible: true,
+                  sheetInitialDetentIndex: 0,
+                  sheetAllowedDetents: [0.75, 1],
+                  sheetExpandsWhenScrolledToEdge: true,
+                  sheetElevation: 24,
+                }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={user === null || userJwt === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />

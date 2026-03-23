@@ -21,6 +21,20 @@ export type UserType = null | {
   updatedAt: Date
 }
 
+export type UserProfileType = UserType & {
+  followersCount: number
+  followingCount: number
+  ratingCount: number
+  ratingAvg: number
+  reviews: {
+    _id: string
+    postId: string
+    rating: number
+    review: string
+  }[]
+  isFollowing: boolean
+}
+
 // JWT tokens stored in secure storage
 export type UserJwtType = null | {
   _id: string

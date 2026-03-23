@@ -48,10 +48,9 @@ export const styles = StyleSheet.create({
     marginTop: 2,
   },
   otherProfileButton: {
-    width: 35,
-    height: 35,
-    borderRadius: 20,
     backgroundColor: colors.light,
+    flexDirection: "row",
+    gap: 8,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
@@ -59,5 +58,6 @@ export const styles = StyleSheet.create({
   otherProfileImage: {
     width: 35,
     height: 35,
+    borderRadius: 20,
   },
 })
