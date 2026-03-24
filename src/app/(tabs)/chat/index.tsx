@@ -40,7 +40,7 @@ export default function index() {
     }
 
     let contentPreview = ""
-    if (lastMessage.attachment) {
+    if (lastMessage.attachments && lastMessage.attachments.length > 0) {
       contentPreview = "sent an attachment"
     } else {
       contentPreview = formatString(lastMessage.content, 32)
@@ -81,64 +81,75 @@ export default function index() {
   return (
     <>
       <View style={conversationStyles.container}>
-        {conversations.map(conversation => {
-          let otherPerson
-          for (const member of conversation.members) {
-            if (member._id !== user?._id) {
-              otherPerson = member
-              break
+        {conversations.length === 0 ? (
+          <View style={conversationStyles.emptyStateContainer}>
+            <Text style={conversationStyles.emptyStateText}>No chats yet.</Text>
+            <Text style={conversationStyles.emptyStateText}>
+              Start a conversation by contacting someone!
+            </Text>
+          </View>
+        ) : (
+          conversations.map(conversation => {
+            let otherPerson
+            for (const member of conversation.members) {
+              if (member._id !== user?._id) {
+                otherPerson = member
+                break
+              }
             }
-          }
-          if (!otherPerson) return null
+            if (!otherPerson) return null
 
-          return (
-            <Pressable
-              key={conversation._id}
-              style={conversationStyles.item}
-              onPress={() => {
-                router.push({
-                  pathname: "/chat-details",
-                  params: { id: conversation._id },
-                })
-              }}
-            >
-              <Image
-                source={otherPerson.picture ? { uri: otherPerson.picture } : defaultProfilePicture}
-                style={conversationStyles.image}
-              />
-              <View>
-                <Text style={conversationStyles.itemTitle}>{otherPerson.username}</Text>
-                {conversation.lastMessage && (
-                  <Text style={conversationStyles.lastMessage}>
-                    {getLastMessagePreview(conversation.lastMessage)}
-                  </Text>
-                )}
-              </View>
-              <View style={conversationStyles.timestampContainer}>
-                <Text
-                  style={[
-                    conversationStyles.timestamp,
-                    {
-                      color: conversation._id in unreadMessages ? colors.purple : colors.gray,
-                      fontWeight: conversation._id in unreadMessages ? "500" : "400",
-                    },
-                  ]}
-                >
-                  {sinceNow(conversation.lastMessage?.updatedAt)}
-                </Text>
-                <Text>
-                  {conversation._id in unreadMessages && unreadMessages[conversation._id] > 0 && (
-                    <View style={conversationStyles.unreadBadge}>
-                      <Text style={conversationStyles.unreadBadgeText}>
-                        {unreadMessages[conversation._id]}
-                      </Text>
-                    </View>
+            return (
+              <Pressable
+                key={conversation._id}
+                style={conversationStyles.item}
+                onPress={() => {
+                  router.push({
+                    pathname: "/chat-details",
+                    params: { id: conversation._id },
+                  })
+                }}
+              >
+                <Image
+                  source={
+                    otherPerson.picture ? { uri: otherPerson.picture } : defaultProfilePicture
+                  }
+                  style={conversationStyles.image}
+                />
+                <View>
+                  <Text style={conversationStyles.itemTitle}>{otherPerson.username}</Text>
+                  {conversation.lastMessage && (
+                    <Text style={conversationStyles.lastMessage}>
+                      {getLastMessagePreview(conversation.lastMessage)}
+                    </Text>
                   )}
-                </Text>
-              </View>
-            </Pressable>
-          )
-        })}
+                </View>
+                <View style={conversationStyles.timestampContainer}>
+                  <Text
+                    style={[
+                      conversationStyles.timestamp,
+                      {
+                        color: conversation._id in unreadMessages ? colors.purple : colors.gray,
+                        fontWeight: conversation._id in unreadMessages ? "500" : "400",
+                      },
+                    ]}
+                  >
+                    {sinceNow(conversation.lastMessage?.updatedAt)}
+                  </Text>
+                  <Text>
+                    {conversation._id in unreadMessages && unreadMessages[conversation._id] > 0 && (
+                      <View style={conversationStyles.unreadBadge}>
+                        <Text style={conversationStyles.unreadBadgeText}>
+                          {unreadMessages[conversation._id]}
+                        </Text>
+                      </View>
+                    )}
+                  </Text>
+                </View>
+              </Pressable>
+            )
+          })
+        )}
       </View>
     </>
   )

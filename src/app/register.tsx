@@ -13,6 +13,7 @@ import {
   requestPhoneNumberVerificationAtom,
   verifyPhoneNumberVerificationAtom,
   resendTimerAtom,
+  verifyUserInfoAtom,
 } from "@/src/store/auth-store"
 import { styles } from "@/src/styles/register.styles"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -20,11 +21,15 @@ import { TextInput } from "react-native"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
 import { currPageAtom, flowAtom, pageCountAtom, resetPagerAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
-import { useFocusEffect } from "expo-router"
+import { useFocusEffect, useRouter } from "expo-router"
+import { Image } from "expo-image"
+import Feather from "@expo/vector-icons/Feather"
 
-const INITIAL_PAGE_COUNT = 5
+const defaultProfilePicture = require("@/assets/images/default_pfp.png")
+const INITIAL_PAGE_COUNT = 6
 
 export default function Register() {
+  const router = useRouter()
   const signUp = useSetAtom(signUpAtom)
   const setPageCount = useSetAtom(pageCountAtom)
   const [newUser, setNewUser] = useAtom(newUserAtom)
@@ -38,8 +43,10 @@ export default function Register() {
   const verifyPhoneNumberVerification = useSetAtom(verifyPhoneNumberVerificationAtom)
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
+  const verifyUserInfo = useSetAtom(verifyUserInfoAtom)
   const resetPager = useSetAtom(resetPagerAtom)
   const [avatar, setAvatar] = useState<string | null>(null)
+  const skipResetOnNextBlur = useRef(false)
 
   // Refs for manual focus
   const phoneCodeRef = useRef<TextInput>(null!)
@@ -50,9 +57,13 @@ export default function Register() {
   useFocusEffect(
     useCallback(() => {
       return () => {
+        if (skipResetOnNextBlur.current) {
+          skipResetOnNextBlur.current = false
+          return
+        }
         resetPager()
       }
-    }, [])
+    }, [resetPager])
   )
 
   // Set next/back functions based on current page
@@ -73,6 +84,8 @@ export default function Register() {
         } else if (currPage === 3) {
           verifyEmailVerification(true)
         } else if (currPage === 4) {
+          verifyUserInfo()
+        } else if (currPage === 5) {
           signUp()
         }
       },
@@ -105,10 +118,10 @@ export default function Register() {
         })
         const data = await res.json()
         if (!res.ok) {
-          setErrors(prev => ({
-            ...prev,
+          setErrors({
+            ...errors,
             username: data.errors.username,
-          }))
+          })
         }
       }
     }, REGISTER_USERNAME_CHECK_INTERVAL)
@@ -125,8 +138,6 @@ export default function Register() {
   return (
     <CustomPager>
       <View style={styles.pageContainer} key="0">
-        {/* {avatar && <SvgXml xml={avatar} />}
-        <CustomButton onPress={generateAvatar}>Generate Avatar</CustomButton> */}
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
         {errors?.phoneNumber && <Text style={styles.error}>{errors?.phoneNumber}</Text>}
@@ -242,17 +253,18 @@ export default function Register() {
               alignSelf: "center",
             }}
           >
-            Let's get to know you!
+            Let's get to know you
           </Text>
           <CustomInput
-            title="Username"
+            title="Username*"
             errors={errors?.username}
             onChangeText={handleUsername}
             defaultValue={newUser.username}
             inputRef={usernameRef}
+            maxLength={20}
           />
           <CustomInput
-            title="First Name"
+            title="First Name*"
             errors={errors?.firstName}
             onChangeText={text => {
               setNewUser({ ...newUser, firstName: text })
@@ -261,7 +273,7 @@ export default function Register() {
             defaultValue={newUser.firstName}
           />
           <CustomInput
-            title="Last Name"
+            title="Last Name*"
             errors={errors?.lastName}
             onChangeText={text => {
               setNewUser({ ...newUser, lastName: text })
@@ -270,6 +282,8 @@ export default function Register() {
             defaultValue={newUser.lastName}
           />
           <LocationSelector
+            mandatory
+            errors={errors?.location}
             onLocationChange={location => {
               setNewUser({
                 ...newUser,
@@ -281,10 +295,37 @@ export default function Register() {
                 longitude: location.longitude,
                 timezone: location.timezone,
               })
+              setErrors({ ...errors, location: "" })
             }}
           />
         </View>
       </ScrollView>
+
+      <View style={styles.pageContainer} key="5">
+        <Text style={styles.title}>Finally, add a picture!</Text>
+        <View style={styles.containerCenter}>
+          <Pressable
+            onPress={() => {
+              skipResetOnNextBlur.current = true
+              router.push({
+                pathname: "/attachment-picker",
+                params: { intent: "signup" },
+              })
+            }}
+          >
+            <Image
+              source={newUser.picture ? { uri: newUser.picture } : defaultProfilePicture}
+              style={styles.avatar}
+              contentFit="cover"
+            />
+            <View style={styles.avatarContainer}>
+              <Feather name="edit-2" size={18} color={colors.light} />
+              <Text style={styles.avatarEdit}>Edit</Text>
+            </View>
+          </Pressable>
+          <Text style={styles.usernameDisplay}>@{newUser.username}</Text>
+        </View>
+      </View>
     </CustomPager>
   )
 }
