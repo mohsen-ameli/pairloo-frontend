@@ -162,7 +162,6 @@ export default function PostDetails() {
         <Text style={styles.timestampText}>Post Created {sinceNow(post.createdAt)} Ago</Text>
       </ScrollView>
 
-      {/* Contact Poster Button */}
       <View style={styles.contactButtonContainer}>
         <CustomButton onPress={contactPoster}>Contact Poster</CustomButton>
       </View>
