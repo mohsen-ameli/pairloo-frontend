@@ -126,7 +126,6 @@ export const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 4,
   },
-  // Closest Posts / Matching Styles
   closestPostsContainer: {
     marginTop: 28,
     borderRadius: 10,
@@ -218,22 +217,12 @@ export const styles = StyleSheet.create({
   closestPostUserInfo: {
     flexDirection: "column",
   },
-  // Modal Container Override
   modalContainer: {
     paddingTop: 0,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     overflow: "hidden",
     flex: 1,
-  },
-  // Android Header
-  androidHeaderContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    zIndex: 100,
   },
   headerUserRow: {
     flexDirection: "row",
@@ -258,39 +247,24 @@ export const styles = StyleSheet.create({
   headerCloseButton: {
     marginRight: 15,
   },
-  // iOS Close Button
-  iosCloseButton: {
+  postUserUsername: {
+    color: colors.dark,
+  },
+  closeButton: {
     position: "absolute",
     top: 24,
-    right: 16,
+    right: 10,
     zIndex: 101,
     padding: 8,
   },
-  // ScrollView
   scrollViewContainer: {
     flex: 1,
   },
-  // iOS User Info
-  iosUserInfoContainer: {
+  headerContainer: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 4,
-  },
-  iosUserImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  iosUserName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.dark,
-  },
-  iosUserUsername: {
-    fontSize: 14,
-    color: "#666",
   },
   // Map Styles
   mapContainer: {
@@ -315,20 +289,17 @@ export const styles = StyleSheet.create({
     borderColor: colors.purple,
     borderWidth: 2,
   },
-  // Timestamp
   timestampText: {
     fontSize: 12,
     color: colors.darkGray,
     marginLeft: 5,
     marginBottom: 16,
   },
-  // Contact Button Container
   contactButtonContainer: {
     paddingHorizontal: 16,
     paddingBottom: 24,
     paddingTop: 16,
   },
-  // Close Icon Container (for loading/error states)
   closeIconContainer: {
     position: "absolute",
     top: 12,

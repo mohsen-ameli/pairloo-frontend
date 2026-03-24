@@ -75,7 +75,7 @@ export default function RootLayout() {
                   animation: "slide_from_bottom",
                   contentStyle: { backgroundColor: colors.light },
                   headerShown: false,
-                  sheetGrabberVisible: true,
+                  sheetGrabberVisible: false,
                   sheetAllowedDetents: [0.95],
                 }}
               />
