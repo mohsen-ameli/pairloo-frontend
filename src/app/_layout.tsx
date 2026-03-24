@@ -76,7 +76,7 @@ export default function RootLayout() {
                   contentStyle: { backgroundColor: colors.light },
                   headerShown: false,
                   sheetGrabberVisible: true,
-                  sheetAllowedDetents: [0.75, 1],
+                  sheetAllowedDetents: [0.95],
                 }}
               />
               <Stack.Screen

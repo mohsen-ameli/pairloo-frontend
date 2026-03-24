@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   title: {
-    fontSize: 25,
+    fontSize: 24,
     fontWeight: "bold",
     color: colors.dark,
     marginBottom: 8,
@@ -41,11 +41,11 @@ export const styles = StyleSheet.create({
     marginLeft: 5,
   },
   locationText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: colors.dark,
     marginBottom: 10,
-    marginTop: 15,
+    marginTop: 20,
     marginLeft: 5,
     textAlign: "center",
   },
@@ -256,7 +256,7 @@ export const styles = StyleSheet.create({
     color: "#666",
   },
   headerCloseButton: {
-    marginLeft: 16,
+    marginRight: 15,
   },
   // iOS Close Button
   iosCloseButton: {
@@ -325,7 +325,8 @@ export const styles = StyleSheet.create({
   // Contact Button Container
   contactButtonContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingBottom: 24,
+    paddingTop: 16,
   },
   // Close Icon Container (for loading/error states)
   closeIconContainer: {
