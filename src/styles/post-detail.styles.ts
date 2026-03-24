@@ -1,17 +1,17 @@
 import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.light,
   },
   content: {
     paddingHorizontal: 12,
-    paddingBottom: 48,
+    paddingBottom: 15,
   },
   title: {
-    fontSize: 25,
+    fontSize: 24,
     fontWeight: "bold",
     color: colors.dark,
     marginBottom: 8,
@@ -40,6 +40,27 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginLeft: 5,
   },
+  locationText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.dark,
+    marginBottom: 10,
+    marginTop: 20,
+    marginLeft: 5,
+    textAlign: "center",
+  },
+  fieldLine: {
+    fontSize: 16,
+    color: colors.darkGray,
+    marginBottom: 10,
+    lineHeight: 22,
+  },
+  fieldLabel: {
+    fontWeight: "bold",
+    color: colors.darkGray,
+    textTransform: "capitalize",
+  },
+  // Q&A Section Styles
   qnaSection: {
     marginBottom: 24,
     backgroundColor: colors.lightGray,
@@ -104,17 +125,6 @@ const styles = StyleSheet.create({
     color: colors.dark,
     lineHeight: 19,
     marginBottom: 4,
-  },
-  fieldLine: {
-    fontSize: 16,
-    color: colors.darkGray,
-    marginBottom: 10,
-    lineHeight: 22,
-  },
-  fieldLabel: {
-    fontWeight: "bold",
-    color: colors.darkGray,
-    textTransform: "capitalize",
   },
   closestPostsContainer: {
     marginTop: 28,
@@ -206,6 +216,95 @@ const styles = StyleSheet.create({
   },
   closestPostUserInfo: {
     flexDirection: "column",
+  },
+  modalContainer: {
+    paddingTop: 0,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
+    flex: 1,
+  },
+  headerUserRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  headerUserImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  headerUserName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.dark,
+  },
+  headerUserUsername: {
+    fontSize: 14,
+    color: "#666",
+  },
+  headerCloseButton: {
+    marginRight: 15,
+  },
+  postUserUsername: {
+    color: colors.dark,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 24,
+    right: 10,
+    zIndex: 101,
+    padding: 8,
+  },
+  scrollViewContainer: {
+    flex: 1,
+  },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  // Map Styles
+  mapContainer: {
+    height: 280,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 20,
+  },
+  mapFlexContainer: {
+    flex: 1,
+  },
+  mapOverlayContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  radiusCircle: {
+    width: 250,
+    height: 250,
+    borderRadius: 150,
+    backgroundColor: "rgba(128, 0, 128, 0.2)",
+    borderColor: colors.purple,
+    borderWidth: 2,
+  },
+  timestampText: {
+    fontSize: 12,
+    color: colors.darkGray,
+    marginLeft: 5,
+    marginBottom: 16,
+  },
+  contactButtonContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    paddingTop: 16,
+  },
+  closeIconContainer: {
+    position: "absolute",
+    top: 12,
+    right: 16,
+    zIndex: 10,
   },
 })
 

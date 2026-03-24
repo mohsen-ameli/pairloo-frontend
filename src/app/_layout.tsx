@@ -2,7 +2,7 @@ import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useAtomValue } from "jotai"
 import { userAtom, userJwtAtom } from "@/src/store/auth-store"
-import { LogBox } from "react-native"
+import { LogBox, Platform } from "react-native"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { colors } from "@/src/utils/colors"
@@ -65,6 +65,18 @@ export default function RootLayout() {
                   presentation: "fullScreenModal",
                   animation: "default",
                   contentStyle: { backgroundColor: colors.light },
+                }}
+              />
+              <Stack.Screen
+                name="feed-post"
+                options={{
+                  presentation: "formSheet",
+                  gestureDirection: "vertical",
+                  animation: "slide_from_bottom",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: false,
+                  sheetGrabberVisible: false,
+                  sheetAllowedDetents: Platform.OS === "ios" ? "fitToContents" : [0.95],
                 }}
               />
               <Stack.Screen
