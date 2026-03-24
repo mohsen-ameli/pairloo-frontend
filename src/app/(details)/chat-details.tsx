@@ -16,16 +16,18 @@ import {
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
 import Feather from "@expo/vector-icons/Feather"
+import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
 import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import useGradualAnimation from "@/src/utils/gradual-animation"
-import { userAtom } from "@/src/store/auth-store"
+import { userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
+import { UserType } from "@/src/types/user.type"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -37,6 +39,7 @@ export default function ChatDetails() {
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
   const user = useAtomValue(userAtom)
+  const userJwt = useAtomValue(userJwtAtom)
   const conversations = useAtomValue(conversationsAtom)
   const setCurrentConversation = useSetAtom(currentConversationAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
@@ -44,18 +47,24 @@ export default function ChatDetails() {
   const detailOptions = useCustomHeader("", true, true)
   const loading = useAtomValue(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
+  const otherUser = useRef<{
+    _id: string
+    username: string
+    picture?: string | null | undefined
+    email: string
+  }>(undefined)
 
   useEffect(() => {
-    if (!conversations || !user || !socket) return
+    if (!conversations || !user || !socket || !userJwt) return
 
     // Find the current conversation
     const conv = conversations.find(conv => conv._id === id)
 
     if (!conv) return
     setCurrentConversation(conv)
+    otherUser.current = conv.members.find(member => member._id !== userJwt._id)
 
     if (messages.length > 0) return
-    // setLoading(true)
     socket.emit("getMessages", id)
   }, [conversations, user, socket, id])
 
@@ -110,10 +119,18 @@ export default function ChatDetails() {
               params: { intent: "chat" },
             })
           }
-          style={chatStyles.plusButton}
+          style={chatStyles.actionButton}
         >
-          <Feather name="plus" size={26} color={colors.dark} />
+          <Feather name="plus" size={24} color={colors.light} />
         </Pressable>
+        {message.trim() === "" && (
+          <Pressable
+            onPress={() => router.push({ pathname: "(review-user)/" + otherUser.current?._id })}
+            style={chatStyles.actionButton}
+          >
+            <MaterialIcons name="rate-review" size={20} color={colors.light} />
+          </Pressable>
+        )}
         <TextInput
           style={chatStyles.input}
           placeholder="Type a message..."
@@ -123,7 +140,7 @@ export default function ChatDetails() {
         />
         <Pressable
           style={[
-            chatStyles.sendButton,
+            chatStyles.actionButton,
             { display: message.trim() || attachments.length > 0 ? "flex" : "none" },
           ]}
           onPress={handleSendMessage}

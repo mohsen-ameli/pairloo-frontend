@@ -92,6 +92,22 @@ export default function RootLayout() {
                   sheetElevation: 24,
                 }}
               />
+              <Stack.Screen
+                name="(review-user)/[id]"
+                options={{
+                  presentation: "formSheet",
+                  gestureDirection: "vertical",
+                  animation: "default",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: false,
+                  headerTitle: "",
+                  sheetGrabberVisible: true,
+                  sheetInitialDetentIndex: 0,
+                  sheetAllowedDetents: [1],
+                  sheetExpandsWhenScrolledToEdge: true,
+                  sheetElevation: 24,
+                }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={user === null || userJwt === null}>
               <Stack.Screen name="landing" options={{ headerShown: false }} />

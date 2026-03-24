@@ -14,7 +14,7 @@ export const myPostStyles = StyleSheet.create({
   emptyStateContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 40,
+    paddingVertical: 20,
   },
   emptyStateText: {
     fontSize: 16,

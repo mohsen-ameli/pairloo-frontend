@@ -2,7 +2,7 @@ import { styles } from "@/src/styles/feed.styles"
 import { errorStyles } from "@/src/styles/error.styles"
 import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useLocalSearchParams } from "expo-router"
+import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -13,6 +13,7 @@ import Svg, { Path } from "react-native-svg"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { myPostStyles } from "@/src/styles/my-post.styles"
 import { useState } from "react"
+import { formatDate } from "@/src/utils/format-date"
 
 function StarOutline({ width = 24, height = 24 }: { width?: number; height?: number }) {
   return (
@@ -77,6 +78,7 @@ function RatingStar({ value, max = 5, size = 18 }: { value: number; max?: number
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
+  const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
@@ -104,7 +106,6 @@ export default function userProfile() {
   async function fetchPosts() {
     const res = await authFetch("/api/users/profile/" + id)
     const data: UserProfileType = await res.json()
-    console.log(JSON.stringify(data, null, 2))
     return data
   }
 
@@ -211,11 +212,11 @@ export default function userProfile() {
       </View>
 
       {/* Posts & Reviews show/hide buttons */}
-      <View style={{ flexDirection: "row", marginTop: 24, gap: 16 }}>
+      <View style={{ flexDirection: "row", marginTop: 26, marginBottom: 12, gap: 20 }}>
         <Pressable onPress={() => setActiveView("posts")}>
           <Text
             style={{
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: activeView === "posts" ? "bold" : "normal",
               color: activeView === "posts" ? colors.purple : "gray",
             }}
@@ -226,7 +227,7 @@ export default function userProfile() {
         <Pressable onPress={() => setActiveView("reviews")}>
           <Text
             style={{
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: activeView === "reviews" ? "bold" : "normal",
               color: activeView === "reviews" ? colors.purple : "gray",
             }}
@@ -236,131 +237,95 @@ export default function userProfile() {
         </Pressable>
       </View>
 
+      {/* Posts and reviews */}
       <View style={{ width: "100%" }}>
-        {activeView === "posts" && data.posts.length === 0 ? (
-          <View style={myPostStyles.emptyStateContainer}>
-            <Text style={myPostStyles.emptyStateText}>
-              No posts yet. Create one to get started!
-            </Text>
-          </View>
-        ) : (
-          data.posts.map((post, index) => {
-            return (
-              <View key={post._id}>
-                <TouchableHighlight
-                  underlayColor={colors.lightGray}
-                  key={index}
-                  style={myPostStyles.postCard}
-                  onPress={() => {
-                    // if (post.isDraft) {
-                    //   router.push({
-                    //     pathname: "/create-post",
-                    //   })
-                    // } else {
-                    //   router.push({
-                    //     pathname: "my-post",
-                    //     params: { id: post._id },
-                    //   })
-                    // }
-                  }}
-                >
-                  <View>
-                    {post.images && post.images.length > 0 && (
-                      <View style={myPostStyles.postCardImage}>
-                        <Image
-                          source={{ uri: post.images[0] }}
-                          style={myPostStyles.postCardImageFill}
-                          contentFit="cover"
-                        />
-                      </View>
-                    )}
+        {activeView === "posts" &&
+          (data.posts.length === 0 ? (
+            <View style={myPostStyles.emptyStateContainer}>
+              <Text style={myPostStyles.emptyStateText}>
+                No posts yet. Create one to get started!
+              </Text>
+            </View>
+          ) : (
+            data.posts.map(post => {
+              return (
+                <View key={post._id}>
+                  <TouchableHighlight
+                    underlayColor={colors.lightGray}
+                    key={post._id}
+                    style={myPostStyles.postCard}
+                    onPress={() => {
+                      router.push({
+                        pathname: "(details)/feed-post",
+                        params: { id: post._id },
+                      })
+                    }}
+                  >
+                    <View>
+                      {post.images && post.images.length > 0 && (
+                        <View style={myPostStyles.postCardImage}>
+                          <Image
+                            source={{ uri: post.images[0] }}
+                            style={myPostStyles.postCardImageFill}
+                            contentFit="cover"
+                          />
+                        </View>
+                      )}
 
-                    <View style={myPostStyles.postCardContent}>
-                      <View style={myPostStyles.postCardHeader}>
-                        <Text style={myPostStyles.postTitle} numberOfLines={2}>
-                          {post.title}
-                        </Text>
-                        {/* <TouchableHighlight>
-                                <MyPostMenu id={post._id} />
-                              </TouchableHighlight> */}
-                      </View>
+                      <View style={myPostStyles.postCardContent}>
+                        <View style={myPostStyles.postCardHeader}>
+                          <Text style={myPostStyles.postTitle} numberOfLines={2}>
+                            {post.title}
+                          </Text>
+                        </View>
 
-                      <View style={myPostStyles.postCardFooter}>
-                        <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
-                          {/* {formatDate(post.createdAt.toString())} */}
-                        </Text>
-                        {/* <View style={myPostStyles.postCardLabelContainer}>
-                                {post.closestPosts && post.closestPosts.length > 0 && (
-                                  <CustomLabel
-                                    text={`${Math.round(post.closestPosts[0].score * 100)}% match`}
-                                    backgroundColor={getScoreColor(post.closestPosts[0].score)}
-                                  />
-                                )}
-                                {post.isDraft && (
-                                  <CustomLabel text="Draft" backgroundColor={colors.purple} />
-                                )}
-                              </View> */}
+                        <View style={myPostStyles.postCardFooter}>
+                          <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
+                            {formatDate(post.createdAt.toString())}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                </TouchableHighlight>
-              </View>
-            )
-          })
-        )}
-
-        {activeView === "reviews" && data.posts.length === 0 ? (
-          <View style={myPostStyles.emptyStateContainer}>
-            <Text style={myPostStyles.emptyStateText}>No reviews yet.</Text>
-          </View>
-        ) : (
-          data.reviews.map((r, index) => {
-            return (
-              <View
-                key={r._id}
-                style={{
-                  marginBottom: 16,
-                  padding: 12,
-                  backgroundColor: colors.lightGray,
-                  borderRadius: 8,
-                }}
-              >
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 8 }}
-                >
-                  <RatingStar value={r.rating} />
-                  <Text style={{ fontSize: 14, color: "gray" }}>{r.rating}/5</Text>
+                  </TouchableHighlight>
                 </View>
-                <Text style={{ fontSize: 14 }}>{r.review}</Text>
-              </View>
-            )
-          })
-        )}
+              )
+            })
+          ))}
+
+        {activeView === "reviews" &&
+          (data.reviews.length === 0 ? (
+            <View style={myPostStyles.emptyStateContainer}>
+              <Text style={myPostStyles.emptyStateText}>No reviews yet.</Text>
+            </View>
+          ) : (
+            data.reviews.map(r => {
+              return (
+                <View
+                  key={r._id}
+                  style={{
+                    marginBottom: 16,
+                    paddingHorizontal: 12,
+                    paddingVertical: 14,
+                    backgroundColor: colors.lightGray,
+                    borderRadius: 8,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <RatingStar value={r.rating} />
+                    <Text style={{ fontSize: 14, color: "gray" }}>{r.rating}/5</Text>
+                  </View>
+                  <Text style={{ fontSize: 14 }}>{r.review}</Text>
+                </View>
+              )
+            })
+          ))}
       </View>
     </ScrollView>
   )
-}
-
-{
-  /* // {activeView === "posts" && (
-        //   {data.reviews.length === 0 ? (
-        //   <View style={myPostStyles.emptyStateContainer}>
-        //     <Text style={myPostStyles.emptyStateText}>
-        //       No reviews yet. Write one to share your thoughts!
-        //     </Text>
-        //   </View>
-        // ) : (
-        //   data.reviews.map((review, index) => {
-        //     return (
-        //       <View key={review._id} style={{ marginBottom: 16, padding: 12, backgroundColor: colors.lightGray, borderRadius: 8 }}>
-        //         <Text style={{ fontSize: 16, fontWeight: "bold" }}>{review.postTitle}</Text>
-        //         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 8 }}>
-        //           <RatingStar value={review.rating} />
-        //           <Text style={{ fontSize: 14, color: "gray" }}>{review.rating}/5</Text>
-        //         </View>
-        //         <Text style={{ fontSize: 14 }}>{review.comment}</Text>
-        //       </View>
-        //     )
-        //   })
-        // ))} */
 }
