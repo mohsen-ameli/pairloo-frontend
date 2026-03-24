@@ -102,14 +102,14 @@ export default function PostDetails() {
             </View>
           </View>
           <Pressable onPress={() => router.back()} style={styles.headerCloseButton}>
-            <Feather name="x" size={28} color={colors.dark} />
+            <Feather name="x" size={24} color={colors.darkGray} />
           </Pressable>
         </View>
       )}
 
       {Platform.OS === "ios" && (
         <Pressable onPress={() => router.back()} style={styles.iosCloseButton}>
-          <Feather name="x" size={28} color={colors.dark} />
+          <Feather name="x" size={24} color={colors.darkGray} />
         </Pressable>
       )}
 
