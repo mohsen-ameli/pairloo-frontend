@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 12,
-    paddingBottom: 48,
+    paddingBottom: 15,
   },
   title: {
     fontSize: 24,
