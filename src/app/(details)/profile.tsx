@@ -9,47 +9,13 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { UserProfileType } from "@/src/types/user.type"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
-import Svg, { Path } from "react-native-svg"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { myPostStyles } from "@/src/styles/my-post.styles"
 import { useState } from "react"
 import { formatDate } from "@/src/utils/format-date"
 
-function StarOutline({ width = 24, height = 24 }: { width?: number; height?: number }) {
-  return (
-    <Svg viewBox="0 0 24 24" width={width} height={height} fill="none" stroke={colors.purple}>
-      <Path
-        d="m5.825 21l1.625-7.025L2 9.25l7.2-.625L12 2l2.8 6.625l7.2.625l-5.45 4.725L18.175 21L12 17.275z"
-        strokeWidth={1}
-      />
-    </Svg>
-  )
-}
-
-function Star({ width = 24, height = 24 }: { width?: number; height?: number }) {
-  return (
-    <Svg viewBox="0 0 24 24" width={width} height={height} fill={colors.purple}>
-      <Path d="m12 2l2.8 6.625l7.2.625l-5.45 4.725L18.175 21L12 17.275L5.825 21l1.625-7.025L2 9.25l7.2-.625L12 2z" />
-    </Svg>
-  )
-}
-
 function RatingStar({ value, max = 5, size = 18 }: { value: number; max?: number; size?: number }) {
   return (
-    // <View style={{ width: size, height: size }}>
-    //   <StarOutline width={size} height={size} />
-    //   <View
-    //     style={{
-    //       position: "absolute",
-    //       top: 0,
-    //       left: 0,
-    //       width: Math.floor((size * value) / (max + 0.8)),
-    //       height: size,
-    //     }}
-    //   >
-    //     <Star width={size} height={size} />
-    //   </View>
-    // </View>
     <View
       style={{
         width: size,
