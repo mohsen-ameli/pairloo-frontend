@@ -87,7 +87,7 @@ export default function PostDetails() {
   }
 
   return (
-    <View style={[styles.container, styles.modalContainer]}>
+    <View style={styles.container}>
       <ScrollView
         style={styles.scrollViewContainer}
         contentContainerStyle={styles.content}
@@ -102,9 +102,6 @@ export default function PostDetails() {
             </Text>
             <Text style={styles.postUserUsername}>@{post.username}</Text>
           </View>
-          <Pressable onPress={() => router.back()} style={styles.closeButton}>
-            <Feather name="x" size={24} color={colors.darkGray} />
-          </Pressable>
         </View>
 
         <Text style={styles.title}>{post.initialPostText}</Text>

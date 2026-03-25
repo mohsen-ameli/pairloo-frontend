@@ -67,7 +67,7 @@ export default function RootLayout() {
               <Stack.Screen
                 name="(details)/review-user"
                 options={{
-                  presentation: "fullScreenModal",
+                  presentation: "modal",
                   gestureDirection: "vertical",
                   animation: "default",
                   contentStyle: { backgroundColor: colors.light },
