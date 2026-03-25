@@ -60,11 +60,6 @@ export default function PostDetails() {
   if (isPending) {
     return (
       <View style={errorStyles.container}>
-        <View style={styles.closeIconContainer}>
-          <Pressable onPress={() => router.back()}>
-            <Feather name="x" size={28} color={colors.dark} />
-          </Pressable>
-        </View>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -73,11 +68,6 @@ export default function PostDetails() {
   if (isError) {
     return (
       <View style={errorStyles.container}>
-        <View style={styles.closeIconContainer}>
-          <Pressable onPress={() => router.back()}>
-            <Feather name="x" size={28} color={colors.dark} />
-          </Pressable>
-        </View>
         <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
         <Pressable style={errorStyles.retryButton} onPress={refresh}>
           <Text style={errorStyles.retryButtonText}>Retry</Text>
@@ -87,25 +77,35 @@ export default function PostDetails() {
   }
 
   return (
-    <View style={[styles.container, styles.modalContainer]}>
+    <View style={styles.container}>
       <ScrollView
         style={styles.scrollViewContainer}
         contentContainerStyle={styles.content}
         scrollEnabled={true}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.headerContainer}>
-          {post.picture && <Image source={{ uri: post.picture }} style={styles.headerUserImage} />}
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: "(details)/profile",
+              params: { id: post._id },
+            })
+          }
+          style={styles.headerContainer}
+        >
+          <Image
+            source={
+              post.picture ? { uri: post.picture } : require("@/assets/images/default_pfp.png")
+            }
+            style={styles.headerUserImage}
+          />
           <View>
             <Text style={styles.headerUserName}>
               {post.firstName} {post.lastName}
             </Text>
             <Text style={styles.postUserUsername}>@{post.username}</Text>
           </View>
-          <Pressable onPress={() => router.back()} style={styles.closeButton}>
-            <Feather name="x" size={24} color={colors.darkGray} />
-          </Pressable>
-        </View>
+        </Pressable>
 
         <Text style={styles.title}>{post.initialPostText}</Text>
 
