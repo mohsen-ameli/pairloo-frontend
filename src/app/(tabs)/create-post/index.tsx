@@ -35,7 +35,7 @@ import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
-import MapSelector from "../../map-selector"
+import MapSelector from "../../(util)/map-selector"
 
 export default function CreatePost() {
   const [QNAs, setQNAs] = useAtom(qnaAtom)

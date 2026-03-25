@@ -11,7 +11,8 @@ import { Platform, View } from "react-native"
 import CustomButton from "@/src/components/CustomButton"
 import { newUserAtom, userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { BASE_URL } from "@/src/utils/constants"
-import { NewUserType, RegisteredUserType } from "../types/user.type"
+import { NewUserType, RegisteredUserType } from "@/src/types/user.type"
+import Toast from "react-native-toast-message"
 
 const config: AuthRequestConfig = {
   clientId: "google",
@@ -89,6 +90,14 @@ export default function ContinueWithGoogle({
     })
 
     router.replace("/")
+
+    Toast.show({
+      type: "success",
+      text1: "Welcome back, " + userData.username + "!",
+      text1Style: { fontSize: 16, fontWeight: "bold" },
+      position: "top",
+      visibilityTime: 3000,
+    })
   }
 
   useEffect(() => {

@@ -20,7 +20,15 @@ export const chatStyles = StyleSheet.create({
     paddingBottom: 35,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 8,
+  },
+  actionButton: {
+    width: 35,
+    height: 35,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.purple,
+    borderRadius: 20,
   },
   input: {
     flex: 1,
@@ -74,9 +82,6 @@ export const chatStyles = StyleSheet.create({
     marginTop: 2,
     paddingRight: 50,
     flexWrap: "wrap",
-  },
-  plusButton: {
-    marginLeft: 5,
   },
   modalContainer: {
     flex: 1,

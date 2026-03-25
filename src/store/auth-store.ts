@@ -16,6 +16,7 @@ import { currPageAtom, flowAtom, resetPagerAtom } from "./pager-store"
 import { Alert } from "react-native"
 import { router } from "expo-router"
 import { getAttachmentAtom } from "./general-store"
+import Toast from "react-native-toast-message"
 
 const returningUser = {
   email: "",
@@ -333,7 +334,16 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
         set(authErrorsAtom, null)
         set(returningUserAtom, returningUser)
         set(resetPagerAtom)
+
         router.replace("/")
+
+        Toast.show({
+          type: "success",
+          text1: "Welcome back, " + data.username + "!",
+          text1Style: { fontSize: 16, fontWeight: "bold" },
+          position: "top",
+          visibilityTime: 3000,
+        })
       }
     } else if (data.errors && data.errors.general) {
       set(authErrorsAtom, {
