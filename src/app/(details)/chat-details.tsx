@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, TouchableOpacity, FlatList } from "react-native"
+import { View, Text, Pressable, TextInput, FlatList } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -27,7 +27,6 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { UserType } from "@/src/types/user.type"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -53,12 +52,13 @@ export default function ChatDetails() {
     picture?: string | null | undefined
     email: string
   }>(undefined)
+  const [canReview, setCanReview] = useState(false)
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
 
     // Find the current conversation
-    const conv = conversations.find(conv => conv._id === id)
+    const conv = conversations.find(c => c._id === id)
 
     if (!conv) return
     setCurrentConversation(conv)
@@ -67,6 +67,15 @@ export default function ChatDetails() {
     if (messages.length > 0) return
     socket.emit("getMessages", id)
   }, [conversations, user, socket, id])
+
+  useEffect(() => {
+    for (const msg of messages) {
+      if (msg.sender._id === otherUser.current?._id) {
+        setCanReview(true)
+        break
+      }
+    }
+  }, [messages])
 
   useEffect(() => {
     return () => {
@@ -123,9 +132,11 @@ export default function ChatDetails() {
         >
           <Feather name="plus" size={24} color={colors.light} />
         </Pressable>
-        {message.trim() === "" && (
+        {message.trim() === "" && canReview && (
           <Pressable
-            onPress={() => router.push({ pathname: "(review-user)/" + otherUser.current?._id })}
+            onPress={() =>
+              router.push({ pathname: "review-user", params: { id: otherUser.current?._id } })
+            }
             style={chatStyles.actionButton}
           >
             <MaterialIcons name="rate-review" size={20} color={colors.light} />

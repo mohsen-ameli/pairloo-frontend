@@ -217,13 +217,6 @@ export const styles = StyleSheet.create({
   closestPostUserInfo: {
     flexDirection: "column",
   },
-  modalContainer: {
-    paddingTop: 0,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: "hidden",
-    flex: 1,
-  },
   headerUserRow: {
     flexDirection: "row",
     alignItems: "center",

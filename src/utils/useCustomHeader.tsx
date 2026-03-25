@@ -26,7 +26,10 @@ export default function useCustomHeader(
   const router = useRouter()
 
   function handleProfilePress(id: string) {
-    router.push("(profile)/" + id)
+    router.push({
+      pathname: "profile",
+      params: { id },
+    })
   }
   const discardDraft = useSetAtom(discardDraftAtom)
   const getNewQuestion = useSetAtom(getNewQuestionAtom)

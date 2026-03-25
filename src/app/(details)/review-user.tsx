@@ -5,7 +5,8 @@ import Feather from "@expo/vector-icons/Feather"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
 import { useRef, useState } from "react"
-import { View, Text, TouchableOpacity, TextInput, Pressable, Keyboard } from "react-native"
+import { View, Text, TouchableOpacity, TextInput, Pressable } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import StarRating from "react-native-star-rating-widget"
 import Toast from "react-native-toast-message"
 
@@ -40,7 +41,7 @@ export default function reviewUser() {
   }
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         backgroundColor: colors.light,
@@ -50,10 +51,28 @@ export default function reviewUser() {
         alignItems: "center",
       }}
     >
-      <TouchableOpacity onPress={() => router.back()} style={chatStyles.dismissButton}>
-        <Feather name="x" size={24} color={colors.darkGray} />
-      </TouchableOpacity>
-      <Text style={chatStyles.modalTitle}>Write a Review</Text>
+      <View
+        style={{
+          width: "100%",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={chatStyles.modalTitle}>Write a Review</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            padding: 4,
+            backgroundColor: colors.lightGray,
+            borderRadius: 20,
+          }}
+        >
+          <Feather name="x" size={24} color={colors.darkGray} />
+        </TouchableOpacity>
+      </View>
 
       <View style={{ alignItems: "center", marginTop: 20 }}>
         <Text style={{ color: colors.darkGray, marginBottom: 5 }}>Drag to rate</Text>
@@ -95,6 +114,6 @@ export default function reviewUser() {
       >
         <Text style={{ color: colors.light, fontWeight: "bold" }}>Submit</Text>
       </Pressable>
-    </View>
+    </SafeAreaView>
   )
 }

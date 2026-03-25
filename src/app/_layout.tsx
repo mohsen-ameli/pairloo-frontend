@@ -40,6 +40,9 @@ export default function RootLayout() {
   const loginOptions = useCustomHeader("Log In", true)
   const registerOptions = useCustomHeader("Create Account", true)
   const forgotEmailOptions = useCustomHeader("Forgot Email", true)
+  const chatOptions = useCustomHeader("Chat")
+  const myPostOptions = useCustomHeader("My Post")
+  const defaultOptions = useCustomHeader("", true)
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -57,9 +60,22 @@ export default function RootLayout() {
           >
             <Stack.Protected guard={user !== null && userJwt !== null}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="(details)" options={{ headerShown: false }} />
+              <Stack.Screen name="(details)/chat-details" options={chatOptions} />
+              <Stack.Screen name="(details)/my-post" options={myPostOptions} />
+              <Stack.Screen name="(details)/feed-post" options={defaultOptions} />
+              <Stack.Screen name="(details)/profile" options={defaultOptions} />
               <Stack.Screen
-                name="map-selector"
+                name="(details)/review-user"
+                options={{
+                  presentation: "fullScreenModal",
+                  gestureDirection: "vertical",
+                  animation: "default",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="(util)/map-selector"
                 options={{
                   headerShown: false,
                   presentation: "fullScreenModal",
@@ -68,7 +84,7 @@ export default function RootLayout() {
                 }}
               />
               <Stack.Screen
-                name="image-gallery"
+                name="(util)/image-gallery"
                 options={{
                   presentation: "fullScreenModal",
                   animation: "fade",
@@ -76,47 +92,15 @@ export default function RootLayout() {
                   headerShown: false,
                 }}
               />
-              <Stack.Screen
-                name="(profile)/[id]"
-                options={{
-                  presentation: "fullScreenModal",
-                  gestureDirection: "vertical",
-                  animation: "default",
-                  contentStyle: { backgroundColor: colors.light },
-                  headerShown: true,
-                  headerTitle: "",
-                  sheetGrabberVisible: true,
-                  sheetInitialDetentIndex: 0,
-                  sheetAllowedDetents: [0.75, 1],
-                  sheetExpandsWhenScrolledToEdge: true,
-                  sheetElevation: 24,
-                }}
-              />
-              <Stack.Screen
-                name="(review-user)/[id]"
-                options={{
-                  presentation: "formSheet",
-                  gestureDirection: "vertical",
-                  animation: "default",
-                  contentStyle: { backgroundColor: colors.light },
-                  headerShown: false,
-                  headerTitle: "",
-                  sheetGrabberVisible: true,
-                  sheetInitialDetentIndex: 0,
-                  sheetAllowedDetents: [1],
-                  sheetExpandsWhenScrolledToEdge: true,
-                  sheetElevation: 24,
-                }}
-              />
             </Stack.Protected>
             <Stack.Protected guard={user === null || userJwt === null}>
-              <Stack.Screen name="landing" options={{ headerShown: false }} />
-              <Stack.Screen name="register" options={registerOptions} />
-              <Stack.Screen name="login" options={loginOptions} />
-              <Stack.Screen name="forgot-email" options={forgotEmailOptions} />
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)/register" options={registerOptions} />
+              <Stack.Screen name="(auth)/login" options={loginOptions} />
+              <Stack.Screen name="(auth)/forgot-email" options={forgotEmailOptions} />
             </Stack.Protected>
             <Stack.Screen
-              name="attachment-picker"
+              name="(util)/attachment-picker"
               options={{
                 presentation: "formSheet",
                 gestureDirection: "vertical",
