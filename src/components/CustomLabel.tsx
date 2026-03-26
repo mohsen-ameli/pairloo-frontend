@@ -1,11 +1,12 @@
+import React from "react"
 import { View, Text } from "react-native"
 
 interface CustomLabelProps {
-  text: string
+  children: React.ReactNode
   backgroundColor: string
 }
 
-export default function CustomLabel({ text, backgroundColor }: CustomLabelProps) {
+export default function CustomLabel({ children, backgroundColor }: CustomLabelProps) {
   return (
     <View
       style={{
@@ -20,7 +21,7 @@ export default function CustomLabel({ text, backgroundColor }: CustomLabelProps)
         borderBottomRightRadius: 50,
       }}
     >
-      <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>{text}</Text>
+      <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>{children}</Text>
     </View>
   )
 }

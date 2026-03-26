@@ -1,6 +1,5 @@
 import { atom } from "jotai"
-import { userAtom, userJwtAtom } from "./auth-store"
-import { authFetchAtom } from "../utils/auth-fetch"
+import { authFetchAtom, userAtom, userJwtAtom } from "./auth-store"
 import { Alert } from "react-native"
 import { getAttachmentAtom } from "./general-store"
 

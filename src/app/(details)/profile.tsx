@@ -1,6 +1,5 @@
 import { styles } from "@/src/styles/feed.styles"
 import { errorStyles } from "@/src/styles/error.styles"
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
@@ -9,38 +8,11 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { UserProfileType } from "@/src/types/user.type"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
-import Ionicons from "@expo/vector-icons/Ionicons"
 import { myPostStyles } from "@/src/styles/my-post.styles"
 import { useState } from "react"
 import { formatDate } from "@/src/utils/format-date"
-
-function RatingStar({ value, max = 5, size = 18 }: { value: number; max?: number; size?: number }) {
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <Ionicons name="star-outline" size={size} color={colors.purple} />
-
-      <View
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: Math.floor((size * value) / (max + 0.8)),
-          height: size,
-          overflow: "hidden",
-        }}
-      >
-        <Ionicons name="star" size={size} color={colors.purple} />
-      </View>
-    </View>
-  )
-}
+import RatingStar from "@/src/components/RatingStar"
+import { authFetchAtom } from "@/src/store/auth-store"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()

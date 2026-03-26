@@ -1,13 +1,13 @@
-import { userAtom } from "@/src/store/auth-store"
+import { fetchUserInfoAtom, userAtom } from "@/src/store/auth-store"
 import { initChatAtom, unreadMessagesAtom } from "@/src/store/chat-store"
 import { initCreatePostAtom } from "@/src/store/create-post-store"
 import { pathStore } from "@/src/store/general-store"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
-import { Tabs, useFocusEffect, usePathname } from "expo-router"
+import { Tabs, usePathname } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useAudioPlayer } from "expo-audio"
 import { notificationSoundAtom } from "@/src/store/general-store"
 import { View } from "react-native"
@@ -25,9 +25,13 @@ export default function ProtectedLayout() {
   const [numUnreadMessages, setNumUnreadMessages] = useState(0)
   const player = useAudioPlayer(audioSource)
   const setNotificationSound = useSetAtom(notificationSoundAtom)
+  const fetchUserInfo = useSetAtom(fetchUserInfoAtom)
 
   useEffect(() => {
+    fetchUserInfo()
     setNotificationSound(player)
+    initChatConnection()
+    initCreatePost()
   }, [])
 
   useEffect(() => {
@@ -42,16 +46,6 @@ export default function ProtectedLayout() {
   useEffect(() => {
     setPath(pathname)
   }, [pathname])
-
-  useFocusEffect(
-    useCallback(() => {
-      async function initialize() {
-        await initChatConnection()
-        await initCreatePost()
-      }
-      initialize()
-    }, [])
-  )
 
   if (!user) return null
 
@@ -73,17 +67,6 @@ export default function ProtectedLayout() {
             marginTop: 2,
           },
           tabBarIcon: ({ color, size }) => <Feather name="home" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="my-posts"
-        options={{
-          title: "My Posts",
-          headerShown: false,
-          tabBarLabelStyle: {
-            marginTop: 2,
-          },
-          tabBarIcon: ({ color, size }) => <Feather name="file-text" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -116,7 +99,7 @@ export default function ProtectedLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="profile"
         options={{
           title: "Profile",
           headerShown: false,

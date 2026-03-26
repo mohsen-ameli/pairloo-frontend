@@ -1,8 +1,8 @@
 import { atom } from "jotai"
 import { Alert } from "react-native"
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { router } from "expo-router/build/exports"
 import { queryClientAtom } from "./general-store"
+import { authFetchAtom } from "./auth-store"
 
 export const loadingAtom = atom(false)
 

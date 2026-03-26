@@ -27,7 +27,7 @@ export default function useCustomHeader(
 
   function handleProfilePress(id: string) {
     router.push({
-      pathname: "profile",
+      pathname: "(details)/profile",
       params: { id },
     })
   }
@@ -160,6 +160,32 @@ export default function useCustomHeader(
             </View>
             <MyPostMenu id={id} />
           </View>
+        </View>
+      ),
+    }
+  }
+
+  if (title === "Profile") {
+    return {
+      ...options,
+      headerTitle: () => (
+        <View
+          style={[
+            styles.header,
+            { flexDirection: "row", justifyContent: "center", alignItems: "center" },
+          ]}
+        >
+          <Text style={styles.headerTitle}>{title}</Text>
+          <Pressable
+            onPress={() => router.push("(tabs)/profile/settings")}
+            style={{
+              position: "absolute",
+              top: 5,
+              right: 10,
+            }}
+          >
+            <Feather name="settings" size={24} color={colors.dark} />
+          </Pressable>
         </View>
       ),
     }

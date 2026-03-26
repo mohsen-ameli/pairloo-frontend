@@ -1,5 +1,5 @@
+import { authFetchAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useLocalSearchParams, useRouter } from "expo-router"
