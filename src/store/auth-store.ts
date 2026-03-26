@@ -476,15 +476,19 @@ export const authFetchAtom = atom(
   null,
   async (get, set, url: string, options: FetchRequestInit = {}) => {
     // Attach access token
-    const fetchWithToken = (token: string) =>
-      fetch(`${BASE_URL}${url}`, {
+    const fetchWithToken = (token: string) => {
+      const headers: any = {
+        ...(options.headers || {}),
+      }
+      if (!headers["Content-Type"]) {
+        headers["Content-Type"] = "application/json"
+      }
+      headers.Authorization = `Bearer ${token}`
+      return fetch(`${BASE_URL}${url}`, {
         ...options,
-        headers: {
-          ...(options.headers || {}),
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers,
       })
+    }
 
     const user = await get(userJwtAtom)
 
