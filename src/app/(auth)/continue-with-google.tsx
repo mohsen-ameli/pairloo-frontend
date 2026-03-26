@@ -30,7 +30,6 @@ export default function ContinueWithGoogle({
 }: {
   setLoading: (loading: boolean) => void
 }) {
-  const setUser = useSetAtom(userAtom)
   const setUserJwt = useSetAtom(userJwtAtom)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [request, response, promptAsync] = useAuthRequest(config, discovery)
