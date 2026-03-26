@@ -9,7 +9,7 @@ import { useAtom, useSetAtom } from "jotai"
 import { useEffect } from "react"
 import { Platform, View } from "react-native"
 import CustomButton from "@/src/components/CustomButton"
-import { newUserAtom, userAtom, userJwtAtom } from "@/src/store/auth-store"
+import { fetchUserInfoAtom, newUserAtom, userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { BASE_URL } from "@/src/utils/constants"
 import { NewUserType, RegisteredUserType } from "@/src/types/user.type"
 import Toast from "react-native-toast-message"
@@ -35,6 +35,7 @@ export default function ContinueWithGoogle({
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [request, response, promptAsync] = useAuthRequest(config, discovery)
   const router = useRouter()
+  const fetchUserInfo = useSetAtom(fetchUserInfoAtom)
 
   async function handleResponse() {
     if (!response || response.type !== "success") {
@@ -70,30 +71,13 @@ export default function ContinueWithGoogle({
       refreshToken: userData.refreshToken,
     })
 
-    setUser({
-      username: userData.username,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      picture: userData.picture,
-      phoneNumber: userData.phoneNumber,
-      country: userData.country,
-      city: userData.city,
-      state: userData.state,
-      latitude: userData.latitude,
-      longitude: userData.longitude,
-      timezone: userData.timezone,
-      locationId: userData.locationId,
-      email: userData.email,
-      createdAt: userData.createdAt,
-      updatedAt: userData.updatedAt,
-      posts: [],
-    })
+    const user = await fetchUserInfo()
 
     router.replace("/")
 
     Toast.show({
       type: "success",
-      text1: "Welcome back, " + userData.username + "!",
+      text1: "Welcome back, " + user?.username + "!",
       text1Style: { fontSize: 16, fontWeight: "bold" },
       position: "top",
       visibilityTime: 3000,

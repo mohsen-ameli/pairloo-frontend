@@ -17,11 +17,6 @@ export type UserType = null | {
   locationId: number // reference to Location _id
   email: string
   posts: MyPostType[]
-  createdAt: Date
-  updatedAt: Date
-}
-
-export type UserProfileType = UserType & {
   followersCount: number
   followingCount: number
   ratingCount: number
@@ -32,6 +27,11 @@ export type UserProfileType = UserType & {
     rating: number
     review: string
   }[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type UserProfileType = UserType & {
   isFollowing: boolean
 }
 

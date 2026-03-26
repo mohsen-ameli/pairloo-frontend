@@ -1,4 +1,3 @@
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { useSetAtom } from "jotai"
 import { useRouter } from "expo-router"
 import { Text, View, Image, ScrollView, RefreshControl, Pressable } from "react-native"
@@ -7,6 +6,7 @@ import { styles } from "@/src/styles/feed.styles"
 import { GeneralPostType } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
+import { authFetchAtom } from "@/src/store/auth-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 

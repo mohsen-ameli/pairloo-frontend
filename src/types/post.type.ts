@@ -57,5 +57,6 @@ export interface MyPosts {
   createdAt: string
   images?: string[] | null
   isDraft?: boolean
+  publicPost: boolean
   closestPosts?: Array<{ score: number; item: string }> | null
 }
