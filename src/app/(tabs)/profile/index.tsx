@@ -116,7 +116,7 @@ export default function ProfileScreen() {
             marginBottom: 16,
           }}
         />
-        <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold", textAlign: "center" }}>
           {user.firstName} {user.lastName}
         </Text>
         <Text style={{ fontSize: 16, color: "gray" }}>@{user.username}</Text>
