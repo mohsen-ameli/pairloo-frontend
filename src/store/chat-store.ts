@@ -31,6 +31,8 @@ export const imgIndexAtom = atom(0)
 
 export const bigImageViewAtom = atom<{ uri: string; id: string }[]>([])
 
+export const replyingToAtom = atom<MessageType | null>(null)
+
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
   const userJwt = await get(userJwtAtom)
@@ -191,12 +193,13 @@ export const initChatAtom = atom(null, async (get, set) => {
 // Sends a message in a conversation
 export const sendMessageAtom = atom(
   null,
-  async (get, set, conversationId: string, content: string) => {
+  async (get, set, conversationId: string, content: string, replyToId?: string) => {
     const socket = get(chatSocketAtom)
     const user = await get(userAtom)
     if (!socket || !user) return
 
     const attachments = get(chatAttachmentsAtom)
+    const replyingTo = get(replyingToAtom)
 
     const optimisticMessage: MessageType = {
       _id: Math.random().toString(),
@@ -209,6 +212,13 @@ export const sendMessageAtom = atom(
       },
       content,
       attachments: attachments.map(att => att.uri),
+      replyTo: replyingTo
+        ? {
+            _id: replyingTo._id,
+            content: replyingTo.content || "",
+            sender: replyingTo.sender,
+          }
+        : undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -220,9 +230,11 @@ export const sendMessageAtom = atom(
       conversationId,
       content,
       attachments,
+      replyTo: replyToId || (replyingTo ? replyingTo._id : undefined),
     })
 
     set(chatAttachmentsAtom, [])
+    set(replyingToAtom, null)
   }
 )
 

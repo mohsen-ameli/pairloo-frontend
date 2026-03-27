@@ -11,6 +11,7 @@ import {
   imgIndexAtom,
   loadingAtom,
   messagesAtom,
+  replyingToAtom,
   sendMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
@@ -41,6 +42,7 @@ export default function ChatDetails() {
   const userJwt = useAtomValue(userJwtAtom)
   const conversations = useAtomValue(conversationsAtom)
   const setCurrentConversation = useSetAtom(currentConversationAtom)
+  const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader("", true, true)
@@ -88,7 +90,7 @@ export default function ChatDetails() {
     const msg = message.trim()
     if (!msg && attachments.length === 0) return
     setMessage("")
-    await sendMessage(id, msg)
+    await sendMessage(id, msg, replyingTo?._id)
     chatRef.current && chatRef.current.scrollToEnd({ animated: false })
   }
 
@@ -118,6 +120,35 @@ export default function ChatDetails() {
       </View>
 
       <AttachmentPreview />
+
+      {/* Reply Preview */}
+      {replyingTo && (
+        <View
+          style={{
+            backgroundColor: colors.light,
+            paddingHorizontal: 10,
+            paddingVertical: 8,
+            borderLeftWidth: 3,
+            borderLeftColor: colors.purple,
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 12, color: colors.gray, marginBottom: 4 }}>
+                Replying to {replyingTo.sender.username}
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.dark }} numberOfLines={2}>
+                {replyingTo.content}
+              </Text>
+            </View>
+            <Pressable onPress={() => setReplyingTo(null)} style={{ padding: 8 }}>
+              <Feather name="x" size={18} color={colors.gray} />
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
@@ -169,19 +200,43 @@ export default function ChatDetails() {
 function MessageItem({ item }: { item: MessageType }) {
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
+  const setReplyingTo = useSetAtom(replyingToAtom)
   const router = useRouter()
 
   return (
-    <View style={chatStyles.messageItem}>
+    <Pressable onLongPress={() => setReplyingTo(item)} style={chatStyles.messageItem}>
       <Image
         source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
         style={chatStyles.messageImage}
       />
-      <View>
+      <View style={{ flex: 1 }}>
         <View style={chatStyles.messageHeader}>
           <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
           <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
         </View>
+        {item.replyTo && (
+          <View
+            style={{
+              width: "95%",
+              marginTop: 4,
+              marginBottom: 6,
+              paddingRight: 15,
+              paddingLeft: 12,
+              paddingVertical: 6,
+              backgroundColor: colors.lightGray,
+              borderLeftWidth: 2,
+              borderLeftColor: colors.purple,
+              borderRadius: 4,
+            }}
+          >
+            <Text style={{ fontSize: 11, color: colors.gray, marginBottom: 2 }}>
+              {item.replyTo.sender.username}
+            </Text>
+            <Text style={{ fontSize: 13, color: colors.dark }} numberOfLines={2}>
+              {item.replyTo.content}
+            </Text>
+          </View>
+        )}
         {item.content && (
           <Text
             style={[
@@ -230,7 +285,7 @@ function MessageItem({ item }: { item: MessageType }) {
           </View>
         )}
       </View>
-    </View>
+    </Pressable>
   )
 }
 const MemoizedMessageItem = memo(MessageItem)

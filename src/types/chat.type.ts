@@ -9,6 +9,14 @@ export type MessageType = {
   }
   content?: string
   attachments?: string[]
+  replyTo?: {
+    _id: string
+    content: string
+    sender: {
+      _id: string
+      username: string
+    }
+  }
   createdAt: string
   updatedAt: string
 }
