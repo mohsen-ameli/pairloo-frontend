@@ -517,7 +517,7 @@ export const authFetchAtom = atom(
 )
 
 export const fetchUserInfoAtom = atom(null, async (get, set) => {
-  const res = await set(authFetchAtom, "/api/users/user")
+  const res = await set(authFetchAtom, "/api/users/my-user")
   const data: UserType = await res.json()
   if (res.ok) {
     set(userAtom, data)

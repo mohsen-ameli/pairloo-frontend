@@ -78,7 +78,7 @@ export default function userProfile() {
           paddingVertical: 12,
           paddingBottom: 20,
           alignItems: "center",
-          backgroundColor: "white",
+          backgroundColor: colors.light,
         }}
       >
         {/* Top section for profile picture and username, firstname, lastname, date joined */}
@@ -91,7 +91,7 @@ export default function userProfile() {
             marginBottom: 16,
           }}
         />
-        <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold", color: colors.dark }}>
           {data.firstName} {data.lastName}
         </Text>
         <Text style={{ fontSize: 16, color: colors.gray }}>@{data.username}</Text>
@@ -108,12 +108,13 @@ export default function userProfile() {
             marginTop: 16,
           }}
         >
-          <Text style={{ fontSize: 16, color: colors.gray }}>Followers: {data.followersCount}</Text>
-          <Text style={{ fontSize: 16, color: colors.gray }}>Following: {data.followingCount}</Text>
+          <Text style={{ fontSize: 16, color: colors.gray }}>{data.followersCount} Followers</Text>
+          <Text style={{ fontSize: 16, color: colors.gray }}>{data.followingCount} Following</Text>
           {data.ratingCount > 0 && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 16, color: colors.gray }}>Rating: {data.ratingAvg}</Text>
+              <Text style={{ fontSize: 16, color: colors.gray }}>{data.ratingAvg}</Text>
               <RatingStarSingle value={data.ratingAvg} />
+              <Text style={{ fontSize: 16, color: colors.gray }}>Rating</Text>
             </View>
           )}
         </View>
@@ -284,6 +285,7 @@ export default function userProfile() {
                               fontWeight: "bold",
                               flexShrink: 1,
                               marginRight: 8,
+                              color: colors.dark,
                             }}
                             numberOfLines={1}
                           >
@@ -301,11 +303,13 @@ export default function userProfile() {
                           <Text style={{ fontSize: 14, color: colors.gray }}>
                             @{r.reviewer.username}
                           </Text>
-                          <Text style={{ fontSize: 14, marginTop: 4 }}>
+                          <Text style={{ fontSize: 14, marginTop: 4, color: colors.gray }}>
                             {formatDateDayMonthYear(r.createdAt.toString())}
                           </Text>
                         </View>
-                        <Text style={{ fontSize: 14, marginTop: 4 }}>{r.review}</Text>
+                        <Text style={{ fontSize: 14, marginTop: 4, color: colors.dark }}>
+                          {r.review}
+                        </Text>
                       </View>
                     </View>
                   </View>
