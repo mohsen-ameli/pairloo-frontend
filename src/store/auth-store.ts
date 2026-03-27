@@ -476,17 +476,14 @@ export const authFetchAtom = atom(
   null,
   async (get, set, url: string, options: FetchRequestInit = {}) => {
     // Attach access token
-    const fetchWithToken = (token: string) => {
-      const headers: any = {
-        ...(options.headers || {}),
-      }
-      if (!headers["Content-Type"]) {
-        headers["Content-Type"] = "application/json"
-      }
-      headers.Authorization = `Bearer ${token}`
+    function fetchWithToken(token: string) {
       return fetch(`${BASE_URL}${url}`, {
         ...options,
-        headers,
+        headers: {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       })
     }
 
@@ -496,32 +493,31 @@ export const authFetchAtom = atom(
       throw new Error("User is not authenticated")
     }
 
-    let res
     try {
-      res = await fetchWithToken(user.accessToken)
+      const res = await fetchWithToken(user.accessToken)
+
+      if (res.status === 401 || res.status === 403) {
+        const accessToken = await refreshAccessToken(user.refreshToken)
+
+        if (accessToken !== null) {
+          set(userJwtAtom, { ...user, accessToken })
+          const newRes = await fetchWithToken(accessToken)
+          return newRes
+        } else {
+          set(logOutAtom)
+          throw new Error("Session expired. Please log in again.")
+        }
+      }
+
+      return res
     } catch (error: any) {
       throw new Error("Network error occurred: ", error)
     }
-
-    if (res.status === 401 || res.status === 403) {
-      const accessToken = await refreshAccessToken(user.refreshToken)
-
-      if (accessToken !== null) {
-        set(userJwtAtom, { ...user, accessToken })
-        res = await fetchWithToken(accessToken)
-      } else {
-        set(logOutAtom)
-        throw new Error("Session expired. Please log in again.")
-      }
-    }
-
-    return res
   }
 )
 
 export const fetchUserInfoAtom = atom(null, async (get, set) => {
-  const userJwt = await get(userJwtAtom)
-  const res = await set(authFetchAtom, "/api/users/user/" + userJwt?._id)
+  const res = await set(authFetchAtom, "/api/users/user")
   const data: UserType = await res.json()
   if (res.ok) {
     set(userAtom, data)

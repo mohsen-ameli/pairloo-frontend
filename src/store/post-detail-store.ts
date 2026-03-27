@@ -19,7 +19,7 @@ export const deletePostAtom = atom(null, async (get, set, id: string) => {
         })
         if (res.ok) {
           get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
-          router.navigate("/my-posts")
+          router.navigate("(tabs)/profile")
           set(loadingAtom, false)
         } else {
           Alert.alert("Error", "Could not remove post. Please try again later.")

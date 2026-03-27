@@ -77,10 +77,12 @@ export default function Index() {
                     style={styles.postHeaderImage}
                   />
                   <View style={styles.postHeaderTextContainer}>
-                    <Text style={styles.postHeaderName}>
+                    <Text style={styles.postHeaderName} numberOfLines={1}>
                       {post.firstName} {post.lastName}
                     </Text>
-                    <Text style={styles.postUsername}>@{post.username}</Text>
+                    <Text style={styles.postUsername} numberOfLines={1}>
+                      @{post.username}
+                    </Text>
                   </View>
                 </View>
                 <Text style={styles.postContent}>{post.initialPostText}</Text>

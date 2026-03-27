@@ -8,16 +8,17 @@ import { useEffect, useState } from "react"
 import { useRouter } from "expo-router"
 import { resetEditAtom } from "@/src/store/settings-store"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import RatingStar from "@/src/components/RatingStar"
+import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
 import { myPostStyles } from "@/src/styles/my-post.styles"
-import { formatDate } from "@/src/utils/format-date"
+import { formatDate, formatDateDayMonthYear } from "@/src/utils/format-date"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { MyPosts } from "@/src/types/post.type"
 import { errorStyles } from "@/src/styles/error.styles"
 import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import Feather from "@expo/vector-icons/Feather"
+import { MyReviewsType, MySocialType } from "@/src/types/user.type"
+import { MyPostType } from "@/src/types/post.type"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -26,20 +27,47 @@ export default function ProfileScreen() {
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
+
+  const {
+    data: social,
+    isError: isSocialError,
+    isPending: isSocialPending,
+  } = useQuery({ queryKey: ["my-social"], queryFn: fetchMySocial })
+
+  async function fetchMySocial() {
+    const res = await authFetch("/api/users/my-social")
+    const data: MySocialType = await res.json()
+    return data
+  }
+
+  const {
+    data: reviews,
+    isError: isReviewsError,
+    isPending: isReviewsPending,
+  } = useQuery({ queryKey: ["my-reviews"], queryFn: fetchMyReviews })
+
+  async function fetchMyReviews() {
+    const res = await authFetch("/api/users/my-reviews")
+    const data: MyReviewsType = await res.json()
+    return data
+  }
+
   const {
     data: posts,
-    isError,
-    isPending,
-  } = useQuery({ queryKey: ["my-posts"], queryFn: fetchPosts })
+    isError: isPostsError,
+    isPending: isPostsPending,
+  } = useQuery({ queryKey: ["my-posts"], queryFn: fetchMyPosts })
 
-  async function fetchPosts() {
-    const res = await authFetch("/api/posts/my-posts")
-    const data: MyPosts[] = await res.json()
+  async function fetchMyPosts() {
+    const res = await authFetch("/api/users/my-posts")
+    const data: MyPostType[] = await res.json()
     return data
   }
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["my-posts"] })
+    queryClient.invalidateQueries({ queryKey: ["my-reviews"] })
+    queryClient.invalidateQueries({ queryKey: ["my-social"] })
   }
 
   useEffect(() => {
@@ -49,7 +77,7 @@ export default function ProfileScreen() {
 
   if (!user) return null
 
-  if (isPending) {
+  if (isPostsPending || isReviewsPending || isSocialPending) {
     return (
       <View style={myPostStyles.container}>
         <LoadingIndicator loading={true} />
@@ -57,7 +85,7 @@ export default function ProfileScreen() {
     )
   }
 
-  if (isError) {
+  if (isPostsError || isReviewsError || isSocialError) {
     return (
       <View style={errorStyles.container}>
         <Text style={errorStyles.errorText}>Error loading profile. Please try again.</Text>
@@ -105,12 +133,12 @@ export default function ProfileScreen() {
             marginTop: 16,
           }}
         >
-          <Text style={{ fontSize: 16, color: "gray" }}>Followers: {user.followersCount}</Text>
-          <Text style={{ fontSize: 16, color: "gray" }}>Following: {user.followingCount}</Text>
-          {user.ratingCount > 0 && (
+          <Text style={{ fontSize: 16, color: "gray" }}>Followers: {social.followersCount}</Text>
+          <Text style={{ fontSize: 16, color: "gray" }}>Following: {social.followingCount}</Text>
+          {reviews.ratingCount > 0 && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 16, color: "gray" }}>Rating: {user.ratingAvg}</Text>
-              <RatingStar value={user.ratingAvg} />
+              <Text style={{ fontSize: 16, color: "gray" }}>Rating: {reviews.ratingAvg}</Text>
+              <RatingStarSingle value={reviews.ratingAvg} />
             </View>
           )}
         </View>
@@ -194,7 +222,7 @@ export default function ProfileScreen() {
 
                           <View style={myPostStyles.postCardFooter}>
                             <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
-                              {formatDate(post.createdAt)}
+                              {formatDate(post.createdAt.toString())}
                             </Text>
                             <View style={myPostStyles.postCardLabelContainer}>
                               {!post.publicPost && (
@@ -223,22 +251,23 @@ export default function ProfileScreen() {
             ))}
 
           {activeView === "reviews" &&
-            (user.reviews.length === 0 ? (
+            (reviews.reviews.length === 0 ? (
               <View style={myPostStyles.emptyStateContainer}>
                 <Text style={myPostStyles.emptyStateText}>No reviews yet.</Text>
               </View>
             ) : (
-              user.reviews.map(r => {
+              reviews.reviews.map(r => {
                 return (
                   <View
-                    key={r._id}
-                    style={{
-                      marginBottom: 16,
-                      paddingHorizontal: 12,
-                      paddingVertical: 14,
-                      backgroundColor: colors.lightGray,
-                      borderRadius: 8,
-                    }}
+                    key={r.reviewer._id}
+                    style={[
+                      myPostStyles.postCard,
+                      {
+                        marginBottom: 16,
+                        paddingHorizontal: 12,
+                        paddingVertical: 14,
+                      },
+                    ]}
                   >
                     <View
                       style={{
@@ -247,10 +276,57 @@ export default function ProfileScreen() {
                         gap: 8,
                       }}
                     >
-                      <RatingStar value={r.rating} />
-                      <Text style={{ fontSize: 14, color: "gray" }}>{r.rating}/5</Text>
+                      <Image
+                        source={
+                          r.reviewer.picture
+                            ? { uri: r.reviewer.picture }
+                            : require("@/assets/images/default_pfp.png")
+                        }
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          alignSelf: "flex-start",
+                        }}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontWeight: "bold",
+                              flexShrink: 1,
+                              marginRight: 8,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {r.reviewer.firstName} {r.reviewer.lastName}
+                          </Text>
+                          <RatingStars value={r.rating} />
+                        </View>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Text style={{ fontSize: 12, color: colors.gray }}>
+                            @{r.reviewer.username}
+                          </Text>
+                          <Text style={{ fontSize: 12 }}>
+                            {formatDateDayMonthYear(r.createdAt.toString())}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 14, marginTop: 10 }}>{r.review}</Text>
+                      </View>
                     </View>
-                    <Text style={{ fontSize: 14 }}>{r.review}</Text>
                   </View>
                 )
               })
