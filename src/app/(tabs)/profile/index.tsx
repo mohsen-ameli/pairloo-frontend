@@ -104,7 +104,7 @@ export default function ProfileScreen() {
           paddingVertical: 12,
           paddingBottom: 20,
           alignItems: "center",
-          backgroundColor: "white",
+          backgroundColor: colors.light,
         }}
       >
         <Image
@@ -116,11 +116,11 @@ export default function ProfileScreen() {
             marginBottom: 16,
           }}
         />
-        <Text style={{ fontSize: 24, fontWeight: "bold", textAlign: "center" }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold", textAlign: "center", color: colors.dark }}>
           {user.firstName} {user.lastName}
         </Text>
-        <Text style={{ fontSize: 16, color: "gray" }}>@{user.username}</Text>
-        <Text style={{ fontSize: 14, color: "gray" }}>
+        <Text style={{ fontSize: 16, color: colors.gray }}>@{user.username}</Text>
+        <Text style={{ fontSize: 14, color: colors.gray }}>
           Joined {new Date(user.createdAt).toLocaleDateString()}
         </Text>
 
@@ -133,12 +133,17 @@ export default function ProfileScreen() {
             marginTop: 16,
           }}
         >
-          <Text style={{ fontSize: 16, color: "gray" }}>Followers: {social.followersCount}</Text>
-          <Text style={{ fontSize: 16, color: "gray" }}>Following: {social.followingCount}</Text>
+          <Text style={{ fontSize: 16, color: colors.gray }}>
+            {social.followersCount} Followers
+          </Text>
+          <Text style={{ fontSize: 16, color: colors.gray }}>
+            {social.followingCount} Following
+          </Text>
           {reviews.ratingCount > 0 && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 16, color: "gray" }}>Rating: {reviews.ratingAvg}</Text>
+              <Text style={{ fontSize: 16, color: colors.gray }}>{reviews.ratingAvg}</Text>
               <RatingStarSingle value={reviews.ratingAvg} />
+              <Text style={{ fontSize: 16, color: colors.gray }}>Rating</Text>
             </View>
           )}
         </View>
@@ -150,7 +155,7 @@ export default function ProfileScreen() {
               style={{
                 fontSize: 18,
                 fontWeight: activeView === "posts" ? "bold" : "normal",
-                color: activeView === "posts" ? colors.purple : "gray",
+                color: activeView === "posts" ? colors.purple : colors.gray,
               }}
             >
               Posts
@@ -161,7 +166,7 @@ export default function ProfileScreen() {
               style={{
                 fontSize: 18,
                 fontWeight: activeView === "reviews" ? "bold" : "normal",
-                color: activeView === "reviews" ? colors.purple : "gray",
+                color: activeView === "reviews" ? colors.purple : colors.gray,
               }}
             >
               Reviews
@@ -227,7 +232,8 @@ export default function ProfileScreen() {
                             <View style={myPostStyles.postCardLabelContainer}>
                               {!post.publicPost && (
                                 <CustomLabel backgroundColor={colors.shadow}>
-                                  <Feather name="lock" size={12} color={colors.light} /> Private
+                                  <Feather name="lock" size={12} color={colors.light} />{" "}
+                                  <Text style={{ color: colors.light, fontSize: 12 }}>Private</Text>
                                 </CustomLabel>
                               )}
                               {post.closestPosts && post.closestPosts.length > 0 && (
@@ -303,6 +309,7 @@ export default function ProfileScreen() {
                               fontWeight: "bold",
                               flexShrink: 1,
                               marginRight: 8,
+                              color: colors.dark,
                             }}
                             numberOfLines={1}
                           >
@@ -320,11 +327,13 @@ export default function ProfileScreen() {
                           <Text style={{ fontSize: 12, color: colors.gray }}>
                             @{r.reviewer.username}
                           </Text>
-                          <Text style={{ fontSize: 12 }}>
+                          <Text style={{ fontSize: 12, color: colors.gray }}>
                             {formatDateDayMonthYear(r.createdAt.toString())}
                           </Text>
                         </View>
-                        <Text style={{ fontSize: 14, marginTop: 10 }}>{r.review}</Text>
+                        <Text style={{ fontSize: 14, marginTop: 10, color: colors.dark }}>
+                          {r.review}
+                        </Text>
                       </View>
                     </View>
                   </View>
