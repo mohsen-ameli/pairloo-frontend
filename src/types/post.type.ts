@@ -33,6 +33,7 @@ export interface MyPostType {
   publicPost: boolean
   numMatches: number
   initialPostText: string
+  isDraft: boolean
   qna?: QnaItemType[]
   createdAt: Date
   closestPosts?: Array<{
@@ -48,15 +49,4 @@ export interface MyPostType {
     score: number
     createdAt: Date
   }>
-}
-
-export interface MyPosts {
-  _id: string
-  title: string
-  initialPostText: string
-  createdAt: string
-  images?: string[] | null
-  isDraft?: boolean
-  publicPost: boolean
-  closestPosts?: Array<{ score: number; item: string }> | null
 }

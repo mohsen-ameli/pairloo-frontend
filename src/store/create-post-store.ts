@@ -137,7 +137,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(loadingAtom, false)
 
     router.navigate({
-      pathname: "/my-post",
+      pathname: "/(details)/my-post",
       params: { id: postId },
     })
     get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })

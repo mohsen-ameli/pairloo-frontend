@@ -1,7 +1,7 @@
 import { CountryCode } from "react-native-country-picker-modal"
-import { MyPostType } from "./post.type"
+import { GeneralPostType, MyPostType } from "./post.type"
 
-// User profile type stored in async storage
+// Basic user info stored in async storage
 export type UserType = null | {
   username: string
   firstName: string
@@ -16,23 +16,51 @@ export type UserType = null | {
   timezone: string
   locationId: number // reference to Location _id
   email: string
-  posts: MyPostType[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type GeneralUserProfileType = UserType & {
+  posts: GeneralPostType[]
   followersCount: number
   followingCount: number
   ratingCount: number
   ratingAvg: number
   reviews: {
-    _id: string
-    postId: string
     rating: number
     review: string
+    createdAt: Date
+    reviewer: {
+      _id: string
+      picture: string
+      username: string
+      firstName: string
+      lastName: string
+    }
   }[]
-  createdAt: Date
-  updatedAt: Date
+  isFollowing: boolean
 }
 
-export type UserProfileType = UserType & {
-  isFollowing: boolean
+export type MySocialType = {
+  followersCount: number
+  followingCount: number
+}
+
+export type MyReviewsType = {
+  ratingCount: number
+  ratingAvg: number
+  reviews: {
+    rating: number
+    review: string
+    createdAt: Date
+    reviewer: {
+      _id: string
+      picture: string
+      username: string
+      firstName: string
+      lastName: string
+    }
+  }[]
 }
 
 // JWT tokens stored in secure storage

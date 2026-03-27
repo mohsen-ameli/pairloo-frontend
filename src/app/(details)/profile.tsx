@@ -5,13 +5,13 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { UserProfileType } from "@/src/types/user.type"
+import { GeneralUserProfileType } from "@/src/types/user.type"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
 import { myPostStyles } from "@/src/styles/my-post.styles"
 import { useState } from "react"
-import { formatDate } from "@/src/utils/format-date"
-import RatingStar from "@/src/components/RatingStar"
+import { formatDateDayMonthYear } from "@/src/utils/format-date"
+import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
 import { authFetchAtom } from "@/src/store/auth-store"
 
 export default function userProfile() {
@@ -23,27 +23,27 @@ export default function userProfile() {
     queryKey: ["user-profile-" + id],
     queryFn: fetchPosts,
   })
-  const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
+  const [activeView, setActiveView] = useState<"posts" | "reviews">("reviews")
 
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {
       method: "POST",
       body: JSON.stringify({ id }),
-      headers: {
-        "Content-Type": "application/json",
-      },
     })
     if (!res.ok) {
       throw new Error("Failed to follow user")
     }
     const data = await res.json()
+
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
+    queryClient.invalidateQueries({ queryKey: ["my-social"] })
+
     return data
   }
 
   async function fetchPosts() {
     const res = await authFetch("/api/users/profile/" + id)
-    const data: UserProfileType = await res.json()
+    const data: GeneralUserProfileType = await res.json()
     return data
   }
 
@@ -94,8 +94,8 @@ export default function userProfile() {
         <Text style={{ fontSize: 24, fontWeight: "bold" }}>
           {data.firstName} {data.lastName}
         </Text>
-        <Text style={{ fontSize: 16, color: "gray" }}>@{data.username}</Text>
-        <Text style={{ fontSize: 14, color: "gray" }}>
+        <Text style={{ fontSize: 16, color: colors.gray }}>@{data.username}</Text>
+        <Text style={{ fontSize: 14, color: colors.gray }}>
           Joined {new Date(data.createdAt).toLocaleDateString()}
         </Text>
 
@@ -108,12 +108,12 @@ export default function userProfile() {
             marginTop: 16,
           }}
         >
-          <Text style={{ fontSize: 16, color: "gray" }}>Followers: {data.followersCount}</Text>
-          <Text style={{ fontSize: 16, color: "gray" }}>Following: {data.followingCount}</Text>
+          <Text style={{ fontSize: 16, color: colors.gray }}>Followers: {data.followersCount}</Text>
+          <Text style={{ fontSize: 16, color: colors.gray }}>Following: {data.followingCount}</Text>
           {data.ratingCount > 0 && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 16, color: "gray" }}>Rating: {data.ratingAvg}</Text>
-              <RatingStar value={data.ratingAvg} />
+              <Text style={{ fontSize: 16, color: colors.gray }}>Rating: {data.ratingAvg}</Text>
+              <RatingStarSingle value={data.ratingAvg} />
             </View>
           )}
         </View>
@@ -157,7 +157,7 @@ export default function userProfile() {
               style={{
                 fontSize: 18,
                 fontWeight: activeView === "posts" ? "bold" : "normal",
-                color: activeView === "posts" ? colors.purple : "gray",
+                color: activeView === "posts" ? colors.purple : colors.gray,
               }}
             >
               Posts
@@ -168,7 +168,7 @@ export default function userProfile() {
               style={{
                 fontSize: 18,
                 fontWeight: activeView === "reviews" ? "bold" : "normal",
-                color: activeView === "reviews" ? colors.purple : "gray",
+                color: activeView === "reviews" ? colors.purple : colors.gray,
               }}
             >
               Reviews
@@ -220,7 +220,7 @@ export default function userProfile() {
 
                           <View style={myPostStyles.postCardFooter}>
                             <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
-                              {formatDate(post.createdAt.toString())}
+                              {formatDateDayMonthYear(post.createdAt.toString())}
                             </Text>
                           </View>
                         </View>
@@ -240,14 +240,15 @@ export default function userProfile() {
               data.reviews.map(r => {
                 return (
                   <View
-                    key={r._id}
-                    style={{
-                      marginBottom: 16,
-                      paddingHorizontal: 12,
-                      paddingVertical: 14,
-                      backgroundColor: colors.lightGray,
-                      borderRadius: 8,
-                    }}
+                    key={r.reviewer._id}
+                    style={[
+                      myPostStyles.postCard,
+                      {
+                        marginBottom: 16,
+                        paddingHorizontal: 12,
+                        paddingVertical: 14,
+                      },
+                    ]}
                   >
                     <View
                       style={{
@@ -256,10 +257,57 @@ export default function userProfile() {
                         gap: 8,
                       }}
                     >
-                      <RatingStar value={r.rating} />
-                      <Text style={{ fontSize: 14, color: "gray" }}>{r.rating}/5</Text>
+                      <Image
+                        source={
+                          r.reviewer.picture
+                            ? { uri: r.reviewer.picture }
+                            : require("@/assets/images/default_pfp.png")
+                        }
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          alignSelf: "flex-start",
+                        }}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontWeight: "bold",
+                              flexShrink: 1,
+                              marginRight: 8,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {r.reviewer.firstName} {r.reviewer.lastName}
+                          </Text>
+                          <RatingStars value={r.rating} />
+                        </View>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Text style={{ fontSize: 14, color: colors.gray }}>
+                            @{r.reviewer.username}
+                          </Text>
+                          <Text style={{ fontSize: 14, marginTop: 4 }}>
+                            {formatDateDayMonthYear(r.createdAt.toString())}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 14, marginTop: 4 }}>{r.review}</Text>
+                      </View>
                     </View>
-                    <Text style={{ fontSize: 14 }}>{r.review}</Text>
                   </View>
                 )
               })

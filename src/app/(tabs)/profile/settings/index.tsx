@@ -92,7 +92,7 @@ export default function SettingsScreen() {
                       justifyContent: "space-between",
                     }}
                   >
-                    <Text style={styles.profileName} numberOfLines={1}>
+                    <Text style={styles.profileName}>
                       {user.firstName} {user.lastName}
                     </Text>
                     {!editMode && (

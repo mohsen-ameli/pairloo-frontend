@@ -34,7 +34,7 @@ export const styles = StyleSheet.create({
   },
   postHeaderName: { fontSize: 14, color: colors.darkGray },
   postUsername: { fontSize: 12, color: colors.gray },
-  postHeaderTextContainer: { marginLeft: 8 },
+  postHeaderTextContainer: { marginLeft: 8, flex: 1 },
   postContent: {
     padding: 8,
     fontWeight: "bold",

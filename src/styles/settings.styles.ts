@@ -88,6 +88,7 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: colors.dark,
+    flexShrink: 1,
   },
   profileUsername: {
     fontSize: 13,
@@ -109,10 +110,12 @@ export const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 14,
     color: colors.gray,
+    paddingRight: 8,
   },
   fieldValue: {
     fontSize: 14,
     color: colors.dark,
+    flexShrink: 1,
   },
   actionsRow: {
     flexDirection: "row",

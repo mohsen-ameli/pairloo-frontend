@@ -52,3 +52,12 @@ export function sinceNow(dateString: string | null | undefined): string {
   if (minutes > 0) return minutes === 1 ? "1m" : `${minutes}m`
   return "now"
 }
+
+export function formatDateDayMonthYear(dateString: string) {
+  const date = new Date(dateString)
+  return date.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+}
