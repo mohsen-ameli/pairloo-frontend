@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react"
 import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { MyPostType } from "@/src/types/post.type"
 import { getScoreColor } from "@/src/utils/getScoreColor"
@@ -16,6 +15,7 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import CustomLabel from "@/src/components/CustomLabel"
 import { colors } from "@/src/utils/colors"
 import { loadingAtom } from "@/src/store/post-detail-store"
+import { authFetchAtom } from "@/src/store/auth-store"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -174,10 +174,9 @@ export default function PostDetails() {
                         <Text style={styles.closestPostUsername}>@{post.username}</Text>
                       </View>
                     </View>
-                    <CustomLabel
-                      text={`${Math.round(post.score * 100)}% match`}
-                      backgroundColor={getScoreColor(post.score)}
-                    />
+                    <CustomLabel backgroundColor={getScoreColor(post.score)}>
+                      {Math.round(post.score * 100)}% match
+                    </CustomLabel>
                   </View>
                   <View style={styles.closestPostImage}>
                     {post.images && post.images.length != 0 && (

@@ -1,4 +1,3 @@
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { useSetAtom } from "jotai"
 import { useRouter } from "expo-router"
 import { Text, View, Image, ScrollView, RefreshControl, Pressable } from "react-native"
@@ -7,6 +6,7 @@ import { styles } from "@/src/styles/feed.styles"
 import { GeneralPostType } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
+import { authFetchAtom } from "@/src/store/auth-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -77,10 +77,12 @@ export default function Index() {
                     style={styles.postHeaderImage}
                   />
                   <View style={styles.postHeaderTextContainer}>
-                    <Text style={styles.postHeaderName}>
+                    <Text style={styles.postHeaderName} numberOfLines={1}>
                       {post.firstName} {post.lastName}
                     </Text>
-                    <Text style={styles.postUsername}>@{post.username}</Text>
+                    <Text style={styles.postUsername} numberOfLines={1}>
+                      @{post.username}
+                    </Text>
                   </View>
                 </View>
                 <Text style={styles.postContent}>{post.initialPostText}</Text>

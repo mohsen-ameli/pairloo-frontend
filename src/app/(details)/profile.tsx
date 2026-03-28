@@ -1,46 +1,17 @@
-import { styles } from "@/src/styles/feed.styles"
 import { errorStyles } from "@/src/styles/error.styles"
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { UserProfileType } from "@/src/types/user.type"
+import { GeneralUserProfileType } from "@/src/types/user.type"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
-import Ionicons from "@expo/vector-icons/Ionicons"
-import { myPostStyles } from "@/src/styles/my-post.styles"
 import { useState } from "react"
-import { formatDate } from "@/src/utils/format-date"
-
-function RatingStar({ value, max = 5, size = 18 }: { value: number; max?: number; size?: number }) {
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <Ionicons name="star-outline" size={size} color={colors.purple} />
-
-      <View
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: Math.floor((size * value) / (max + 0.8)),
-          height: size,
-          overflow: "hidden",
-        }}
-      >
-        <Ionicons name="star" size={size} color={colors.purple} />
-      </View>
-    </View>
-  )
-}
+import { formatDateDayMonthYear } from "@/src/utils/format-date"
+import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
+import { authFetchAtom } from "@/src/store/auth-store"
+import { profileStyles } from "@/src/styles/profile.styles"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -51,27 +22,27 @@ export default function userProfile() {
     queryKey: ["user-profile-" + id],
     queryFn: fetchPosts,
   })
-  const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
+  const [activeView, setActiveView] = useState<"posts" | "reviews">("reviews")
 
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {
       method: "POST",
       body: JSON.stringify({ id }),
-      headers: {
-        "Content-Type": "application/json",
-      },
     })
     if (!res.ok) {
       throw new Error("Failed to follow user")
     }
     const data = await res.json()
+
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
+    queryClient.invalidateQueries({ queryKey: ["my-social"] })
+
     return data
   }
 
   async function fetchPosts() {
     const res = await authFetch("/api/users/profile/" + id)
-    const data: UserProfileType = await res.json()
+    const data: GeneralUserProfileType = await res.json()
     return data
   }
 
@@ -81,7 +52,7 @@ export default function userProfile() {
 
   if (isPending) {
     return (
-      <View style={styles.container}>
+      <View style={profileStyles.generalContainer}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -89,7 +60,7 @@ export default function userProfile() {
 
   if (isError || !data) {
     return (
-      <View style={styles.container}>
+      <View style={errorStyles.container}>
         <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
         <Pressable style={errorStyles.retryButton} onPress={refresh}>
           <Text style={errorStyles.retryButtonText}>Retry</Text>
@@ -99,93 +70,55 @@ export default function userProfile() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          paddingBottom: 20,
-          alignItems: "center",
-          backgroundColor: "white",
-        }}
-      >
+    <View style={profileStyles.generalContainer}>
+      <ScrollView contentContainerStyle={profileStyles.container}>
         {/* Top section for profile picture and username, firstname, lastname, date joined */}
         <Image
           source={data.picture ? { uri: data.picture } : require("@/assets/images/default_pfp.png")}
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            marginBottom: 16,
-          }}
+          style={profileStyles.profileImage}
         />
-        <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+        <Text style={profileStyles.name}>
           {data.firstName} {data.lastName}
         </Text>
-        <Text style={{ fontSize: 16, color: "gray" }}>@{data.username}</Text>
-        <Text style={{ fontSize: 14, color: "gray" }}>
+        <Text style={profileStyles.text}>@{data.username}</Text>
+        <Text style={profileStyles.textMd}>
           Joined {new Date(data.createdAt).toLocaleDateString()}
         </Text>
 
         {/* show following, followers, current rating */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            width: "100%",
-            marginTop: 16,
-          }}
-        >
-          <Text style={{ fontSize: 16, color: "gray" }}>Followers: {data.followersCount}</Text>
-          <Text style={{ fontSize: 16, color: "gray" }}>Following: {data.followingCount}</Text>
+        <View style={profileStyles.socialContainer}>
+          <Text style={profileStyles.text}>{data.followersCount} Followers</Text>
+          <Text style={profileStyles.text}>{data.followingCount} Following</Text>
           {data.ratingCount > 0 && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 16, color: "gray" }}>Rating: {data.ratingAvg}</Text>
-              <RatingStar value={data.ratingAvg} />
+            <View style={profileStyles.ratingContainer}>
+              <Text style={profileStyles.text}>{data.ratingAvg}</Text>
+              <RatingStarSingle value={data.ratingAvg} />
+              <Text style={profileStyles.text}>Rating</Text>
             </View>
           )}
         </View>
 
         {/* Follow, unfollow buttons */}
-        <View style={{ flexDirection: "row", marginTop: 16 }}>
+        <View style={profileStyles.followContainer}>
           {data.isFollowing ? (
-            <Pressable
-              style={{
-                backgroundColor: "transparent",
-                borderWidth: 1,
-                borderColor: colors.purple,
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderRadius: 4,
-              }}
-              onPress={() => mutateUser("unfollow")}
-            >
+            <Pressable style={profileStyles.unfollowButton} onPress={() => mutateUser("unfollow")}>
               <Text style={{ color: colors.purple, fontSize: 16 }}>Unfollow</Text>
             </Pressable>
           ) : (
-            <Pressable
-              style={{
-                backgroundColor: colors.purple,
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderRadius: 4,
-                marginRight: 8,
-              }}
-              onPress={() => mutateUser("follow")}
-            >
+            <Pressable style={profileStyles.followButton} onPress={() => mutateUser("follow")}>
               <Text style={{ color: "white", fontSize: 16 }}>Follow</Text>
             </Pressable>
           )}
         </View>
 
         {/* Posts & Reviews show/hide buttons */}
-        <View style={{ flexDirection: "row", marginTop: 26, marginBottom: 12, gap: 20 }}>
+        <View style={profileStyles.actionContainer}>
           <Pressable onPress={() => setActiveView("posts")}>
             <Text
               style={{
                 fontSize: 18,
                 fontWeight: activeView === "posts" ? "bold" : "normal",
-                color: activeView === "posts" ? colors.purple : "gray",
+                color: activeView === "posts" ? colors.purple : colors.gray,
               }}
             >
               Posts
@@ -196,7 +129,7 @@ export default function userProfile() {
               style={{
                 fontSize: 18,
                 fontWeight: activeView === "reviews" ? "bold" : "normal",
-                color: activeView === "reviews" ? colors.purple : "gray",
+                color: activeView === "reviews" ? colors.purple : colors.gray,
               }}
             >
               Reviews
@@ -208,8 +141,8 @@ export default function userProfile() {
         <View style={{ width: "100%" }}>
           {activeView === "posts" &&
             (data.posts.length === 0 ? (
-              <View style={myPostStyles.emptyStateContainer}>
-                <Text style={myPostStyles.emptyStateText}>
+              <View style={profileStyles.emptyStateContainer}>
+                <Text style={profileStyles.emptyStateText}>
                   No posts yet. Create one to get started!
                 </Text>
               </View>
@@ -220,7 +153,7 @@ export default function userProfile() {
                     <TouchableHighlight
                       underlayColor={colors.lightGray}
                       key={post._id}
-                      style={myPostStyles.postCard}
+                      style={profileStyles.postCard}
                       onPress={() => {
                         router.push({
                           pathname: "(details)/feed-post",
@@ -230,25 +163,25 @@ export default function userProfile() {
                     >
                       <View>
                         {post.images && post.images.length > 0 && (
-                          <View style={myPostStyles.postCardImage}>
+                          <View style={profileStyles.postCardImage}>
                             <Image
                               source={{ uri: post.images[0] }}
-                              style={myPostStyles.postCardImageFill}
+                              style={profileStyles.postCardImageFill}
                               contentFit="cover"
                             />
                           </View>
                         )}
 
-                        <View style={myPostStyles.postCardContent}>
-                          <View style={myPostStyles.postCardHeader}>
-                            <Text style={myPostStyles.postTitle} numberOfLines={2}>
+                        <View style={profileStyles.postCardContent}>
+                          <View style={profileStyles.postCardHeader}>
+                            <Text style={profileStyles.postTitle} numberOfLines={2}>
                               {post.title}
                             </Text>
                           </View>
 
-                          <View style={myPostStyles.postCardFooter}>
+                          <View style={profileStyles.postCardFooter}>
                             <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
-                              {formatDate(post.createdAt.toString())}
+                              {formatDateDayMonthYear(post.createdAt.toString())}
                             </Text>
                           </View>
                         </View>
@@ -261,21 +194,22 @@ export default function userProfile() {
 
           {activeView === "reviews" &&
             (data.reviews.length === 0 ? (
-              <View style={myPostStyles.emptyStateContainer}>
-                <Text style={myPostStyles.emptyStateText}>No reviews yet.</Text>
+              <View style={profileStyles.emptyStateContainer}>
+                <Text style={profileStyles.emptyStateText}>No reviews yet.</Text>
               </View>
             ) : (
               data.reviews.map(r => {
                 return (
                   <View
-                    key={r._id}
-                    style={{
-                      marginBottom: 16,
-                      paddingHorizontal: 12,
-                      paddingVertical: 14,
-                      backgroundColor: colors.lightGray,
-                      borderRadius: 8,
-                    }}
+                    key={r.reviewer._id}
+                    style={[
+                      profileStyles.postCard,
+                      {
+                        marginBottom: 16,
+                        paddingHorizontal: 12,
+                        paddingVertical: 14,
+                      },
+                    ]}
                   >
                     <View
                       style={{
@@ -284,10 +218,60 @@ export default function userProfile() {
                         gap: 8,
                       }}
                     >
-                      <RatingStar value={r.rating} />
-                      <Text style={{ fontSize: 14, color: "gray" }}>{r.rating}/5</Text>
+                      <Image
+                        source={
+                          r.reviewer.picture
+                            ? { uri: r.reviewer.picture }
+                            : require("@/assets/images/default_pfp.png")
+                        }
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          alignSelf: "flex-start",
+                        }}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontWeight: "bold",
+                              flexShrink: 1,
+                              marginRight: 8,
+                              color: colors.dark,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {r.reviewer.firstName} {r.reviewer.lastName}
+                          </Text>
+                          <RatingStars value={r.rating} />
+                        </View>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Text style={{ fontSize: 14, color: colors.gray }}>
+                            @{r.reviewer.username}
+                          </Text>
+                          <Text style={{ fontSize: 14, marginTop: 4, color: colors.gray }}>
+                            {formatDateDayMonthYear(r.createdAt.toString())}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 14, marginTop: 4, color: colors.dark }}>
+                          {r.review}
+                        </Text>
+                      </View>
                     </View>
-                    <Text style={{ fontSize: 14 }}>{r.review}</Text>
                   </View>
                 )
               })

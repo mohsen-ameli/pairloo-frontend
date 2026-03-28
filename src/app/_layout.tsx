@@ -1,8 +1,8 @@
 import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useAtomValue } from "jotai"
-import { userAtom, userJwtAtom } from "@/src/store/auth-store"
-import { LogBox, Platform } from "react-native"
+import { userJwtAtom } from "@/src/store/auth-store"
+import { LogBox } from "react-native"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { colors } from "@/src/utils/colors"
@@ -33,7 +33,6 @@ const toastConfig = {
 }
 
 export default function RootLayout() {
-  const user = useAtomValue(userAtom)
   const userJwt = useAtomValue(userJwtAtom)
   const queryClient = useAtomValue(queryClientAtom)
 
@@ -58,7 +57,7 @@ export default function RootLayout() {
               headerTintColor: colors.dark,
             }}
           >
-            <Stack.Protected guard={user !== null && userJwt !== null}>
+            <Stack.Protected guard={userJwt !== null}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)/chat-details" options={chatOptions} />
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
@@ -93,7 +92,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack.Protected>
-            <Stack.Protected guard={user === null || userJwt === null}>
+            <Stack.Protected guard={userJwt === null}>
               <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="(auth)/register" options={registerOptions} />
               <Stack.Screen name="(auth)/login" options={loginOptions} />

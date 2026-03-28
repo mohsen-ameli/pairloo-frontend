@@ -1,8 +1,8 @@
 import { atom } from "jotai"
 import { Alert } from "react-native"
-import { authFetchAtom } from "@/src/utils/auth-fetch"
 import { router } from "expo-router/build/exports"
 import { queryClientAtom } from "./general-store"
+import { authFetchAtom } from "./auth-store"
 
 export const loadingAtom = atom(false)
 
@@ -19,7 +19,7 @@ export const deletePostAtom = atom(null, async (get, set, id: string) => {
         })
         if (res.ok) {
           get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
-          router.navigate("/my-posts")
+          router.navigate("(tabs)/profile")
           set(loadingAtom, false)
         } else {
           Alert.alert("Error", "Could not remove post. Please try again later.")

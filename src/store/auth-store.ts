@@ -17,6 +17,8 @@ import { Alert } from "react-native"
 import { router } from "expo-router"
 import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
+import { refreshAccessToken } from "../utils/refresh-access-token"
+import { FetchRequestInit } from "expo/fetch"
 
 const returningUser = {
   email: "",
@@ -127,24 +129,7 @@ export const signUpAtom = atom(null, async (get, set) => {
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       })
-      set(userAtom, {
-        username: data.username,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phoneNumber: data.phoneNumber,
-        picture: data.picture,
-        country: data.country,
-        city: data.city,
-        state: data.state,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        timezone: data.timezone,
-        locationId: data.locationId,
-        email: data.email,
-        posts: [],
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-      })
+      set(fetchUserInfoAtom)
       set(authErrorsAtom, null)
       set(newUserAtom, newUser)
       set(resetPagerAtom)
@@ -313,24 +298,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         })
-        set(userAtom, {
-          username: data.username,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          picture: data.picture,
-          phoneNumber: data.phoneNumber,
-          country: data.country,
-          city: data.city,
-          state: data.state,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          timezone: data.timezone,
-          locationId: data.locationId,
-          email: data.email,
-          posts: [],
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        })
+        const user = await set(fetchUserInfoAtom)
         set(authErrorsAtom, null)
         set(returningUserAtom, returningUser)
         set(resetPagerAtom)
@@ -339,7 +307,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
 
         Toast.show({
           type: "success",
-          text1: "Welcome back, " + data.username + "!",
+          text1: "Welcome back, " + user?.username + "!",
           text1Style: { fontSize: 16, fontWeight: "bold" },
           position: "top",
           visibilityTime: 3000,
@@ -502,4 +470,60 @@ export const setUserPictureAtom = atom(null, async (get, set, option: "library" 
     pictureBlob: attachments[0].file,
     pictureMimeType: attachments[0].mimeType,
   }))
+})
+
+export const authFetchAtom = atom(
+  null,
+  async (get, set, url: string, options: FetchRequestInit = {}) => {
+    // Attach access token
+    function fetchWithToken(token: string) {
+      return fetch(`${BASE_URL}${url}`, {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+    }
+
+    const user = await get(userJwtAtom)
+
+    if (!user) {
+      throw new Error("User is not authenticated")
+    }
+
+    try {
+      const res = await fetchWithToken(user.accessToken)
+
+      if (res.status === 401 || res.status === 403) {
+        const accessToken = await refreshAccessToken(user.refreshToken)
+
+        if (accessToken !== null) {
+          set(userJwtAtom, { ...user, accessToken })
+          const newRes = await fetchWithToken(accessToken)
+          return newRes
+        } else {
+          set(logOutAtom)
+          throw new Error("Session expired. Please log in again.")
+        }
+      }
+
+      return res
+    } catch (error: any) {
+      throw new Error("Network error occurred: ", error)
+    }
+  }
+)
+
+export const fetchUserInfoAtom = atom(null, async (get, set) => {
+  const res = await set(authFetchAtom, "/api/users/my-user")
+  const data: UserType = await res.json()
+  if (res.ok) {
+    set(userAtom, data)
+    return data
+  } else {
+    console.error("Failed to fetch user info:", data)
+    return null
+  }
 })

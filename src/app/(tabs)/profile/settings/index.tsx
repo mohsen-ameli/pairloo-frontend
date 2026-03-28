@@ -44,6 +44,7 @@ export default function SettingsScreen() {
 
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          {/* Account */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Account</Text>
             <View style={styles.card}>
@@ -91,8 +92,8 @@ export default function SettingsScreen() {
                       justifyContent: "space-between",
                     }}
                   >
-                    <Text style={styles.profileName} numberOfLines={1}>
-                      {user ? `${user.firstName} ${user.lastName}` : "—"}
+                    <Text style={styles.profileName}>
+                      {user.firstName} {user.lastName}
                     </Text>
                     {!editMode && (
                       <TouchableOpacity
@@ -120,14 +121,14 @@ export default function SettingsScreen() {
                     )}
                   </View>
                   <Text style={styles.profileUsername} numberOfLines={1}>
-                    {user ? `@${user.username}` : "NA"}
+                    @{user.username}
                   </Text>
                 </View>
               </View>
               <View style={styles.divider} />
               <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>Email</Text>
-                <Text style={styles.fieldValue}>{user.email || "NA"}</Text>
+                <Text style={styles.fieldValue}>{user.email}</Text>
               </View>
               {editMode ? (
                 <View style={styles.editableContainer}>
@@ -175,20 +176,20 @@ export default function SettingsScreen() {
                 <>
                   <View style={styles.fieldRow}>
                     <Text style={styles.fieldLabel}>First Name</Text>
-                    <Text style={styles.fieldValue}>{user.firstName || "—"}</Text>
+                    <Text style={styles.fieldValue}>{user.firstName}</Text>
                   </View>
                   <View style={styles.fieldRow}>
                     <Text style={styles.fieldLabel}>Last Name</Text>
-                    <Text style={styles.fieldValue}>{user.lastName || "—"}</Text>
+                    <Text style={styles.fieldValue}>{user.lastName}</Text>
                   </View>
                   <View style={styles.fieldRow}>
                     <Text style={styles.fieldLabel}>Phone</Text>
-                    <Text style={styles.fieldValue}>{user.phoneNumber || "—"}</Text>
+                    <Text style={styles.fieldValue}>{user.phoneNumber}</Text>
                   </View>
                   <View style={styles.fieldRow}>
                     <Text style={styles.fieldLabel}>Location</Text>
                     <Text style={styles.fieldValue}>
-                      {user && `${user.city} (${user.state}, ${user.country})`}
+                      {user.city} ({user.state}, {user.country})
                     </Text>
                   </View>
                 </>
