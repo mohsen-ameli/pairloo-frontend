@@ -2,14 +2,12 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View } from "react-native"
 import { Image } from "expo-image"
 import { authFetchAtom, userAtom } from "@/src/store/auth-store"
-import { styles } from "@/src/styles/settings.styles"
 import { colors } from "@/src/utils/colors"
 import { useEffect, useState } from "react"
 import { useRouter } from "expo-router"
 import { resetEditAtom } from "@/src/store/settings-store"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
-import { myPostStyles } from "@/src/styles/my-post.styles"
 import { formatDate, formatDateDayMonthYear } from "@/src/utils/format-date"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
@@ -19,6 +17,7 @@ import { getScoreColor } from "@/src/utils/getScoreColor"
 import Feather from "@expo/vector-icons/Feather"
 import { MyReviewsType, MySocialType } from "@/src/types/user.type"
 import { MyPostType } from "@/src/types/post.type"
+import { profileStyles } from "@/src/styles/profile.styles"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -79,7 +78,7 @@ export default function ProfileScreen() {
 
   if (isPostsPending || isReviewsPending || isSocialPending) {
     return (
-      <View style={myPostStyles.container}>
+      <View style={profileStyles.generalContainer}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -97,59 +96,35 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          paddingBottom: 20,
-          alignItems: "center",
-          backgroundColor: colors.light,
-        }}
-      >
+    <View style={profileStyles.generalContainer}>
+      <ScrollView contentContainerStyle={profileStyles.container}>
         <Image
           source={user.picture ? { uri: user.picture } : require("@/assets/images/default_pfp.png")}
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            marginBottom: 16,
-          }}
+          style={profileStyles.profileImage}
         />
-        <Text style={{ fontSize: 24, fontWeight: "bold", textAlign: "center", color: colors.dark }}>
+        <Text style={profileStyles.name}>
           {user.firstName} {user.lastName}
         </Text>
-        <Text style={{ fontSize: 16, color: colors.gray }}>@{user.username}</Text>
-        <Text style={{ fontSize: 14, color: colors.gray }}>
+        <Text style={profileStyles.text}>@{user.username}</Text>
+        <Text style={profileStyles.textMd}>
           Joined {new Date(user.createdAt).toLocaleDateString()}
         </Text>
 
         {/* show following, followers, current rating */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            width: "100%",
-            marginTop: 16,
-          }}
-        >
-          <Text style={{ fontSize: 16, color: colors.gray }}>
-            {social.followersCount} Followers
-          </Text>
-          <Text style={{ fontSize: 16, color: colors.gray }}>
-            {social.followingCount} Following
-          </Text>
+        <View style={profileStyles.socialContainer}>
+          <Text style={profileStyles.text}>{social.followersCount} Followers</Text>
+          <Text style={profileStyles.text}>{social.followingCount} Following</Text>
           {reviews.ratingCount > 0 && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 16, color: colors.gray }}>{reviews.ratingAvg}</Text>
+            <View style={profileStyles.ratingContainer}>
+              <Text style={profileStyles.text}>{reviews.ratingAvg}</Text>
               <RatingStarSingle value={reviews.ratingAvg} />
-              <Text style={{ fontSize: 16, color: colors.gray }}>Rating</Text>
+              <Text style={profileStyles.text}>Rating</Text>
             </View>
           )}
         </View>
 
         {/* Posts & Reviews show/hide buttons */}
-        <View style={{ flexDirection: "row", marginTop: 26, marginBottom: 12, gap: 20 }}>
+        <View style={profileStyles.actionContainer}>
           <Pressable onPress={() => setActiveView("posts")}>
             <Text
               style={{
@@ -178,8 +153,8 @@ export default function ProfileScreen() {
         <View style={{ width: "100%" }}>
           {activeView === "posts" &&
             (posts.length === 0 ? (
-              <View style={myPostStyles.emptyStateContainer}>
-                <Text style={myPostStyles.emptyStateText}>
+              <View style={profileStyles.emptyStateContainer}>
+                <Text style={profileStyles.emptyStateText}>
                   No posts yet. Create one to get started!
                 </Text>
               </View>
@@ -190,7 +165,7 @@ export default function ProfileScreen() {
                     <TouchableHighlight
                       underlayColor={colors.lightGray}
                       key={index}
-                      style={myPostStyles.postCard}
+                      style={profileStyles.postCard}
                       onPress={() => {
                         if (post.isDraft) {
                           router.push({
@@ -206,18 +181,18 @@ export default function ProfileScreen() {
                     >
                       <View>
                         {post.images && post.images.length > 0 && (
-                          <View style={myPostStyles.postCardImage}>
+                          <View style={profileStyles.postCardImage}>
                             <Image
                               source={{ uri: post.images[0] }}
-                              style={myPostStyles.postCardImageFill}
+                              style={profileStyles.postCardImageFill}
                               contentFit="cover"
                             />
                           </View>
                         )}
 
-                        <View style={myPostStyles.postCardContent}>
-                          <View style={myPostStyles.postCardHeader}>
-                            <Text style={myPostStyles.postTitle} numberOfLines={2}>
+                        <View style={profileStyles.postCardContent}>
+                          <View style={profileStyles.postCardHeader}>
+                            <Text style={profileStyles.postTitle} numberOfLines={2}>
                               {post.isDraft ? post.title || post.initialPostText : post.title}
                             </Text>
                             <TouchableHighlight>
@@ -225,15 +200,15 @@ export default function ProfileScreen() {
                             </TouchableHighlight>
                           </View>
 
-                          <View style={myPostStyles.postCardFooter}>
-                            <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
+                          <View style={profileStyles.postCardFooter}>
+                            <Text style={profileStyles.postDate}>
                               {formatDate(post.createdAt.toString())}
                             </Text>
-                            <View style={myPostStyles.postCardLabelContainer}>
+                            <View style={profileStyles.postCardLabelContainer}>
                               {!post.publicPost && (
                                 <CustomLabel backgroundColor={colors.shadow}>
                                   <Feather name="lock" size={12} color={colors.light} />{" "}
-                                  <Text style={{ color: colors.light, fontSize: 12 }}>Private</Text>
+                                  <Text style={profileStyles.privatePostText}>Private</Text>
                                 </CustomLabel>
                               )}
                               {post.closestPosts && post.closestPosts.length > 0 && (
@@ -258,8 +233,8 @@ export default function ProfileScreen() {
 
           {activeView === "reviews" &&
             (reviews.reviews.length === 0 ? (
-              <View style={myPostStyles.emptyStateContainer}>
-                <Text style={myPostStyles.emptyStateText}>No reviews yet.</Text>
+              <View style={profileStyles.emptyStateContainer}>
+                <Text style={profileStyles.emptyStateText}>No reviews yet.</Text>
               </View>
             ) : (
               reviews.reviews.map(r => {
@@ -267,67 +242,32 @@ export default function ProfileScreen() {
                   <View
                     key={r.reviewer._id}
                     style={[
-                      myPostStyles.postCard,
+                      profileStyles.postCard,
                       {
-                        marginBottom: 16,
                         paddingHorizontal: 12,
                         paddingVertical: 14,
                       },
                     ]}
                   >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
+                    <View style={profileStyles.reviewContainer}>
                       <Image
                         source={
                           r.reviewer.picture
                             ? { uri: r.reviewer.picture }
                             : require("@/assets/images/default_pfp.png")
                         }
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 20,
-                          alignSelf: "flex-start",
-                        }}
+                        style={profileStyles.reviewerImage}
                       />
                       <View style={{ flex: 1 }}>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 16,
-                              fontWeight: "bold",
-                              flexShrink: 1,
-                              marginRight: 8,
-                              color: colors.dark,
-                            }}
-                            numberOfLines={1}
-                          >
+                        <View style={profileStyles.rowContainer}>
+                          <Text style={profileStyles.reviewerName} numberOfLines={1}>
                             {r.reviewer.firstName} {r.reviewer.lastName}
                           </Text>
                           <RatingStars value={r.rating} />
                         </View>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <Text style={{ fontSize: 12, color: colors.gray }}>
-                            @{r.reviewer.username}
-                          </Text>
-                          <Text style={{ fontSize: 12, color: colors.gray }}>
+                        <View style={profileStyles.rowContainer}>
+                          <Text style={profileStyles.textSm}>@{r.reviewer.username}</Text>
+                          <Text style={profileStyles.textSm}>
                             {formatDateDayMonthYear(r.createdAt.toString())}
                           </Text>
                         </View>
