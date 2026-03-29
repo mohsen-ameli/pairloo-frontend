@@ -19,7 +19,13 @@ import { MessageType } from "@/src/types/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
-import Animated, { useAnimatedStyle } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  runOnJS,
+} from "react-native-reanimated"
+import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import { userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
@@ -202,90 +208,171 @@ function MessageItem({ item }: { item: MessageType }) {
   const setImages = useSetAtom(bigImageViewAtom)
   const setReplyingTo = useSetAtom(replyingToAtom)
   const router = useRouter()
+  const translateX = useSharedValue(0)
+
+  const panGesture = Gesture.Pan()
+    .onUpdate((event: any) => {
+      if (event.translationX > 0) {
+        translateX.value = event.translationX
+      }
+    })
+    .onEnd((event: any) => {
+      const threshold = 80
+
+      if (event.translationX > threshold) {
+        translateX.value = withSpring(0)
+        runOnJS(setReplyingTo)(item)
+      } else {
+        translateX.value = withSpring(0)
+      }
+    })
+
+  const contentAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+    }
+  })
+
+  const replyButtonStyle = useAnimatedStyle(() => {
+    const opacity = Math.min(Math.abs(translateX.value) / 80, 1)
+    const scale = 0.5 + opacity * 0.5
+
+    return {
+      opacity,
+      transform: [{ scale }],
+    }
+  })
 
   return (
-    <Pressable onLongPress={() => setReplyingTo(item)} style={chatStyles.messageItem}>
-      <Image
-        source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
-        style={chatStyles.messageImage}
-      />
-      <View style={{ flex: 1 }}>
-        <View style={chatStyles.messageHeader}>
-          <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-          <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
-        </View>
-        {item.replyTo && (
-          <View
-            style={{
-              width: "95%",
-              marginTop: 4,
-              marginBottom: 6,
-              paddingRight: 15,
-              paddingLeft: 12,
-              paddingVertical: 6,
-              backgroundColor: colors.lightGray,
-              borderLeftWidth: 2,
-              borderLeftColor: colors.purple,
-              borderRadius: 4,
-            }}
-          >
-            <Text style={{ fontSize: 11, color: colors.gray, marginBottom: 2 }}>
-              {item.replyTo.sender.username}
-            </Text>
-            <Text style={{ fontSize: 13, color: colors.dark }} numberOfLines={2}>
-              {item.replyTo.content}
-            </Text>
+    <View style={chatStyles.messageItem}>
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 60,
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1,
+          },
+          replyButtonStyle,
+        ]}
+      >
+        <Pressable
+          onPress={() => {
+            setReplyingTo(item)
+            translateX.value = withSpring(0)
+          }}
+          style={{
+            padding: 8,
+            backgroundColor: colors.purple,
+            borderRadius: 8,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <MaterialIcons name="reply" size={20} color={colors.light} />
+        </Pressable>
+      </Animated.View>
+
+      {/* Message content that swipes */}
+      <GestureDetector gesture={panGesture}>
+        <Animated.View
+          style={[
+            {
+              flexDirection: "row",
+              flex: 1,
+              zIndex: 2,
+            },
+            contentAnimatedStyle,
+          ]}
+        >
+          <Image
+            source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
+            style={chatStyles.messageImage}
+          />
+          <View style={{ flex: 1 }}>
+            <View style={chatStyles.messageHeader}>
+              <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
+              <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
+            </View>
+            {item.replyTo && (
+              <View
+                style={{
+                  width: "95%",
+                  marginTop: 4,
+                  marginBottom: 6,
+                  marginLeft: 10,
+                  paddingRight: 15,
+                  paddingLeft: 12,
+                  paddingVertical: 6,
+                  backgroundColor: colors.lightGray,
+                  borderLeftWidth: 2,
+                  borderLeftColor: colors.purple,
+                  borderRadius: 4,
+                }}
+              >
+                <Text style={{ fontSize: 11, color: colors.gray, marginBottom: 2 }}>
+                  {item.replyTo.sender.username}
+                </Text>
+                <Text style={{ fontSize: 13, color: colors.dark }} numberOfLines={2}>
+                  {item.replyTo.content}
+                </Text>
+              </View>
+            )}
+            {item.content && (
+              <Text
+                style={[
+                  chatStyles.messageContent,
+                  {
+                    color: item.optimistic ? colors.gray : colors.dark,
+                  },
+                ]}
+              >
+                {item.content}
+              </Text>
+            )}
+            {item.attachments && (
+              <View style={chatStyles.messageAttachmentContainer}>
+                {item.attachments.map((att, idx) => {
+                  const l = item.attachments?.length
+                  const width = l === 1 ? 200 : l === 2 ? 150 : 100
+                  return (
+                    <View key={idx} style={{ marginTop: 8 }}>
+                      <Pressable
+                        onPress={() => {
+                          setImgIdx(idx)
+                          setImages(
+                            item.attachments!.map((att, id) => ({
+                              uri: att,
+                              id: id.toString(),
+                            }))
+                          )
+                          router.push("/image-gallery")
+                        }}
+                      >
+                        <Image
+                          source={{ uri: att }}
+                          style={{
+                            width: width,
+                            height: width,
+                            maxWidth: 300,
+                            maxHeight: 300,
+                            borderRadius: 10,
+                          }}
+                        />
+                      </Pressable>
+                    </View>
+                  )
+                })}
+              </View>
+            )}
           </View>
-        )}
-        {item.content && (
-          <Text
-            style={[
-              chatStyles.messageContent,
-              {
-                color: item.optimistic ? colors.gray : colors.dark,
-              },
-            ]}
-          >
-            {item.content}
-          </Text>
-        )}
-        {item.attachments && (
-          <View style={chatStyles.messageAttachmentContainer}>
-            {item.attachments.map((att, idx) => {
-              const l = item.attachments?.length
-              const width = l === 1 ? 200 : l === 2 ? 150 : 100
-              return (
-                <View key={idx} style={{ marginTop: 8 }}>
-                  <Pressable
-                    onPress={() => {
-                      setImgIdx(idx)
-                      setImages(
-                        item.attachments!.map((att, id) => ({
-                          uri: att,
-                          id: id.toString(),
-                        }))
-                      )
-                      router.push("/image-gallery")
-                    }}
-                  >
-                    <Image
-                      source={{ uri: att }}
-                      style={{
-                        width: width,
-                        height: width,
-                        maxWidth: 300,
-                        maxHeight: 300,
-                        borderRadius: 10,
-                      }}
-                    />
-                  </Pressable>
-                </View>
-              )
-            })}
-          </View>
-        )}
-      </View>
-    </Pressable>
+        </Animated.View>
+      </GestureDetector>
+    </View>
   )
 }
 const MemoizedMessageItem = memo(MessageItem)

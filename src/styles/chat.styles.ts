@@ -67,6 +67,7 @@ export const chatStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+    paddingLeft: 10,
   },
   messageUsername: {
     fontSize: 14,
@@ -81,6 +82,7 @@ export const chatStyles = StyleSheet.create({
     fontSize: 16,
     marginTop: 2,
     paddingRight: 50,
+    paddingLeft: 10,
     flexWrap: "wrap",
   },
   modalContainer: {
