@@ -19,6 +19,7 @@ import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
 import { refreshAccessToken } from "../utils/refresh-access-token"
 import { FetchRequestInit } from "expo/fetch"
+import { incrementAttemptsAtom } from "./device-store"
 
 const returningUser = {
   email: "",
@@ -61,6 +62,7 @@ export const newUserAtom = atomWithStorage("new-user", newUser, newUserStorage)
 export const authErrorsAtom = atom<AuthErrorType | null>(null)
 
 export const resendTimerAtom = atom(0)
+export const emailAttemptsAtom = atom(null as [string, number] | null) // [email, intervalId] singular
 
 // user atom
 const userSecureStorage = createJSONStorage<UserJwtType>(() => ({
@@ -183,12 +185,13 @@ export const requestEmailVerificationAtom = atom(
     const errors = get(authErrorsAtom)
     const flow = get(flowAtom)
     let email: string
+
     if (isSignUp) {
       const newUser = await get(newUserAtom)
-      email = newUser.email.trim().toLowerCase()
+      email = newUser.email
     } else {
       const returningUser = await get(returningUserAtom)
-      email = returningUser.email.trim().toLowerCase()
+      email = returningUser.email
     }
 
     const emailSchema = z.email()
@@ -199,6 +202,15 @@ export const requestEmailVerificationAtom = atom(
       })
       return
     }
+    email = email.trim().toLowerCase()
+
+    const currentAttempt = get(emailAttemptsAtom)
+
+    if (currentAttempt && email === currentAttempt[0]) {
+      set(currPageAtom, 1)
+      return
+    }
+
     set(flowAtom, { ...flow, nextEnabled: false })
 
     try {
@@ -211,14 +223,7 @@ export const requestEmailVerificationAtom = atom(
       })
       const data = await res.json()
 
-      if (!res.ok && !isSignUp) {
-        set(authErrorsAtom, {
-          ...errors,
-          email: data.error,
-        })
-        set(flowAtom, { ...flow, nextEnabled: true })
-        return
-      } else if (!res.ok && isSignUp) {
+      if (!res.ok) {
         set(authErrorsAtom, {
           ...errors,
           email: data.error,
@@ -226,20 +231,28 @@ export const requestEmailVerificationAtom = atom(
         set(flowAtom, { ...flow, nextEnabled: true })
         return
       }
+
       set(currPageAtom, curr => curr + 1)
       set(resendTimerAtom, VERIFICATION_RESEND_TIME)
       set(flowAtom, { ...flow, nextEnabled: true })
+      set(authErrorsAtom, { ...errors, email: undefined })
+      set(returningUserAtom, { ...get(returningUserAtom), email, emailCode: "" })
+      set(incrementAttemptsAtom)
+      clearInterval(currentAttempt?.[1] || undefined)
 
-      let intervalId: number | null = null
-      intervalId = setInterval(() => {
+      const intervalId = setInterval(() => {
         set(resendTimerAtom, prev => {
           if (prev <= 1) {
-            if (intervalId) clearInterval(intervalId)
+            if (intervalId) {
+              clearInterval(intervalId)
+              set(emailAttemptsAtom, null)
+            }
             return 0
           }
           return prev - 1
         })
       }, 1000)
+      set(emailAttemptsAtom, [email, intervalId])
 
       if (res.ok && resending) {
         Alert.alert("Note", "Please check your email for the verification code")
@@ -312,6 +325,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
           position: "top",
           visibilityTime: 3000,
         })
+        return
       }
     } else if (data.errors && data.errors.general) {
       set(authErrorsAtom, {
@@ -326,6 +340,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
     })
   }
   set(flowAtom, { ...flow, nextEnabled: true })
+  set(incrementAttemptsAtom)
 })
 
 export const requestPhoneNumberVerificationAtom = atom(
