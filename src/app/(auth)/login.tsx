@@ -1,6 +1,6 @@
 import CustomInput from "@/src/components/CustomInput"
 import { Link, useFocusEffect } from "expo-router"
-import { useAtom, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect, useRef } from "react"
 import { Pressable, Text, TextInput, View } from "react-native"
 import { styles } from "@/src/styles/login.styles"
@@ -14,6 +14,7 @@ import {
   returningUserAtom,
 } from "@/src/store/auth-store"
 import CustomPager from "@/src/components/CustomPager"
+import { blockedTimerAtom, checkIfBlockedAtom } from "@/src/store/device-store"
 
 const INITIAL_PAGE_COUNT = 2
 
@@ -22,11 +23,13 @@ export default function LoginPage() {
   const [errors, setErrors] = useAtom(authErrorsAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const [flow, setFlow] = useAtom(flowAtom)
-  const [timeRemaining, setTimeRemaining] = useAtom(resendTimerAtom)
+  const timeRemaining = useAtomValue(resendTimerAtom)
   const [returningUser, setReturningUser] = useAtom(returningUserAtom)
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
   const resetPager = useSetAtom(resetPagerAtom)
+  const blockedTimer = useAtomValue(blockedTimerAtom)
+  const checkIfBlocked = useSetAtom(checkIfBlockedAtom)
 
   // Refs for manual focus
   const emailCodeRef = useRef<TextInput>(null!)
@@ -38,6 +41,10 @@ export default function LoginPage() {
       }
     }, [])
   )
+
+  useEffect(() => {
+    checkIfBlocked()
+  }, [])
 
   // Set next/back functions based on current page
   useEffect(() => {
@@ -72,14 +79,17 @@ export default function LoginPage() {
         <Text style={styles.title}>Welcome Back!</Text>
         <CustomInput
           title="Email Address"
-          errors={errors?.email}
+          errors={
+            errors?.email ||
+            (blockedTimer ? `Too many attempts. Try again in ${blockedTimer} seconds.` : "")
+          }
+          editable={!blockedTimer}
           value={returningUser.email}
           autoFocus
           onChangeText={text => {
             setReturningUser(prev => ({ ...prev, email: text }))
             setErrors({ ...errors, email: "" })
             setFlow({ ...flow, nextEnabled: true })
-            timeRemaining > 0 && setTimeRemaining(0)
           }}
           keyboardType="email-address"
           autoCapitalize="none"

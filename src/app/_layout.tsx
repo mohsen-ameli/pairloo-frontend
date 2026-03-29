@@ -1,6 +1,6 @@
 import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
-import { useAtomValue } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { userJwtAtom } from "@/src/store/auth-store"
 import { LogBox } from "react-native"
 import { QueryClientProvider } from "@tanstack/react-query"
@@ -10,8 +10,10 @@ import { maybeCompleteAuthSession } from "expo-web-browser"
 import Toast from "react-native-toast-message"
 import CustomToast from "@/src/components/CustomToast"
 import useCustomHeader from "@/src/utils/useCustomHeader"
-import { queryClientAtom } from "../store/general-store"
+import { queryClientAtom } from "@/src/store/general-store"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
+import { useEffect } from "react"
+import { getDeviceInfoAtom } from "@/src/store/device-store"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -42,6 +44,11 @@ export default function RootLayout() {
   const chatOptions = useCustomHeader("Chat")
   const myPostOptions = useCustomHeader("My Post")
   const defaultOptions = useCustomHeader("", true)
+  const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
+
+  useEffect(() => {
+    getDeviceInfo()
+  }, [])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
