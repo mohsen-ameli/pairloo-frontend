@@ -1,5 +1,5 @@
 import { View, Text, Pressable, TextInput, FlatList, Dimensions } from "react-native"
-import { memo, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
@@ -19,12 +19,7 @@ import { MessageType } from "@/src/types/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  runOnJS,
-} from "react-native-reanimated"
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import { userAtom, userJwtAtom } from "@/src/store/auth-store"
@@ -34,6 +29,7 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
+import { scheduleOnRN } from "react-native-worklets"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -50,6 +46,7 @@ export default function ChatDetails() {
   const setCurrentConversation = useSetAtom(currentConversationAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
+  const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader("", true, true)
   const loading = useAtomValue(loadingAtom)
@@ -83,6 +80,7 @@ export default function ChatDetails() {
         break
       }
     }
+    chatRef.current && chatRef.current.scrollToEnd({ animated: false })
   }, [messages])
 
   useEffect(() => {
@@ -118,9 +116,8 @@ export default function ChatDetails() {
           data={messages}
           ref={chatRef}
           keyboardDismissMode="on-drag"
-          onLayout={() => chatRef.current && chatRef.current.scrollToEnd({ animated: true })}
           keyExtractor={item => item._id}
-          renderItem={({ item }) => <MemoizedMessageItem item={item} />}
+          renderItem={({ item }) => <MessageItem item={item} inputRef={inputRef} />}
           ListFooterComponent={<View style={{ height: 16 }} />}
         />
       </View>
@@ -199,6 +196,7 @@ export default function ChatDetails() {
           placeholderTextColor={colors.muted}
           value={message}
           onChangeText={text => setMessage(text)}
+          ref={inputRef}
         />
         <Pressable
           style={[
@@ -217,13 +215,25 @@ export default function ChatDetails() {
   )
 }
 
-function MessageItem({ item }: { item: MessageType }) {
+function MessageItem({
+  item,
+  inputRef,
+}: {
+  item: MessageType
+  inputRef: React.RefObject<TextInput | null>
+}) {
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
   const setReplyingTo = useSetAtom(replyingToAtom)
   const router = useRouter()
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
+
+  function focusOnInput() {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }
 
   const panGesture = Gesture.Pan()
     .failOffsetY([-5, 5])
@@ -238,7 +248,8 @@ function MessageItem({ item }: { item: MessageType }) {
 
       if (event.translationX > threshold) {
         translateX.value = withSpring(0)
-        runOnJS(setReplyingTo)(item)
+        scheduleOnRN(setReplyingTo, item)
+        scheduleOnRN(focusOnInput)
       } else {
         translateX.value = withSpring(0)
       }
@@ -409,7 +420,6 @@ function MessageItem({ item }: { item: MessageType }) {
     </View>
   )
 }
-const MemoizedMessageItem = memo(MessageItem)
 
 function AttachmentPreview() {
   const [attachments, setAttachments] = useAtom(chatAttachmentsAtom)
