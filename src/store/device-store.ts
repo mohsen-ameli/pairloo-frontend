@@ -8,7 +8,7 @@ export type DeviceInfoType = {
   uuid: string
   blockedUntil: number
   attempts: number // login attempts
-} | null
+}
 
 const DEVICE_INFO_KEY = "device-info"
 
@@ -57,7 +57,7 @@ export const checkIfBlockedAtom = atom(null, async (get, set) => {
   }
 
   // New block
-  if (deviceInfo.attempts === MAX_ATTEMPTS) {
+  if (deviceInfo.attempts >= MAX_ATTEMPTS) {
     const newBlockedUntil = Date.now() + BLOCK_TIME
     const updatedDeviceInfo = { ...deviceInfo, blockedUntil: newBlockedUntil, attempts: 0 }
     await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(updatedDeviceInfo))

@@ -191,7 +191,7 @@ export default function Register() {
           onChangeText={text => {
             setErrors({ ...errors, phoneVerify: "" })
             setNewUser({ ...newUser, phoneCode: text })
-            setFlow({ ...flow, nextEnabled: text.length === 6 })
+            setFlow({ ...flow, nextEnabled: text.length === 6 && !isBlocked })
           }}
           value={newUser.phoneCode}
           inputRef={phoneCodeRef}

@@ -61,7 +61,7 @@ export const newUserAtom = atomWithStorage("new-user", newUser, newUserStorage)
 
 export const authErrorsAtom = atom<AuthErrorType | null>(null)
 
-export const resendTimerAtom = atom(0) //
+export const resendTimerAtom = atom(0) // remaining seconds before verification code can be resent
 export const emailAttemptsAtom = atom(null as [string, number] | null) // [email, intervalId] singular
 export const phoneAttemptsAtom = atom(null as [string, number] | null) // [phone, intervalId] singular
 
@@ -286,7 +286,6 @@ export const requestEmailVerificationAtom = atom(
         ...errors,
         email: "Failed to send verification code",
       })
-      set(flowAtom, { ...flow, nextEnabled: true })
     }
   }
 )
@@ -295,11 +294,11 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
   const errors = get(authErrorsAtom)
   const flow = get(flowAtom)
   const returningUser = await get(returningUserAtom)
+  const newUser = await get(newUserAtom)
 
   let email: string, code: string
 
   if (isSignUp) {
-    const newUser = await get(newUserAtom)
     email = newUser.email
     code = newUser.emailCode
   } else {
@@ -330,7 +329,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
     if (res.ok) {
       if (isSignUp) {
         set(currPageAtom, curr => curr + 1)
-        set(newUserAtom, { ...get(newUserAtom), emailVerified: true })
+        set(newUserAtom, { ...newUser, emailVerified: true })
       } else {
         set(userJwtAtom, {
           _id: data._id,
@@ -414,7 +413,6 @@ export const requestPhoneNumberVerificationAtom = atom(
           ...errors,
           phoneNumber: data.error,
         })
-        set(flowAtom, { ...flow, nextEnabled: false })
         set(resendTimerAtom, 0)
         return
       }
@@ -456,7 +454,6 @@ export const requestPhoneNumberVerificationAtom = atom(
         ...errors,
         phoneNumber: "Failed to send verification code. Please try again.",
       })
-      set(flowAtom, { ...flow, nextEnabled: true })
     }
   }
 )
@@ -496,7 +493,6 @@ export const verifyPhoneNumberVerificationAtom = atom(null, async (get, set) => 
         ...errors,
         phoneVerify: "Invalid verification code",
       })
-      set(flowAtom, { ...get(flowAtom), nextEnabled: false })
     }
   } catch {
     set(authErrorsAtom, {
@@ -527,14 +523,16 @@ export const verifyUserInfoAtom = atom(null, async (get, set) => {
 
 export const setUserPictureAtom = atom(null, async (get, set, option: "library" | "camera") => {
   const attachments = await set(getAttachmentAtom, true, option, false)
+  const newUser = await get(newUserAtom)
+
   if (!attachments) return
 
-  set(newUserAtom, f => ({
-    ...f,
+  set(newUserAtom, {
+    ...newUser,
     picture: attachments[0].uri,
     pictureBlob: attachments[0].file,
     pictureMimeType: attachments[0].mimeType,
-  }))
+  })
 })
 
 export const authFetchAtom = atom(
