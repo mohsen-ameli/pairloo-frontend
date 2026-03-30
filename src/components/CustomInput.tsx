@@ -6,7 +6,7 @@ import { inputStyles } from "@/src/styles/input.styles"
 interface Props extends TextInputProps {
   title: string
   mandatory?: boolean
-  errors?: string
+  errors?: React.ReactNode
   inputRef?: React.RefObject<TextInput>
   headerStyles?: TextInputProps["style"]
 }
@@ -32,7 +32,7 @@ export default function CustomInput({
         selectionColor={colors.purple}
         {...rest}
       />
-      {errors ? <Text style={inputStyles.errors}>{errors}</Text> : null}
+      {errors && <Text style={inputStyles.errors}>{errors}</Text>}
     </View>
   )
 }

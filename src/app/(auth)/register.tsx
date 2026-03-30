@@ -24,6 +24,8 @@ import CustomPager from "@/src/components/CustomPager"
 import { useFocusEffect, useRouter } from "expo-router"
 import { Image } from "expo-image"
 import Feather from "@expo/vector-icons/Feather"
+import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
+import BlockedAttempts from "@/src/components/BlockedAttempts"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 const INITIAL_PAGE_COUNT = 6
@@ -34,7 +36,6 @@ export default function Register() {
   const setPageCount = useSetAtom(pageCountAtom)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [errors, setErrors] = useAtom(authErrorsAtom)
-  const requested = useRef(false)
   const timeRemaining = useAtomValue(resendTimerAtom)
   const [flow, setFlow] = useAtom(flowAtom)
   const usernameTimeout = useRef<number>(null)
@@ -47,6 +48,8 @@ export default function Register() {
   const resetPager = useSetAtom(resetPagerAtom)
   const [avatar, setAvatar] = useState<string | null>(null)
   const skipResetOnNextBlur = useRef(false)
+  const checkIfBlocked = useSetAtom(checkIfBlockedAtom)
+  const isBlocked = useAtomValue(isBlockedAtom)
 
   // Refs for manual focus
   const phoneCodeRef = useRef<TextInput>(null!)
@@ -66,11 +69,42 @@ export default function Register() {
     }, [resetPager])
   )
 
+  useEffect(() => {
+    checkIfBlocked()
+
+    // If user already has phone/email verified then skip to the appropriate page
+    if (newUser.phoneVerified) {
+      setCurrPage(2)
+    } else if (newUser.emailVerified) {
+      setCurrPage(4)
+    }
+  }, [])
+
   // Set next/back functions based on current page
   useEffect(() => {
     setPageCount(INITIAL_PAGE_COUNT)
+
+    let nextEnabled = false
+    if (currPage === 0) {
+      nextEnabled = newUser.phoneNumber.length > 0 && !isBlocked
+    } else if (currPage === 1) {
+      nextEnabled = newUser.phoneCode.length === 6 && !isBlocked
+    } else if (currPage === 2) {
+      nextEnabled = newUser.email.length > 0 && !isBlocked
+    } else if (currPage === 3) {
+      nextEnabled = newUser.emailCode.length === 6 && !isBlocked
+    } else if (currPage === 4) {
+      nextEnabled =
+        newUser.username.length > 0 &&
+        newUser.firstName.length > 0 &&
+        newUser.lastName.length > 0 &&
+        newUser.locationId !== 0
+    } else if (currPage === 5) {
+      nextEnabled = true
+    }
+
     setFlow({
-      ...flow,
+      nextEnabled,
       back: () => {
         setCurrPage(currPage - 1)
       },
@@ -90,7 +124,7 @@ export default function Register() {
         }
       },
     })
-  }, [currPage])
+  }, [currPage, newUser])
 
   // Manual focus logic
   useEffect(() => {
@@ -140,7 +174,9 @@ export default function Register() {
       <View style={styles.pageContainer} key="0">
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
-        {errors?.phoneNumber && <Text style={styles.error}>{errors?.phoneNumber}</Text>}
+        {(errors?.phoneNumber || isBlocked) && (
+          <Text style={styles.error}>{errors?.phoneNumber || <BlockedAttempts />}</Text>
+        )}
         {!newUser.phoneVerified && (
           <Text style={styles.note}>We will send you a verification code.</Text>
         )}
@@ -155,7 +191,9 @@ export default function Register() {
           onChangeText={text => {
             setErrors({ ...errors, phoneVerify: "" })
             setNewUser({ ...newUser, phoneCode: text })
+            setFlow({ ...flow, nextEnabled: text.length === 6 })
           }}
+          value={newUser.phoneCode}
           inputRef={phoneCodeRef}
           keyboardType="numeric"
           maxLength={6}
@@ -163,13 +201,13 @@ export default function Register() {
         <Text style={styles.note}>Please check your email for the verification code.</Text>
         <Pressable
           onPress={() => requestPhoneNumberVerification(true)}
-          disabled={requested.current || timeRemaining > 0}
+          disabled={timeRemaining > 0}
         >
           <Text
             style={[
               styles.resendText,
               {
-                color: requested.current || timeRemaining > 0 ? colors.gray : colors.purple,
+                color: timeRemaining > 0 ? colors.gray : colors.purple,
               },
             ]}
           >
@@ -227,13 +265,13 @@ export default function Register() {
         <Text style={styles.note}>Please check your email for the verification code.</Text>
         <Pressable
           onPress={() => requestEmailVerification(true, true)}
-          disabled={requested.current || timeRemaining > 0}
+          disabled={timeRemaining > 0}
         >
           <Text
             style={[
               styles.resendText,
               {
-                color: requested.current || timeRemaining > 0 ? colors.gray : colors.purple,
+                color: timeRemaining > 0 ? colors.gray : colors.purple,
               },
             ]}
           >

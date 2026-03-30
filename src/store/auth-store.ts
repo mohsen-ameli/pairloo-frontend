@@ -19,7 +19,7 @@ import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
 import { refreshAccessToken } from "../utils/refresh-access-token"
 import { FetchRequestInit } from "expo/fetch"
-import { incrementAttemptsAtom } from "./device-store"
+import { incrementAttemptsAtom, resetDeviceInfoAtom } from "./device-store"
 
 const returningUser = {
   email: "",
@@ -61,8 +61,9 @@ export const newUserAtom = atomWithStorage("new-user", newUser, newUserStorage)
 
 export const authErrorsAtom = atom<AuthErrorType | null>(null)
 
-export const resendTimerAtom = atom(0)
+export const resendTimerAtom = atom(0) //
 export const emailAttemptsAtom = atom(null as [string, number] | null) // [email, intervalId] singular
+export const phoneAttemptsAtom = atom(null as [string, number] | null) // [phone, intervalId] singular
 
 // user atom
 const userSecureStorage = createJSONStorage<UserJwtType>(() => ({
@@ -135,7 +136,14 @@ export const signUpAtom = atom(null, async (get, set) => {
       set(authErrorsAtom, null)
       set(newUserAtom, newUser)
       set(resetPagerAtom)
-      Alert.alert("Success", "Account created successfully!")
+      set(resetDeviceInfoAtom)
+      Toast.show({
+        type: "success",
+        text1: "Welcome, " + userData.username + "!",
+        text1Style: { fontSize: 16, fontWeight: "bold" },
+        position: "top",
+        visibilityTime: 3000,
+      })
       router.replace("/")
       return true
     }
@@ -150,8 +158,10 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
     await set(userAtom, null)
     await set(userJwtAtom, null)
     await set(newUserAtom, newUser)
+    set(returningUserAtom, returningUser)
     set(authErrorsAtom, null)
     set(resetPagerAtom)
+    set(resetDeviceInfoAtom)
 
     // Clean chat socket
     const chatSocket = get(chatSocketAtom)
@@ -184,15 +194,18 @@ export const requestEmailVerificationAtom = atom(
   async (get, set, isSignUp: boolean, resending: boolean) => {
     const errors = get(authErrorsAtom)
     const flow = get(flowAtom)
+    const returningUser = await get(returningUserAtom)
+
     let email: string
 
     if (isSignUp) {
       const newUser = await get(newUserAtom)
       email = newUser.email
     } else {
-      const returningUser = await get(returningUserAtom)
       email = returningUser.email
     }
+
+    set(flowAtom, { ...flow, nextEnabled: false })
 
     const emailSchema = z.email()
     if (!emailSchema.safeParse(email).success) {
@@ -207,11 +220,15 @@ export const requestEmailVerificationAtom = atom(
     const currentAttempt = get(emailAttemptsAtom)
 
     if (currentAttempt && email === currentAttempt[0]) {
-      set(currPageAtom, 1)
+      if (isSignUp) {
+        set(currPageAtom, 3)
+      } else {
+        set(currPageAtom, 1)
+      }
       return
     }
 
-    set(flowAtom, { ...flow, nextEnabled: false })
+    set(resendTimerAtom, VERIFICATION_RESEND_TIME) // to immediately disable the resend button
 
     try {
       const res = await fetch(`${BASE_URL}/api/auth/request-email-verification`, {
@@ -228,15 +245,15 @@ export const requestEmailVerificationAtom = atom(
           ...errors,
           email: data.error,
         })
-        set(flowAtom, { ...flow, nextEnabled: true })
+        set(resendTimerAtom, 0)
         return
       }
 
-      set(currPageAtom, curr => curr + 1)
-      set(resendTimerAtom, VERIFICATION_RESEND_TIME)
-      set(flowAtom, { ...flow, nextEnabled: true })
-      set(authErrorsAtom, { ...errors, email: undefined })
-      set(returningUserAtom, { ...get(returningUserAtom), email, emailCode: "" })
+      if (!resending) {
+        set(currPageAtom, curr => curr + 1)
+      }
+      set(authErrorsAtom, { ...errors, email: undefined, emailVerify: undefined })
+      set(returningUserAtom, { ...returningUser, email, emailCode: "" })
       set(incrementAttemptsAtom)
       clearInterval(currentAttempt?.[1] || undefined)
 
@@ -255,7 +272,14 @@ export const requestEmailVerificationAtom = atom(
       set(emailAttemptsAtom, [email, intervalId])
 
       if (res.ok && resending) {
-        Alert.alert("Note", "Please check your email for the verification code")
+        Toast.show({
+          type: "info",
+          text1: "Verification code sent",
+          text2: "Please check your email for the verification code",
+          text1Style: { fontSize: 16, fontWeight: "bold" },
+          position: "top",
+          visibilityTime: 3000,
+        })
       }
     } catch {
       set(authErrorsAtom, {
@@ -270,13 +294,15 @@ export const requestEmailVerificationAtom = atom(
 export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean) => {
   const errors = get(authErrorsAtom)
   const flow = get(flowAtom)
+  const returningUser = await get(returningUserAtom)
+
   let email: string, code: string
+
   if (isSignUp) {
     const newUser = await get(newUserAtom)
     email = newUser.email
     code = newUser.emailCode
   } else {
-    const returningUser = await get(returningUserAtom)
     email = returningUser.email
     code = returningUser.emailCode
   }
@@ -303,7 +329,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
 
     if (res.ok) {
       if (isSignUp) {
-        set(currPageAtom, get(currPageAtom) + 1)
+        set(currPageAtom, curr => curr + 1)
         set(newUserAtom, { ...get(newUserAtom), emailVerified: true })
       } else {
         set(userJwtAtom, {
@@ -315,6 +341,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
         set(authErrorsAtom, null)
         set(returningUserAtom, returningUser)
         set(resetPagerAtom)
+        set(resetDeviceInfoAtom)
 
         router.replace("/")
 
@@ -339,7 +366,6 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
       emailVerify: "Failed to verify code. Please try again.",
     })
   }
-  set(flowAtom, { ...flow, nextEnabled: true })
   set(incrementAttemptsAtom)
 })
 
@@ -352,12 +378,6 @@ export const requestPhoneNumberVerificationAtom = atom(
     const callingCode = newUser.callingCode
     const phoneNumber = newUser.phoneNumber
 
-    if (newUser.phoneVerified) {
-      set(currPageAtom, get(currPageAtom) + 1)
-      set(flowAtom, { ...flow, nextEnabled: true })
-      return
-    }
-
     const phoneSchema = z.string().min(9, "Invalid phone number")
     if (!phoneSchema.safeParse(phoneNumber).success) {
       set(authErrorsAtom, {
@@ -366,7 +386,16 @@ export const requestPhoneNumberVerificationAtom = atom(
       })
       return
     }
+
+    const currentAttempt = get(phoneAttemptsAtom)
+
+    if (currentAttempt && phoneNumber === currentAttempt[0] && !resending) {
+      set(currPageAtom, 1)
+      return
+    }
+
     set(flowAtom, { ...flow, nextEnabled: false })
+    set(resendTimerAtom, VERIFICATION_RESEND_TIME) // to immediately disable the resend button
 
     try {
       const res = await fetch(`${BASE_URL}/api/auth/request-phone-verification`, {
@@ -378,31 +407,49 @@ export const requestPhoneNumberVerificationAtom = atom(
       })
       const data = await res.json()
 
+      set(incrementAttemptsAtom)
+
       if (!res.ok) {
         set(authErrorsAtom, {
           ...errors,
           phoneNumber: data.error,
         })
-        set(flowAtom, { ...flow, nextEnabled: true })
+        set(flowAtom, { ...flow, nextEnabled: false })
+        set(resendTimerAtom, 0)
         return
       }
-      set(currPageAtom, get(currPageAtom) + 1)
-      set(resendTimerAtom, VERIFICATION_RESEND_TIME)
-      set(flowAtom, { ...flow, nextEnabled: true })
 
-      let intervalId: number | null = null
-      intervalId = setInterval(() => {
+      if (!resending) {
+        set(currPageAtom, curr => curr + 1)
+      }
+      set(newUserAtom, { ...newUser, phoneCode: "" })
+      set(authErrorsAtom, { ...errors, phoneNumber: undefined, phoneVerify: undefined })
+
+      clearInterval(currentAttempt?.[1] || undefined)
+
+      const intervalId = setInterval(() => {
         set(resendTimerAtom, prev => {
           if (prev <= 1) {
-            if (intervalId) clearInterval(intervalId)
+            if (intervalId) {
+              clearInterval(intervalId)
+              set(phoneAttemptsAtom, null)
+            }
             return 0
           }
           return prev - 1
         })
       }, 1000)
+      set(phoneAttemptsAtom, [phoneNumber, intervalId])
 
       if (res.ok && resending) {
-        Alert.alert("Note", "Please check your phone for the verification code")
+        Toast.show({
+          type: "info",
+          text1: "Verification code sent",
+          text2: "Please check your phone for the verification code",
+          text1Style: { fontSize: 16, fontWeight: "bold" },
+          position: "top",
+          visibilityTime: 3000,
+        })
       }
     } catch {
       set(authErrorsAtom, {
@@ -439,14 +486,17 @@ export const verifyPhoneNumberVerificationAtom = atom(null, async (get, set) => 
       body: JSON.stringify({ callingCode, phoneNumber, code }),
     })
 
+    set(incrementAttemptsAtom)
+
     if (res.ok) {
-      set(currPageAtom, get(currPageAtom) + 1)
+      set(currPageAtom, curr => curr + 1)
       set(newUserAtom, { ...newUser, phoneVerified: true })
     } else {
       set(authErrorsAtom, {
         ...errors,
         phoneVerify: "Invalid verification code",
       })
+      set(flowAtom, { ...get(flowAtom), nextEnabled: false })
     }
   } catch {
     set(authErrorsAtom, {
@@ -472,7 +522,7 @@ export const verifyUserInfoAtom = atom(null, async (get, set) => {
     set(authErrorsAtom, { ...errors, location: "Location is required" })
     return
   }
-  set(currPageAtom, get(currPageAtom) + 1)
+  set(currPageAtom, curr => curr + 1)
 })
 
 export const setUserPictureAtom = atom(null, async (get, set, option: "library" | "camera") => {

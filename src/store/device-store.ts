@@ -2,8 +2,8 @@ import * as SecureStore from "expo-secure-store"
 import { atom } from "jotai"
 import * as Crypto from "expo-crypto"
 import { currPageAtom, flowAtom } from "./pager-store"
+import { BLOCK_TIME, MAX_ATTEMPTS } from "../utils/constants"
 
-// Singleton
 export type DeviceInfoType = {
   uuid: string
   blockedUntil: number
@@ -11,11 +11,10 @@ export type DeviceInfoType = {
 } | null
 
 const DEVICE_INFO_KEY = "device-info"
-const BLOCK_TIME = 0.5 * 60 * 1000 // 5 minutes
-const MAX_ATTEMPTS = 5
 
 export const blockedTimerAtom = atom(0)
 export const blockedIntervalAtom = atom(0)
+export const isBlockedAtom = atom(false)
 
 // Store a singleton device info object in secure storage, which can be used for rate limiting login attempts.
 export const getDeviceInfoAtom = atom(null, async (get, set) => {
@@ -70,6 +69,7 @@ export const checkIfBlockedAtom = atom(null, async (get, set) => {
   if (blocking) {
     set(flowAtom, prev => ({ ...prev, nextEnabled: false }))
     set(currPageAtom, 0)
+    set(isBlockedAtom, true)
 
     const blockedInterval = get(blockedIntervalAtom)
     if (blockedInterval) {
@@ -81,6 +81,7 @@ export const checkIfBlockedAtom = atom(null, async (get, set) => {
         if (prev <= 1) {
           clearInterval(interval)
           set(flowAtom, prev => ({ ...prev, nextEnabled: true }))
+          set(isBlockedAtom, false)
           return 0
         }
         return prev - 1
@@ -91,5 +92,15 @@ export const checkIfBlockedAtom = atom(null, async (get, set) => {
     return true
   }
 
+  set(isBlockedAtom, false)
   return false
+})
+
+export const resetDeviceInfoAtom = atom(null, async (get, set) => {
+  const deviceInfo = {
+    uuid: Crypto.randomUUID(),
+    blockedUntil: 0,
+    attempts: 0,
+  }
+  await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(deviceInfo))
 })
