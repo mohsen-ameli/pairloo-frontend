@@ -11,7 +11,8 @@ export type MessageType = {
   attachments?: string[]
   replyTo?: {
     _id: string
-    content: string
+    content?: string
+    attachments?: string[]
     sender: {
       _id: string
       username: string

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, FlatList } from "react-native"
+import { View, Text, Pressable, TextInput, FlatList, Dimensions } from "react-native"
 import { memo, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -97,7 +97,7 @@ export default function ChatDetails() {
     if (!msg && attachments.length === 0) return
     setMessage("")
     await sendMessage(id, msg, replyingTo?._id)
-    chatRef.current && chatRef.current.scrollToEnd({ animated: false })
+    chatRef.current && chatRef.current.scrollToEnd({ animated: true })
   }
 
   // Animate fake view height
@@ -118,7 +118,7 @@ export default function ChatDetails() {
           data={messages}
           ref={chatRef}
           keyboardDismissMode="on-drag"
-          onLayout={() => chatRef.current && chatRef.current.scrollToEnd({ animated: false })}
+          onLayout={() => chatRef.current && chatRef.current.scrollToEnd({ animated: true })}
           keyExtractor={item => item._id}
           renderItem={({ item }) => <MemoizedMessageItem item={item} />}
           ListFooterComponent={<View style={{ height: 16 }} />}
@@ -141,13 +141,27 @@ export default function ChatDetails() {
           <View
             style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
           >
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 12, color: colors.gray, marginBottom: 4 }}>
-                Replying to {replyingTo.sender.username}
-              </Text>
-              <Text style={{ fontSize: 14, color: colors.dark }} numberOfLines={2}>
-                {replyingTo.content}
-              </Text>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
+              {replyingTo.attachments && replyingTo.attachments.length > 0 && (
+                <Image
+                  source={{ uri: replyingTo.attachments[0] }}
+                  style={{ width: 40, height: 40, borderRadius: 4 }}
+                />
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, color: colors.gray, marginBottom: 4 }}>
+                  Replying to {replyingTo.sender.username}
+                </Text>
+                {replyingTo.content ? (
+                  <Text style={{ fontSize: 14, color: colors.dark }} numberOfLines={2}>
+                    {replyingTo.content}
+                  </Text>
+                ) : replyingTo.attachments && replyingTo.attachments.length > 0 ? (
+                  <Text style={{ fontSize: 14, color: colors.gray, fontStyle: "italic" }}>
+                    Image
+                  </Text>
+                ) : null}
+              </View>
             </View>
             <Pressable onPress={() => setReplyingTo(null)} style={{ padding: 8 }}>
               <Feather name="x" size={18} color={colors.gray} />
@@ -209,15 +223,18 @@ function MessageItem({ item }: { item: MessageType }) {
   const setReplyingTo = useSetAtom(replyingToAtom)
   const router = useRouter()
   const translateX = useSharedValue(0)
+  const maxSwipeDistance = Dimensions.get("window").width * 0.25
 
   const panGesture = Gesture.Pan()
+    .failOffsetY([-5, 5])
+    .activeOffsetX([-15, 15])
     .onUpdate((event: any) => {
       if (event.translationX > 0) {
-        translateX.value = event.translationX
+        translateX.value = Math.min(event.translationX, maxSwipeDistance)
       }
     })
     .onEnd((event: any) => {
-      const threshold = 80
+      const threshold = maxSwipeDistance * 0.5
 
       if (event.translationX > threshold) {
         translateX.value = withSpring(0)
@@ -312,14 +329,31 @@ function MessageItem({ item }: { item: MessageType }) {
                   borderLeftWidth: 2,
                   borderLeftColor: colors.purple,
                   borderRadius: 4,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                <Text style={{ fontSize: 11, color: colors.gray, marginBottom: 2 }}>
-                  {item.replyTo.sender.username}
-                </Text>
-                <Text style={{ fontSize: 13, color: colors.dark }} numberOfLines={2}>
-                  {item.replyTo.content}
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 11, color: colors.gray, marginBottom: 2 }}>
+                    {item.replyTo.sender.username}
+                  </Text>
+                  {item.replyTo.content ? (
+                    <Text style={{ fontSize: 13, color: colors.dark }} numberOfLines={2}>
+                      {item.replyTo.content}
+                    </Text>
+                  ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
+                    <Text style={{ fontSize: 13, color: colors.gray, fontStyle: "italic" }}>
+                      Image
+                    </Text>
+                  ) : null}
+                </View>
+                {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
+                  <Image
+                    source={{ uri: item.replyTo.attachments[0] }}
+                    style={{ width: 35, height: 35, borderRadius: 4 }}
+                  />
+                )}
               </View>
             )}
             {item.content && (
@@ -335,7 +369,7 @@ function MessageItem({ item }: { item: MessageType }) {
               </Text>
             )}
             {item.attachments && (
-              <View style={chatStyles.messageAttachmentContainer}>
+              <View style={[chatStyles.messageAttachmentContainer, { alignItems: "flex-start" }]}>
                 {item.attachments.map((att, idx) => {
                   const l = item.attachments?.length
                   const width = l === 1 ? 200 : l === 2 ? 150 : 100

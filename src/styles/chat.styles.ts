@@ -46,10 +46,11 @@ export const chatStyles = StyleSheet.create({
     backgroundColor: colors.purple,
   },
   messageAttachmentContainer: {
-    marginHorizontal: "auto",
     flexDirection: "row",
     flexWrap: "wrap",
     columnGap: 6,
+    marginLeft: 10,
+    marginTop: 10,
   },
   messageItem: {
     marginVertical: 10,
@@ -61,7 +62,6 @@ export const chatStyles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    alignSelf: "flex-start",
   },
   messageHeader: {
     flexDirection: "row",

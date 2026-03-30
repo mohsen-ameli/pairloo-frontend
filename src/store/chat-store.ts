@@ -216,6 +216,7 @@ export const sendMessageAtom = atom(
         ? {
             _id: replyingTo._id,
             content: replyingTo.content || "",
+            attachments: replyingTo.attachments || [],
             sender: replyingTo.sender,
           }
         : undefined,
