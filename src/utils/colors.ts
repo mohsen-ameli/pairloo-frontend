@@ -21,6 +21,8 @@ const baseColors = {
   borderGray: "#d1d1d6",
   lightTransparent: "#ffffff8e",
   darkTransparent: "#0000008e",
+  transparent: "transparent",
+  chatHighlight: "#8f7dd728",
   blue: "#007AFF",
   lightBlue: "#5ac8ff",
   muted: "#999999",

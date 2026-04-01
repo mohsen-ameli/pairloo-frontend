@@ -120,6 +120,21 @@ export default function RootLayout() {
                 sheetElevation: 24,
               }}
             />
+            <Stack.Screen
+              name="(util)/message-action-modal"
+              options={{
+                presentation: "formSheet",
+                gestureDirection: "vertical",
+                animation: "slide_from_bottom",
+                contentStyle: { backgroundColor: colors.light },
+                headerShown: false,
+                sheetGrabberVisible: false,
+                sheetInitialDetentIndex: 0,
+                sheetAllowedDetents: "fitToContents",
+                sheetExpandsWhenScrolledToEdge: false,
+                sheetElevation: 24,
+              }}
+            />
           </Stack>
         </QueryClientProvider>
       </KeyboardProvider>

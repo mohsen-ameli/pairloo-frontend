@@ -58,6 +58,7 @@ export default function ChatDetails() {
     email: string
   }>(undefined)
   const [canReview, setCanReview] = useState(false)
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
@@ -117,7 +118,14 @@ export default function ChatDetails() {
           ref={chatRef}
           keyboardDismissMode="on-drag"
           keyExtractor={item => item._id}
-          renderItem={({ item }) => <MessageItem item={item} inputRef={inputRef} />}
+          renderItem={({ item }) => (
+            <MessageItem
+              item={item}
+              inputRef={inputRef}
+              highlightedMessageId={highlightedMessageId}
+              setHighlightedMessageId={setHighlightedMessageId}
+            />
+          )}
           ListFooterComponent={<View style={{ height: 16 }} />}
         />
       </View>
@@ -218,13 +226,18 @@ export default function ChatDetails() {
 function MessageItem({
   item,
   inputRef,
+  highlightedMessageId,
+  setHighlightedMessageId,
 }: {
   item: MessageType
   inputRef: React.RefObject<TextInput | null>
+  highlightedMessageId: string | null
+  setHighlightedMessageId: (id: string | null) => void
 }) {
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
   const setReplyingTo = useSetAtom(replyingToAtom)
+  const replyingToAtomValue = useAtomValue(replyingToAtom)
   const router = useRouter()
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
@@ -254,6 +267,29 @@ function MessageItem({
         translateX.value = withSpring(0)
       }
     })
+
+  const handleLongPress = () => {
+    setHighlightedMessageId(item._id)
+    router.push({
+      pathname: "/message-action-modal",
+      params: { messageId: item._id, senderId: item.sender._id },
+    })
+  }
+
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(500)
+    .onStart(() => {
+      scheduleOnRN(handleLongPress)
+    })
+
+  // Have a delay in order to allow rerendering highlight
+  useEffect(() => {
+    if (!highlightedMessageId) return
+    const timer = setTimeout(() => {
+      setHighlightedMessageId(null)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [highlightedMessageId])
 
   const contentAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -306,13 +342,22 @@ function MessageItem({
       </Animated.View>
 
       {/* Message content that swipes */}
-      <GestureDetector gesture={panGesture}>
+      <GestureDetector gesture={Gesture.Simultaneous(panGesture, longPressGesture)}>
         <Animated.View
           style={[
             {
               flexDirection: "row",
               flex: 1,
               zIndex: 2,
+              backgroundColor:
+                highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
+                  ? colors.chatHighlight
+                  : "transparent",
+              borderRadius: 8,
+              paddingHorizontal: 4,
+              paddingVertical: 4,
+              marginHorizontal: -4,
+              marginVertical: -4,
             },
             contentAnimatedStyle,
           ]}
@@ -322,9 +367,16 @@ function MessageItem({
             style={chatStyles.messageImage}
           />
           <View style={{ flex: 1 }}>
-            <View style={chatStyles.messageHeader}>
-              <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-              <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
+            <View
+              style={{
+                borderRadius: 4,
+                paddingHorizontal: 8,
+              }}
+            >
+              <View style={chatStyles.messageHeader}>
+                <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
+                <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
+              </View>
             </View>
             {item.replyTo && (
               <View
