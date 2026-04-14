@@ -27,7 +27,7 @@ export default function CustomInput({
       </Text>
       <TextInput
         ref={inputRef}
-        style={inputStyles.input}
+        style={[inputStyles.input, rest.multiline && { height: 150, textAlignVertical: "top" }]}
         placeholderTextColor={colors.gray}
         selectionColor={colors.purple}
         {...rest}

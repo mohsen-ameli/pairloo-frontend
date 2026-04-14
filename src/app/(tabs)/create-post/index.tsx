@@ -10,8 +10,8 @@ import {
   Alert,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import { useCallback } from "react"
-import { currPageAtom, flowAtom } from "@/src/store/pager-store"
+import { useCallback, useEffect } from "react"
+import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
 import CustomInput from "@/src/components/CustomInput"
@@ -36,6 +36,7 @@ import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
 import MapSelector from "../../(util)/map-selector"
+import { inputStyles } from "@/src/styles/input.styles"
 
 export default function CreatePost() {
   const [QNAs, setQNAs] = useAtom(qnaAtom)
@@ -49,56 +50,89 @@ export default function CreatePost() {
   const pickImage = useSetAtom(pickImageAtom)
   const setEdited = useSetAtom(editedAtom)
   const initCreatePost = useSetAtom(initCreatePostAtom)
+  const pageCount = useAtomValue(pageCountAtom)
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!socket) return
+  useEffect(() => {
+    if (!socket) return
 
-      let nextEnabled = false
-      if (currPage === QNAs.length + 1) {
-        // last page
-        nextEnabled = settings.title.trim().length > 0
-      } else if (currPage === QNAs.length) {
-        // location page
+    let nextEnabled = false
+
+    // The flow is: initial question -> 0 or more questions -> extra info page -> location page -> final page
+    if (currPage === 0) {
+      // initial question page
+      nextEnabled = QNAs[0].answer.length > 0
+    } else if (currPage === pageCount - 2) {
+      // location page
+      nextEnabled = true
+    } else if (currPage === pageCount - 1) {
+      // last page
+      nextEnabled = settings.title.trim().length > 0 && settings.description.trim().length > 0
+    } else {
+      // question pages
+      if (QNAs[currPage].question.optional) {
         nextEnabled = true
+      } else if (QNAs[currPage].question.type === "short_answer") {
+        if (
+          QNAs[currPage].answer.length === 0 ||
+          QNAs[currPage].answer[0].trim().length < MINIMUM_SHORT_ANSWER_LENGTH
+        ) {
+          nextEnabled = false
+        } else {
+          nextEnabled = true
+        }
       } else {
-        // question pages
-        nextEnabled = QNAs[currPage]?.answer.length > 0
+        if (QNAs[currPage].answer.length === 0) {
+          nextEnabled = false
+        } else {
+          nextEnabled = true
+        }
       }
+    }
 
-      setFlow({
-        nextEnabled,
-        back: () => {
-          setEdited(false)
-          setCurrPage(currPage - 1)
-        },
-        next: () => {
-          forward()
-        },
-      })
-    }, [currPage, socket, settings.title])
-  )
+    setFlow(prev => ({
+      ...prev,
+      nextEnabled,
+      back: () => {
+        setEdited(false)
+        setCurrPage(curr => curr - 1)
+      },
+      next: () => {
+        forward()
+      },
+    }))
+  }, [currPage, socket, settings.title, settings.description, pageCount])
 
-  async function handleChange(i: number, option: string, type: Question["type"]) {
-    if (type === "short_answer" && option.length < MINIMUM_SHORT_ANSWER_LENGTH) {
+  /**
+   * @param questionIdx: the index of the question being answered
+   * @param option: the option selected or the text inputted by the user
+   * @param question: the actual question object
+   */
+  async function handleChange(questionIdx: number, option: string, question: Question) {
+    // Set nextEnabled
+    if (question.optional) {
+      setFlow(prev => ({ ...prev, nextEnabled: true }))
+    } else if (question.type === "short_answer" && option.length < MINIMUM_SHORT_ANSWER_LENGTH) {
       setFlow(prev => ({ ...prev, nextEnabled: false }))
     } else {
       setFlow(prev => ({ ...prev, nextEnabled: true }))
     }
+
+    // Save the answer
     setQNAs(prev => {
       const updated = [...prev]
-      if (type === "multiple_choice" || type === "short_answer") {
-        updated[i].answer = [option]
-      } else if (type === "multi_select") {
-        const currentAnswers = updated[i].answer
+      if (question.type === "multiple_choice" || question.type === "short_answer") {
+        updated[questionIdx].answer = [option]
+      } else if (question.type === "multi_select") {
+        const currentAnswers = updated[questionIdx].answer
         if (currentAnswers.includes(option)) {
-          updated[i].answer = currentAnswers.filter(ans => ans !== option)
+          updated[questionIdx].answer = currentAnswers.filter(ans => ans !== option)
         } else {
-          updated[i].answer = [...currentAnswers, option]
+          updated[questionIdx].answer = [...currentAnswers, option]
         }
       }
       return updated
     })
+
     setEdited(true)
   }
 
@@ -107,9 +141,7 @@ export default function CreatePost() {
   }
 
   function generateTitle() {
-    console.log("check")
     if (socket && socket.connected) {
-      console.log("here")
       setFlow(prev => ({ ...prev, nextEnabled: false }))
       setLoading(true)
       socket.emit("ai-title")
@@ -156,7 +188,7 @@ export default function CreatePost() {
                       return (
                         <TouchableWithoutFeedback
                           key={option}
-                          onPress={() => handleChange(i, option, type)}
+                          onPress={() => handleChange(i, option, question)}
                         >
                           <View
                             style={[
@@ -186,7 +218,7 @@ export default function CreatePost() {
                         <BouncyCheckbox
                           key={option}
                           isChecked={isSelected}
-                          onPress={() => handleChange(i, option, type)}
+                          onPress={() => handleChange(i, option, question)}
                           fillColor={colors.purple}
                           iconStyle={{
                             borderColor: colors.dark,
@@ -219,7 +251,7 @@ export default function CreatePost() {
                     placeholderTextColor={colors.gray}
                     defaultValue={qna.answer[0]}
                     value={qna.answer[0]}
-                    onChangeText={text => handleChange(i, text, type)}
+                    onChangeText={text => handleChange(i, text, question)}
                     placeholder="Write as little or as much details as you want"
                     editable={!loading}
                     multiline
@@ -265,9 +297,20 @@ export default function CreatePost() {
                 <Octicons name="sparkles-fill" size={24} color={colors.purple} />
               </Pressable>
             </View>
+            <CustomInput
+              title="Description"
+              headerStyles={{ fontSize: 16, fontWeight: "600" }}
+              value={settings.description}
+              multiline
+              onChangeText={text => setSettings({ ...settings, description: text })}
+              editable={!loading}
+              mandatory
+            />
 
             {/* Images */}
             <View>
+              <Text style={inputStyles.header}>Images (Optional)</Text>
+
               {settings.images.length != 0 ? (
                 <>
                   <ImageCarousel images={settings.images.map(img => img.localUri)} editable />
@@ -290,7 +333,7 @@ export default function CreatePost() {
                 >
                   <Feather name="upload" size={40} color={colors.purple} />
                   <Text style={{ marginTop: 10, color: colors.dark, fontSize: 16 }}>
-                    Upload Images (Optional)
+                    Upload Images
                   </Text>
                 </Pressable>
               )}
