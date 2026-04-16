@@ -35,6 +35,13 @@ EXPO_PUBLIC_WS_SERVER_URL="ws://localhost:8000"
 
 However, if you are running the app on a real device (either expo go or development build) then you will need to be on the same network as the servers, and know the IP address of the backend. You can use the public_ip_to_env script to change the .env file accordingly.
 
+## Development
+
+| Command                                 | What it does                                          | When to use it                                                                  |
+| --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------- |
+| npx expo run:android / npx expo run:ios | Compiles native code, installs the app, starts Metro. | First build, after adding a native library, or after modifying a config plugin. |
+| npx expo start                          | Starts only the Metro bundler.                        | Daily development when only changing JavaScript or TypeScript code.             |
+
 ## Libraries and Assets used
 
 New chat message notification sound:
