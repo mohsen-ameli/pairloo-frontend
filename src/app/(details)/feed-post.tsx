@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { View, Text, ScrollView, Pressable, Platform } from "react-native"
 import { Image } from "expo-image"
-import { AppleMaps, GoogleMaps } from "expo-maps"
 import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -10,24 +9,29 @@ import { GeneralPostType } from "@/src/types/post.type"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
-import { authFetchAtom, userJwtAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { ConversationType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { sinceNow } from "@/src/utils/format-date"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
+import { useExpoMaps } from "@/src/utils/useExpoMaps"
+import MapUnavailable from "@/src/components/MapUnavailable"
 
 export default function PostDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
-  const user = useAtomValue(userJwtAtom)
+  const user = useAtomValue(userSecureAtom)
   const queryClient = useQueryClient()
+  const { maps, isExpoGo, isLoading } = useExpoMaps()
   const {
     data: post,
     isError,
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+  const GoogleMapView = maps?.GoogleMaps.View
+  const AppleMapView = maps?.AppleMaps.View
 
   async function fetchPost() {
     const res = await authFetch(`/api/posts/${id}`)
@@ -112,8 +116,17 @@ export default function PostDetails() {
         {post.location && (
           <View style={styles.mapContainer}>
             <View style={styles.mapFlexContainer} pointerEvents="none">
-              {Platform.OS === "android" ? (
-                <GoogleMaps.View
+              {isLoading ? (
+                <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                  <LoadingIndicator loading={true} />
+                </View>
+              ) : isExpoGo || !maps ? (
+                <MapUnavailable
+                  title="Map preview unavailable in Expo Go"
+                  description="This screen still works, but native map rendering requires a development build."
+                />
+              ) : Platform.OS === "android" && GoogleMapView ? (
+                <GoogleMapView
                   style={styles.mapFlexContainer}
                   cameraPosition={{
                     coordinates: {
@@ -128,8 +141,8 @@ export default function PostDetails() {
                     zoomControlsEnabled: false,
                   }}
                 />
-              ) : (
-                <AppleMaps.View
+              ) : AppleMapView ? (
+                <AppleMapView
                   style={styles.mapFlexContainer}
                   cameraPosition={{
                     coordinates: {
@@ -143,6 +156,11 @@ export default function PostDetails() {
                   uiSettings={{
                     myLocationButtonEnabled: false,
                   }}
+                />
+              ) : (
+                <MapUnavailable
+                  title="Map preview unavailable"
+                  description="The native map view failed to load."
                 />
               )}
             </View>

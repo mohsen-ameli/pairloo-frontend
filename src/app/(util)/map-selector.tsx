@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Keyboard,
 } from "react-native"
-import { AppleMaps, GoogleMaps } from "expo-maps"
 import { BASE_URL } from "@/src/utils/constants"
 import { City } from "@/src/types/city.types"
 import { locSelectStyles } from "@/src/styles/location-selector.styles"
@@ -21,6 +20,9 @@ import { userAtom } from "@/src/store/auth-store"
 import { currPageAtom } from "@/src/store/pager-store"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { zoomToRadiusMeters } from "@/src/utils/map-utils"
+import { useExpoMaps } from "@/src/utils/useExpoMaps"
+import MapUnavailable from "@/src/components/MapUnavailable"
+import { AppleMaps, GoogleMaps } from "expo-maps"
 
 type CameraEvent = {
   coordinates: {
@@ -36,6 +38,7 @@ const DEFAULT_ZOOM = 12
 
 export default function MapSelector() {
   const user = useAtomValue(userAtom)!
+  const { maps, isExpoGo, isLoading } = useExpoMaps()
   const region = useRef({
     latitude: user.latitude,
     longitude: user.longitude,
@@ -49,6 +52,8 @@ export default function MapSelector() {
   const [settings, setSettings] = useAtom(settingsAtom)
   const currPage = useAtomValue(currPageAtom)
   const timeoutRef = useRef(0)
+  const GoogleMapView = maps?.GoogleMaps.View
+  const AppleMapView = maps?.AppleMaps.View
 
   async function handleCitySearch(text: string) {
     setCitySearchInput(text)
@@ -255,8 +260,19 @@ export default function MapSelector() {
         </View>
       </View>
 
-      {Platform.OS === "android" ? (
-        <GoogleMaps.View
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ color: colors.gray }}>Loading map...</Text>
+        </View>
+      ) : isExpoGo || !maps ? (
+        <View style={{ flex: 1, paddingTop: 80 }}>
+          <MapUnavailable
+            title="Maps are unavailable in Expo Go"
+            description="Search for a city above to set your approximate location. The map picker requires a development build."
+          />
+        </View>
+      ) : Platform.OS === "android" && GoogleMapView ? (
+        <GoogleMapView
           style={{ flex: 1 }}
           cameraPosition={{
             coordinates: {
@@ -273,9 +289,9 @@ export default function MapSelector() {
             setCities([])
           }}
         />
-      ) : (
+      ) : AppleMapView ? (
         <>
-          <AppleMaps.View
+          <AppleMapView
             style={{ flex: 1 }}
             cameraPosition={{
               coordinates: {
@@ -345,6 +361,11 @@ export default function MapSelector() {
             </TouchableOpacity>
           </View>
         </>
+      ) : (
+        <MapUnavailable
+          title="Map could not be loaded"
+          description="Try restarting the app or use a development build if the native map module is unavailable."
+        />
       )}
 
       <View

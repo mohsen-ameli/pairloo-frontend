@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { authFetchAtom, userAtom, userJwtAtom } from "./auth-store"
+import { authFetchAtom, userAtom, userSecureAtom } from "./auth-store"
 import { Alert } from "react-native"
 import { getAttachmentAtom } from "./general-store"
 
@@ -24,7 +24,7 @@ export const loadingAtom = atom(false)
 
 export const handleSaveEditAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
-  const userJwt = await get(userJwtAtom)
+  const userJwt = await get(userSecureAtom)
   const editFields = get(editFieldsAtom)
   if (!user || !userJwt) return
 

@@ -7,7 +7,7 @@ import {
   AuthErrorType,
   NewUserType,
   RegisteredUserType,
-  UserJwtType,
+  UserSecureType,
   UserType,
 } from "@/src/types/user.type"
 import { chatSocketAtom, createPostSocketAtom } from "./socket-store"
@@ -66,7 +66,7 @@ export const emailAttemptsAtom = atom(null as [string, number] | null) // [email
 export const phoneAttemptsAtom = atom(null as [string, number] | null) // [phone, intervalId] singular
 
 // user atom
-const userSecureStorage = createJSONStorage<UserJwtType>(() => ({
+const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
   getItem: async (key: string) => {
     return await SecureStore.getItemAsync(key)
   },
@@ -77,7 +77,7 @@ const userSecureStorage = createJSONStorage<UserJwtType>(() => ({
     await SecureStore.deleteItemAsync(key)
   },
 }))
-export const userJwtAtom = atomWithStorage("user-jwt", null, userSecureStorage)
+export const userSecureAtom = atomWithStorage("user-secure", null, userSecureStorage)
 
 const userAsyncStorage = createJSONStorage<UserType>(() => AsyncStorage)
 export const userAtom = atomWithStorage("user-profile", null, userAsyncStorage)
@@ -127,7 +127,7 @@ export const signUpAtom = atom(null, async (get, set) => {
       set(authErrorsAtom, data.errors)
       return false
     } else {
-      set(userJwtAtom, {
+      set(userSecureAtom, {
         _id: data._id,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
@@ -156,7 +156,7 @@ export const signUpAtom = atom(null, async (get, set) => {
 export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false) => {
   async function logout() {
     await set(userAtom, null)
-    await set(userJwtAtom, null)
+    await set(userSecureAtom, null)
     await set(newUserAtom, newUser)
     set(returningUserAtom, returningUser)
     set(authErrorsAtom, null)
@@ -331,7 +331,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
         set(currPageAtom, curr => curr + 1)
         set(newUserAtom, { ...newUser, emailVerified: true })
       } else {
-        set(userJwtAtom, {
+        set(userSecureAtom, {
           _id: data._id,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
@@ -550,7 +550,7 @@ export const authFetchAtom = atom(
       })
     }
 
-    const user = await get(userJwtAtom)
+    const user = await get(userSecureAtom)
 
     if (!user) {
       throw new Error("User is not authenticated")
@@ -563,7 +563,7 @@ export const authFetchAtom = atom(
         const accessToken = await refreshAccessToken(user.refreshToken)
 
         if (accessToken !== null) {
-          set(userJwtAtom, { ...user, accessToken })
+          set(userSecureAtom, { ...user, accessToken })
           const newRes = await fetchWithToken(accessToken)
           return newRes
         } else {

@@ -64,10 +64,11 @@ export type MyReviewsType = {
 }
 
 // JWT tokens stored in secure storage
-export type UserJwtType = null | {
+export type UserSecureType = null | {
   _id: string
   accessToken: string
   refreshToken: string
+  expoPushToken?: string
 }
 
 // Any errors related to authentication fields
