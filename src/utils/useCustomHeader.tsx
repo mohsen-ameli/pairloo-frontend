@@ -5,12 +5,18 @@ import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtomValue, useSetAtom } from "jotai"
-import { discardDraftAtom, getNewQuestionAtom, loadingAtom } from "@/src/store/create-post-store"
+import {
+  discardDraftAtom,
+  getNewQuestionAtom,
+  loadingAtom,
+  qnaAtom,
+} from "@/src/store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { currentConversationAtom } from "@/src/store/chat-store"
 import { userJwtAtom } from "@/src/store/auth-store"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
+import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -31,11 +37,8 @@ export default function useCustomHeader(
       params: { id },
     })
   }
-  const discardDraft = useSetAtom(discardDraftAtom)
-  const getNewQuestion = useSetAtom(getNewQuestionAtom)
   const currentConversation = useAtomValue(currentConversationAtom)
   const user = useAtomValue(userJwtAtom)
-  const loading = useAtomValue(loadingAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,
@@ -111,26 +114,7 @@ export default function useCustomHeader(
   if (createPost) {
     return {
       ...options,
-      headerTitle: () => (
-        <View style={styles.header}>
-          <View
-            style={[
-              styles.headerContent,
-              { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-            ]}
-          >
-            <Text style={styles.headerTitle}>Create Post</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
-                <Feather name="rotate-ccw" size={24} color={colors.dark} />
-              </Pressable>
-              <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
-                <Feather name="trash-2" size={24} color={colors.dark} />
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      ),
+      headerTitle: () => <CreatePostHeader />,
     }
   }
 
@@ -192,4 +176,36 @@ export default function useCustomHeader(
   }
 
   return options
+}
+
+function CreatePostHeader() {
+  const discardDraft = useSetAtom(discardDraftAtom)
+  const getNewQuestion = useSetAtom(getNewQuestionAtom)
+  const loading = useAtomValue(loadingAtom)
+  const currPage = useAtomValue(currPageAtom)
+  const pageCount = useAtomValue(pageCountAtom)
+  const qna = useAtomValue(qnaAtom)
+
+  return (
+    <View style={styles.header}>
+      <View
+        style={[
+          styles.headerContent,
+          { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+        ]}
+      >
+        <Text style={styles.headerTitle}>Create Post</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          {0 < currPage && currPage <= pageCount - 3 && qna[currPage].question.intention && (
+            <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
+              <Feather name="rotate-ccw" size={24} color={colors.dark} />
+            </Pressable>
+          )}
+          <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
+            <Feather name="trash-2" size={24} color={colors.dark} />
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  )
 }

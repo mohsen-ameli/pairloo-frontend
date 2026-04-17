@@ -14,7 +14,8 @@ import {
   returningUserAtom,
 } from "@/src/store/auth-store"
 import CustomPager from "@/src/components/CustomPager"
-import { blockedTimerAtom, checkIfBlockedAtom } from "@/src/store/device-store"
+import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
+import BlockedAttempts from "@/src/components/BlockedAttempts"
 
 const INITIAL_PAGE_COUNT = 2
 
@@ -28,7 +29,7 @@ export default function LoginPage() {
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
   const resetPager = useSetAtom(resetPagerAtom)
-  const blockedTimer = useAtomValue(blockedTimerAtom)
+  const isBlocked = useAtomValue(isBlockedAtom)
   const checkIfBlocked = useSetAtom(checkIfBlockedAtom)
 
   // Refs for manual focus
@@ -49,8 +50,17 @@ export default function LoginPage() {
   // Set next/back functions based on current page
   useEffect(() => {
     setPageCount(INITIAL_PAGE_COUNT)
+
+    let nextEnabled = false
+
+    if (currPage === 0) {
+      nextEnabled = returningUser.email.length > 0 && !isBlocked
+    } else if (currPage === 1) {
+      nextEnabled = returningUser.emailCode.length === 6 && !isBlocked
+    }
+
     setFlow({
-      ...flow,
+      nextEnabled,
       back: () => {
         if (currPage === 1) {
           setCurrPage(0)
@@ -64,7 +74,7 @@ export default function LoginPage() {
         }
       },
     })
-  }, [currPage])
+  }, [currPage, returningUser])
 
   // Manual focus logic
   useEffect(() => {
@@ -79,17 +89,14 @@ export default function LoginPage() {
         <Text style={styles.title}>Welcome Back!</Text>
         <CustomInput
           title="Email Address"
-          errors={
-            errors?.email ||
-            (blockedTimer ? `Too many attempts. Try again in ${blockedTimer} seconds.` : "")
-          }
-          editable={!blockedTimer}
+          errors={errors?.email || (isBlocked ? <BlockedAttempts /> : null)}
+          editable={!isBlocked}
           value={returningUser.email}
           autoFocus
           onChangeText={text => {
-            setReturningUser(prev => ({ ...prev, email: text }))
+            setReturningUser({ ...returningUser, email: text })
             setErrors({ ...errors, email: "" })
-            setFlow({ ...flow, nextEnabled: true })
+            setFlow({ ...flow, nextEnabled: text.trim().length > 0 && !isBlocked })
           }}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -106,13 +113,14 @@ export default function LoginPage() {
         <CustomInput
           title="Code"
           errors={errors?.emailVerify}
+          editable={!isBlocked}
           value={returningUser.emailCode}
           inputRef={emailCodeRef}
           placeholder="6-digit code"
           onChangeText={text => {
-            setReturningUser(prev => ({ ...prev, emailCode: text }))
+            setReturningUser({ ...returningUser, emailCode: text })
             setErrors({ ...errors, emailVerify: "" })
-            setFlow({ ...flow, nextEnabled: true })
+            setFlow({ ...flow, nextEnabled: text.trim().length === 6 && !isBlocked })
           }}
           keyboardType="numeric"
           maxLength={6}
@@ -122,13 +130,13 @@ export default function LoginPage() {
         </Text>
         <Pressable
           onPress={() => requestEmailVerification(false, true)}
-          disabled={!flow.nextEnabled || timeRemaining > 0}
+          disabled={timeRemaining > 0}
         >
           <Text
             style={[
               styles.resendText,
               {
-                color: !flow.nextEnabled || timeRemaining > 0 ? colors.gray : colors.purple,
+                color: timeRemaining > 0 ? colors.gray : colors.purple,
               },
             ]}
           >

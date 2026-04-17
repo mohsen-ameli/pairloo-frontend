@@ -85,7 +85,7 @@ export default function Index() {
                     </Text>
                   </View>
                 </View>
-                <Text style={styles.postContent}>{post.initialPostText}</Text>
+                <Text style={styles.postContent}>{post.title}</Text>
               </Pressable>
             ))}
           </View>

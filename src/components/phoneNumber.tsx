@@ -1,11 +1,13 @@
 import { colors } from "@/src/utils/colors"
 import { newUserAtom, authErrorsAtom } from "@/src/store/auth-store"
 import Feather from "@expo/vector-icons/Feather"
-import { useAtom } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import React, { useEffect, useState } from "react"
 import { Appearance, Platform, Pressable, TextInput, View } from "react-native"
 import CountryPicker, { DARK_THEME } from "react-native-country-picker-modal"
 import { Country, CountryCode } from "react-native-country-picker-modal/lib/types"
+import { flowAtom } from "@/src/store/pager-store"
+import { isBlockedAtom } from "@/src/store/device-store"
 
 const colorScheme = Appearance.getColorScheme()
 
@@ -14,6 +16,8 @@ export default function PhoneNumber() {
   const [visible, setVisible] = useState<boolean>(false)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [errors, setErrors] = useAtom(authErrorsAtom)
+  const [flow, setFlow] = useAtom(flowAtom)
+  const isBlocked = useAtomValue(isBlockedAtom)
 
   // Get country code from storage
   useEffect(() => {
@@ -52,32 +56,26 @@ export default function PhoneNumber() {
       >
         <CountryPicker
           theme={colorScheme === "dark" ? DARK_THEME : {}}
-          {...{
-            allowFontScaling: true,
-            countryCode,
-            withFilter: true,
-            excludeCountries: [],
-            withFlag: true,
-            withCurrencyButton: false,
-            withCallingCodeButton: true,
-            withCountryNameButton: false,
-            withAlphaFilter: false,
-            withCallingCode: true,
-            withCurrency: false,
-            withEmoji: true,
-            withModal: true,
-            withFlagButton: true,
-            onSelect,
-            disableNativeModal: false,
-            preferredCountries: ["CA", "US", "AU", "GB"],
-            modalProps: { visible },
-            onClose: () => setVisible(false),
-            onOpen: () => setVisible(true),
-            closeButtonImageStyle: {
-              width: Platform.OS === "ios" ? 40 : 20,
-              height: Platform.OS === "ios" ? 40 : 20,
-            },
-          }}
+          countryCode={countryCode}
+          withFilter={true}
+          excludeCountries={[]}
+          withFlag={true}
+          withCurrencyButton={false}
+          withCallingCodeButton={true}
+          withCountryNameButton={false}
+          withAlphaFilter={false}
+          withCallingCode={true}
+          withCurrency={false}
+          withEmoji={true}
+          withModal={true}
+          withFlagButton={true}
+          onSelect={onSelect}
+          disableNativeModal={false}
+          preferredCountries={["CA", "US", "AU", "GB"]}
+          modalProps={{ visible: visible && !isBlocked }}
+          onClose={() => setVisible(false)}
+          onOpen={() => setVisible(true)}
+          visible={visible && !isBlocked}
         />
       </View>
       <TextInput
@@ -91,6 +89,7 @@ export default function PhoneNumber() {
           fontSize: 18,
         }}
         value={newUser.phoneNumber}
+        editable={!isBlocked}
         autoFocus
         placeholder="4160001234"
         placeholderTextColor={colors.muted}
@@ -105,6 +104,7 @@ export default function PhoneNumber() {
             phoneVerified: false,
           })
           setErrors({ ...errors, phoneNumber: "" })
+          setFlow({ ...flow, nextEnabled: text.trim().length > 0 })
         }}
       />
       {newUser.phoneNumber && (
@@ -118,6 +118,8 @@ export default function PhoneNumber() {
           }}
           onPress={() => {
             setNewUser({ ...newUser, phoneNumber: "" })
+            setErrors({ ...errors, phoneNumber: "" })
+            setFlow({ ...flow, nextEnabled: false })
           }}
         >
           <Feather name="x" size={24} color={colors.darkGray} />
