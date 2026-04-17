@@ -1,5 +1,5 @@
 import { useRouter, useLocalSearchParams, Stack } from "expo-router"
-import { View, Text, ScrollView, Pressable, Animated } from "react-native"
+import { View, Text, ScrollView, Pressable, Animated, Platform } from "react-native"
 import { useState, useEffect, useRef } from "react"
 import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/post-detail.styles"
@@ -16,6 +16,8 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { colors } from "@/src/utils/colors"
 import { loadingAtom } from "@/src/store/post-detail-store"
 import { authFetchAtom } from "@/src/store/auth-store"
+import { AppleMaps, GoogleMaps } from "expo-maps"
+import { radiusMetersToZoom } from "@/src/utils/map-utils"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -84,7 +86,52 @@ export default function PostDetails() {
           <View style={styles.postContainer}>
             {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
             <Text style={styles.title}>{post.title}</Text>
+            <Text style={styles.description}>{post.description}</Text>
           </View>
+
+          {/* Location Map */}
+          {post.location && (
+            <View style={styles.mapContainer}>
+              <View style={styles.mapFlexContainer} pointerEvents="none">
+                {Platform.OS === "android" ? (
+                  <GoogleMaps.View
+                    style={styles.mapFlexContainer}
+                    cameraPosition={{
+                      coordinates: {
+                        latitude: post.location.latitude,
+                        longitude: post.location.longitude,
+                      },
+                      zoom: post.distance
+                        ? radiusMetersToZoom(post.distance, post.location.latitude)
+                        : 12,
+                    }}
+                    uiSettings={{
+                      zoomControlsEnabled: false,
+                    }}
+                  />
+                ) : (
+                  <AppleMaps.View
+                    style={styles.mapFlexContainer}
+                    cameraPosition={{
+                      coordinates: {
+                        latitude: post.location.latitude,
+                        longitude: post.location.longitude,
+                      },
+                      zoom: post.distance
+                        ? radiusMetersToZoom(post.distance, post.location.latitude)
+                        : 12,
+                    }}
+                    uiSettings={{
+                      myLocationButtonEnabled: false,
+                    }}
+                  />
+                )}
+              </View>
+              <View pointerEvents="none" style={styles.mapOverlayContainer}>
+                <View style={styles.radiusCircle} />
+              </View>
+            </View>
+          )}
 
           {/* QNA Information */}
           {post.qna && post.qna.length > 0 && (

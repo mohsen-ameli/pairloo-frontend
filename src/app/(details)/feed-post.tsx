@@ -14,7 +14,6 @@ import { authFetchAtom, userJwtAtom } from "@/src/store/auth-store"
 import { ConversationType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { sinceNow } from "@/src/utils/format-date"
-import { useRef } from "react"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
 
 export default function PostDetails() {
@@ -24,8 +23,6 @@ export default function PostDetails() {
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userJwtAtom)
   const queryClient = useQueryClient()
-  const androidMapRef = useRef(null)
-  const appleMapRef = useRef(null)
   const {
     data: post,
     isError,
@@ -104,7 +101,8 @@ export default function PostDetails() {
           </View>
         </Pressable>
 
-        <Text style={styles.title}>{post.initialPostText}</Text>
+        <Text style={styles.title}>{post.title}</Text>
+        <Text style={styles.description}>{post.description}</Text>
 
         {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}
 
@@ -116,7 +114,6 @@ export default function PostDetails() {
             <View style={styles.mapFlexContainer} pointerEvents="none">
               {Platform.OS === "android" ? (
                 <GoogleMaps.View
-                  ref={androidMapRef}
                   style={styles.mapFlexContainer}
                   cameraPosition={{
                     coordinates: {
@@ -133,7 +130,6 @@ export default function PostDetails() {
                 />
               ) : (
                 <AppleMaps.View
-                  ref={appleMapRef}
                   style={styles.mapFlexContainer}
                   cameraPosition={{
                     coordinates: {

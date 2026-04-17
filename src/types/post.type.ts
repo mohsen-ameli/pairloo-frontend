@@ -15,7 +15,7 @@ export type GeneralPostType = {
   lastName: string
   picture?: string | null
   title: string
-  initialPostText: string
+  description: string
   summary: string
   images?: string[] | null | undefined
   createdAt: string
@@ -30,11 +30,16 @@ export interface MyPostType {
   _id: string
   images: string[]
   title: string
+  description: string
   publicPost: boolean
   numMatches: number
-  initialPostText: string
   isDraft: boolean
   qna?: QnaItemType[]
+  location?: {
+    latitude: number
+    longitude: number
+  }
+  distance?: number
   createdAt: Date
   closestPosts?: Array<{
     postId: string
@@ -43,7 +48,6 @@ export interface MyPostType {
     username: string
     firstName: string
     lastName: string
-    initialPostText: string
     title: string
     images?: string[] | null
     score: number
