@@ -25,7 +25,7 @@ Amazing docs on how to set things up: https://docs.expo.dev/get-started/set-up-y
 
 ## Note
 
-If you are running an emulator on your system, then the backend can be accessed via by going to http://localhost:8000.
+If you are running an emulator on your system, then the backend can be accessed by going to http://localhost:8000.
 Make sure the following are set in this repo (frontend) .env file:
 
 ```
@@ -33,7 +33,7 @@ EXPO_PUBLIC_SERVER_URL="http://localhost:8000"
 EXPO_PUBLIC_WS_SERVER_URL="ws://localhost:8000"
 ```
 
-However, if you are running the app on a real device (either expo go or development build) then you will need to be on the same network as the servers, and know the IP address of the backend. You can use the public_ip_to_env script to change the .env file accordingly.
+However, if you are running the app on a real device (either expo go or development build) then you will need to be on the same network as the servers, and know the IP address of the backend. You can use the `copy_public_ip_to_env.sh` script to change the .env file accordingly.
 
 ## Libraries and Assets used
 

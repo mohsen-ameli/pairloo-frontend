@@ -91,7 +91,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("error", (err: any) => {
     console.error("WebSocket error event:", err)
     set(loadingAtom, false)
-    Alert.alert("Connection Error", err)
+    Alert.alert("Connection Error", "An error occurred with the connection. Please try again.")
   })
 
   socket.on("connect_error", async () => {

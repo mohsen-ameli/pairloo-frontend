@@ -16,7 +16,7 @@ import { useRouter } from "expo-router"
 import { currentConversationAtom } from "@/src/store/chat-store"
 import { userJwtAtom } from "@/src/store/auth-store"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
-import { currPageAtom, pageCountAtom } from "../store/pager-store"
+import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -114,7 +114,7 @@ export default function useCustomHeader(
   if (createPost) {
     return {
       ...options,
-      headerTitle: CreatePostHeader,
+      headerTitle: () => <CreatePostHeader />,
     }
   }
 

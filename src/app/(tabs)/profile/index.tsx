@@ -193,7 +193,7 @@ export default function ProfileScreen() {
                         <View style={profileStyles.postCardContent}>
                           <View style={profileStyles.postCardHeader}>
                             <Text style={profileStyles.postTitle} numberOfLines={2}>
-                              {post.title}
+                              {post.title?.trim() || "Untitled draft"}
                             </Text>
                             <TouchableHighlight>
                               <MyPostMenu id={post._id} />
