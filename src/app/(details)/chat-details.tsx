@@ -252,14 +252,14 @@ function MessageItem({
     .failOffsetY([-5, 5])
     .activeOffsetX([-15, 15])
     .onUpdate((event: any) => {
-      if (event.translationX > 0) {
-        translateX.value = Math.min(event.translationX, maxSwipeDistance)
+      if (event.translationX < 0) {
+        translateX.value = Math.max(event.translationX, -maxSwipeDistance)
       }
     })
     .onEnd((event: any) => {
       const threshold = maxSwipeDistance * 0.5
 
-      if (event.translationX > threshold) {
+      if (event.translationX < -threshold) {
         translateX.value = withSpring(0)
         scheduleOnRN(setReplyingTo, item)
         scheduleOnRN(focusOnInput)
@@ -313,7 +313,7 @@ function MessageItem({
         style={[
           {
             position: "absolute",
-            left: 0,
+            right: 0,
             top: 0,
             bottom: 0,
             width: 60,
