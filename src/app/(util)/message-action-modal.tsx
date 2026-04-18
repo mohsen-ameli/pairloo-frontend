@@ -6,13 +6,14 @@ import Feather from "@expo/vector-icons/Feather"
 import CustomButton from "@/src/components/CustomButton"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { currentLongPressedMessageAtom, replyingToAtom } from "@/src/store/chat-store"
 
 export default function MessageActionModal() {
   const router = useRouter()
-  const currentLongPressedMessage = useAtomValue(currentLongPressedMessageAtom)
-  const setCurrentLongPressedMessage = useSetAtom(currentLongPressedMessageAtom)
+  const [currentLongPressedMessage, setCurrentLongPressedMessage] = useAtom(
+    currentLongPressedMessageAtom
+  )
   const setReplyingTo = useSetAtom(replyingToAtom)
   const { isOwnMessage } = useLocalSearchParams<{
     isOwnMessage: string
