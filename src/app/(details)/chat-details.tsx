@@ -8,6 +8,8 @@ import {
   chatAttachmentsAtom,
   conversationsAtom,
   currentConversationAtom,
+  currentLongPressedMessageAtom,
+  highlightedMessageIdAtom,
   imgIndexAtom,
   loadingAtom,
   messagesAtom,
@@ -58,7 +60,7 @@ export default function ChatDetails() {
     email: string
   }>(undefined)
   const [canReview, setCanReview] = useState(false)
-  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
+  const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
@@ -122,11 +124,10 @@ export default function ChatDetails() {
             <MessageItem
               item={item}
               inputRef={inputRef}
-              highlightedMessageId={highlightedMessageId}
-              setHighlightedMessageId={setHighlightedMessageId}
+              isOwnMessage={userJwt?._id === item.sender._id}
             />
           )}
-          ListFooterComponent={<View style={{ height: 16 }} />}
+          ListFooterComponent={<View style={chatStyles.flatListFooter} />}
         />
       </View>
 
@@ -134,41 +135,32 @@ export default function ChatDetails() {
 
       {/* Reply Preview */}
       {replyingTo && (
-        <View
-          style={{
-            backgroundColor: colors.light,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            borderLeftWidth: 3,
-            borderLeftColor: colors.purple,
-          }}
-        >
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
-          >
-            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View style={chatStyles.replyPreviewContainer}>
+          <View style={chatStyles.replyPreviewHeader}>
+            <View style={chatStyles.replyPreviewContent}>
               {replyingTo.attachments && replyingTo.attachments.length > 0 && (
                 <Image
                   source={{ uri: replyingTo.attachments[0] }}
-                  style={{ width: 40, height: 40, borderRadius: 4 }}
+                  style={chatStyles.replyPreviewImage}
                 />
               )}
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 12, color: colors.gray, marginBottom: 4 }}>
+              <View style={chatStyles.replyPreviewTextContainer}>
+                <Text style={chatStyles.replyPreviewLabel}>
                   Replying to {replyingTo.sender.username}
                 </Text>
                 {replyingTo.content ? (
-                  <Text style={{ fontSize: 14, color: colors.dark }} numberOfLines={2}>
+                  <Text style={chatStyles.replyPreviewText} numberOfLines={2}>
                     {replyingTo.content}
                   </Text>
                 ) : replyingTo.attachments && replyingTo.attachments.length > 0 ? (
-                  <Text style={{ fontSize: 14, color: colors.gray, fontStyle: "italic" }}>
-                    Image
-                  </Text>
+                  <Text style={chatStyles.replyPreviewImageText}>Image</Text>
                 ) : null}
               </View>
             </View>
-            <Pressable onPress={() => setReplyingTo(null)} style={{ padding: 8 }}>
+            <Pressable
+              onPress={() => setReplyingTo(null)}
+              style={chatStyles.replyPreviewCloseButton}
+            >
               <Feather name="x" size={18} color={colors.gray} />
             </Pressable>
           </View>
@@ -226,18 +218,18 @@ export default function ChatDetails() {
 function MessageItem({
   item,
   inputRef,
-  highlightedMessageId,
-  setHighlightedMessageId,
+  isOwnMessage,
 }: {
   item: MessageType
   inputRef: React.RefObject<TextInput | null>
-  highlightedMessageId: string | null
-  setHighlightedMessageId: (id: string | null) => void
+  isOwnMessage: boolean
 }) {
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
   const setReplyingTo = useSetAtom(replyingToAtom)
+  const setCurrentLongPressedMessage = useSetAtom(currentLongPressedMessageAtom)
   const replyingToAtomValue = useAtomValue(replyingToAtom)
+  const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
   const router = useRouter()
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
@@ -270,9 +262,10 @@ function MessageItem({
 
   const handleLongPress = () => {
     setHighlightedMessageId(item._id)
+    setCurrentLongPressedMessage(item)
     router.push({
       pathname: "/message-action-modal",
-      params: { messageId: item._id, senderId: item.sender._id },
+      params: { isOwnMessage: String(isOwnMessage) },
     })
   }
 
@@ -309,33 +302,13 @@ function MessageItem({
 
   return (
     <View style={chatStyles.messageItem}>
-      <Animated.View
-        style={[
-          {
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 60,
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1,
-          },
-          replyButtonStyle,
-        ]}
-      >
+      <Animated.View style={[chatStyles.replyButtonContainer, replyButtonStyle]}>
         <Pressable
           onPress={() => {
             setReplyingTo(item)
             translateX.value = withSpring(0)
           }}
-          style={{
-            padding: 8,
-            backgroundColor: colors.purple,
-            borderRadius: 8,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          style={chatStyles.replyButton}
         >
           <MaterialIcons name="reply" size={20} color={colors.light} />
         </Pressable>
@@ -346,18 +319,11 @@ function MessageItem({
         <Animated.View
           style={[
             {
-              flexDirection: "row",
-              flex: 1,
-              zIndex: 2,
+              ...chatStyles.messageContentAnimated,
               backgroundColor:
                 highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
                   ? colors.chatHighlight
                   : "transparent",
-              borderRadius: 8,
-              paddingHorizontal: 4,
-              paddingVertical: 4,
-              marginHorizontal: -4,
-              marginVertical: -4,
             },
             contentAnimatedStyle,
           ]}
@@ -366,55 +332,29 @@ function MessageItem({
             source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
             style={chatStyles.messageImage}
           />
-          <View style={{ flex: 1 }}>
-            <View
-              style={{
-                borderRadius: 4,
-                paddingHorizontal: 8,
-              }}
-            >
+          <View style={chatStyles.messageFlexContainer}>
+            <View style={chatStyles.messageHeaderContainer}>
               <View style={chatStyles.messageHeader}>
                 <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
                 <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
               </View>
             </View>
             {item.replyTo && (
-              <View
-                style={{
-                  width: "95%",
-                  marginTop: 4,
-                  marginBottom: 6,
-                  marginLeft: 10,
-                  paddingRight: 15,
-                  paddingLeft: 12,
-                  paddingVertical: 6,
-                  backgroundColor: colors.lightGray,
-                  borderLeftWidth: 2,
-                  borderLeftColor: colors.purple,
-                  borderRadius: 4,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 11, color: colors.gray, marginBottom: 2 }}>
-                    {item.replyTo.sender.username}
-                  </Text>
+              <View style={chatStyles.messageReplyContainer}>
+                <View style={chatStyles.messageFlexContainer}>
+                  <Text style={chatStyles.messageReplyText}>{item.replyTo.sender.username}</Text>
                   {item.replyTo.content ? (
-                    <Text style={{ fontSize: 13, color: colors.dark }} numberOfLines={2}>
+                    <Text style={chatStyles.messageReplyContent} numberOfLines={2}>
                       {item.replyTo.content}
                     </Text>
                   ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
-                    <Text style={{ fontSize: 13, color: colors.gray, fontStyle: "italic" }}>
-                      Image
-                    </Text>
+                    <Text style={chatStyles.messageReplyImage}>Image</Text>
                   ) : null}
                 </View>
                 {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
                   <Image
                     source={{ uri: item.replyTo.attachments[0] }}
-                    style={{ width: 35, height: 35, borderRadius: 4 }}
+                    style={chatStyles.messageReplyThumbnail}
                   />
                 )}
               </View>
@@ -437,7 +377,7 @@ function MessageItem({
                   const l = item.attachments?.length
                   const width = l === 1 ? 200 : l === 2 ? 150 : 100
                   return (
-                    <View key={idx} style={{ marginTop: 8 }}>
+                    <View key={idx} style={chatStyles.attachmentItemContainer}>
                       <Pressable
                         onPress={() => {
                           setImgIdx(idx)
@@ -485,14 +425,14 @@ function AttachmentPreview() {
   if (attachments.length === 0) return null
 
   return (
-    <View style={{ backgroundColor: colors.light, padding: 8 }}>
+    <View style={chatStyles.attachmentPreviewContainer}>
       <FlatList
         data={attachments}
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={item => item.uri}
         renderItem={({ item }) => (
-          <View style={{ marginRight: 10 }}>
+          <View style={chatStyles.attachmentPreviewItem}>
             <Image
               source={{ uri: item.uri }}
               style={chatStyles.attachmentPreviewImage}

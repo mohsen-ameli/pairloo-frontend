@@ -7,26 +7,27 @@ import CustomButton from "@/src/components/CustomButton"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useAtomValue, useSetAtom } from "jotai"
-import { userJwtAtom } from "@/src/store/auth-store"
-import { messagesAtom, replyingToAtom } from "@/src/store/chat-store"
+import { currentLongPressedMessageAtom, replyingToAtom } from "@/src/store/chat-store"
 
 export default function MessageActionModal() {
   const router = useRouter()
-  const userJwt = useAtomValue(userJwtAtom)
-  const messages = useAtomValue(messagesAtom)
+  const currentLongPressedMessage = useAtomValue(currentLongPressedMessageAtom)
+  const setCurrentLongPressedMessage = useSetAtom(currentLongPressedMessageAtom)
   const setReplyingTo = useSetAtom(replyingToAtom)
-  const { messageId, senderId } = useLocalSearchParams<{ messageId: string; senderId: string }>()
+  const { isOwnMessage } = useLocalSearchParams<{
+    isOwnMessage: string
+  }>()
 
-  const isOwnMessage = userJwt?._id === senderId
+  const isOwnMsg = isOwnMessage === "true"
 
   const handleModalClose = () => {
+    setCurrentLongPressedMessage(null)
     router.back()
   }
 
   const handleReply = () => {
-    const messageToReply = messages.find(msg => msg._id === messageId)
-    if (messageToReply) {
-      setReplyingTo(messageToReply)
+    if (currentLongPressedMessage) {
+      setReplyingTo(currentLongPressedMessage)
     }
     handleModalClose()
   }
@@ -67,69 +68,34 @@ export default function MessageActionModal() {
           </Text>
         </CustomButton>
 
-        <CustomButton
-          style={buttonStyle}
-          onPress={() => {
-            // Placeholder: Copy message functionality
-            console.log("Copy message:", messageId)
-            handleModalClose()
-          }}
-        >
+        <CustomButton style={buttonStyle} onPress={handleModalClose}>
           <Text style={{ color: colors.dark, fontSize: 16 }}>
             <Feather name="copy" size={18} /> Copy Message
           </Text>
         </CustomButton>
 
-        <CustomButton
-          style={buttonStyle}
-          onPress={() => {
-            // Placeholder: Share message functionality
-            console.log("Share message:", messageId)
-            handleModalClose()
-          }}
-        >
+        <CustomButton style={buttonStyle} onPress={handleModalClose}>
           <Text style={{ color: colors.dark, fontSize: 16 }}>
             <Feather name="share" size={18} /> Share Message
           </Text>
         </CustomButton>
 
-        {isOwnMessage ? (
+        {isOwnMsg ? (
           <>
-            <CustomButton
-              style={buttonStyle}
-              onPress={() => {
-                // Placeholder: Edit message functionality
-                console.log("Edit message:", messageId)
-                handleModalClose()
-              }}
-            >
+            <CustomButton style={buttonStyle} onPress={handleModalClose}>
               <Text style={{ color: colors.dark, fontSize: 16 }}>
                 <Feather name="edit-2" size={18} /> Edit Message
               </Text>
             </CustomButton>
 
-            <CustomButton
-              style={buttonStyle}
-              onPress={() => {
-                // Placeholder: Delete message functionality
-                console.log("Delete message:", messageId)
-                handleModalClose()
-              }}
-            >
+            <CustomButton style={buttonStyle} onPress={handleModalClose}>
               <Text style={{ color: colors.dark, fontSize: 16 }}>
                 <Feather name="trash-2" size={18} /> Delete Message
               </Text>
             </CustomButton>
           </>
         ) : (
-          <CustomButton
-            style={buttonStyle}
-            onPress={() => {
-              // Placeholder: Report message functionality
-              console.log("Report message:", messageId)
-              handleModalClose()
-            }}
-          >
+          <CustomButton style={buttonStyle} onPress={handleModalClose}>
             <Text style={{ color: colors.dark, fontSize: 16 }}>
               <Feather name="flag" size={18} /> Report Message
             </Text>

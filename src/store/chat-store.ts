@@ -33,6 +33,10 @@ export const bigImageViewAtom = atom<{ uri: string; id: string }[]>([])
 
 export const replyingToAtom = atom<MessageType | null>(null)
 
+export const highlightedMessageIdAtom = atom<string | null>(null)
+
+export const currentLongPressedMessageAtom = atom<MessageType | null>(null)
+
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
   const userJwt = await get(userJwtAtom)
