@@ -1,5 +1,5 @@
-import { View, Text, Pressable, TextInput, FlatList } from "react-native"
-import { memo, useEffect, useRef, useState } from "react"
+import { View, Text, Pressable, TextInput, FlatList, Dimensions } from "react-native"
+import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
@@ -8,9 +8,12 @@ import {
   chatAttachmentsAtom,
   conversationsAtom,
   currentConversationAtom,
+  currentLongPressedMessageAtom,
+  highlightedMessageIdAtom,
   imgIndexAtom,
   loadingAtom,
   messagesAtom,
+  replyingToAtom,
   sendMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
@@ -18,7 +21,8 @@ import { MessageType } from "@/src/types/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
-import Animated, { useAnimatedStyle } from "react-native-reanimated"
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
+import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import { userAtom, userJwtAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
@@ -27,6 +31,7 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
+import { scheduleOnRN } from "react-native-worklets"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -41,7 +46,9 @@ export default function ChatDetails() {
   const userJwt = useAtomValue(userJwtAtom)
   const conversations = useAtomValue(conversationsAtom)
   const setCurrentConversation = useSetAtom(currentConversationAtom)
+  const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
+  const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader("", true, true)
   const loading = useAtomValue(loadingAtom)
@@ -53,6 +60,7 @@ export default function ChatDetails() {
     email: string
   }>(undefined)
   const [canReview, setCanReview] = useState(false)
+  const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
@@ -75,6 +83,7 @@ export default function ChatDetails() {
         break
       }
     }
+    chatRef.current && chatRef.current.scrollToEnd({ animated: false })
   }, [messages])
 
   useEffect(() => {
@@ -88,8 +97,8 @@ export default function ChatDetails() {
     const msg = message.trim()
     if (!msg && attachments.length === 0) return
     setMessage("")
-    await sendMessage(id, msg)
-    chatRef.current && chatRef.current.scrollToEnd({ animated: false })
+    await sendMessage(id, msg, replyingTo?._id)
+    chatRef.current && chatRef.current.scrollToEnd({ animated: true })
   }
 
   // Animate fake view height
@@ -110,14 +119,53 @@ export default function ChatDetails() {
           data={messages}
           ref={chatRef}
           keyboardDismissMode="on-drag"
-          onLayout={() => chatRef.current && chatRef.current.scrollToEnd({ animated: false })}
           keyExtractor={item => item._id}
-          renderItem={({ item }) => <MemoizedMessageItem item={item} />}
-          ListFooterComponent={<View style={{ height: 16 }} />}
+          renderItem={({ item }) => (
+            <MessageItem
+              item={item}
+              inputRef={inputRef}
+              isOwnMessage={userJwt?._id === item.sender._id}
+            />
+          )}
+          ListFooterComponent={<View style={chatStyles.flatListFooter} />}
         />
       </View>
 
       <AttachmentPreview />
+
+      {/* Reply Preview */}
+      {replyingTo && (
+        <View style={chatStyles.replyPreviewContainer}>
+          <View style={chatStyles.replyPreviewHeader}>
+            <View style={chatStyles.replyPreviewContent}>
+              {replyingTo.attachments && replyingTo.attachments.length > 0 && (
+                <Image
+                  source={{ uri: replyingTo.attachments[0] }}
+                  style={chatStyles.replyPreviewImage}
+                />
+              )}
+              <View style={chatStyles.replyPreviewTextContainer}>
+                <Text style={chatStyles.replyPreviewLabel}>
+                  Replying to {replyingTo.sender.username}
+                </Text>
+                {replyingTo.content ? (
+                  <Text style={chatStyles.replyPreviewText} numberOfLines={2}>
+                    {replyingTo.content}
+                  </Text>
+                ) : replyingTo.attachments && replyingTo.attachments.length > 0 ? (
+                  <Text style={chatStyles.replyPreviewImageText}>Image</Text>
+                ) : null}
+              </View>
+            </View>
+            <Pressable
+              onPress={() => setReplyingTo(null)}
+              style={chatStyles.replyPreviewCloseButton}
+            >
+              <Feather name="x" size={18} color={colors.gray} />
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
@@ -148,6 +196,7 @@ export default function ChatDetails() {
           placeholderTextColor={colors.muted}
           value={message}
           onChangeText={text => setMessage(text)}
+          ref={inputRef}
         />
         <Pressable
           style={[
@@ -166,74 +215,203 @@ export default function ChatDetails() {
   )
 }
 
-function MessageItem({ item }: { item: MessageType }) {
+function MessageItem({
+  item,
+  inputRef,
+  isOwnMessage,
+}: {
+  item: MessageType
+  inputRef: React.RefObject<TextInput | null>
+  isOwnMessage: boolean
+}) {
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
+  const setReplyingTo = useSetAtom(replyingToAtom)
+  const setCurrentLongPressedMessage = useSetAtom(currentLongPressedMessageAtom)
+  const replyingToAtomValue = useAtomValue(replyingToAtom)
+  const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
   const router = useRouter()
+  const translateX = useSharedValue(0)
+  const maxSwipeDistance = Dimensions.get("window").width * 0.25
+
+  function focusOnInput() {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }
+
+  const panGesture = Gesture.Pan()
+    .failOffsetY([-5, 5])
+    .activeOffsetX([-15, 15])
+    .onUpdate((event: any) => {
+      if (event.translationX < 0) {
+        translateX.value = Math.max(event.translationX, -maxSwipeDistance)
+      }
+    })
+    .onEnd((event: any) => {
+      const threshold = maxSwipeDistance * 0.5
+
+      if (event.translationX < -threshold) {
+        translateX.value = withSpring(0)
+        scheduleOnRN(setReplyingTo, item)
+        scheduleOnRN(focusOnInput)
+      } else {
+        translateX.value = withSpring(0)
+      }
+    })
+
+  const handleLongPress = () => {
+    setHighlightedMessageId(item._id)
+    setCurrentLongPressedMessage(item)
+    router.push({
+      pathname: "/message-action-modal",
+      params: { isOwnMessage: String(isOwnMessage) },
+    })
+  }
+
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(500)
+    .onStart(() => {
+      scheduleOnRN(handleLongPress)
+    })
+
+  // Have a delay in order to allow rerendering highlight
+  useEffect(() => {
+    if (!highlightedMessageId) return
+    const timer = setTimeout(() => {
+      setHighlightedMessageId(null)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [highlightedMessageId])
+
+  const contentAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+    }
+  })
+
+  const replyButtonStyle = useAnimatedStyle(() => {
+    const opacity = Math.min(Math.abs(translateX.value) / 80, 1)
+    const scale = 0.5 + opacity * 0.5
+
+    return {
+      opacity,
+      transform: [{ scale }],
+    }
+  })
 
   return (
     <View style={chatStyles.messageItem}>
-      <Image
-        source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
-        style={chatStyles.messageImage}
-      />
-      <View>
-        <View style={chatStyles.messageHeader}>
-          <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-          <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
-        </View>
-        {item.content && (
-          <Text
-            style={[
-              chatStyles.messageContent,
-              {
-                color: item.optimistic ? colors.gray : colors.dark,
-              },
-            ]}
-          >
-            {item.content}
-          </Text>
-        )}
-        {item.attachments && (
-          <View style={chatStyles.messageAttachmentContainer}>
-            {item.attachments.map((att, idx) => {
-              const l = item.attachments?.length
-              const width = l === 1 ? 200 : l === 2 ? 150 : 100
-              return (
-                <View key={idx} style={{ marginTop: 8 }}>
-                  <Pressable
-                    onPress={() => {
-                      setImgIdx(idx)
-                      setImages(
-                        item.attachments!.map((att, id) => ({
-                          uri: att,
-                          id: id.toString(),
-                        }))
-                      )
-                      router.push("/image-gallery")
-                    }}
-                  >
-                    <Image
-                      source={{ uri: att }}
-                      style={{
-                        width: width,
-                        height: width,
-                        maxWidth: 300,
-                        maxHeight: 300,
-                        borderRadius: 10,
-                      }}
-                    />
-                  </Pressable>
+      <Animated.View style={[chatStyles.replyButtonContainer, replyButtonStyle]}>
+        <Pressable
+          onPress={() => {
+            setReplyingTo(item)
+            translateX.value = withSpring(0)
+          }}
+          style={chatStyles.replyButton}
+        >
+          <MaterialIcons name="reply" size={20} color={colors.light} />
+        </Pressable>
+      </Animated.View>
+
+      {/* Message content that swipes */}
+      <GestureDetector gesture={Gesture.Simultaneous(panGesture, longPressGesture)}>
+        <Animated.View
+          style={[
+            {
+              ...chatStyles.messageContentAnimated,
+              backgroundColor:
+                highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
+                  ? colors.chatHighlight
+                  : "transparent",
+            },
+            contentAnimatedStyle,
+          ]}
+        >
+          <Image
+            source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
+            style={chatStyles.messageImage}
+          />
+          <View style={chatStyles.messageFlexContainer}>
+            <View style={chatStyles.messageHeaderContainer}>
+              <View style={chatStyles.messageHeader}>
+                <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
+                <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
+              </View>
+            </View>
+            {item.replyTo && (
+              <View style={chatStyles.messageReplyContainer}>
+                <View style={chatStyles.messageFlexContainer}>
+                  <Text style={chatStyles.messageReplyText}>{item.replyTo.sender.username}</Text>
+                  {item.replyTo.content ? (
+                    <Text style={chatStyles.messageReplyContent} numberOfLines={2}>
+                      {item.replyTo.content}
+                    </Text>
+                  ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
+                    <Text style={chatStyles.messageReplyImage}>Image</Text>
+                  ) : null}
                 </View>
-              )
-            })}
+                {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
+                  <Image
+                    source={{ uri: item.replyTo.attachments[0] }}
+                    style={chatStyles.messageReplyThumbnail}
+                  />
+                )}
+              </View>
+            )}
+            {item.content && (
+              <Text
+                style={[
+                  chatStyles.messageContent,
+                  {
+                    color: item.optimistic ? colors.gray : colors.dark,
+                  },
+                ]}
+              >
+                {item.content}
+              </Text>
+            )}
+            {item.attachments && (
+              <View style={[chatStyles.messageAttachmentContainer, { alignItems: "flex-start" }]}>
+                {item.attachments.map((att, idx) => {
+                  const l = item.attachments?.length
+                  const width = l === 1 ? 200 : l === 2 ? 150 : 100
+                  return (
+                    <View key={idx} style={chatStyles.attachmentItemContainer}>
+                      <Pressable
+                        onPress={() => {
+                          setImgIdx(idx)
+                          setImages(
+                            item.attachments!.map((att, id) => ({
+                              uri: att,
+                              id: id.toString(),
+                            }))
+                          )
+                          router.push("/image-gallery")
+                        }}
+                      >
+                        <Image
+                          source={{ uri: att }}
+                          style={{
+                            width: width,
+                            height: width,
+                            maxWidth: 300,
+                            maxHeight: 300,
+                            borderRadius: 10,
+                          }}
+                        />
+                      </Pressable>
+                    </View>
+                  )
+                })}
+              </View>
+            )}
           </View>
-        )}
-      </View>
+        </Animated.View>
+      </GestureDetector>
     </View>
   )
 }
-const MemoizedMessageItem = memo(MessageItem)
 
 function AttachmentPreview() {
   const [attachments, setAttachments] = useAtom(chatAttachmentsAtom)
@@ -247,14 +425,14 @@ function AttachmentPreview() {
   if (attachments.length === 0) return null
 
   return (
-    <View style={{ backgroundColor: colors.light, padding: 8 }}>
+    <View style={chatStyles.attachmentPreviewContainer}>
       <FlatList
         data={attachments}
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={item => item.uri}
         renderItem={({ item }) => (
-          <View style={{ marginRight: 10 }}>
+          <View style={chatStyles.attachmentPreviewItem}>
             <Image
               source={{ uri: item.uri }}
               style={chatStyles.attachmentPreviewImage}
