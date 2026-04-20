@@ -120,6 +120,9 @@ export const signUpAtom = atom(null, async (get, set) => {
     const res = await fetch(`${BASE_URL}/api/auth/signup`, {
       method: "POST",
       body: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     })
     const data: RegisteredUserType = await res.json()
 
@@ -184,7 +187,7 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
     {
       text: "Logout",
       style: "destructive",
-      onPress: logout,
+      onPress: async () => await logout(),
     },
   ])
 })
@@ -543,9 +546,9 @@ export const authFetchAtom = atom(
       return fetch(`${BASE_URL}${url}`, {
         ...options,
         headers: {
-          ...(options.headers || {}),
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          ...options.headers,
         },
       })
     }
@@ -574,7 +577,8 @@ export const authFetchAtom = atom(
 
       return res
     } catch (error: any) {
-      throw new Error("Network error occurred: ", error)
+      console.error("Auth fetch error: ", error)
+      throw new Error("Network error")
     }
   }
 )

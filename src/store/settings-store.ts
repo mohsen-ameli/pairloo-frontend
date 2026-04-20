@@ -37,8 +37,15 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
       if (value) formData.append(key, value.toString())
     })
 
-    if (editFields.pictureBlob) {
-      formData.append("picture", editFields.pictureBlob, userJwt._id)
+    if (editFields.picture) {
+      const extension = (editFields.pictureMimeType || "image/jpeg").split("/")[1] || "jpg"
+      formData.append("picture", {
+        uri: editFields.picture,
+        name: `${userJwt._id}.${extension}`,
+        type: editFields.pictureMimeType || "image/jpeg",
+      } as any)
+    } else if (editFields.pictureBlob) {
+      formData.append("picture", editFields.pictureBlob, `${userJwt._id}.jpg`)
     }
 
     const response = await set(authFetchAtom, "/api/settings/update-profile", {
@@ -48,24 +55,20 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
         "Content-Type": "multipart/form-data",
       },
     })
-    if (!response.ok) {
-      let errorMessage = "Failed to update profile"
-      try {
-        const errorData = await response.json()
-        if (errorData && errorData.message) {
-          errorMessage = errorData.message
-        }
-      } catch {}
-      Alert.alert("Update Failed", errorMessage)
+
+    const data = await response.json()
+    if (response.status !== 200) {
+      Alert.alert("Update Failed", data.error)
       set(loadingAtom, false)
       return
     }
-    const updatedUser = await response.json()
-    set(userAtom, { ...user, ...updatedUser })
+
+    set(userAtom, { ...user, ...data })
     set(editModeAtom, false)
     set(loadingAtom, false)
     Alert.alert("Profile Updated", "Your changes have been saved.")
   } catch (err: any) {
+    console.error("Error updating profile:", err)
     set(loadingAtom, false)
     Alert.alert("Update Failed", err?.message || "An unexpected error occurred.")
   }
