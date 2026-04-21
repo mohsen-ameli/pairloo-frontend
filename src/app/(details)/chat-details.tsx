@@ -9,10 +9,12 @@ import {
   conversationsAtom,
   currentConversationAtom,
   currentLongPressedMessageAtom,
+  entireChatLoadedAtom,
   highlightedMessageIdAtom,
   imgIndexAtom,
   loadingAtom,
   messagesAtom,
+  receivedMsgAtom,
   replyingToAtom,
   sendMessageAtom,
 } from "@/src/store/chat-store"
@@ -32,6 +34,7 @@ import { Stack } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
+import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -60,7 +63,8 @@ export default function ChatDetails() {
     email: string
   }>(undefined)
   const [canReview, setCanReview] = useState(false)
-  const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
+  const entireChatLoaded = useAtomValue(entireChatLoadedAtom)
+  const receivedMsg = useAtomValue(receivedMsgAtom)
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
@@ -73,7 +77,7 @@ export default function ChatDetails() {
     otherUser.current = conv.members.find(member => member._id !== userJwt._id)
 
     if (messages.length > 0) return
-    socket.emit("getMessages", id)
+    socket.emit("getMessages", id, 0, NUM_MESSAGES_TO_LOAD)
   }, [conversations, user, socket, id])
 
   useEffect(() => {
@@ -83,8 +87,11 @@ export default function ChatDetails() {
         break
       }
     }
-    chatRef.current && chatRef.current.scrollToEnd({ animated: false })
   }, [messages])
+
+  useEffect(() => {
+    chatRef.current && chatRef.current.scrollToTop({ animated: true })
+  }, [receivedMsg])
 
   useEffect(() => {
     return () => {
@@ -98,7 +105,6 @@ export default function ChatDetails() {
     if (!msg && attachments.length === 0) return
     setMessage("")
     await sendMessage(id, msg, replyingTo?._id)
-    chatRef.current && chatRef.current.scrollToEnd({ animated: true })
   }
 
   // Animate fake view height
@@ -108,6 +114,11 @@ export default function ChatDetails() {
     }
   }, [])
 
+  async function loadMoreMessages() {
+    if (!socket || entireChatLoaded) return
+    socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
+  }
+
   return (
     <>
       <Stack.Screen options={detailOptions} />
@@ -116,10 +127,12 @@ export default function ChatDetails() {
       {/* Main chat */}
       <View style={chatStyles.container}>
         <FlashList
+          inverted
           data={messages}
           ref={chatRef}
           keyboardDismissMode="on-drag"
           keyExtractor={item => item._id}
+          onEndReached={loadMoreMessages}
           renderItem={({ item }) => (
             <MessageItem
               item={item}
@@ -333,11 +346,9 @@ function MessageItem({
             style={chatStyles.messageImage}
           />
           <View style={chatStyles.messageFlexContainer}>
-            <View style={chatStyles.messageHeaderContainer}>
-              <View style={chatStyles.messageHeader}>
-                <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-                <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
-              </View>
+            <View style={chatStyles.messageHeader}>
+              <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
+              <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
             </View>
             {item.replyTo && (
               <View style={chatStyles.messageReplyContainer}>

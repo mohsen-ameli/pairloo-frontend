@@ -10,3 +10,5 @@ export const TAB_HEIGHT = 83
 export const REGISTER_USERNAME_CHECK_INTERVAL = 500 // milliseconds
 
 export const MINIMUM_SHORT_ANSWER_LENGTH = 1
+
+export const NUM_MESSAGES_TO_LOAD = 20

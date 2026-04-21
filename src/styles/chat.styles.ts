@@ -80,10 +80,6 @@ export const chatStyles = StyleSheet.create({
     paddingLeft: 10,
     flexWrap: "wrap",
   },
-  messageHeaderContainer: {
-    borderRadius: 4,
-    paddingHorizontal: 8,
-  },
   messageReplyContainer: {
     width: "95%",
     marginTop: 4,
