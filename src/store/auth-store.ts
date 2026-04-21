@@ -546,9 +546,9 @@ export const authFetchAtom = atom(
       return fetch(`${BASE_URL}${url}`, {
         ...options,
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           ...options.headers,
+          Authorization: `Bearer ${token}`,
         },
       })
     }
