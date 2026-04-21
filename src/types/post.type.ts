@@ -32,7 +32,6 @@ export interface MyPostType {
   title: string
   description: string
   publicPost: boolean
-  numMatches: number
   isDraft: boolean
   qna?: QnaItemType[]
   location?: {

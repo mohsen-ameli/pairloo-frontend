@@ -376,15 +376,6 @@ export default function CreatePost() {
                     <Feather name="info" size={20} color={colors.gray} />
                   </Pressable>
                 </View>
-                <TextInput
-                  style={createPostStyles.numMatchesInput}
-                  value={settings.numMatches.toString()}
-                  keyboardType="number-pad"
-                  placeholder="5"
-                  editable={!loading}
-                  maxLength={2}
-                  onChangeText={text => setSettings({ ...settings, numMatches: Number(text) })}
-                />
               </View>
             </View>
           </View>
