@@ -217,6 +217,13 @@ export const styles = StyleSheet.create({
   closestPostUserInfo: {
     flexDirection: "column",
   },
+  noMatchesText: {
+    fontSize: 14,
+    color: colors.gray,
+    textAlign: "center",
+    marginTop: 10,
+    marginBottom: 50,
+  },
   headerUserRow: {
     flexDirection: "row",
     alignItems: "center",

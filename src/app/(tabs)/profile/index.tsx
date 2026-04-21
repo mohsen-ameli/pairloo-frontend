@@ -211,11 +211,15 @@ export default function ProfileScreen() {
                                   <Text style={profileStyles.privatePostText}>Private</Text>
                                 </CustomLabel>
                               )}
-                              {post.closestPosts && post.closestPosts.length > 0 && (
+                              {post.closestPosts && post.closestPosts.length > 0 ? (
                                 <CustomLabel
                                   backgroundColor={getScoreColor(post.closestPosts[0].score)}
                                 >
                                   {Math.round(post.closestPosts[0].score * 100)}% match
+                                </CustomLabel>
+                              ) : (
+                                <CustomLabel backgroundColor={getScoreColor(0)}>
+                                  No match
                                 </CustomLabel>
                               )}
                               {post.isDraft && (
