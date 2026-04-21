@@ -205,25 +205,28 @@ export default function ProfileScreen() {
                               {formatDate(post.createdAt.toString())}
                             </Text>
                             <View style={profileStyles.postCardLabelContainer}>
-                              {!post.publicPost && (
-                                <CustomLabel backgroundColor={colors.shadow}>
-                                  <Feather name="lock" size={12} color={colors.light} />{" "}
-                                  <Text style={profileStyles.privatePostText}>Private</Text>
-                                </CustomLabel>
-                              )}
-                              {post.closestPosts && post.closestPosts.length > 0 ? (
-                                <CustomLabel
-                                  backgroundColor={getScoreColor(post.closestPosts[0].score)}
-                                >
-                                  {Math.round(post.closestPosts[0].score * 100)}% match
-                                </CustomLabel>
-                              ) : (
-                                <CustomLabel backgroundColor={getScoreColor(0)}>
-                                  No match
-                                </CustomLabel>
-                              )}
-                              {post.isDraft && (
+                              {post.isDraft ? (
                                 <CustomLabel backgroundColor={colors.purple}>Draft</CustomLabel>
+                              ) : (
+                                <>
+                                  {!post.publicPost && (
+                                    <CustomLabel backgroundColor={colors.shadow}>
+                                      <Feather name="lock" size={12} color={colors.light} />{" "}
+                                      <Text style={profileStyles.privatePostText}>Private</Text>
+                                    </CustomLabel>
+                                  )}
+                                  {post.closestPosts && post.closestPosts.length > 0 ? (
+                                    <CustomLabel
+                                      backgroundColor={getScoreColor(post.closestPosts[0].score)}
+                                    >
+                                      {Math.round(post.closestPosts[0].score * 100)}% match
+                                    </CustomLabel>
+                                  ) : (
+                                    <CustomLabel backgroundColor={getScoreColor(0)}>
+                                      No match
+                                    </CustomLabel>
+                                  )}
+                                </>
                               )}
                             </View>
                           </View>
