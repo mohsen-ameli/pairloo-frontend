@@ -4,7 +4,7 @@ import io from "socket.io-client"
 import { ConversationType, MessageType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "./socket-store"
 import { refreshAccessToken } from "@/src/utils/refresh-access-token"
-import { WS_BASE_URL } from "@/src/utils/constants"
+import { NUM_MESSAGES_TO_LOAD, WS_BASE_URL } from "@/src/utils/constants"
 import { getAttachmentAtom, notificationSoundAtom } from "./general-store"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -26,6 +26,10 @@ export const messagesAtom = atom<MessageType[]>([])
 export const chatAttachmentsAtom = atom<Attachment[]>([])
 
 export const loadingAtom = atom(false)
+
+export const entireChatLoadedAtom = atom(false)
+
+export const receivedMsgAtom = atom(false) // used to trigger re-render when a new message is received
 
 export const imgIndexAtom = atom(0)
 
@@ -114,7 +118,13 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   // Got all messages for a conversation
   socket.on("messages", async (messages: MessageType[]) => {
-    set(messagesAtom, messages)
+    if (messages.length === 0) {
+      set(entireChatLoadedAtom, true)
+      set(loadingAtom, false)
+      return
+    }
+    set(messagesAtom, [...get(messagesAtom), ...messages])
+
     const unreadMsgs = await get(unreadMessagesAtom)
     await set(unreadMessagesAtom, () => {
       const updated = { ...unreadMsgs }
@@ -130,21 +140,34 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   // Received a message from the server
   socket.on("message", async (message: MessageType) => {
-    let isOptimistic = false
+    let isOptimistic = true
+
     set(messagesAtom, prev =>
       prev.map(msg => {
         // This is our optimistic message, replace it
         if (msg.optimistic && msg.content === message.content) {
-          isOptimistic = true
+          isOptimistic = false
           return message
         }
         return msg
       })
     )
 
+    set(receivedMsgAtom, prev => !prev) // trigger re-render for messages list
+
+    // Update lastMessage for this conversation
+    set(conversationsAtom, prev =>
+      prev.map(conv => {
+        if (conv._id === message.conversationId) {
+          return { ...conv, lastMessage: message }
+        }
+        return conv
+      })
+    )
+
     // we received a message from other user
-    if (!isOptimistic) {
-      set(messagesAtom, prev => [...prev, message])
+    if (isOptimistic) {
+      set(messagesAtom, prev => [message, ...prev])
 
       // If user is not in the chat that received the message
       if (get(currentConversationAtom)?._id !== message.conversationId) {
@@ -164,7 +187,7 @@ export const initChatAtom = atom(null, async (get, set) => {
               pathname: "/chat-details",
               params: { id: message.conversationId },
             })
-            socket.emit("getMessages", message.conversationId)
+            socket.emit("getMessages", message.conversationId, 0, NUM_MESSAGES_TO_LOAD)
             Toast.hide()
           },
         })
@@ -229,7 +252,7 @@ export const sendMessageAtom = atom(
     }
 
     // Optimistically add the message to the list
-    set(messagesAtom, prev => [...prev, optimisticMessage])
+    set(messagesAtom, prev => [optimisticMessage, ...prev])
 
     socket.emit("newMessage", {
       conversationId,
