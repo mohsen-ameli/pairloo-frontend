@@ -362,21 +362,6 @@ export default function CreatePost() {
                   value={settings.publicPost}
                 />
               </View>
-              <View style={createPostStyles.lastPageRowContainer}>
-                <View style={createPostStyles.lastPageRowLabelContainer}>
-                  <Text style={createPostStyles.lastPageQuestion}>Related matches</Text>
-                  <Pressable
-                    onPress={() =>
-                      Alert.alert(
-                        "Related Matches",
-                        "Specify how many related matches you would like to receive for this post.\n\nYou can change this setting anytime."
-                      )
-                    }
-                  >
-                    <Feather name="info" size={20} color={colors.gray} />
-                  </Pressable>
-                </View>
-              </View>
             </View>
           </View>
 
