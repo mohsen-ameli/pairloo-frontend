@@ -67,15 +67,6 @@ export const createPostStyles = StyleSheet.create({
     borderColor: colors.borderGray,
     borderRightWidth: 1,
   },
-  numMatchesInput: {
-    color: colors.dark,
-    borderColor: colors.gray,
-    borderWidth: 1,
-    width: 50,
-    height: 40,
-    textAlign: "center",
-    borderRadius: 5,
-  },
   gaptainer: {
     gap: 10,
   },

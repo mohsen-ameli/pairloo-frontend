@@ -190,7 +190,7 @@ export default function PostDetails() {
           )}
 
           {/* Closest posts */}
-          {post.closestPosts && post.closestPosts.length > 0 && (
+          {post.closestPosts && post.closestPosts.length > 0 ? (
             <View style={styles.closestPostsContainer}>
               <Text style={styles.closestPostsTitle}>Top Matches</Text>
               {post.closestPosts.map(post => (
@@ -235,6 +235,13 @@ export default function PostDetails() {
                   </View>
                 </Pressable>
               ))}
+            </View>
+          ) : (
+            <View style={styles.closestPostsContainer}>
+              <Text style={styles.closestPostsTitle}>Top Matches</Text>
+              <Text style={styles.noMatchesText}>
+                No matches found. Try editing your post or check back later!
+              </Text>
             </View>
           )}
 

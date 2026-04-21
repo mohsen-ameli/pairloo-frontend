@@ -29,7 +29,6 @@ import { LocationType } from "@/src/types/location.type"
  */
 
 export const INITIAL_PAGE_COUNT = 3 // Starting page + location page + last page
-const DEFAULT_NUM_MATCHES = 5
 const DEFAULT_PUBLIC_POST = true
 
 const DEFAULT_QUESTION: Question = {
@@ -42,7 +41,6 @@ const settings = {
   description: "",
   images: [] as ImageObject[],
   publicPost: DEFAULT_PUBLIC_POST,
-  numMatches: DEFAULT_NUM_MATCHES,
   location: null as LocationType,
   distance: 5_000,
   zoom: 12,
@@ -53,7 +51,6 @@ export const settingsAtom = atomWithStorage("post-settings", settings, newUserSt
 export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }])
 export const loadingAtom = atom(false)
 export const publicPostAtom = atom(DEFAULT_PUBLIC_POST)
-export const numMatchesAtom = atom(DEFAULT_NUM_MATCHES)
 export const imagesAtom = atom<ImageObject[]>([])
 export const editedAtom = atom(false)
 
@@ -176,13 +173,7 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   const currPage = get(currPageAtom)
   const pageCount = get(pageCountAtom)
   const edited = get(editedAtom)
-  const { title, description, images, publicPost, numMatches, location, distance } =
-    await get(settingsAtom)
-
-  if (!numMatches || numMatches < 1) {
-    Alert.alert("Invalid number of matches", "Please enter a valid number of matches (1-99).")
-    return
-  }
+  const { title, description, images, publicPost, location, distance } = await get(settingsAtom)
 
   if (!socket) {
     console.warn("[forward] Socket is not initialized!")
@@ -214,7 +205,6 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
     socket.emit("submit", {
       title,
       description,
-      numMatches,
       publicPost,
       images: imagesWithFiles,
       location,
