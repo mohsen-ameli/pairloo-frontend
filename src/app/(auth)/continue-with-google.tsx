@@ -9,7 +9,7 @@ import { useAtom, useSetAtom } from "jotai"
 import { useEffect } from "react"
 import { Platform, View } from "react-native"
 import CustomButton from "@/src/components/CustomButton"
-import { fetchUserInfoAtom, newUserAtom, userAtom, userJwtAtom } from "@/src/store/auth-store"
+import { fetchUserInfoAtom, newUserAtom, userSecureAtom } from "@/src/store/auth-store"
 import { BASE_URL } from "@/src/utils/constants"
 import { NewUserType, RegisteredUserType } from "@/src/types/user.type"
 import Toast from "react-native-toast-message"
@@ -30,7 +30,7 @@ export default function ContinueWithGoogle({
 }: {
   setLoading: (loading: boolean) => void
 }) {
-  const setUserJwt = useSetAtom(userJwtAtom)
+  const setUserJwt = useSetAtom(userSecureAtom)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [request, response, promptAsync] = useAuthRequest(config, discovery)
   const router = useRouter()

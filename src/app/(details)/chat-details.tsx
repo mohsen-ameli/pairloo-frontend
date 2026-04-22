@@ -26,7 +26,7 @@ import { formatDate } from "@/src/utils/format-date"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import useGradualAnimation from "@/src/utils/gradual-animation"
-import { userAtom, userJwtAtom } from "@/src/store/auth-store"
+import { userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
@@ -46,7 +46,7 @@ export default function ChatDetails() {
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
   const user = useAtomValue(userAtom)
-  const userJwt = useAtomValue(userJwtAtom)
+  const userJwt = useAtomValue(userSecureAtom)
   const conversations = useAtomValue(conversationsAtom)
   const setCurrentConversation = useSetAtom(currentConversationAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)

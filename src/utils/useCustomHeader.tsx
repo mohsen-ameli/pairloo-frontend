@@ -14,7 +14,7 @@ import {
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { currentConversationAtom } from "@/src/store/chat-store"
-import { userJwtAtom } from "@/src/store/auth-store"
+import { userSecureAtom } from "@/src/store/auth-store"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
 
@@ -38,7 +38,7 @@ export default function useCustomHeader(
     })
   }
   const currentConversation = useAtomValue(currentConversationAtom)
-  const user = useAtomValue(userJwtAtom)
+  const user = useAtomValue(userSecureAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,

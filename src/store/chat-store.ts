@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { logOutAtom, userAtom, userJwtAtom } from "./auth-store"
+import { logOutAtom, userAtom, userSecureAtom } from "./auth-store"
 import io from "socket.io-client"
 import { ConversationType, MessageType } from "@/src/types/chat.type"
 import { chatSocketAtom } from "./socket-store"
@@ -43,7 +43,7 @@ export const currentLongPressedMessageAtom = atom<MessageType | null>(null)
 
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
-  const userJwt = await get(userJwtAtom)
+  const userJwt = await get(userSecureAtom)
   if (!user || !userJwt) return
   const currSocket = get(chatSocketAtom)
   if (currSocket && (currSocket.connected || get(loadingAtom))) return

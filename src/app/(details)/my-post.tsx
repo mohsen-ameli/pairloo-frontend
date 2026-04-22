@@ -16,14 +16,16 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { colors } from "@/src/utils/colors"
 import { loadingAtom } from "@/src/store/post-detail-store"
 import { authFetchAtom } from "@/src/store/auth-store"
-import { AppleMaps, GoogleMaps } from "expo-maps"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
+import { useExpoMaps } from "@/src/utils/useExpoMaps"
+import MapUnavailable from "@/src/components/MapUnavailable"
 
 export default function PostDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
+  const { maps, isExpoGo, isLoading } = useExpoMaps()
   const [isQnaExpanded, setIsQnaExpanded] = useState(false)
   const loading = useAtomValue(loadingAtom)
   const animatedHeight = useRef(new Animated.Value(0)).current
@@ -32,6 +34,8 @@ export default function PostDetails() {
     isError,
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+  const GoogleMapView = maps?.GoogleMaps.View
+  const AppleMapView = maps?.AppleMaps.View
 
   useEffect(() => {
     Animated.timing(animatedHeight, {
@@ -93,8 +97,17 @@ export default function PostDetails() {
           {post.location && (
             <View style={styles.mapContainer}>
               <View style={styles.mapFlexContainer} pointerEvents="none">
-                {Platform.OS === "android" ? (
-                  <GoogleMaps.View
+                {isLoading ? (
+                  <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                    <LoadingIndicator loading={true} />
+                  </View>
+                ) : isExpoGo || !maps ? (
+                  <MapUnavailable
+                    title="Map preview unavailable in Expo Go"
+                    description="This post still shows the location details, but native map rendering requires a development build."
+                  />
+                ) : Platform.OS === "android" && GoogleMapView ? (
+                  <GoogleMapView
                     style={styles.mapFlexContainer}
                     cameraPosition={{
                       coordinates: {
@@ -109,8 +122,8 @@ export default function PostDetails() {
                       zoomControlsEnabled: false,
                     }}
                   />
-                ) : (
-                  <AppleMaps.View
+                ) : AppleMapView ? (
+                  <AppleMapView
                     style={styles.mapFlexContainer}
                     cameraPosition={{
                       coordinates: {
@@ -124,6 +137,11 @@ export default function PostDetails() {
                     uiSettings={{
                       myLocationButtonEnabled: false,
                     }}
+                  />
+                ) : (
+                  <MapUnavailable
+                    title="Map preview unavailable"
+                    description="The native map view failed to load."
                   />
                 )}
               </View>

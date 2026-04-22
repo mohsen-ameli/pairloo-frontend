@@ -7,7 +7,7 @@ import {
 } from "@/src/store/chat-store"
 import { sinceNow } from "@/src/utils/format-date"
 import { formatString } from "@/src/utils/format-string"
-import { userJwtAtom } from "@/src/store/auth-store"
+import { userSecureAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
 import { useFocusEffect, useRouter } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -24,7 +24,7 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function index() {
   const router = useRouter()
   const conversations = useAtomValue(conversationsAtom)
-  const user = useAtomValue(userJwtAtom)
+  const user = useAtomValue(userSecureAtom)
   const unreadMessages = useAtomValue(unreadMessagesAtom)
   const socket = useAtomValue(chatSocketAtom)
   const initChat = useSetAtom(initChatAtom)

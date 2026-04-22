@@ -1,10 +1,12 @@
 import { ExpoConfig } from "expo/config"
 
+const owner = "noobmoe"
 const name = "pairloo"
 const identifier = `com.${name}`
 
 module.exports = ({ config }: { config: ExpoConfig }) => {
   return {
+    owner: owner,
     name: name,
     slug: name,
     version: "1.0.0",
@@ -35,6 +37,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: identifier,
+      googleServicesFile: "./google-services.json",
       permissions: ["android.permission.RECORD_AUDIO", "android.permission.MODIFY_AUDIO_SETTINGS"],
     },
     web: {
@@ -84,7 +87,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
     extra: {
       router: {},
       eas: {
-        projectId: "62045e96-3ca5-473a-9367-8f246b148fa1",
+        projectId: "43d5563e-4217-488d-861e-930eff4e3ca8",
       },
     },
   }
