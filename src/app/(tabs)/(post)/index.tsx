@@ -22,6 +22,8 @@ import { Image } from "expo-image"
 import { ANDROID_ADS_UNIT_ID, IOS_ADS_UNIT_ID } from "@/src/utils/constants"
 import { colors } from "@/src/utils/colors"
 import { FlashList } from "@shopify/flash-list"
+import { sinceNow } from "@/src/utils/format-date"
+import { RatingStarSingle } from "@/src/components/RatingStar"
 
 export default function Index() {
   const router = useRouter()
@@ -92,9 +94,15 @@ export default function Index() {
                 style={styles.postHeaderImage}
               />
               <View style={styles.postHeaderTextContainer}>
-                <Text style={styles.postHeaderName} numberOfLines={1}>
-                  {post.firstName} {post.lastName}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Text style={styles.postHeaderName} numberOfLines={1}>
+                    {post.firstName} {post.lastName}
+                  </Text>
+                  <Text style={styles.postUsername}>
+                    {"• "}
+                    {sinceNow(post.createdAt.toString())} ago
+                  </Text>
+                </View>
                 <Text style={styles.postUsername} numberOfLines={1}>
                   @{post.username}
                 </Text>
@@ -110,7 +118,9 @@ export default function Index() {
                 />
               </View>
             ) : (
-              <Text style={styles.descriptionStyle}>{post.description}</Text>
+              <Text style={styles.descriptionStyle} numberOfLines={3}>
+                {post.description}
+              </Text>
             )}
           </Pressable>
         )
@@ -164,13 +174,29 @@ function AdView() {
             {nativeAd.headline}
           </Text>
         </NativeAsset>
-        {nativeAd.price && (
-          <NativeAsset assetType={NativeAssetType.PRICE}>
-            <Text style={styles.postContent} numberOfLines={1}>
-              Price: {!isNaN(parseFloat(nativeAd.price)) ? `$${nativeAd.price}` : "Free"}
-            </Text>
-          </NativeAsset>
-        )}
+
+        <NativeAsset assetType={NativeAssetType.BODY}>
+          <Text style={styles.descriptionStyle}>{nativeAd.body}</Text>
+        </NativeAsset>
+
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
+          {nativeAd.price && (
+            <NativeAsset assetType={NativeAssetType.PRICE}>
+              <Text style={styles.descriptionStyle} numberOfLines={1}>
+                Price: {!isNaN(parseFloat(nativeAd.price)) ? `$${nativeAd.price}` : "Free"}
+              </Text>
+            </NativeAsset>
+          )}
+
+          {nativeAd.starRating && (
+            <NativeAsset assetType={NativeAssetType.STAR_RATING}>
+              <Text style={styles.descriptionStyle} numberOfLines={1}>
+                Rating: {nativeAd.starRating}{" "}
+                <RatingStarSingle value={nativeAd.starRating} size={16} />
+              </Text>
+            </NativeAsset>
+          )}
+        </View>
 
         {/* Image */}
         {nativeAd.images?.[0]?.url && (
