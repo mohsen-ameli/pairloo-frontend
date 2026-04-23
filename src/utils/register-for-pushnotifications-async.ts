@@ -39,6 +39,7 @@ export async function registerForPushNotificationsAsync() {
       throw new Error(`${e}`)
     }
   } else {
-    throw new Error("Must use physical device for push notifications")
+    console.warn("Must use physical device for push notifications")
+    return
   }
 }
