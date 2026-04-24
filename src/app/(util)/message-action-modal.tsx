@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Text, Platform } from "react-native"
+import { View, TouchableOpacity, Text, Platform, Alert } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { colors } from "@/src/utils/colors"
@@ -8,6 +8,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useAtom, useSetAtom } from "jotai"
 import { currentLongPressedMessageAtom, replyingToAtom } from "@/src/store/chat-store"
+import Clipboard from "@react-native-clipboard/clipboard"
 
 export default function MessageActionModal() {
   const router = useRouter()
@@ -31,6 +32,18 @@ export default function MessageActionModal() {
       setReplyingTo(currentLongPressedMessage)
     }
     handleModalClose()
+  }
+
+  const handleCopy = async () => {
+    if (!currentLongPressedMessage) return
+    const content = currentLongPressedMessage.content || ""
+
+    try {
+      await Clipboard.setString(content)
+      handleModalClose()
+    } catch (error) {
+      console.error("Copy error:", error)
+    }
   }
 
   const buttonStyle = {
@@ -69,7 +82,7 @@ export default function MessageActionModal() {
           </Text>
         </CustomButton>
 
-        <CustomButton style={buttonStyle} onPress={handleModalClose}>
+        <CustomButton style={buttonStyle} onPress={handleCopy}>
           <Text style={{ color: colors.dark, fontSize: 16 }}>
             <Feather name="copy" size={18} /> Copy Message
           </Text>
