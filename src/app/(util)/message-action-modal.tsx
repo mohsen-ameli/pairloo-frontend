@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Text, Platform, Alert } from "react-native"
+import { View, TouchableOpacity, Text, Platform, Alert, Share } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { colors } from "@/src/utils/colors"
@@ -46,6 +46,20 @@ export default function MessageActionModal() {
     }
   }
 
+  const handleShare = async () => {
+    if (!currentLongPressedMessage) return
+
+    try {
+      const content = currentLongPressedMessage.content || ""
+      await Share.share({
+        message: content,
+      })
+      handleModalClose()
+    } catch (error) {
+      console.error("Share error:", error)
+    }
+  }
+
   const buttonStyle = {
     alignItems: "flex-start" as const,
     paddingLeft: 10,
@@ -88,7 +102,7 @@ export default function MessageActionModal() {
           </Text>
         </CustomButton>
 
-        <CustomButton style={buttonStyle} onPress={handleModalClose}>
+        <CustomButton style={buttonStyle} onPress={handleShare}>
           <Text style={{ color: colors.dark, fontSize: 16 }}>
             <Feather name="share" size={18} /> Share Message
           </Text>
