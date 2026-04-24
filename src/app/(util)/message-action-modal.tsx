@@ -96,11 +96,13 @@ export default function MessageActionModal() {
           </Text>
         </CustomButton>
 
-        <CustomButton style={buttonStyle} onPress={handleCopy}>
-          <Text style={{ color: colors.dark, fontSize: 16 }}>
-            <Feather name="copy" size={18} /> Copy Message
-          </Text>
-        </CustomButton>
+        {currentLongPressedMessage?.content && (
+          <CustomButton style={buttonStyle} onPress={handleCopy}>
+            <Text style={{ color: colors.dark, fontSize: 16 }}>
+              <Feather name="copy" size={18} /> Copy Message
+            </Text>
+          </CustomButton>
+        )}
 
         <CustomButton style={buttonStyle} onPress={handleShare}>
           <Text style={{ color: colors.dark, fontSize: 16 }}>
