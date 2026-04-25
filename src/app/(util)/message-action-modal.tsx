@@ -7,7 +7,12 @@ import CustomButton from "@/src/components/CustomButton"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useAtom, useSetAtom } from "jotai"
-import { currentLongPressedMessageAtom, replyingToAtom } from "@/src/store/chat-store"
+import {
+  currentLongPressedMessageAtom,
+  replyingToAtom,
+  editingMessageAtom,
+  deleteMessageAtom,
+} from "@/src/store/chat-store"
 import Clipboard from "@react-native-clipboard/clipboard"
 
 export default function MessageActionModal() {
@@ -16,6 +21,8 @@ export default function MessageActionModal() {
     currentLongPressedMessageAtom
   )
   const setReplyingTo = useSetAtom(replyingToAtom)
+  const setEditingMessage = useSetAtom(editingMessageAtom)
+  const deleteMessage = useSetAtom(deleteMessageAtom)
   const { isOwnMessage } = useLocalSearchParams<{
     isOwnMessage: string
   }>()
@@ -58,6 +65,41 @@ export default function MessageActionModal() {
     } catch (error) {
       console.error("Share error:", error)
     }
+  }
+
+  const handleEditPress = () => {
+    if (currentLongPressedMessage) {
+      setEditingMessage(currentLongPressedMessage)
+    }
+    handleModalClose()
+  }
+
+  const handleDeletePress = () => {
+    if (!currentLongPressedMessage) return
+
+    Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
+      {
+        text: "Cancel",
+        onPress: () => {},
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        onPress: async () => {
+          try {
+            await deleteMessage(
+              currentLongPressedMessage._id,
+              currentLongPressedMessage.conversationId
+            )
+            handleModalClose()
+          } catch (error) {
+            console.error("Delete error:", error)
+            Alert.alert("Error", "Failed to delete message")
+          }
+        },
+        style: "destructive",
+      },
+    ])
   }
 
   const buttonStyle = {
@@ -112,13 +154,13 @@ export default function MessageActionModal() {
 
         {isOwnMsg ? (
           <>
-            <CustomButton style={buttonStyle} onPress={handleModalClose}>
+            <CustomButton style={buttonStyle} onPress={handleEditPress}>
               <Text style={{ color: colors.dark, fontSize: 16 }}>
                 <Feather name="edit-2" size={18} /> Edit Message
               </Text>
             </CustomButton>
 
-            <CustomButton style={buttonStyle} onPress={handleModalClose}>
+            <CustomButton style={buttonStyle} onPress={handleDeletePress}>
               <Text style={{ color: colors.dark, fontSize: 16 }}>
                 <Feather name="trash-2" size={18} /> Delete Message
               </Text>

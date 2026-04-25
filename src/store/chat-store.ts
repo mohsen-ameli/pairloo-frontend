@@ -41,6 +41,8 @@ export const highlightedMessageIdAtom = atom<string | null>(null)
 
 export const currentLongPressedMessageAtom = atom<MessageType | null>(null)
 
+export const editingMessageAtom = atom<MessageType | null>(null)
+
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
   const userJwt = await get(userSecureAtom)
@@ -215,6 +217,66 @@ export const initChatAtom = atom(null, async (get, set) => {
       }
     }
   })
+
+  // Message was edited
+  socket.on("messageEdited", (editedMessage: MessageType) => {
+    set(messagesAtom, prev =>
+      prev.map(msg => {
+        if (msg._id === editedMessage._id) {
+          return editedMessage
+        }
+        return msg
+      })
+    )
+
+    set(receivedMsgAtom, prev => !prev)
+
+    // Update lastMessage if this is the last message
+    set(conversationsAtom, prev =>
+      prev.map(conv => {
+        if (
+          conv._id === editedMessage.conversationId &&
+          conv.lastMessage?._id === editedMessage._id
+        ) {
+          return { ...conv, lastMessage: editedMessage }
+        }
+        return conv
+      })
+    )
+  })
+
+  socket.on("messageUpdated", (updatedMessage: MessageType) => {
+    set(messagesAtom, prev =>
+      prev.map(msg => {
+        if (msg._id === updatedMessage._id) {
+          return updatedMessage
+        }
+        return msg
+      })
+    )
+
+    set(receivedMsgAtom, prev => !prev) // trigger re-render
+  })
+
+  socket.on(
+    "messageDeleted",
+    ({ messageId, conversationId }: { messageId: string; conversationId: string }) => {
+      // Remove the deleted message
+      set(messagesAtom, prev => prev.filter(msg => msg._id !== messageId))
+
+      set(receivedMsgAtom, prev => !prev) // trigger re-render
+
+      // Update lastMessage if this was the last message
+      set(conversationsAtom, prev =>
+        prev.map(conv => {
+          if (conv._id === conversationId && conv.lastMessage?._id === messageId) {
+            return { ...conv, lastMessage: undefined }
+          }
+          return conv
+        })
+      )
+    }
+  )
 })
 
 // Sends a message in a conversation
@@ -284,3 +346,47 @@ export const sendAttachmentAtom = atom(null, async (get, set, option: "library" 
   //   mimeType: attachments[0].mimeType,
   // })
 })
+
+export const editMessageAtom = atom(
+  null,
+  async (get, set, messageId: string, conversationId: string, newContent: string) => {
+    const socket = get(chatSocketAtom)
+    if (!socket) return
+
+    set(messagesAtom, prev =>
+      prev.map(msg => {
+        if (msg._id === messageId) {
+          return {
+            ...msg,
+            content: newContent,
+            isEdited: true,
+            updatedAt: new Date().toISOString(),
+          }
+        }
+        return msg
+      })
+    )
+
+    socket.emit("editMessage", {
+      messageId,
+      conversationId,
+      newContent,
+    })
+  }
+)
+
+// Delete a message in a conversation
+export const deleteMessageAtom = atom(
+  null,
+  async (get, set, messageId: string, conversationId: string) => {
+    const socket = get(chatSocketAtom)
+    if (!socket) return
+
+    set(messagesAtom, prev => prev.filter(msg => msg._id !== messageId))
+
+    socket.emit("deleteMessage", {
+      messageId,
+      conversationId,
+    })
+  }
+)
