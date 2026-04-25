@@ -208,16 +208,7 @@ export default function ChatDetails() {
 
       {/* Editing Indicator */}
       {editingMessage && (
-        <View
-          style={{
-            paddingHorizontal: 15,
-            paddingVertical: 10,
-            backgroundColor: colors.lightGray,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <View style={chatStyles.editingIndicatorContainer}>
           <Pressable
             onPress={() => {
               setEditingMessage(null)
