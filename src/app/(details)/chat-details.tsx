@@ -36,8 +36,6 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
 
-const defaultProfilePicture = require("@/assets/images/default_pfp.png")
-
 export default function ChatDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -331,35 +329,74 @@ function MessageItem({
       <GestureDetector gesture={Gesture.Simultaneous(panGesture, longPressGesture)}>
         <Animated.View
           style={[
+            chatStyles.messageContentAnimated,
             {
-              ...chatStyles.messageContentAnimated,
-              backgroundColor:
-                highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
-                  ? colors.chatHighlight
-                  : "transparent",
+              alignItems: isOwnMessage ? "flex-end" : "flex-start",
             },
             contentAnimatedStyle,
           ]}
         >
-          <Image
-            source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
-            style={chatStyles.messageImage}
-          />
-          <View style={chatStyles.messageFlexContainer}>
-            <View style={chatStyles.messageHeader}>
-              <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-              <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
-            </View>
+          <View
+            style={[
+              chatStyles.messageBubble,
+              isOwnMessage ? chatStyles.ownMessageBubble : chatStyles.otherMessageBubble,
+              {
+                backgroundColor:
+                  highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
+                    ? colors.chatHighlight
+                    : isOwnMessage
+                      ? colors.purple
+                      : colors.lightGray,
+              },
+            ]}
+          >
+            {/* Reply section inside bubble */}
             {item.replyTo && (
-              <View style={chatStyles.messageReplyContainer}>
+              <View
+                style={[
+                  chatStyles.messageReplyContainer,
+                  {
+                    backgroundColor: isOwnMessage
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : "rgba(0, 0, 0, 0.1)",
+                    borderLeftColor: isOwnMessage ? colors.light : colors.purple,
+                  },
+                ]}
+              >
                 <View style={chatStyles.messageFlexContainer}>
-                  <Text style={chatStyles.messageReplyText}>{item.replyTo.sender.username}</Text>
+                  <Text
+                    style={[
+                      chatStyles.messageReplyText,
+                      {
+                        color: isOwnMessage ? colors.light : colors.gray,
+                      },
+                    ]}
+                  >
+                    {item.replyTo.sender.username}
+                  </Text>
                   {item.replyTo.content ? (
-                    <Text style={chatStyles.messageReplyContent} numberOfLines={2}>
+                    <Text
+                      style={[
+                        chatStyles.messageReplyContent,
+                        {
+                          color: isOwnMessage ? colors.light : colors.dark,
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
                       {item.replyTo.content}
                     </Text>
                   ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
-                    <Text style={chatStyles.messageReplyImage}>Image</Text>
+                    <Text
+                      style={[
+                        chatStyles.messageReplyImage,
+                        {
+                          color: isOwnMessage ? colors.light : colors.gray,
+                        },
+                      ]}
+                    >
+                      Image
+                    </Text>
                   ) : null}
                 </View>
                 {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
@@ -370,23 +407,28 @@ function MessageItem({
                 )}
               </View>
             )}
+
+            {/* Main message content */}
             {item.content && (
               <Text
                 style={[
                   chatStyles.messageContent,
+                  isOwnMessage ? chatStyles.ownMessageText : chatStyles.otherMessageText,
                   {
-                    color: item.optimistic ? colors.gray : colors.dark,
+                    opacity: item.optimistic ? 0.6 : 1,
                   },
                 ]}
               >
                 {item.content}
               </Text>
             )}
+
+            {/* Attachments */}
             {item.attachments && (
-              <View style={[chatStyles.messageAttachmentContainer, { alignItems: "flex-start" }]}>
+              <View style={chatStyles.messageAttachmentContainer}>
                 {item.attachments.map((att, idx) => {
                   const l = item.attachments?.length
-                  const width = l === 1 ? 200 : l === 2 ? 150 : 100
+                  const width = l === 1 ? 180 : l === 2 ? 140 : 90
                   return (
                     <View key={idx} style={chatStyles.attachmentItemContainer}>
                       <Pressable
@@ -406,8 +448,8 @@ function MessageItem({
                           style={{
                             width: width,
                             height: width,
-                            maxWidth: 300,
-                            maxHeight: 300,
+                            maxWidth: 280,
+                            maxHeight: 280,
                             borderRadius: 10,
                           }}
                         />
@@ -417,6 +459,20 @@ function MessageItem({
                 })}
               </View>
             )}
+
+            {/* Timestamp */}
+            <Text
+              style={[
+                chatStyles.messageDate,
+                {
+                  fontSize: 10,
+                  marginTop: item.content || item.attachments ? 4 : 0,
+                },
+                isOwnMessage ? chatStyles.ownMessageDate : chatStyles.otherMessageDate,
+              ]}
+            >
+              {formatDate(item.createdAt)}
+            </Text>
           </View>
         </Animated.View>
       </GestureDetector>
