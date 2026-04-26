@@ -219,31 +219,57 @@ export const initChatAtom = atom(null, async (get, set) => {
   })
 
   // Message was edited
-  socket.on("messageEdited", (editedMessage: MessageType) => {
-    set(messagesAtom, prev =>
-      prev.map(msg => {
-        if (msg._id === editedMessage._id) {
-          return editedMessage
-        }
-        return msg
-      })
-    )
+  socket.on(
+    "messageEdited",
+    ({
+      messageId,
+      conversationId,
+      updatedAt,
+      content,
+    }: {
+      messageId: string
+      conversationId: string
+      updatedAt: Date
+      content: string
+    }) => {
+      set(messagesAtom, prev =>
+        prev.map(msg => {
+          // Update the edited message
+          if (msg._id === messageId) {
+            return { ...msg, content, updatedAt: new Date(updatedAt).toISOString(), isEdited: true }
+          }
+          // Update replyTo content if this message replies to the edited message
+          if (msg.replyTo?._id === messageId) {
+            return {
+              ...msg,
+              replyTo: { ...msg.replyTo, content },
+            }
+          }
+          return msg
+        })
+      )
 
-    set(receivedMsgAtom, prev => !prev)
+      set(receivedMsgAtom, prev => !prev)
 
-    // Update lastMessage if this is the last message
-    set(conversationsAtom, prev =>
-      prev.map(conv => {
-        if (
-          conv._id === editedMessage.conversationId &&
-          conv.lastMessage?._id === editedMessage._id
-        ) {
-          return { ...conv, lastMessage: editedMessage }
-        }
-        return conv
-      })
-    )
-  })
+      // Update lastMessage if this is the last message
+      set(conversationsAtom, prev =>
+        prev.map(conv => {
+          if (conv._id === conversationId && conv.lastMessage?._id === messageId) {
+            return {
+              ...conv,
+              lastMessage: {
+                ...conv.lastMessage!,
+                content,
+                updatedAt: new Date(updatedAt).toISOString(),
+                isEdited: true,
+              },
+            }
+          }
+          return conv
+        })
+      )
+    }
+  )
 
   socket.on("messageUpdated", (updatedMessage: MessageType) => {
     set(messagesAtom, prev =>
@@ -352,6 +378,12 @@ export const editMessageAtom = atom(
   async (get, set, messageId: string, conversationId: string, newContent: string) => {
     const socket = get(chatSocketAtom)
     if (!socket) return
+
+    // If the edited content is empty, trigger delete functionality instead
+    if (!newContent.trim()) {
+      await set(deleteMessageAtom, messageId, conversationId)
+      return
+    }
 
     set(messagesAtom, prev =>
       prev.map(msg => {

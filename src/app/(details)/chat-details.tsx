@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, FlatList, Dimensions } from "react-native"
+import { View, Text, Pressable, TextInput, FlatList, Dimensions, Alert } from "react-native"
 import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -19,6 +19,7 @@ import {
   sendMessageAtom,
   editingMessageAtom,
   editMessageAtom,
+  deleteMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
@@ -54,6 +55,7 @@ export default function ChatDetails() {
   const setCurrentConversation = useSetAtom(currentConversationAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
+  const deleteMessage = useSetAtom(deleteMessageAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
@@ -114,7 +116,7 @@ export default function ChatDetails() {
 
   async function handleSendMessage() {
     const msg = message.trim()
-    if (!msg && attachments.length === 0) return
+    if (!editingMessage && !msg && attachments.length === 0) return
 
     if (editingMessage) {
       if (msg === editingMessage.content) {
@@ -123,6 +125,33 @@ export default function ChatDetails() {
         setMessage("")
         return
       }
+
+      // If message is empty, show delete confirmation alert
+      if (!msg) {
+        Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
+          {
+            text: "Cancel",
+            onPress: () => {},
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              try {
+                await deleteMessage(editingMessage._id, editingMessage.conversationId)
+                setEditingMessage(null)
+                setMessage("")
+              } catch (error) {
+                console.error("Delete error:", error)
+                Alert.alert("Error", "Failed to delete message")
+              }
+            },
+            style: "destructive",
+          },
+        ])
+        return
+      }
+
       await editMessage(editingMessage._id, editingMessage.conversationId, msg)
       setEditingMessage(null)
       setMessage("")
