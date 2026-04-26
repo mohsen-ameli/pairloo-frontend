@@ -287,15 +287,25 @@ export const initChatAtom = atom(null, async (get, set) => {
   socket.on(
     "messageDeleted",
     ({ messageId, conversationId }: { messageId: string; conversationId: string }) => {
-      // Remove the deleted message
-      set(messagesAtom, prev => prev.filter(msg => msg._id !== messageId))
+      // Remove the deleted message and clean up any replies to it
+      set(messagesAtom, prev =>
+        prev
+          .filter(msg => msg._id !== messageId)
+          .map(msg => {
+            // If this message was replying to the deleted message, clear the reply
+            if (msg.replyTo?._id === messageId) {
+              return { ...msg, replyTo: undefined, replyToDeleted: true }
+            }
+            return msg
+          })
+      )
 
       set(receivedMsgAtom, prev => !prev) // trigger re-render
 
       // Update lastMessage if this was the last message
       set(conversationsAtom, prev =>
         prev.map(conv => {
-          if (conv._id === conversationId && conv.lastMessage?._id === messageId) {
+          if (String(conv._id) === String(conversationId) && conv.lastMessage?._id === messageId) {
             return { ...conv, lastMessage: undefined }
           }
           return conv
