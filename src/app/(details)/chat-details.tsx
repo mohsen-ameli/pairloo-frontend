@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, FlatList, Dimensions } from "react-native"
+import { View, Text, Pressable, TextInput, FlatList, Dimensions, Alert } from "react-native"
 import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -17,6 +17,9 @@ import {
   receivedMsgAtom,
   replyingToAtom,
   sendMessageAtom,
+  editingMessageAtom,
+  editMessageAtom,
+  deleteMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
@@ -45,11 +48,14 @@ export default function ChatDetails() {
   const [message, setMessage] = useState<string>("")
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
+  const editMessage = useSetAtom(editMessageAtom)
   const user = useAtomValue(userAtom)
   const userJwt = useAtomValue(userSecureAtom)
   const conversations = useAtomValue(conversationsAtom)
   const setCurrentConversation = useSetAtom(currentConversationAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
+  const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
+  const deleteMessage = useSetAtom(deleteMessageAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
@@ -100,11 +106,60 @@ export default function ChatDetails() {
     }
   }, [])
 
+  // When a message is selected for editing, populate the input
+  useEffect(() => {
+    if (editingMessage) {
+      setMessage(editingMessage.content || "")
+      inputRef.current?.focus()
+    }
+  }, [editingMessage])
+
   async function handleSendMessage() {
     const msg = message.trim()
-    if (!msg && attachments.length === 0) return
-    setMessage("")
-    await sendMessage(id, msg, replyingTo?._id)
+    if (!editingMessage && !msg && attachments.length === 0) return
+
+    if (editingMessage) {
+      if (msg === editingMessage.content) {
+        // No changes, just cancel editing
+        setEditingMessage(null)
+        setMessage("")
+        return
+      }
+
+      // If message is empty, show delete confirmation alert
+      if (!msg) {
+        Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
+          {
+            text: "Cancel",
+            onPress: () => {},
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              try {
+                await deleteMessage(editingMessage._id, editingMessage.conversationId)
+                setEditingMessage(null)
+                setMessage("")
+              } catch (error) {
+                console.error("Delete error:", error)
+                Alert.alert("Error", "Failed to delete message")
+              }
+            },
+            style: "destructive",
+          },
+        ])
+        return
+      }
+
+      await editMessage(editingMessage._id, editingMessage.conversationId, msg)
+      setEditingMessage(null)
+      setMessage("")
+    } else {
+      // Normal message sending
+      setMessage("")
+      await sendMessage(id, msg, replyingTo?._id)
+    }
   }
 
   // Animate fake view height
@@ -180,6 +235,24 @@ export default function ChatDetails() {
         </View>
       )}
 
+      {/* Editing Indicator */}
+      {editingMessage && (
+        <View style={chatStyles.editingIndicatorContainer}>
+          <Pressable
+            onPress={() => {
+              setEditingMessage(null)
+              setMessage("")
+            }}
+            style={{ backgroundColor: colors.light, padding: 4, borderRadius: 50 }}
+          >
+            <Feather name="x" size={18} color={colors.gray} />
+          </Pressable>
+          <Text style={{ color: colors.gray, fontSize: 12, flex: 1, marginLeft: 8 }}>
+            Editing message
+          </Text>
+        </View>
+      )}
+
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
         <Pressable
@@ -193,7 +266,7 @@ export default function ChatDetails() {
         >
           <Feather name="plus" size={24} color={colors.light} />
         </Pressable>
-        {message.trim() === "" && canReview && (
+        {message.trim() === "" && canReview && !editingMessage && (
           <Pressable
             onPress={() =>
               router.push({ pathname: "review-user", params: { id: otherUser.current?._id } })
@@ -205,21 +278,27 @@ export default function ChatDetails() {
         )}
         <TextInput
           style={chatStyles.input}
-          placeholder="Type a message..."
+          placeholder={editingMessage ? "Edit your message..." : "Type a message..."}
           placeholderTextColor={colors.muted}
           value={message}
           onChangeText={text => setMessage(text)}
           ref={inputRef}
         />
-        <Pressable
-          style={[
-            chatStyles.actionButton,
-            { display: message.trim() || attachments.length > 0 ? "flex" : "none" },
-          ]}
-          onPress={handleSendMessage}
-        >
-          <Feather name="send" size={22} color={colors.lightGray} />
-        </Pressable>
+        {editingMessage ? (
+          <Pressable onPress={handleSendMessage} style={chatStyles.actionButton}>
+            <Feather name="send" size={22} color={colors.lightGray} />
+          </Pressable>
+        ) : (
+          <Pressable
+            style={[
+              chatStyles.actionButton,
+              { display: message.trim() || attachments.length > 0 ? "flex" : "none" },
+            ]}
+            onPress={handleSendMessage}
+          >
+            <Feather name="send" size={22} color={colors.lightGray} />
+          </Pressable>
+        )}
       </View>
 
       {/* Push the content up after keyboard appears */}
@@ -348,9 +427,16 @@ function MessageItem({
           <View style={chatStyles.messageFlexContainer}>
             <View style={chatStyles.messageHeader}>
               <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-              <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
+              <Text style={chatStyles.messageDate}>
+                {formatDate(item.createdAt)}
+                {item.isEdited ? " (Edited)" : ""}
+              </Text>
             </View>
-            {item.replyTo && (
+            {item.replyToDeleted ? (
+              <View style={chatStyles.messageReplyContainer}>
+                <Text style={chatStyles.messageReplyContent}>Original message was deleted</Text>
+              </View>
+            ) : item.replyTo ? (
               <View style={chatStyles.messageReplyContainer}>
                 <View style={chatStyles.messageFlexContainer}>
                   <Text style={chatStyles.messageReplyText}>{item.replyTo.sender.username}</Text>
@@ -369,7 +455,7 @@ function MessageItem({
                   />
                 )}
               </View>
-            )}
+            ) : null}
             {item.content && (
               <Text
                 style={[

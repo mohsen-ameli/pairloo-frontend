@@ -158,6 +158,14 @@ export const chatStyles = StyleSheet.create({
   replyPreviewCloseButton: {
     padding: 8,
   },
+  editingIndicatorContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: colors.lightGray,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   replyButton: {
     padding: 8,
     backgroundColor: colors.purple,
