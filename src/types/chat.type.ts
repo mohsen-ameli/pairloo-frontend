@@ -18,8 +18,10 @@ export type MessageType = {
       username: string
     }
   }
+  replyToDeleted?: boolean
   createdAt: string
   updatedAt: string
+  isEdited?: boolean
 }
 
 export interface ConversationType {
