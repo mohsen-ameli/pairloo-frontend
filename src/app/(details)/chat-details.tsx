@@ -458,6 +458,8 @@ function MessageItem({
                     : isOwnMessage
                       ? colors.purple
                       : colors.lightGray,
+                overflow: "hidden",
+                maxWidth: item.attachments && item.attachments.length > 1 ? "80%" : "70%",
               },
             ]}
           >
@@ -467,6 +469,8 @@ function MessageItem({
                 onPress={scrollToReplyMessage}
                 style={[
                   chatStyles.messageReplyContainer,
+                  item.attachments &&
+                    item.attachments.length > 0 && { marginTop: 8, marginHorizontal: 10 },
                   {
                     backgroundColor: isOwnMessage
                       ? "rgba(255, 255, 255, 0.2)"
@@ -520,29 +524,25 @@ function MessageItem({
               </Pressable>
             )}
 
-            {/* Main message content */}
-            {item.content && (
-              <Text
-                style={[
-                  chatStyles.messageContent,
-                  isOwnMessage ? chatStyles.ownMessageText : chatStyles.otherMessageText,
-                  {
-                    opacity: item.optimistic ? 0.6 : 1,
-                  },
-                ]}
-              >
-                {item.content}
-              </Text>
-            )}
-
             {/* Attachments */}
-            {item.attachments && (
+            {item.attachments && item.attachments.length > 0 && (
               <View style={chatStyles.messageAttachmentContainer}>
-                {item.attachments.map((att, idx) => {
-                  const l = item.attachments?.length
-                  const width = l === 1 ? 180 : l === 2 ? 140 : 90
+                {item.attachments.slice(0, 2).map((att, idx) => {
+                  const l = item.attachments?.length || 1
+
+                  // Calculate exact widths to fit side-by-side cleanly inside the max-width
+                  let width: number
+                  if (l === 1) {
+                    width = 240
+                  } else {
+                    width = 140
+                  }
+
+                  const hasMoreImages = l > 2
+                  const showOverlay = hasMoreImages && idx === 1
+
                   return (
-                    <View key={idx}>
+                    <View key={idx} style={{ position: "relative" }}>
                       <Pressable
                         onPress={() => {
                           setImgIdx(idx)
@@ -560,12 +560,18 @@ function MessageItem({
                           style={{
                             width: width,
                             height: width,
-                            maxWidth: 280,
-                            maxHeight: 280,
-                            borderRadius: 10,
+                            maxWidth: 300,
+                            maxHeight: 300,
                             marginBottom: 5,
                           }}
                         />
+                        {showOverlay && (
+                          <View style={chatStyles.shadowOverlay}>
+                            <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+                              +{l - 2}
+                            </Text>
+                          </View>
+                        )}
                       </Pressable>
                     </View>
                   )
@@ -573,14 +579,22 @@ function MessageItem({
               </View>
             )}
 
+            {/* Main message content */}
+            {item.content && (
+              <Text
+                style={[
+                  chatStyles.messageContent,
+                  isOwnMessage ? chatStyles.ownMessageText : chatStyles.otherMessageText,
+                ]}
+              >
+                {item.content}
+              </Text>
+            )}
+
             {/* Timestamp */}
             <Text
               style={[
                 chatStyles.messageDate,
-                {
-                  fontSize: 10,
-                  marginTop: item.content || item.attachments ? 4 : 0,
-                },
                 isOwnMessage ? chatStyles.ownMessageDate : chatStyles.otherMessageDate,
               ]}
             >
