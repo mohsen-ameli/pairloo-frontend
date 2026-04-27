@@ -19,8 +19,9 @@ export const chatStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingBottom: 35,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 8,
+    paddingTop: 12,
   },
   actionButton: {
     width: 35,
@@ -39,6 +40,8 @@ export const chatStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     paddingRight: 50,
+    minHeight: 40,
+    maxHeight: 120,
   },
   messageAttachmentContainer: {
     flexDirection: "row",
@@ -47,8 +50,8 @@ export const chatStyles = StyleSheet.create({
     marginTop: 8,
   },
   messageItem: {
-    marginVertical: 8,
     paddingHorizontal: 4,
+    marginVertical: 2,
   },
   messageImage: {
     width: 40,
@@ -84,8 +87,9 @@ export const chatStyles = StyleSheet.create({
     borderLeftColor: colors.purple,
     borderRadius: 6,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 8,
+    minWidth: "60%",
   },
   messageReplyText: {
     fontSize: 11,
@@ -171,6 +175,7 @@ export const chatStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 15,
+    maxWidth: "70%",
   },
   ownMessageBubble: {
     backgroundColor: colors.purple,
@@ -200,9 +205,7 @@ export const chatStyles = StyleSheet.create({
   },
   messageFlexContainer: {
     flex: 1,
-  },
-  attachmentItemContainer: {
-    marginTop: 8,
+    width: "100%",
   },
   attachmentImage: {
     width: 200,

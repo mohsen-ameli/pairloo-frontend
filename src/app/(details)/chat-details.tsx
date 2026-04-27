@@ -41,6 +41,7 @@ export default function ChatDetails() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")
+  const [inputHeight, setInputHeight] = useState<number>(40)
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
   const user = useAtomValue(userAtom)
@@ -131,7 +132,8 @@ export default function ChatDetails() {
           keyboardDismissMode="on-drag"
           keyExtractor={item => item._id}
           onEndReached={loadMoreMessages}
-          renderItem={({ item }) => (
+          scrollIndicatorInsets={{ left: 10 }}
+          renderItem={({ item, index }) => (
             <MessageItem
               item={item}
               inputRef={inputRef}
@@ -202,11 +204,16 @@ export default function ChatDetails() {
           </Pressable>
         )}
         <TextInput
-          style={chatStyles.input}
+          style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
           placeholder="Type a message..."
           placeholderTextColor={colors.muted}
           value={message}
           onChangeText={text => setMessage(text)}
+          onContentSizeChange={event => {
+            setInputHeight(event.nativeEvent.contentSize.height)
+          }}
+          multiline
+          maxLength={500}
           ref={inputRef}
         />
         <Pressable
@@ -430,7 +437,7 @@ function MessageItem({
                   const l = item.attachments?.length
                   const width = l === 1 ? 180 : l === 2 ? 140 : 90
                   return (
-                    <View key={idx} style={chatStyles.attachmentItemContainer}>
+                    <View key={idx}>
                       <Pressable
                         onPress={() => {
                           setImgIdx(idx)
@@ -451,6 +458,7 @@ function MessageItem({
                             maxWidth: 280,
                             maxHeight: 280,
                             borderRadius: 10,
+                            marginBottom: 5,
                           }}
                         />
                       </Pressable>
