@@ -191,6 +191,8 @@ export default function ChatDetails() {
           renderItem={({ item, index }) => (
             <MessageItem
               item={item}
+              messages={messages}
+              chatRef={chatRef}
               inputRef={inputRef}
               isOwnMessage={userJwt?._id === item.sender._id}
             />
@@ -314,10 +316,14 @@ export default function ChatDetails() {
 
 function MessageItem({
   item,
+  messages,
+  chatRef,
   inputRef,
   isOwnMessage,
 }: {
   item: MessageType
+  messages: MessageType[]
+  chatRef: React.RefObject<FlashListRef<MessageType> | null>
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
@@ -330,6 +336,25 @@ function MessageItem({
   const router = useRouter()
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
+
+  // scroll to the original replied message
+  const scrollToReplyMessage = () => {
+    if (!item.replyTo || !chatRef.current) return
+
+    const originalMessageIndex = messages.findIndex(msg => msg._id === item.replyTo?._id)
+    if (originalMessageIndex === -1) return
+
+    chatRef.current?.scrollToIndex({
+      index: originalMessageIndex,
+      animated: true,
+      viewPosition: 0.5,
+    })
+
+    // Highlight the message after scroll completes (500ms delay)
+    setTimeout(() => {
+      setHighlightedMessageId(item.replyTo!._id)
+    }, 500)
+  }
 
   function focusOnInput() {
     if (inputRef.current) {
@@ -377,7 +402,7 @@ function MessageItem({
     if (!highlightedMessageId) return
     const timer = setTimeout(() => {
       setHighlightedMessageId(null)
-    }, 300)
+    }, 700)
     return () => clearTimeout(timer)
   }, [highlightedMessageId])
 
@@ -438,7 +463,8 @@ function MessageItem({
           >
             {/* Reply section inside bubble */}
             {item.replyTo && (
-              <View
+              <Pressable
+                onPress={scrollToReplyMessage}
                 style={[
                   chatStyles.messageReplyContainer,
                   {
@@ -491,7 +517,7 @@ function MessageItem({
                     style={chatStyles.messageReplyThumbnail}
                   />
                 )}
-              </View>
+              </Pressable>
             )}
 
             {/* Main message content */}
