@@ -38,6 +38,9 @@ import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
+import { atom } from "jotai"
+
+const scrollTargetIdAtom = atom<string | null>(null)
 
 export default function ChatDetails() {
   const router = useRouter()
@@ -70,6 +73,38 @@ export default function ChatDetails() {
   const [canReview, setCanReview] = useState(false)
   const entireChatLoaded = useAtomValue(entireChatLoadedAtom)
   const receivedMsg = useAtomValue(receivedMsgAtom)
+  const [scrollTargetId, setScrollTargetId] = useAtom(scrollTargetIdAtom)
+  const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
+
+  // Handle automatic scrolling to replied messages
+  useEffect(() => {
+    if (!scrollTargetId || !chatRef.current) return
+
+    const targetIndex = messages.findIndex(msg => msg._id === scrollTargetId)
+
+    if (targetIndex !== -1) {
+      chatRef.current.scrollToIndex({
+        index: targetIndex,
+        animated: true,
+        viewPosition: 0.5,
+      })
+
+      setTimeout(() => {
+        setHighlightedMessageId(scrollTargetId)
+      }, 500)
+
+      setScrollTargetId(null)
+    } else {
+      if (!entireChatLoaded && socket) {
+        setTimeout(() => {
+          socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
+        }, 100)
+      } else if (entireChatLoaded) {
+        Alert.alert("Error", "The original message could not be found.")
+        setScrollTargetId(null)
+      }
+    }
+  }, [messages, scrollTargetId, entireChatLoaded, socket])
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
@@ -102,6 +137,7 @@ export default function ChatDetails() {
     return () => {
       setMessages([])
       setCurrentConversation(null)
+      setScrollTargetId(null)
     }
   }, [])
 
@@ -188,6 +224,7 @@ export default function ChatDetails() {
           keyExtractor={item => item._id}
           onEndReached={loadMoreMessages}
           scrollIndicatorInsets={{ left: 10 }}
+          contentContainerStyle={{ paddingTop: 10, paddingBottom: 20 }}
           renderItem={({ item, index }) => (
             <MessageItem
               item={item}
@@ -336,13 +373,17 @@ function MessageItem({
   const router = useRouter()
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
+  const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
 
   // scroll to the original replied message
   const scrollToReplyMessage = () => {
     if (!item.replyTo || !chatRef.current) return
 
     const originalMessageIndex = messages.findIndex(msg => msg._id === item.replyTo?._id)
-    if (originalMessageIndex === -1) return
+    if (originalMessageIndex === -1) {
+      setScrollTargetId(item.replyTo._id)
+      return
+    }
 
     chatRef.current?.scrollToIndex({
       index: originalMessageIndex,
