@@ -22,7 +22,7 @@ import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import * as MediaLibrary from "expo-media-library"
-import * as FileSystem from "expo-file-system"
+import { Directory, File, Paths } from "expo-file-system"
 
 const isZoomedAtom = atom(false)
 
@@ -167,7 +167,41 @@ export default function ImageGallery({
 
   const handleSaveButton = async () => {
     setMenuVisible(false)
-    Alert.alert("Feature Coming Soon", "Save button will be implemented later")
+    try {
+      if (!images.length) {
+        Alert.alert("No image to save")
+        return
+      }
+      const image = images[currentIndex]
+      if (!image?.uri) {
+        Alert.alert("Invalid image URI")
+        return
+      }
+
+      // Request media library permissions
+      const permission = await MediaLibrary.requestPermissionsAsync()
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission denied",
+          "Cannot save image without permission to access photo library."
+        )
+        return
+      }
+
+      // Download image to cache directory first
+      const cacheDir = new Directory(Paths.cache, "temp_image.jpg")
+      await File.downloadFileAsync(image.uri, cacheDir)
+
+      // Save to media library
+      await MediaLibrary.saveToLibraryAsync(cacheDir.uri)
+
+      // Clean up temporary file
+      // await File.deleteAsync(cacheDir);
+
+      Alert.alert("Saved!", "Image has been saved to your gallery.")
+    } catch (err: any) {
+      Alert.alert("Save failed", err?.message || "Could not save image.")
+    }
   }
 
   const handleReportButton = () => {
