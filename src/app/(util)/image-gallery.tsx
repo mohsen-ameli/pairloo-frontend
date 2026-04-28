@@ -9,6 +9,8 @@ import {
   type LayoutChangeEvent,
   Pressable,
   TouchableOpacity,
+  Alert,
+  Modal,
 } from "react-native"
 import { FlatList } from "react-native-gesture-handler"
 import { Image } from "expo-image"
@@ -19,6 +21,8 @@ import { chatStyles } from "@/src/styles/chat.styles"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
+import * as MediaLibrary from "expo-media-library"
+import * as FileSystem from "expo-file-system"
 
 const isZoomedAtom = atom(false)
 
@@ -143,6 +147,7 @@ export default function ImageGallery({
   const { width: deviceWidth } = useWindowDimensions()
   const [currentIndex, setCurrentIndex] = useAtom(imgIndexAtom)
   const [containerHeight, setContainerHeight] = useState(0)
+  const [menuVisible, setMenuVisible] = useState(false)
   const flatListRef = useRef<FlatList<ImageItem> | null>(null)
   const images = useAtomValue(bigImageViewAtom)
   const isZoomed = useAtomValue(isZoomedAtom)
@@ -160,6 +165,16 @@ export default function ImageGallery({
     if (index !== currentIndex && index >= 0 && index < images.length) setCurrentIndex(index)
   }
 
+  const handleSaveButton = async () => {
+    setMenuVisible(false)
+    Alert.alert("Feature Coming Soon", "Save button will be implemented later")
+  }
+
+  const handleReportButton = () => {
+    setMenuVisible(false)
+    Alert.alert("Feature Coming Soon", "Report button will be implemented later")
+  }
+
   return (
     <View style={styles.container} onLayout={handleLayout}>
       {/* Header */}
@@ -168,7 +183,10 @@ export default function ImageGallery({
           <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => router.back()}>
             <Feather name="x" size={25} color={colors.dark} />
           </TouchableOpacity>
-          <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => {}}>
+          <TouchableOpacity
+            style={chatStyles.imageHeaderButton}
+            onPress={() => setMenuVisible(true)}
+          >
             <Feather name="menu" size={25} color={colors.dark} />
           </TouchableOpacity>
         </View>
@@ -243,6 +261,26 @@ export default function ImageGallery({
           />
         </View>
       )}
+
+      {/* Menu Modal */}
+      <Modal visible={menuVisible} transparent animationType="fade">
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setMenuVisible(false)}
+          // activeOpacity={1}
+        >
+          <View style={styles.menuContainer}>
+            <Pressable style={styles.menuItem} onPress={handleSaveButton}>
+              <Feather name="save" size={20} color={colors.dark} />
+              <Text style={styles.menuItemText}>Save</Text>
+            </Pressable>
+            <Pressable style={styles.menuItem} onPress={handleReportButton}>
+              <Feather name="flag" size={20} color={colors.dark} />
+              <Text style={styles.menuItemText}>Report</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   )
 }
@@ -302,5 +340,37 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     textAlign: "center",
     marginTop: 2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  menuContainer: {
+    position: "absolute",
+    top: 70,
+    right: 10,
+    backgroundColor: colors.light,
+    borderRadius: 8,
+    overflow: "hidden",
+    minWidth: 150,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightGray,
+  },
+  menuItemText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: colors.dark,
+    marginLeft: 12,
   },
 })
