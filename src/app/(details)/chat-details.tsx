@@ -96,9 +96,7 @@ export default function ChatDetails() {
       setScrollTargetId(null)
     } else {
       if (!entireChatLoaded && socket) {
-        setTimeout(() => {
-          socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
-        }, 100)
+        socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
       } else if (entireChatLoaded) {
         Alert.alert("Error", "The original message could not be found.")
         setScrollTargetId(null)
