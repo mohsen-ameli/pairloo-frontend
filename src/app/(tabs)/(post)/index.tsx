@@ -72,14 +72,11 @@ export default function Index() {
       contentContainerStyle={styles.listContainerStyles}
       refreshControl={<RefreshControl refreshing={isPending} onRefresh={refresh} />}
       onEndReached={loadMore}
-      renderItem={({ item: post, index }) =>
-        index === posts.length - 1 ? (
-          <ActivityIndicator size="large" color={colors.blue} style={{ marginVertical: 20 }} />
-        ) : index % 7 === 6 ? (
-          <AdView key={post._id} />
-        ) : (
+      keyExtractor={item => item._id}
+      renderItem={({ item: post, index }) => (
+        <View key={post._id}>
+          {index % 7 === 6 && <AdView />}
           <Pressable
-            key={post._id}
             style={styles.postCard}
             onPress={() => {
               router.push({
@@ -123,7 +120,10 @@ export default function Index() {
               </Text>
             )}
           </Pressable>
-        )
+        </View>
+      )}
+      ListFooterComponent={
+        <ActivityIndicator size="large" color={colors.blue} style={{ marginVertical: 20 }} />
       }
     />
   )
@@ -159,12 +159,12 @@ function AdView() {
           <View style={styles.postHeaderTextContainer}>
             <NativeAsset assetType={NativeAssetType.ADVERTISER}>
               <Text style={styles.postHeaderName} numberOfLines={1}>
-                {nativeAd.store ?? "Sponsored"}
+                {nativeAd.advertiser ?? "Sponsored"}
               </Text>
             </NativeAsset>
             <NativeAsset assetType={NativeAssetType.STORE}>
               <Text style={styles.postUsername} numberOfLines={1}>
-                @{nativeAd.advertiser ?? "sponsored"}
+                @{nativeAd.store ?? "sponsored"}
               </Text>
             </NativeAsset>
           </View>
