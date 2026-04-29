@@ -1,12 +1,4 @@
-import {
-  View,
-  Text,
-  Pressable,
-  TextInput,
-  FlatList,
-  Dimensions,
-  ActivityIndicator,
-} from "react-native"
+import { View, Text, Pressable, TextInput, FlatList, Dimensions } from "react-native"
 import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -62,7 +54,7 @@ export default function ChatDetails() {
   const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader("", true, true)
-  const [loading, setLoading] = useAtom(loadingAtom)
+  const loading = useAtomValue(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
   const otherUser = useRef<{
     _id: string
@@ -71,14 +63,11 @@ export default function ChatDetails() {
     email: string
   }>(undefined)
   const [canReview, setCanReview] = useState(false)
-  const [entireChatLoaded, setEntireChatLoaded] = useAtom(entireChatLoadedAtom)
+  const entireChatLoaded = useAtomValue(entireChatLoadedAtom)
   const receivedMsg = useAtomValue(receivedMsgAtom)
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
-
-    setLoading(true)
-    setEntireChatLoaded(false)
 
     // Find the current conversation
     const conv = conversations.find(c => c._id === id)
@@ -144,22 +133,12 @@ export default function ChatDetails() {
           keyboardDismissMode="on-drag"
           keyExtractor={item => item._id}
           onEndReached={loadMoreMessages}
-          renderItem={({ item, index }) => (
-            <>
-              {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
-              {index === messages.length - 1 && !entireChatLoaded && (
-                <ActivityIndicator
-                  style={{ paddingVertical: 8 }}
-                  size="small"
-                  color={colors.blue}
-                />
-              )}
-              <MessageItem
-                item={item}
-                inputRef={inputRef}
-                isOwnMessage={userJwt?._id === item.sender._id}
-              />
-            </>
+          renderItem={({ item }) => (
+            <MessageItem
+              item={item}
+              inputRef={inputRef}
+              isOwnMessage={userJwt?._id === item.sender._id}
+            />
           )}
           ListFooterComponent={<View style={chatStyles.flatListFooter} />}
         />
