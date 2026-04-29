@@ -20,6 +20,8 @@ import {
   notificationAtom,
   registerForPushNotificationsAsyncAtom,
 } from "@/src/store/notification-store"
+import { authFetchAtom } from "@/src/store/auth-store"
+import { savedPostIdsAtom } from "@/src/store/post-detail-store"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -38,17 +40,41 @@ const toastConfig = {
   }) => {
     return <CustomToast {...props} onPress={onPress} />
   },
+  savedPost: ({
+    props,
+    onPress,
+  }: {
+    props: {
+      username: string
+      message: string
+      iconName?: keyof typeof import("@expo/vector-icons/Feather").default.glyphMap
+    }
+    onPress: () => void
+  }) => {
+    return <CustomToast {...props} onPress={onPress} />
+  },
 }
 
 export default function RootLayout() {
   const userJwt = useAtomValue(userSecureAtom)
   const queryClient = useAtomValue(queryClientAtom)
+  const authFetch = useSetAtom(authFetchAtom)
+  const setSavedPostIds = useSetAtom(savedPostIdsAtom)
 
   const loginOptions = useCustomHeader("Log In", true)
   const registerOptions = useCustomHeader("Create Account", true)
   const forgotEmailOptions = useCustomHeader("Forgot Email", true)
   const chatOptions = useCustomHeader("Chat")
   const myPostOptions = useCustomHeader("My Post")
+  const postDetailsOptions = useCustomHeader(
+    "Post Details",
+    true,
+    false,
+    false,
+    false,
+    undefined,
+    true
+  )
   const defaultOptions = useCustomHeader("", true)
   const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
 
@@ -83,6 +109,22 @@ export default function RootLayout() {
     getDeviceInfo()
   }, [])
 
+  useEffect(() => {
+    if (!userJwt) return
+
+    const fetchSavedPosts = async () => {
+      try {
+        const res = await authFetch("/api/users/my-saved-posts")
+        const data = await res.json()
+        setSavedPostIds(data.map((post: any) => post._id))
+      } catch (error) {
+        console.error("Failed to fetch saved posts:", error)
+      }
+    }
+
+    fetchSavedPosts()
+  }, [userJwt])
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="auto" />
@@ -101,7 +143,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)/chat-details" options={chatOptions} />
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
-              <Stack.Screen name="(details)/feed-post" options={defaultOptions} />
+              <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
               <Stack.Screen name="(details)/profile" options={defaultOptions} />
               <Stack.Screen
                 name="(details)/review-user"
