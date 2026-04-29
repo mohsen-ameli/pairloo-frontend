@@ -25,9 +25,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
     android: {
       adaptiveIcon: {
         backgroundColor: "#ffffff",
-        foregroundImage: "./assets/images/android-icon-foreground.png",
-        backgroundImage: "./assets/images/android-icon-background.png",
-        monochromeImage: "./assets/images/android-icon-monochrome.png",
+        foregroundImage: "./assets/images/adaptive-icon.png",
       },
       config: {
         googleMaps: {
