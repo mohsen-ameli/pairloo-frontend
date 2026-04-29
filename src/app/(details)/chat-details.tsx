@@ -38,14 +38,16 @@ import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
+import { atom } from "jotai"
 
-const defaultProfilePicture = require("@/assets/images/default_pfp.png")
+const scrollTargetIdAtom = atom<string | null>(null)
 
 export default function ChatDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")
+  const [inputHeight, setInputHeight] = useState<number>(40)
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
   const editMessage = useSetAtom(editMessageAtom)
@@ -71,6 +73,36 @@ export default function ChatDetails() {
   const [canReview, setCanReview] = useState(false)
   const entireChatLoaded = useAtomValue(entireChatLoadedAtom)
   const receivedMsg = useAtomValue(receivedMsgAtom)
+  const [scrollTargetId, setScrollTargetId] = useAtom(scrollTargetIdAtom)
+  const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
+
+  // Handle automatic scrolling to replied messages
+  useEffect(() => {
+    if (!scrollTargetId || !chatRef.current) return
+
+    const targetIndex = messages.findIndex(msg => msg._id === scrollTargetId)
+
+    if (targetIndex !== -1) {
+      chatRef.current.scrollToIndex({
+        index: targetIndex,
+        animated: true,
+        viewPosition: 0.5,
+      })
+
+      setTimeout(() => {
+        setHighlightedMessageId(scrollTargetId)
+      }, 500)
+
+      setScrollTargetId(null)
+    } else {
+      if (!entireChatLoaded && socket) {
+        socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
+      } else if (entireChatLoaded) {
+        Alert.alert("Error", "The original message could not be found.")
+        setScrollTargetId(null)
+      }
+    }
+  }, [messages, scrollTargetId, entireChatLoaded, socket])
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
@@ -103,6 +135,7 @@ export default function ChatDetails() {
     return () => {
       setMessages([])
       setCurrentConversation(null)
+      setScrollTargetId(null)
     }
   }, [])
 
@@ -188,9 +221,13 @@ export default function ChatDetails() {
           keyboardDismissMode="on-drag"
           keyExtractor={item => item._id}
           onEndReached={loadMoreMessages}
-          renderItem={({ item }) => (
+          scrollIndicatorInsets={{ left: 10 }}
+          contentContainerStyle={{ paddingTop: 10, paddingBottom: 20 }}
+          renderItem={({ item, index }) => (
             <MessageItem
               item={item}
+              messages={messages}
+              chatRef={chatRef}
               inputRef={inputRef}
               isOwnMessage={userJwt?._id === item.sender._id}
             />
@@ -277,11 +314,16 @@ export default function ChatDetails() {
           </Pressable>
         )}
         <TextInput
-          style={chatStyles.input}
-          placeholder={editingMessage ? "Edit your message..." : "Type a message..."}
+          style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
+          placeholder="Type a message..."
           placeholderTextColor={colors.muted}
           value={message}
           onChangeText={text => setMessage(text)}
+          onContentSizeChange={event => {
+            setInputHeight(event.nativeEvent.contentSize.height)
+          }}
+          multiline
+          maxLength={500}
           ref={inputRef}
         />
         {editingMessage ? (
@@ -309,10 +351,14 @@ export default function ChatDetails() {
 
 function MessageItem({
   item,
+  messages,
+  chatRef,
   inputRef,
   isOwnMessage,
 }: {
   item: MessageType
+  messages: MessageType[]
+  chatRef: React.RefObject<FlashListRef<MessageType> | null>
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
@@ -325,6 +371,29 @@ function MessageItem({
   const router = useRouter()
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
+  const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
+
+  // scroll to the original replied message
+  const scrollToReplyMessage = () => {
+    if (!item.replyTo || !chatRef.current) return
+
+    const originalMessageIndex = messages.findIndex(msg => msg._id === item.replyTo?._id)
+    if (originalMessageIndex === -1) {
+      setScrollTargetId(item.replyTo._id)
+      return
+    }
+
+    chatRef.current?.scrollToIndex({
+      index: originalMessageIndex,
+      animated: true,
+      viewPosition: 0.5,
+    })
+
+    // Highlight the message after scroll completes (500ms delay)
+    setTimeout(() => {
+      setHighlightedMessageId(item.replyTo!._id)
+    }, 500)
+  }
 
   function focusOnInput() {
     if (inputRef.current) {
@@ -372,7 +441,7 @@ function MessageItem({
     if (!highlightedMessageId) return
     const timer = setTimeout(() => {
       setHighlightedMessageId(null)
-    }, 300)
+    }, 700)
     return () => clearTimeout(timer)
   }, [highlightedMessageId])
 
@@ -410,42 +479,79 @@ function MessageItem({
       <GestureDetector gesture={Gesture.Simultaneous(panGesture, longPressGesture)}>
         <Animated.View
           style={[
+            chatStyles.messageContentAnimated,
             {
-              ...chatStyles.messageContentAnimated,
-              backgroundColor:
-                highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
-                  ? colors.chatHighlight
-                  : "transparent",
+              alignItems: isOwnMessage ? "flex-end" : "flex-start",
             },
             contentAnimatedStyle,
           ]}
         >
-          <Image
-            source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
-            style={chatStyles.messageImage}
-          />
-          <View style={chatStyles.messageFlexContainer}>
-            <View style={chatStyles.messageHeader}>
-              <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-              <Text style={chatStyles.messageDate}>
-                {formatDate(item.createdAt)}
-                {item.isEdited ? " (Edited)" : ""}
-              </Text>
-            </View>
-            {item.replyToDeleted ? (
-              <View style={chatStyles.messageReplyContainer}>
-                <Text style={chatStyles.messageReplyContent}>Original message was deleted</Text>
-              </View>
-            ) : item.replyTo ? (
-              <View style={chatStyles.messageReplyContainer}>
+          <View
+            style={[
+              chatStyles.messageBubble,
+              isOwnMessage ? chatStyles.ownMessageBubble : chatStyles.otherMessageBubble,
+              {
+                backgroundColor:
+                  highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
+                    ? colors.chatHighlight
+                    : isOwnMessage
+                      ? colors.purple
+                      : colors.lightGray,
+                overflow: "hidden",
+                maxWidth: item.attachments && item.attachments.length > 1 ? "80%" : "70%",
+              },
+            ]}
+          >
+            {/* Reply section inside bubble */}
+            {item.replyTo && (
+              <Pressable
+                onPress={scrollToReplyMessage}
+                style={[
+                  chatStyles.messageReplyContainer,
+                  item.attachments &&
+                    item.attachments.length > 0 && { marginTop: 8, marginHorizontal: 10 },
+                  {
+                    backgroundColor: isOwnMessage
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : "rgba(0, 0, 0, 0.1)",
+                    borderLeftColor: isOwnMessage ? colors.light : colors.purple,
+                  },
+                ]}
+              >
                 <View style={chatStyles.messageFlexContainer}>
-                  <Text style={chatStyles.messageReplyText}>{item.replyTo.sender.username}</Text>
+                  <Text
+                    style={[
+                      chatStyles.messageReplyText,
+                      {
+                        color: isOwnMessage ? colors.light : colors.gray,
+                      },
+                    ]}
+                  >
+                    {item.replyTo.sender.username}
+                  </Text>
                   {item.replyTo.content ? (
-                    <Text style={chatStyles.messageReplyContent} numberOfLines={2}>
+                    <Text
+                      style={[
+                        chatStyles.messageReplyContent,
+                        {
+                          color: isOwnMessage ? colors.light : colors.dark,
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
                       {item.replyTo.content}
                     </Text>
                   ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
-                    <Text style={chatStyles.messageReplyImage}>Image</Text>
+                    <Text
+                      style={[
+                        chatStyles.messageReplyImage,
+                        {
+                          color: isOwnMessage ? colors.light : colors.gray,
+                        },
+                      ]}
+                    >
+                      Image
+                    </Text>
                   ) : null}
                 </View>
                 {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
@@ -454,27 +560,28 @@ function MessageItem({
                     style={chatStyles.messageReplyThumbnail}
                   />
                 )}
-              </View>
-            ) : null}
-            {item.content && (
-              <Text
-                style={[
-                  chatStyles.messageContent,
-                  {
-                    color: item.optimistic ? colors.gray : colors.dark,
-                  },
-                ]}
-              >
-                {item.content}
-              </Text>
+              </Pressable>
             )}
-            {item.attachments && (
-              <View style={[chatStyles.messageAttachmentContainer, { alignItems: "flex-start" }]}>
-                {item.attachments.map((att, idx) => {
-                  const l = item.attachments?.length
-                  const width = l === 1 ? 200 : l === 2 ? 150 : 100
+
+            {/* Attachments */}
+            {item.attachments && item.attachments.length > 0 && (
+              <View style={chatStyles.messageAttachmentContainer}>
+                {item.attachments.slice(0, 2).map((att, idx) => {
+                  const l = item.attachments?.length || 1
+
+                  // Calculate exact widths to fit side-by-side cleanly inside the max-width
+                  let width: number
+                  if (l === 1) {
+                    width = 240
+                  } else {
+                    width = 140
+                  }
+
+                  const hasMoreImages = l > 2
+                  const showOverlay = hasMoreImages && idx === 1
+
                   return (
-                    <View key={idx} style={chatStyles.attachmentItemContainer}>
+                    <View key={idx} style={{ position: "relative" }}>
                       <Pressable
                         onPress={() => {
                           setImgIdx(idx)
@@ -494,15 +601,44 @@ function MessageItem({
                             height: width,
                             maxWidth: 300,
                             maxHeight: 300,
-                            borderRadius: 10,
+                            marginBottom: 5,
                           }}
                         />
+                        {showOverlay && (
+                          <View style={chatStyles.shadowOverlay}>
+                            <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+                              +{l - 2}
+                            </Text>
+                          </View>
+                        )}
                       </Pressable>
                     </View>
                   )
                 })}
               </View>
             )}
+
+            {/* Main message content */}
+            {item.content && (
+              <Text
+                style={[
+                  chatStyles.messageContent,
+                  isOwnMessage ? chatStyles.ownMessageText : chatStyles.otherMessageText,
+                ]}
+              >
+                {item.content}
+              </Text>
+            )}
+
+            {/* Timestamp */}
+            <Text
+              style={[
+                chatStyles.messageDate,
+                isOwnMessage ? chatStyles.ownMessageDate : chatStyles.otherMessageDate,
+              ]}
+            >
+              {formatDate(item.createdAt)}
+            </Text>
           </View>
         </Animated.View>
       </GestureDetector>
