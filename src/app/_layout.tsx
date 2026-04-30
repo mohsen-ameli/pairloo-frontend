@@ -47,7 +47,7 @@ const toastConfig = {
     props: {
       username: string
       message: string
-      iconName?: keyof typeof import("@expo/vector-icons/Feather").default.glyphMap
+      Icon?: React.ReactNode
     }
     onPress: () => void
   }) => {

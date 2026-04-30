@@ -12,23 +12,21 @@ export default function CustomToast({
   message,
   attachmentUrl,
   picture,
-  iconName,
+  Icon,
 }: {
   onPress: () => void
   username: string
   message: string
   picture?: string
   attachmentUrl?: string
-  iconName?: keyof typeof Feather.glyphMap
+  Icon?: React.ReactNode
 }) {
   const aspectRatio = useImageAspectRatio(attachmentUrl || "")
 
   return (
     <Pressable style={styles.customToast} onPress={onPress}>
-      {iconName ? (
-        <View style={styles.iconContainer}>
-          <Feather name={iconName} size={20} color={colors.purple} />
-        </View>
+      {Icon ? (
+        <View style={styles.iconContainer}>{Icon}</View>
       ) : (
         <Image
           source={picture ? { uri: picture } : defaultProfilePicture}

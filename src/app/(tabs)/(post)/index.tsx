@@ -67,7 +67,7 @@ export default function Index() {
                 onPress={() => {
                   router.push({
                     pathname: "/feed-post",
-                    params: { id: post._id },
+                    params: { feedPostId: post._id },
                   })
                 }}
               >
