@@ -53,6 +53,25 @@ export default function PostDetails() {
         params: { id: conversation._id },
       })
     })
+
+    await authFetch("/api/posts/interaction", {
+      method: "POST",
+      body: JSON.stringify({ postId: post._id, type: "contact" }),
+    })
+  }
+
+  async function viewProfile() {
+    if (!post) return
+
+    router.push({
+      pathname: "(details)/profile",
+      params: { id: post._id },
+    })
+
+    await authFetch("/api/posts/interaction", {
+      method: "POST",
+      body: JSON.stringify({ postId: post._id, type: "profile_view" }),
+    })
   }
 
   if (isPending) {
@@ -82,15 +101,7 @@ export default function PostDetails() {
         scrollEnabled={true}
         keyboardShouldPersistTaps="handled"
       >
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "(details)/profile",
-              params: { id: post._id },
-            })
-          }
-          style={styles.headerContainer}
-        >
+        <Pressable onPress={viewProfile} style={styles.headerContainer}>
           <Image
             source={
               post.picture ? { uri: post.picture } : require("@/assets/images/default_pfp.png")

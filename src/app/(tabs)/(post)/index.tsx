@@ -33,6 +33,18 @@ export default function Index() {
     queryClient.invalidateQueries({ queryKey: ["feed"] })
   }
 
+  async function handlePostPress(postId: string) {
+    router.push({
+      pathname: "/feed-post",
+      params: { id: postId },
+    })
+
+    await authFetch("/api/posts/interaction", {
+      method: "POST",
+      body: JSON.stringify({ postId, type: "post_view" }),
+    })
+  }
+
   if (isPending) {
     return (
       <View style={styles.container}>
@@ -64,12 +76,7 @@ export default function Index() {
               <Pressable
                 key={post._id}
                 style={styles.postCard}
-                onPress={() => {
-                  router.push({
-                    pathname: "/feed-post",
-                    params: { id: post._id },
-                  })
-                }}
+                onPress={() => handlePostPress(post._id)}
               >
                 <View style={styles.postHeader}>
                   <Image
