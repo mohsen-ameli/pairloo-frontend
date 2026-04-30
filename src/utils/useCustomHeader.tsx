@@ -223,11 +223,10 @@ function CreatePostHeader() {
 function PostDetailsHeader() {
   const router = useRouter()
   const { feedPostId } = useGlobalSearchParams<{ feedPostId: string }>()
-  const postId = Array.isArray(feedPostId) ? feedPostId[0] : feedPostId
   const savePost = useSetAtom(savePostAtom)
   const unsavePost = useSetAtom(unsavePostAtom)
   const savedPostIds = useAtomValue(savedPostIdsAtom)
-  const isPostSaved = postId ? savedPostIds.includes(postId) : false
+  const isPostSaved = feedPostId ? savedPostIds.includes(feedPostId) : false
 
   return (
     <View style={styles.header}>
@@ -251,15 +250,15 @@ function PostDetailsHeader() {
         <Pressable
           style={{ padding: 6 }}
           onPress={async () => {
-            if (!postId) {
+            if (!feedPostId) {
               Alert.alert("Error", "Something went wrong. Post was not saved.")
               return
             }
 
             if (isPostSaved) {
-              await unsavePost(postId)
+              await unsavePost(feedPostId)
             } else {
-              await savePost(postId)
+              await savePost(feedPostId)
             }
           }}
         >
