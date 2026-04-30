@@ -44,8 +44,17 @@ export const profileStyles = StyleSheet.create({
     color: colors.gray,
   },
   ratingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 96,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+  ratingValueRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 4,
   },
   socialContainer: {
@@ -53,6 +62,25 @@ export const profileStyles = StyleSheet.create({
     justifyContent: "space-around",
     width: "100%",
     marginTop: 16,
+  },
+  socialPressable: {
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 96,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+  socialPressableCount: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.dark,
+    textAlign: "center",
+  },
+  socialPressableLabel: {
+    fontSize: 14,
+    color: colors.gray,
+    textAlign: "center",
   },
   actionContainer: {
     flexDirection: "row",
@@ -108,6 +136,56 @@ export const profileStyles = StyleSheet.create({
   emptyStateText: {
     fontSize: 16,
     color: colors.muted,
+  },
+  socialModalContainer: {
+    flex: 1,
+    backgroundColor: colors.light,
+    paddingHorizontal: 16,
+  },
+  socialModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    gap: 12,
+  },
+  socialModalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.dark,
+    flexShrink: 1,
+  },
+  socialModalCloseButton: {
+    padding: 8,
+    borderRadius: 18,
+    backgroundColor: colors.lightGray,
+  },
+  socialListContent: {
+    paddingBottom: 24,
+  },
+  socialRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderGray,
+  },
+  socialAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.lightGray,
+  },
+  socialName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.dark,
+  },
+  socialUsername: {
+    fontSize: 14,
+    color: colors.gray,
+    marginTop: 2,
   },
   postCard: {
     marginBottom: 16,
