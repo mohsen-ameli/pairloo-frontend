@@ -45,8 +45,14 @@ const settings = {
   distance: 5_000,
   zoom: 12,
 }
-const newUserStorage = createJSONStorage<typeof settings>(() => AsyncStorage)
-export const settingsAtom = atomWithStorage("post-settings", settings, newUserStorage)
+export const settingsAtom = atomWithStorage(
+  "post-settings",
+  settings,
+  createJSONStorage(() => AsyncStorage),
+  {
+    getOnInit: true,
+  }
+)
 
 export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }])
 export const loadingAtom = atom(false)
@@ -142,11 +148,11 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(loadingAtom, false)
   })
 
-  socket.on("success", (postId: string) => {
+  socket.on("success", async (postId: string) => {
     set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
-    set(settingsAtom, settings)
+    await set(settingsAtom, settings)
     set(loadingAtom, false)
 
     router.navigate({
@@ -156,11 +162,11 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   })
 
-  socket.on("draft-discarded", () => {
+  socket.on("draft-discarded", async () => {
     set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
-    set(settingsAtom, settings)
+    await set(settingsAtom, settings)
     set(editedAtom, false)
     set(loadingAtom, false)
     get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })

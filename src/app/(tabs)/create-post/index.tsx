@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import { useCallback, useEffect } from "react"
+import { useEffect } from "react"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
@@ -29,14 +29,13 @@ import {
   settingsAtom,
   initCreatePostAtom,
 } from "@/src/store/create-post-store"
-import { useFocusEffect } from "expo-router"
 import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
-import MapSelector from "../../(util)/map-selector"
 import { inputStyles } from "@/src/styles/input.styles"
+import MapSelector from "@/src/app/(util)/map-selector"
 
 export default function CreatePost() {
   const [QNAs, setQNAs] = useAtom(qnaAtom)
@@ -148,12 +147,6 @@ export default function CreatePost() {
     }
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      refresh()
-    }, [])
-  )
-
   if (!socket || socket.connected === false) {
     return (
       <View style={errorStyles.container}>
@@ -170,6 +163,7 @@ export default function CreatePost() {
       <LoadingIndicator loading={loading} opacity={0.5} />
 
       <CustomPager>
+        {/* Questionnaire */}
         {QNAs.map((qna, i) => {
           const question = qna.question
           const answer = qna.answer
@@ -265,6 +259,7 @@ export default function CreatePost() {
           )
         })}
 
+        {/* Location page */}
         <View key={QNAs.length}>
           <View style={createPostStyles.container}>
             <Text style={{ fontSize: 20, fontWeight: "600", color: colors.dark }}>
@@ -288,7 +283,9 @@ export default function CreatePost() {
                   title="Title"
                   headerStyles={{ fontSize: 16, fontWeight: "600" }}
                   value={settings.title}
-                  onChangeText={text => setSettings({ ...settings, title: text })}
+                  onChangeText={text => {
+                    setSettings(async curr => ({ ...(await curr), title: text }))
+                  }}
                   editable={!loading}
                   mandatory
                 />
@@ -302,7 +299,9 @@ export default function CreatePost() {
               headerStyles={{ fontSize: 16, fontWeight: "600" }}
               value={settings.description}
               multiline
-              onChangeText={text => setSettings({ ...settings, description: text })}
+              onChangeText={async text => {
+                setSettings(async curr => ({ ...(await curr), description: text }))
+              }}
               editable={!loading}
               mandatory
             />
@@ -358,7 +357,9 @@ export default function CreatePost() {
                 <Switch
                   trackColor={{ true: colors.purple }}
                   thumbColor={colors.light}
-                  onValueChange={value => setSettings({ ...settings, publicPost: value })}
+                  onValueChange={value =>
+                    setSettings(async curr => ({ ...(await curr), publicPost: value }))
+                  }
                   value={settings.publicPost}
                 />
               </View>

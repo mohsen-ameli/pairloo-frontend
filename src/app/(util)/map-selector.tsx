@@ -83,30 +83,30 @@ export default function MapSelector() {
       clearTimeout(timeoutRef.current)
     }
     timeoutRef.current = setTimeout(() => {
-      setSettings({
-        ...settings,
+      setSettings(async curr => ({
+        ...(await curr),
         location: {
           latitude: region.current.latitude,
           longitude: region.current.longitude,
         },
         distance: region.current.distance,
         zoom: region.current.zoom,
-      })
+      }))
     }, 2000)
   }
 
   useFocusEffect(
     useCallback(() => {
-      return async () => {
-        await setSettings({
-          ...settings,
+      return () => {
+        setSettings(async curr => ({
+          ...(await curr),
           location: {
             latitude: region.current.latitude,
             longitude: region.current.longitude,
           },
           distance: region.current.distance,
           zoom: region.current.zoom,
-        })
+        }))
       }
     }, [currPage])
   )
@@ -158,7 +158,7 @@ export default function MapSelector() {
     }
 
     saveCurrentLocation()
-  }, [settings.location])
+  }, [settings.location, settings.zoom])
 
   return (
     <View style={{ flex: 1 }}>
@@ -240,8 +240,8 @@ export default function MapSelector() {
                   setSettings({
                     ...settings,
                     location: {
-                      latitude: item.latitude,
-                      longitude: item.longitude,
+                      latitude: region.current.latitude,
+                      longitude: region.current.longitude,
                     },
                     distance: region.current.distance,
                     zoom: region.current.zoom,
@@ -329,11 +329,11 @@ export default function MapSelector() {
                 const newZoom = region.current.zoom + 1
                 region.current.zoom = newZoom
                 region.current.distance = zoomToRadiusMeters(newZoom, region.current.latitude)
-                setSettings({
-                  ...settings,
+                setSettings(async curr => ({
+                  ...(await curr),
                   distance: region.current.distance,
                   zoom: region.current.zoom,
-                })
+                }))
               }}
               style={{
                 paddingVertical: 10,
@@ -349,11 +349,11 @@ export default function MapSelector() {
                 const newZoom = region.current.zoom - 1
                 region.current.zoom = newZoom
                 region.current.distance = zoomToRadiusMeters(newZoom, region.current.latitude)
-                setSettings({
-                  ...settings,
+                setSettings(async curr => ({
+                  ...(await curr),
                   distance: region.current.distance,
                   zoom: region.current.zoom,
-                })
+                }))
               }}
               style={{ paddingVertical: 10, paddingHorizontal: 12 }}
             >
