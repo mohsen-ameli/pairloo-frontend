@@ -1,4 +1,13 @@
-import { View, Text, Pressable, TextInput, FlatList, Dimensions } from "react-native"
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  FlatList,
+  Dimensions,
+  Alert,
+  ActivityIndicator,
+} from "react-native"
 import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -17,6 +26,9 @@ import {
   receivedMsgAtom,
   replyingToAtom,
   sendMessageAtom,
+  editingMessageAtom,
+  editMessageAtom,
+  deleteMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
@@ -35,26 +47,31 @@ import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
+import { atom } from "jotai"
 
-const defaultProfilePicture = require("@/assets/images/default_pfp.png")
+const scrollTargetIdAtom = atom<string | null>(null)
 
 export default function ChatDetails() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")
+  const [inputHeight, setInputHeight] = useState<number>(40)
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
+  const editMessage = useSetAtom(editMessageAtom)
   const user = useAtomValue(userAtom)
   const userJwt = useAtomValue(userSecureAtom)
   const conversations = useAtomValue(conversationsAtom)
   const setCurrentConversation = useSetAtom(currentConversationAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
+  const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
+  const deleteMessage = useSetAtom(deleteMessageAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader("", true, true)
-  const loading = useAtomValue(loadingAtom)
+  const [loading, setLoading] = useAtom(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
   const otherUser = useRef<{
     _id: string
@@ -63,11 +80,44 @@ export default function ChatDetails() {
     email: string
   }>(undefined)
   const [canReview, setCanReview] = useState(false)
-  const entireChatLoaded = useAtomValue(entireChatLoadedAtom)
+  const [entireChatLoaded, setEntireChatLoaded] = useAtom(entireChatLoadedAtom)
   const receivedMsg = useAtomValue(receivedMsgAtom)
+  const [scrollTargetId, setScrollTargetId] = useAtom(scrollTargetIdAtom)
+  const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
+
+  // Handle automatic scrolling to replied messages
+  useEffect(() => {
+    if (!scrollTargetId || !chatRef.current) return
+
+    const targetIndex = messages.findIndex(msg => msg._id === scrollTargetId)
+
+    if (targetIndex !== -1) {
+      chatRef.current.scrollToIndex({
+        index: targetIndex,
+        animated: true,
+        viewPosition: 0.5,
+      })
+
+      setTimeout(() => {
+        setHighlightedMessageId(scrollTargetId)
+      }, 500)
+
+      setScrollTargetId(null)
+    } else {
+      if (!entireChatLoaded && socket) {
+        socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
+      } else if (entireChatLoaded) {
+        Alert.alert("Error", "The original message could not be found.")
+        setScrollTargetId(null)
+      }
+    }
+  }, [messages, scrollTargetId, entireChatLoaded, socket])
 
   useEffect(() => {
     if (!conversations || !user || !socket || !userJwt) return
+
+    setLoading(true)
+    setEntireChatLoaded(false)
 
     // Find the current conversation
     const conv = conversations.find(c => c._id === id)
@@ -97,14 +147,64 @@ export default function ChatDetails() {
     return () => {
       setMessages([])
       setCurrentConversation(null)
+      setScrollTargetId(null)
     }
   }, [])
 
+  // When a message is selected for editing, populate the input
+  useEffect(() => {
+    if (editingMessage) {
+      setMessage(editingMessage.content || "")
+      inputRef.current?.focus()
+    }
+  }, [editingMessage])
+
   async function handleSendMessage() {
     const msg = message.trim()
-    if (!msg && attachments.length === 0) return
-    setMessage("")
-    await sendMessage(id, msg, replyingTo?._id)
+    if (!editingMessage && !msg && attachments.length === 0) return
+
+    if (editingMessage) {
+      if (msg === editingMessage.content) {
+        // No changes, just cancel editing
+        setEditingMessage(null)
+        setMessage("")
+        return
+      }
+
+      // If message is empty, show delete confirmation alert
+      if (!msg) {
+        Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
+          {
+            text: "Cancel",
+            onPress: () => {},
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              try {
+                await deleteMessage(editingMessage._id, editingMessage.conversationId)
+                setEditingMessage(null)
+                setMessage("")
+              } catch (error) {
+                console.error("Delete error:", error)
+                Alert.alert("Error", "Failed to delete message")
+              }
+            },
+            style: "destructive",
+          },
+        ])
+        return
+      }
+
+      await editMessage(editingMessage._id, editingMessage.conversationId, msg)
+      setEditingMessage(null)
+      setMessage("")
+    } else {
+      // Normal message sending
+      setMessage("")
+      await sendMessage(id, msg, replyingTo?._id)
+    }
   }
 
   // Animate fake view height
@@ -133,12 +233,26 @@ export default function ChatDetails() {
           keyboardDismissMode="on-drag"
           keyExtractor={item => item._id}
           onEndReached={loadMoreMessages}
-          renderItem={({ item }) => (
-            <MessageItem
-              item={item}
-              inputRef={inputRef}
-              isOwnMessage={userJwt?._id === item.sender._id}
-            />
+          scrollIndicatorInsets={{ left: 10 }}
+          contentContainerStyle={{ paddingTop: 10, paddingBottom: 20 }}
+          renderItem={({ item, index }) => (
+            <>
+              {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
+              {index === messages.length - 1 && !entireChatLoaded && (
+                <ActivityIndicator
+                  style={{ paddingVertical: 8 }}
+                  size="small"
+                  color={colors.blue}
+                />
+              )}
+              <MessageItem
+                item={item}
+                messages={messages}
+                chatRef={chatRef}
+                inputRef={inputRef}
+                isOwnMessage={userJwt?._id === item.sender._id}
+              />
+            </>
           )}
           ListFooterComponent={<View style={chatStyles.flatListFooter} />}
         />
@@ -180,6 +294,24 @@ export default function ChatDetails() {
         </View>
       )}
 
+      {/* Editing Indicator */}
+      {editingMessage && (
+        <View style={chatStyles.editingIndicatorContainer}>
+          <Pressable
+            onPress={() => {
+              setEditingMessage(null)
+              setMessage("")
+            }}
+            style={{ backgroundColor: colors.light, padding: 4, borderRadius: 50 }}
+          >
+            <Feather name="x" size={18} color={colors.gray} />
+          </Pressable>
+          <Text style={{ color: colors.gray, fontSize: 12, flex: 1, marginLeft: 8 }}>
+            Editing message
+          </Text>
+        </View>
+      )}
+
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
         <Pressable
@@ -193,7 +325,7 @@ export default function ChatDetails() {
         >
           <Feather name="plus" size={24} color={colors.light} />
         </Pressable>
-        {message.trim() === "" && canReview && (
+        {message.trim() === "" && canReview && !editingMessage && (
           <Pressable
             onPress={() =>
               router.push({ pathname: "review-user", params: { id: otherUser.current?._id } })
@@ -204,22 +336,33 @@ export default function ChatDetails() {
           </Pressable>
         )}
         <TextInput
-          style={chatStyles.input}
+          style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
           placeholder="Type a message..."
           placeholderTextColor={colors.muted}
           value={message}
           onChangeText={text => setMessage(text)}
+          onContentSizeChange={event => {
+            setInputHeight(event.nativeEvent.contentSize.height)
+          }}
+          multiline
+          maxLength={500}
           ref={inputRef}
         />
-        <Pressable
-          style={[
-            chatStyles.actionButton,
-            { display: message.trim() || attachments.length > 0 ? "flex" : "none" },
-          ]}
-          onPress={handleSendMessage}
-        >
-          <Feather name="send" size={22} color={colors.lightGray} />
-        </Pressable>
+        {editingMessage ? (
+          <Pressable onPress={handleSendMessage} style={chatStyles.actionButton}>
+            <Feather name="send" size={22} color={colors.lightGray} />
+          </Pressable>
+        ) : (
+          <Pressable
+            style={[
+              chatStyles.actionButton,
+              { display: message.trim() || attachments.length > 0 ? "flex" : "none" },
+            ]}
+            onPress={handleSendMessage}
+          >
+            <Feather name="send" size={22} color={colors.lightGray} />
+          </Pressable>
+        )}
       </View>
 
       {/* Push the content up after keyboard appears */}
@@ -230,10 +373,14 @@ export default function ChatDetails() {
 
 function MessageItem({
   item,
+  messages,
+  chatRef,
   inputRef,
   isOwnMessage,
 }: {
   item: MessageType
+  messages: MessageType[]
+  chatRef: React.RefObject<FlashListRef<MessageType> | null>
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
@@ -246,6 +393,29 @@ function MessageItem({
   const router = useRouter()
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
+  const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
+
+  // scroll to the original replied message
+  const scrollToReplyMessage = () => {
+    if (!item.replyTo || !chatRef.current) return
+
+    const originalMessageIndex = messages.findIndex(msg => msg._id === item.replyTo?._id)
+    if (originalMessageIndex === -1) {
+      setScrollTargetId(item.replyTo._id)
+      return
+    }
+
+    chatRef.current?.scrollToIndex({
+      index: originalMessageIndex,
+      animated: true,
+      viewPosition: 0.5,
+    })
+
+    // Highlight the message after scroll completes (500ms delay)
+    setTimeout(() => {
+      setHighlightedMessageId(item.replyTo!._id)
+    }, 500)
+  }
 
   function focusOnInput() {
     if (inputRef.current) {
@@ -293,7 +463,7 @@ function MessageItem({
     if (!highlightedMessageId) return
     const timer = setTimeout(() => {
       setHighlightedMessageId(null)
-    }, 300)
+    }, 700)
     return () => clearTimeout(timer)
   }, [highlightedMessageId])
 
@@ -331,35 +501,79 @@ function MessageItem({
       <GestureDetector gesture={Gesture.Simultaneous(panGesture, longPressGesture)}>
         <Animated.View
           style={[
+            chatStyles.messageContentAnimated,
             {
-              ...chatStyles.messageContentAnimated,
-              backgroundColor:
-                highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
-                  ? colors.chatHighlight
-                  : "transparent",
+              alignItems: isOwnMessage ? "flex-end" : "flex-start",
             },
             contentAnimatedStyle,
           ]}
         >
-          <Image
-            source={item.sender.picture ? { uri: item.sender.picture } : defaultProfilePicture}
-            style={chatStyles.messageImage}
-          />
-          <View style={chatStyles.messageFlexContainer}>
-            <View style={chatStyles.messageHeader}>
-              <Text style={chatStyles.messageUsername}>{item.sender.username}</Text>
-              <Text style={chatStyles.messageDate}>{formatDate(item.createdAt)}</Text>
-            </View>
+          <View
+            style={[
+              chatStyles.messageBubble,
+              isOwnMessage ? chatStyles.ownMessageBubble : chatStyles.otherMessageBubble,
+              {
+                backgroundColor:
+                  highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
+                    ? colors.chatHighlight
+                    : isOwnMessage
+                      ? colors.purple
+                      : colors.lightGray,
+                overflow: "hidden",
+                maxWidth: item.attachments && item.attachments.length > 1 ? "80%" : "70%",
+              },
+            ]}
+          >
+            {/* Reply section inside bubble */}
             {item.replyTo && (
-              <View style={chatStyles.messageReplyContainer}>
+              <Pressable
+                onPress={scrollToReplyMessage}
+                style={[
+                  chatStyles.messageReplyContainer,
+                  item.attachments &&
+                    item.attachments.length > 0 && { marginTop: 8, marginHorizontal: 10 },
+                  {
+                    backgroundColor: isOwnMessage
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : "rgba(0, 0, 0, 0.1)",
+                    borderLeftColor: isOwnMessage ? colors.light : colors.purple,
+                  },
+                ]}
+              >
                 <View style={chatStyles.messageFlexContainer}>
-                  <Text style={chatStyles.messageReplyText}>{item.replyTo.sender.username}</Text>
+                  <Text
+                    style={[
+                      chatStyles.messageReplyText,
+                      {
+                        color: isOwnMessage ? colors.light : colors.gray,
+                      },
+                    ]}
+                  >
+                    {item.replyTo.sender.username}
+                  </Text>
                   {item.replyTo.content ? (
-                    <Text style={chatStyles.messageReplyContent} numberOfLines={2}>
+                    <Text
+                      style={[
+                        chatStyles.messageReplyContent,
+                        {
+                          color: isOwnMessage ? colors.light : colors.dark,
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
                       {item.replyTo.content}
                     </Text>
                   ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
-                    <Text style={chatStyles.messageReplyImage}>Image</Text>
+                    <Text
+                      style={[
+                        chatStyles.messageReplyImage,
+                        {
+                          color: isOwnMessage ? colors.light : colors.gray,
+                        },
+                      ]}
+                    >
+                      Image
+                    </Text>
                   ) : null}
                 </View>
                 {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
@@ -368,27 +582,28 @@ function MessageItem({
                     style={chatStyles.messageReplyThumbnail}
                   />
                 )}
-              </View>
+              </Pressable>
             )}
-            {item.content && (
-              <Text
-                style={[
-                  chatStyles.messageContent,
-                  {
-                    color: item.optimistic ? colors.gray : colors.dark,
-                  },
-                ]}
-              >
-                {item.content}
-              </Text>
-            )}
-            {item.attachments && (
-              <View style={[chatStyles.messageAttachmentContainer, { alignItems: "flex-start" }]}>
-                {item.attachments.map((att, idx) => {
-                  const l = item.attachments?.length
-                  const width = l === 1 ? 200 : l === 2 ? 150 : 100
+
+            {/* Attachments */}
+            {item.attachments && item.attachments.length > 0 && (
+              <View style={chatStyles.messageAttachmentContainer}>
+                {item.attachments.slice(0, 2).map((att, idx) => {
+                  const l = item.attachments?.length || 1
+
+                  // Calculate exact widths to fit side-by-side cleanly inside the max-width
+                  let width: number
+                  if (l === 1) {
+                    width = 240
+                  } else {
+                    width = 140
+                  }
+
+                  const hasMoreImages = l > 2
+                  const showOverlay = hasMoreImages && idx === 1
+
                   return (
-                    <View key={idx} style={chatStyles.attachmentItemContainer}>
+                    <View key={idx} style={{ position: "relative" }}>
                       <Pressable
                         onPress={() => {
                           setImgIdx(idx)
@@ -408,15 +623,44 @@ function MessageItem({
                             height: width,
                             maxWidth: 300,
                             maxHeight: 300,
-                            borderRadius: 10,
+                            marginBottom: 5,
                           }}
                         />
+                        {showOverlay && (
+                          <View style={chatStyles.shadowOverlay}>
+                            <Text style={{ color: "white", fontSize: 24, fontWeight: "bold" }}>
+                              +{l - 2}
+                            </Text>
+                          </View>
+                        )}
                       </Pressable>
                     </View>
                   )
                 })}
               </View>
             )}
+
+            {/* Main message content */}
+            {item.content && (
+              <Text
+                style={[
+                  chatStyles.messageContent,
+                  isOwnMessage ? chatStyles.ownMessageText : chatStyles.otherMessageText,
+                ]}
+              >
+                {item.content}
+              </Text>
+            )}
+
+            {/* Timestamp */}
+            <Text
+              style={[
+                chatStyles.messageDate,
+                isOwnMessage ? chatStyles.ownMessageDate : chatStyles.otherMessageDate,
+              ]}
+            >
+              {formatDate(item.createdAt)}
+            </Text>
           </View>
         </Animated.View>
       </GestureDetector>

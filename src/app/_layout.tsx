@@ -39,6 +39,8 @@ const toastConfig = {
       username: string
       message: string
       picture?: string
+      Icon?: React.ReactNode
+      attachmentUrl?: string
     }
     onPress: () => void
   }) => {
@@ -55,6 +57,15 @@ export default function RootLayout() {
   const forgotEmailOptions = useCustomHeader("Forgot Email", true)
   const chatOptions = useCustomHeader("Chat")
   const myPostOptions = useCustomHeader("My Post")
+  const postDetailsOptions = useCustomHeader(
+    "Post Details",
+    true,
+    false,
+    false,
+    false,
+    undefined,
+    true
+  )
   const defaultOptions = useCustomHeader("", true)
   const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
 
@@ -132,7 +143,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)/chat-details" options={chatOptions} />
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
-              <Stack.Screen name="(details)/feed-post" options={defaultOptions} />
+              <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
               <Stack.Screen name="(details)/profile" options={defaultOptions} />
               <Stack.Screen
                 name="(details)/review-user"
