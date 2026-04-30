@@ -58,6 +58,18 @@ export default function Index() {
     console.log("load more posts")
   }
 
+  async function handlePostPress(postId: string) {
+    router.push({
+      pathname: "/feed-post",
+      params: { id: postId },
+    })
+
+    await authFetch("/api/posts/interaction", {
+      method: "POST",
+      body: JSON.stringify({ postId, type: "post_view" }),
+    })
+  }
+
   if (isPending) {
     return (
       <View style={styles.container}>
