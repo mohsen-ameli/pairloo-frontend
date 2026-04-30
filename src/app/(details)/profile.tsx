@@ -12,6 +12,7 @@ import { formatDateDayMonthYear } from "@/src/utils/format-date"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
 import { authFetchAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
+import SocialListModal from "@/src/components/SocialListModal"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -25,6 +26,7 @@ export default function userProfile() {
   const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
   const [containerWidth, setContainerWidth] = useState(0)
   const slideAnim = useRef(new Animated.Value(0)).current
+  const [activeSocialList, setActiveSocialList] = useState<"followers" | "following" | null>(null)
 
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {
@@ -99,13 +101,27 @@ export default function userProfile() {
 
         {/* show following, followers, current rating */}
         <View style={profileStyles.socialContainer}>
-          <Text style={profileStyles.text}>{data.followersCount} Followers</Text>
-          <Text style={profileStyles.text}>{data.followingCount} Following</Text>
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() => setActiveSocialList("followers")}
+          >
+            <Text style={profileStyles.socialPressableCount}>{data.followersCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Followers</Text>
+          </Pressable>
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() => setActiveSocialList("following")}
+          >
+            <Text style={profileStyles.socialPressableCount}>{data.followingCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Following</Text>
+          </Pressable>
           {data.ratingCount > 0 && (
             <View style={profileStyles.ratingContainer}>
-              <Text style={profileStyles.text}>{data.ratingAvg}</Text>
-              <RatingStarSingle value={data.ratingAvg} />
-              <Text style={profileStyles.text}>Rating</Text>
+              <View style={profileStyles.ratingValueRow}>
+                <Text style={profileStyles.text}>{data.ratingAvg}</Text>
+                <RatingStarSingle value={data.ratingAvg} />
+              </View>
+              <Text style={profileStyles.socialPressableLabel}>Rating</Text>
             </View>
           )}
         </View>
@@ -293,6 +309,15 @@ export default function userProfile() {
             ))}
         </View>
       </ScrollView>
+      <SocialListModal
+        visible={activeSocialList !== null}
+        title={activeSocialList === "followers" ? "Followers" : "Following"}
+        users={activeSocialList === "followers" ? data.followers : data.following}
+        emptyText={
+          activeSocialList === "followers" ? "No followers yet." : "Not following anyone yet."
+        }
+        onClose={() => setActiveSocialList(null)}
+      />
     </View>
   )
 }

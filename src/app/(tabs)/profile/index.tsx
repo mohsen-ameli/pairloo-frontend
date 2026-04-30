@@ -19,6 +19,7 @@ import { MyReviewsType, MySocialType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
+import SocialListModal from "@/src/components/SocialListModal"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
   const [activeView, setActiveView] = useState<"posts" | "reviews" | "savedPosts">("posts")
   const [containerWidth, setContainerWidth] = useState(0)
   const slideAnim = useRef(new Animated.Value(0)).current
+  const [activeSocialList, setActiveSocialList] = useState<"followers" | "following" | null>(null)
 
   const {
     data: social,
@@ -145,13 +147,27 @@ export default function ProfileScreen() {
 
         {/* show following, followers, current rating */}
         <View style={profileStyles.socialContainer}>
-          <Text style={profileStyles.text}>{social.followersCount} Followers</Text>
-          <Text style={profileStyles.text}>{social.followingCount} Following</Text>
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() => setActiveSocialList("followers")}
+          >
+            <Text style={profileStyles.socialPressableCount}>{social.followersCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Followers</Text>
+          </Pressable>
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() => setActiveSocialList("following")}
+          >
+            <Text style={profileStyles.socialPressableCount}>{social.followingCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Following</Text>
+          </Pressable>
           {reviews.ratingCount > 0 && (
             <View style={profileStyles.ratingContainer}>
-              <Text style={profileStyles.text}>{reviews.ratingAvg}</Text>
-              <RatingStarSingle value={reviews.ratingAvg} />
-              <Text style={profileStyles.text}>Rating</Text>
+              <View style={profileStyles.ratingValueRow}>
+                <Text style={profileStyles.text}>{reviews.ratingAvg}</Text>
+                <RatingStarSingle value={reviews.ratingAvg} />
+              </View>
+              <Text style={profileStyles.socialPressableLabel}>Rating</Text>
             </View>
           )}
         </View>
@@ -402,6 +418,15 @@ export default function ProfileScreen() {
             ))}
         </View>
       </ScrollView>
+      <SocialListModal
+        visible={activeSocialList !== null}
+        title={activeSocialList === "followers" ? "Followers" : "Following"}
+        users={activeSocialList === "followers" ? social.followers : social.following}
+        emptyText={
+          activeSocialList === "followers" ? "No followers yet." : "Not following anyone yet."
+        }
+        onClose={() => setActiveSocialList(null)}
+      />
     </View>
   )
 }

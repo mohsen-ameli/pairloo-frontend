@@ -1,6 +1,21 @@
 import { CountryCode } from "react-native-country-picker-modal"
 import { GeneralPostType, MyPostType } from "./post.type"
 
+export type ProfileSocialUserType = {
+  _id: string
+  picture: string | null
+  username: string
+  firstName: string
+  lastName: string
+}
+
+export type ProfileSocialType = {
+  followersCount: number
+  followingCount: number
+  followers: ProfileSocialUserType[]
+  following: ProfileSocialUserType[]
+}
+
 // Basic user info stored in async storage
 export type UserType = null | {
   username: string
@@ -23,29 +38,25 @@ export type UserType = null | {
 
 export type GeneralUserProfileType = UserType & {
   posts: GeneralPostType[]
-  followersCount: number
-  followingCount: number
-  ratingCount: number
-  ratingAvg: number
-  reviews: {
-    rating: number
-    review: string
-    createdAt: Date
-    reviewer: {
-      _id: string
-      picture: string
-      username: string
-      firstName: string
-      lastName: string
-    }
-  }[]
-  isFollowing: boolean
-}
+} & ProfileSocialType & {
+    ratingCount: number
+    ratingAvg: number
+    reviews: {
+      rating: number
+      review: string
+      createdAt: Date
+      reviewer: {
+        _id: string
+        picture: string
+        username: string
+        firstName: string
+        lastName: string
+      }
+    }[]
+    isFollowing: boolean
+  }
 
-export type MySocialType = {
-  followersCount: number
-  followingCount: number
-}
+export type MySocialType = {} & ProfileSocialType
 
 export type MyReviewsType = {
   ratingCount: number
