@@ -157,7 +157,7 @@ export default function userProfile() {
                       onPress={() => {
                         router.push({
                           pathname: "(details)/feed-post",
-                          params: { id: post._id },
+                          params: { feedPostId: post._id },
                         })
                       }}
                     >

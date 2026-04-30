@@ -355,7 +355,7 @@ export default function ProfileScreen() {
                       onPress={() => {
                         router.push({
                           pathname: "(details)/feed-post",
-                          params: { id: post._id },
+                          params: { feedPostId: post._id },
                         })
                       }}
                     >

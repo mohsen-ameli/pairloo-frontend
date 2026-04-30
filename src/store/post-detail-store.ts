@@ -2,6 +2,9 @@ import { atom } from "jotai"
 import { Alert } from "react-native"
 import { router } from "expo-router/build/exports"
 import Toast from "react-native-toast-message"
+import React from "react"
+import Feather from "@expo/vector-icons/Feather"
+import { colors } from "@/src/utils/colors"
 import { queryClientAtom } from "./general-store"
 import { authFetchAtom } from "./auth-store"
 
@@ -26,7 +29,11 @@ export const savePostAtom = atom(null, async (get, set, id: string) => {
         props: {
           username: "Post saved",
           message: "Added to your saved posts",
-          iconName: "bookmark",
+          Icon: React.createElement(Feather, {
+            name: "bookmark",
+            size: 20,
+            color: colors.purple,
+          }),
         },
       })
       get(queryClientAtom).invalidateQueries({ queryKey: ["my-saved-posts"] })
@@ -59,7 +66,11 @@ export const unsavePostAtom = atom(null, async (get, set, id: string) => {
         props: {
           username: "Post removed",
           message: "Removed from your saved posts",
-          iconName: "bookmark",
+          Icon: React.createElement(Feather, {
+            name: "bookmark",
+            size: 20,
+            color: colors.purple,
+          }),
         },
       })
       get(queryClientAtom).invalidateQueries({ queryKey: ["my-saved-posts"] })

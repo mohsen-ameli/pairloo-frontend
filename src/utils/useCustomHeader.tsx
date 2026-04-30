@@ -19,7 +19,6 @@ import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
 import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post-detail-store"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
-import { is } from "zod/v4/locales"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -34,12 +33,6 @@ export default function useCustomHeader(
   isPostDetails?: boolean
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
-  const { id: rawPostId } = useGlobalSearchParams<{ id?: string | string[] }>()
-  const postId = Array.isArray(rawPostId) ? rawPostId[0] : rawPostId
-  const savePost = useSetAtom(savePostAtom)
-  const unsavePost = useSetAtom(unsavePostAtom)
-  const savedPostIds = useAtomValue(savedPostIdsAtom)
-  const isPostSaved = postId ? savedPostIds.includes(postId) : false
 
   function handleProfilePress(id: string) {
     router.push({
@@ -162,25 +155,7 @@ export default function useCustomHeader(
   if (isPostDetails) {
     return {
       ...options,
-      headerTitle: () => (
-        <PostDetailsHeader
-          backButtonVisible={backButtonVisible}
-          title={title}
-          isPostSaved={isPostSaved}
-          onSavePress={async () => {
-            if (!postId) {
-              Alert.alert("Error", "Something went wrong. Post was not saved.")
-              return
-            }
-
-            if (isPostSaved) {
-              await unsavePost(postId)
-            } else {
-              await savePost(postId)
-            }
-          }}
-        />
-      ),
+      headerTitle: () => <PostDetailsHeader />,
     }
   }
 
@@ -245,18 +220,14 @@ function CreatePostHeader() {
   )
 }
 
-function PostDetailsHeader({
-  backButtonVisible,
-  title,
-  isPostSaved,
-  onSavePress,
-}: {
-  backButtonVisible: boolean
-  title: string
-  isPostSaved: boolean
-  onSavePress: () => void | Promise<void>
-}) {
+function PostDetailsHeader() {
   const router = useRouter()
+  const { feedPostId } = useGlobalSearchParams<{ feedPostId: string }>()
+  const postId = Array.isArray(feedPostId) ? feedPostId[0] : feedPostId
+  const savePost = useSetAtom(savePostAtom)
+  const unsavePost = useSetAtom(unsavePostAtom)
+  const savedPostIds = useAtomValue(savedPostIdsAtom)
+  const isPostSaved = postId ? savedPostIds.includes(postId) : false
 
   return (
     <View style={styles.header}>
@@ -267,19 +238,31 @@ function PostDetailsHeader({
         ]}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          {backButtonVisible && (
-            <Pressable
-              style={styles.headerBackIcon}
-              onPress={() => {
-                router.back()
-              }}
-            >
-              <Feather name="arrow-left" size={26} color={colors.dark} />
-            </Pressable>
-          )}
-          <Text style={[styles.headerTitle, { marginLeft: 50 }]}>{title}</Text>
+          <Pressable
+            style={styles.headerBackIcon}
+            onPress={() => {
+              router.back()
+            }}
+          >
+            <Feather name="arrow-left" size={26} color={colors.dark} />
+          </Pressable>
+          <Text style={[styles.headerTitle, { marginLeft: 50 }]}>Post Details</Text>
         </View>
-        <Pressable style={{ padding: 6 }} onPress={onSavePress}>
+        <Pressable
+          style={{ padding: 6 }}
+          onPress={async () => {
+            if (!postId) {
+              Alert.alert("Error", "Something went wrong. Post was not saved.")
+              return
+            }
+
+            if (isPostSaved) {
+              await unsavePost(postId)
+            } else {
+              await savePost(postId)
+            }
+          }}
+        >
           {isPostSaved ? (
             <MaterialIcons name="bookmark" size={24} color={colors.purple} />
           ) : (
