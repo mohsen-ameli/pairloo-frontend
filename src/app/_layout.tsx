@@ -26,8 +26,6 @@ import {
   PermissionStatus,
   requestTrackingPermissionsAsync,
 } from "expo-tracking-transparency"
-import { authFetchAtom } from "@/src/store/auth-store"
-import { savedPostIdsAtom } from "@/src/store/post-detail-store"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -41,19 +39,8 @@ const toastConfig = {
       username: string
       message: string
       picture?: string
-    }
-    onPress: () => void
-  }) => {
-    return <CustomToast {...props} onPress={onPress} />
-  },
-  savedPost: ({
-    props,
-    onPress,
-  }: {
-    props: {
-      username: string
-      message: string
       Icon?: React.ReactNode
+      attachmentUrl?: string
     }
     onPress: () => void
   }) => {
@@ -64,8 +51,6 @@ const toastConfig = {
 export default function RootLayout() {
   const userJwt = useAtomValue(userSecureAtom)
   const queryClient = useAtomValue(queryClientAtom)
-  const authFetch = useSetAtom(authFetchAtom)
-  const setSavedPostIds = useSetAtom(savedPostIdsAtom)
 
   const loginOptions = useCustomHeader("Log In", true)
   const registerOptions = useCustomHeader("Create Account", true)
@@ -139,22 +124,6 @@ export default function RootLayout() {
     getDeviceInfo()
     setupAds()
   }, [])
-
-  useEffect(() => {
-    if (!userJwt) return
-
-    const fetchSavedPosts = async () => {
-      try {
-        const res = await authFetch("/api/users/my-saved-posts")
-        const data = await res.json()
-        setSavedPostIds(data.map((post: any) => post._id))
-      } catch (error) {
-        console.error("Failed to fetch saved posts:", error)
-      }
-    }
-
-    fetchSavedPosts()
-  }, [userJwt])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

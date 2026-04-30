@@ -25,7 +25,7 @@ export const savePostAtom = atom(null, async (get, set, id: string) => {
         set(savedPostIdsAtom, [...savedIds, id])
       }
       Toast.show({
-        type: "savedPost",
+        type: "newMessage",
         props: {
           username: "Post saved",
           message: "Added to your saved posts",
@@ -62,7 +62,7 @@ export const unsavePostAtom = atom(null, async (get, set, id: string) => {
         savedIds.filter(postId => postId !== id)
       )
       Toast.show({
-        type: "savedPost",
+        type: "newMessage",
         props: {
           username: "Post removed",
           message: "Removed from your saved posts",
