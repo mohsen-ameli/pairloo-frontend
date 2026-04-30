@@ -218,7 +218,7 @@ export default function PostDetails() {
                   onPress={() => {
                     router.push({
                       pathname: "/feed-post",
-                      params: { id: post.postId },
+                      params: { feedPostId: post.postId },
                     })
                   }}
                 >

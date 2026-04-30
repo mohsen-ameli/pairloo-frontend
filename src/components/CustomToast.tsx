@@ -12,21 +12,27 @@ export default function CustomToast({
   message,
   attachmentUrl,
   picture,
+  Icon,
 }: {
   onPress: () => void
   username: string
   message: string
   picture?: string
   attachmentUrl?: string
+  Icon?: React.ReactNode
 }) {
   const aspectRatio = useImageAspectRatio(attachmentUrl || "")
 
   return (
     <Pressable style={styles.customToast} onPress={onPress}>
-      <Image
-        source={picture ? { uri: picture } : defaultProfilePicture}
-        style={{ width: 40, height: 40, borderRadius: 20 }}
-      />
+      {Icon ? (
+        <View style={styles.iconContainer}>{Icon}</View>
+      ) : (
+        <Image
+          source={picture ? { uri: picture } : defaultProfilePicture}
+          style={{ width: 40, height: 40, borderRadius: 20 }}
+        />
+      )}
       <View style={styles.textContainer}>
         <Text style={styles.customTitle}>{username}</Text>
         <Text style={styles.customMessage}>{message}</Text>
@@ -38,7 +44,7 @@ export default function CustomToast({
           />
         )}
       </View>
-      <Feather name="x" size={20} color={colors.light} />
+      <Feather name="x" size={20} color={colors.darkGray} />
     </Pressable>
   )
 }
@@ -56,6 +62,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.lightGray,
   },
   textContainer: {
     flex: 1,
