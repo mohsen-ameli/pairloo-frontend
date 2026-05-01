@@ -1,5 +1,5 @@
-import React, { useState, useLayoutEffect } from "react"
-import { View, Text, Pressable, FlatList, SafeAreaView, ActivityIndicator } from "react-native"
+import React, { useState, useLayoutEffect, useEffect } from "react"
+import { View, Text, Pressable, FlatList, ActivityIndicator, Animated } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useNavigation } from "@react-navigation/native"
 import { useQuery } from "@tanstack/react-query"
@@ -8,6 +8,7 @@ import { authFetchAtom } from "@/src/store/auth-store"
 import { ProfileSocialUserType } from "@/src/types/user.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { colors } from "@/src/utils/colors"
+import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 
@@ -24,12 +25,25 @@ export default function SocialListPage() {
   const [active, setActive] = useState<"followers" | "following">(
     type === "following" ? "following" : "followers"
   )
+  const [containerWidth, setContainerWidth] = useState(0)
+  const [slideAnim] = useState(new Animated.Value(0))
 
   const headerOptions = useCustomHeader("Social List", true)
 
   useLayoutEffect(() => {
     navigation.setOptions(headerOptions)
   }, [navigation, headerOptions])
+
+  useEffect(() => {
+    if (containerWidth > 0) {
+      const targetPosition = active === "followers" ? 0 : containerWidth / 2
+      Animated.timing(slideAnim, {
+        toValue: targetPosition,
+        duration: 300,
+        useNativeDriver: false,
+      }).start()
+    }
+  }, [active, containerWidth, slideAnim])
 
   async function fetchSocial() {
     if (id) {
@@ -70,32 +84,31 @@ export default function SocialListPage() {
   const list: ProfileSocialUserType[] = active === "followers" ? data.followers : data.following
 
   return (
-    <SafeAreaView style={profileStyles.socialModalContainer}>
-      <View style={{ flexDirection: "row", gap: 12, paddingHorizontal: 16, marginVertical: 15 }}>
-        <Pressable
-          onPress={() => setActive("followers")}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            alignItems: "center",
-            borderRadius: 8,
-            backgroundColor: active === "followers" ? colors.purple : colors.light,
-          }}
-        >
-          <Text style={{ color: active === "followers" ? "white" : colors.dark }}>Followers</Text>
+    <View style={profileStyles.socialModalContainer}>
+      <View
+        style={profileStyles.actionContainer}
+        onLayout={event => setContainerWidth(event.nativeEvent.layout.width)}
+      >
+        <Animated.View
+          style={[
+            profileStyles.actionTabAnimation,
+            { width: "50%", transform: [{ translateX: slideAnim }] },
+          ]}
+        />
+        <Pressable style={profileStyles.profileTab} onPress={() => setActive("followers")}>
+          <Text
+            style={active === "followers" ? profileStyles.activeTab : profileStyles.nonActiveTab}
+          >
+            Followers
+          </Text>
         </Pressable>
 
-        <Pressable
-          onPress={() => setActive("following")}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            alignItems: "center",
-            borderRadius: 8,
-            backgroundColor: active === "following" ? colors.purple : colors.light,
-          }}
-        >
-          <Text style={{ color: active === "following" ? "white" : colors.dark }}>Following</Text>
+        <Pressable style={profileStyles.profileTab} onPress={() => setActive("following")}>
+          <Text
+            style={active === "following" ? profileStyles.activeTab : profileStyles.nonActiveTab}
+          >
+            Following
+          </Text>
         </Pressable>
       </View>
 
@@ -139,6 +152,6 @@ export default function SocialListPage() {
           </Pressable>
         )}
       />
-    </SafeAreaView>
+    </View>
   )
 }
