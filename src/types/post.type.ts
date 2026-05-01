@@ -9,7 +9,8 @@ export type QnaItemType = {
 }
 
 export type GeneralPostType = {
-  _id: string // userId of the poster
+  _id: string // postId
+  userId: string
   username: string
   firstName: string
   lastName: string

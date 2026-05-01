@@ -46,7 +46,7 @@ export default function PostDetails() {
   async function contactPoster() {
     if (!socket || !user || !post) return
 
-    socket.emit("newConversation", [user._id, post._id])
+    socket.emit("newConversation", [user._id, post.userId])
     socket.once("conversation", async (conversation: ConversationType) => {
       router.push({
         pathname: "/chat-details",
@@ -65,7 +65,7 @@ export default function PostDetails() {
 
     router.push({
       pathname: "(details)/profile",
-      params: { id: post._id },
+      params: { id: post.userId },
     })
 
     await authFetch("/api/posts/interaction", {
