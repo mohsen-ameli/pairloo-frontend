@@ -19,7 +19,7 @@ import MapUnavailable from "@/src/components/MapUnavailable"
 
 export default function PostDetails() {
   const router = useRouter()
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { feedPostId } = useLocalSearchParams<{ feedPostId: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userSecureAtom)
@@ -29,18 +29,18 @@ export default function PostDetails() {
     data: post,
     isError,
     isPending,
-  } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+  } = useQuery({ queryKey: [`post-${feedPostId}`], queryFn: fetchPost })
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
 
   async function fetchPost() {
-    const res = await authFetch(`/api/posts/${id}`)
+    const res = await authFetch(`/api/posts/${feedPostId}`)
     const data: GeneralPostType = await res.json()
     return data
   }
 
   async function refresh() {
-    queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
+    queryClient.invalidateQueries({ queryKey: [`post-${feedPostId}`] })
   }
 
   async function contactPoster() {

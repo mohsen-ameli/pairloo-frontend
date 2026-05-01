@@ -1,9 +1,9 @@
 import { useAtomValue, useSetAtom } from "jotai"
-import { Pressable, ScrollView, Text, TouchableHighlight, View } from "react-native"
+import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
 import { Image } from "expo-image"
 import { authFetchAtom, userAtom } from "@/src/store/auth-store"
 import { colors } from "@/src/utils/colors"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "expo-router"
 import { resetEditAtom } from "@/src/store/settings-store"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -16,17 +16,21 @@ import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import Feather from "@expo/vector-icons/Feather"
 import { MyReviewsType, MySocialType } from "@/src/types/user.type"
-import { MyPostType } from "@/src/types/post.type"
+import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
-import SocialListModal from "@/src/components/SocialListModal"
+import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
 
 export default function ProfileScreen() {
   const router = useRouter()
   const user = useAtomValue(userAtom)
   const resetEdit = useSetAtom(resetEditAtom)
   const authFetch = useSetAtom(authFetchAtom)
+  const setSavedPostIds = useSetAtom(savedPostIdsAtom)
+  const unsavePost = useSetAtom(unsavePostAtom)
   const queryClient = useQueryClient()
-  const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
+  const [activeView, setActiveView] = useState<"posts" | "reviews" | "savedPosts">("posts")
+  const [containerWidth, setContainerWidth] = useState(0)
+  const slideAnim = useRef(new Animated.Value(0)).current
 
   const {
     data: social,
@@ -64,16 +68,44 @@ export default function ProfileScreen() {
     return data
   }
 
+  const {
+    data: savedPosts,
+    isError: isSavedPostsError,
+    isPending: isSavedPostsPending,
+  } = useQuery({
+    queryKey: ["my-saved-posts"],
+    queryFn: fetchSavedPosts,
+    enabled: activeView === "savedPosts",
+  })
+
+  async function fetchSavedPosts() {
+    const res = await authFetch("/api/users/my-saved-posts")
+    const data: GeneralPostType[] = await res.json()
+    setSavedPostIds(data.map(post => post._id))
+    return data
+  }
+
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["my-posts"] })
     queryClient.invalidateQueries({ queryKey: ["my-reviews"] })
     queryClient.invalidateQueries({ queryKey: ["my-social"] })
+    queryClient.invalidateQueries({ queryKey: ["my-saved-posts"] })
   }
 
   useEffect(() => {
     if (!user) return
     resetEdit()
   }, [user])
+
+  useEffect(() => {
+    const tabIndex = activeView === "posts" ? 0 : activeView === "reviews" ? 1 : 2
+    const tabWidth = containerWidth / 3
+    Animated.timing(slideAnim, {
+      toValue: tabIndex * tabWidth,
+      duration: 300,
+      useNativeDriver: true,
+    }).start()
+  }, [activeView, slideAnim, containerWidth])
 
   if (!user) return null
 
@@ -149,27 +181,36 @@ export default function ProfileScreen() {
         </View>
 
         {/* Posts & Reviews show/hide buttons */}
-        <View style={profileStyles.actionContainer}>
-          <Pressable onPress={() => setActiveView("posts")}>
+        <View
+          style={profileStyles.actionContainer}
+          onLayout={event => setContainerWidth(event.nativeEvent.layout.width)}
+        >
+          <Animated.View
+            style={[profileStyles.actionTabAnimation, { transform: [{ translateX: slideAnim }] }]}
+          />
+          <Pressable style={profileStyles.profileTab} onPress={() => setActiveView("posts")}>
             <Text
-              style={{
-                fontSize: 18,
-                fontWeight: activeView === "posts" ? "bold" : "normal",
-                color: activeView === "posts" ? colors.purple : colors.gray,
-              }}
+              style={activeView === "posts" ? profileStyles.activeTab : profileStyles.nonActiveTab}
             >
-              Posts
+              My Posts
             </Text>
           </Pressable>
-          <Pressable onPress={() => setActiveView("reviews")}>
+          <Pressable style={profileStyles.profileTab} onPress={() => setActiveView("reviews")}>
             <Text
-              style={{
-                fontSize: 18,
-                fontWeight: activeView === "reviews" ? "bold" : "normal",
-                color: activeView === "reviews" ? colors.purple : colors.gray,
-              }}
+              style={
+                activeView === "reviews" ? profileStyles.activeTab : profileStyles.nonActiveTab
+              }
             >
-              Reviews
+              My Reviews
+            </Text>
+          </Pressable>
+          <Pressable style={profileStyles.profileTab} onPress={() => setActiveView("savedPosts")}>
+            <Text
+              style={
+                activeView === "savedPosts" ? profileStyles.activeTab : profileStyles.nonActiveTab
+              }
+            >
+              Saved Posts
             </Text>
           </Pressable>
         </View>
@@ -308,6 +349,77 @@ export default function ProfileScreen() {
                         </Text>
                       </View>
                     </View>
+                  </View>
+                )
+              })
+            ))}
+
+          {activeView === "savedPosts" &&
+            (isSavedPostsPending ? (
+              <LoadingIndicator loading={true} />
+            ) : isSavedPostsError || !savedPosts || !Array.isArray(savedPosts) ? (
+              <View style={profileStyles.emptyStateContainer}>
+                <Text style={profileStyles.emptyStateText}>
+                  Error loading saved posts. Please try again.
+                </Text>
+              </View>
+            ) : savedPosts.length === 0 ? (
+              <View style={profileStyles.emptyStateContainer}>
+                <Text style={profileStyles.emptyStateText}>
+                  No saved posts yet. Save posts to view them here!
+                </Text>
+              </View>
+            ) : (
+              savedPosts.map(post => {
+                return (
+                  <View key={post._id}>
+                    <TouchableHighlight
+                      underlayColor={colors.lightGray}
+                      style={profileStyles.postCard}
+                      onPress={() => {
+                        router.push({
+                          pathname: "(details)/feed-post",
+                          params: { feedPostId: post._id },
+                        })
+                      }}
+                    >
+                      <View>
+                        {post.images && post.images.length > 0 && (
+                          <View style={profileStyles.postCardImage}>
+                            <Image
+                              source={{ uri: post.images[0] }}
+                              style={profileStyles.postCardImageFill}
+                              contentFit="cover"
+                            />
+                          </View>
+                        )}
+
+                        <View style={profileStyles.postCardContent}>
+                          <View style={profileStyles.postCardHeader}>
+                            <Text style={profileStyles.postTitle} numberOfLines={2}>
+                              {post.title}
+                            </Text>
+                          </View>
+
+                          <View style={profileStyles.postCardFooter}>
+                            <View style={profileStyles.postCardFooterContent}>
+                              <Text style={{ fontSize: 12, color: colors.muted }}>
+                                {formatDateDayMonthYear(post.createdAt.toString())}
+                              </Text>
+                              <Pressable
+                                onPress={async event => {
+                                  event.stopPropagation()
+                                  unsavePost(post._id)
+                                }}
+                                style={{ padding: 4 }}
+                              >
+                                <Feather name="trash-2" size={18} color={colors.muted} />
+                              </Pressable>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    </TouchableHighlight>
                   </View>
                 )
               })

@@ -31,6 +31,7 @@ export type UserType = null | {
   timezone: string
   locationId: number // reference to Location _id
   email: string
+  savedPosts?: string[]
   createdAt: Date
   updatedAt: Date
 }

@@ -84,9 +84,34 @@ export const profileStyles = StyleSheet.create({
   },
   actionContainer: {
     flexDirection: "row",
-    marginTop: 26,
-    marginBottom: 12,
-    gap: 20,
+    marginTop: 25,
+    marginBottom: 15,
+    backgroundColor: colors.borderGray,
+    borderRadius: 20,
+  },
+  nonActiveTab: {
+    fontSize: 15,
+    padding: 4,
+    fontWeight: "normal",
+    color: colors.dark,
+  },
+  activeTab: {
+    fontSize: 15,
+    padding: 4,
+    fontWeight: "bold",
+    color: colors.darkPurple,
+  },
+  profileTab: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  actionTabAnimation: {
+    position: "absolute",
+    width: "33.33%",
+    height: "100%",
+    backgroundColor: colors.purple,
+    borderRadius: 20,
   },
   followContainer: {
     flexDirection: "row",
@@ -222,6 +247,13 @@ export const profileStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  postCardFooterContent: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
   },
   postTitle: {
     fontSize: 16,

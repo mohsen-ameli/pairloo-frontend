@@ -2,12 +2,12 @@ import { errorStyles } from "@/src/styles/error.styles"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
-import { Pressable, ScrollView, Text, TouchableHighlight, View } from "react-native"
+import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { GeneralUserProfileType } from "@/src/types/user.type"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { formatDateDayMonthYear } from "@/src/utils/format-date"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
 import { authFetchAtom } from "@/src/store/auth-store"
@@ -23,7 +23,9 @@ export default function userProfile() {
     queryKey: ["user-profile-" + id],
     queryFn: fetchPosts,
   })
-  const [activeView, setActiveView] = useState<"posts" | "reviews">("reviews")
+  const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
+  const [containerWidth, setContainerWidth] = useState(0)
+  const slideAnim = useRef(new Animated.Value(0)).current
 
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {
@@ -50,6 +52,16 @@ export default function userProfile() {
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
   }
+
+  useEffect(() => {
+    const tabIndex = activeView === "posts" ? 0 : 1
+    const tabWidth = containerWidth / 2
+    Animated.timing(slideAnim, {
+      toValue: tabIndex * tabWidth,
+      duration: 300,
+      useNativeDriver: true,
+    }).start()
+  }, [activeView, slideAnim, containerWidth])
 
   if (isPending) {
     return (
@@ -137,25 +149,28 @@ export default function userProfile() {
         </View>
 
         {/* Posts & Reviews show/hide buttons */}
-        <View style={profileStyles.actionContainer}>
-          <Pressable onPress={() => setActiveView("posts")}>
+        <View
+          style={profileStyles.actionContainer}
+          onLayout={event => setContainerWidth(event.nativeEvent.layout.width)}
+        >
+          <Animated.View
+            style={[
+              profileStyles.actionTabAnimation,
+              { width: "50%", transform: [{ translateX: slideAnim }] },
+            ]}
+          />
+          <Pressable style={profileStyles.profileTab} onPress={() => setActiveView("posts")}>
             <Text
-              style={{
-                fontSize: 18,
-                fontWeight: activeView === "posts" ? "bold" : "normal",
-                color: activeView === "posts" ? colors.purple : colors.gray,
-              }}
+              style={activeView === "posts" ? profileStyles.activeTab : profileStyles.nonActiveTab}
             >
               Posts
             </Text>
           </Pressable>
-          <Pressable onPress={() => setActiveView("reviews")}>
+          <Pressable style={profileStyles.profileTab} onPress={() => setActiveView("reviews")}>
             <Text
-              style={{
-                fontSize: 18,
-                fontWeight: activeView === "reviews" ? "bold" : "normal",
-                color: activeView === "reviews" ? colors.purple : colors.gray,
-              }}
+              style={
+                activeView === "reviews" ? profileStyles.activeTab : profileStyles.nonActiveTab
+              }
             >
               Reviews
             </Text>
@@ -182,7 +197,7 @@ export default function userProfile() {
                       onPress={() => {
                         router.push({
                           pathname: "(details)/feed-post",
-                          params: { id: post._id },
+                          params: { feedPostId: post._id },
                         })
                       }}
                     >
