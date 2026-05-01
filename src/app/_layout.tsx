@@ -60,6 +60,7 @@ export default function RootLayout() {
     undefined,
     true
   )
+  const socialListOptions = useCustomHeader("Social List", true)
   const defaultOptions = useCustomHeader("", true)
   const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
 
@@ -114,6 +115,7 @@ export default function RootLayout() {
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
               <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
               <Stack.Screen name="(details)/profile" options={defaultOptions} />
+              <Stack.Screen name="(details)/social-list" options={socialListOptions} />
               <Stack.Screen
                 name="(details)/review-user"
                 options={{

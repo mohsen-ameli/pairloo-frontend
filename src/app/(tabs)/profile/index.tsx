@@ -15,7 +15,7 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import Feather from "@expo/vector-icons/Feather"
-import { MyReviewsType, MySocialType } from "@/src/types/user.type"
+import { GeneralUserProfileType, MyReviewsType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
@@ -40,7 +40,7 @@ export default function ProfileScreen() {
 
   async function fetchMySocial() {
     const res = await authFetch("/api/users/my-social")
-    const data: MySocialType = await res.json()
+    const data: GeneralUserProfileType = await res.json()
     return data
   }
 
@@ -426,7 +426,6 @@ export default function ProfileScreen() {
             ))}
         </View>
       </ScrollView>
-      {/* Social list moved to its own page: (details)/social-list */}
     </View>
   )
 }

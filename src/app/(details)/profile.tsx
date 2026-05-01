@@ -323,7 +323,6 @@ export default function userProfile() {
             ))}
         </View>
       </ScrollView>
-      {/* Social list moved to its own page: (details)/social-list */}
     </View>
   )
 }

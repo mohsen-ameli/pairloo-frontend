@@ -1,38 +1,26 @@
-import React, { useState, useLayoutEffect, useEffect } from "react"
-import { View, Text, Pressable, FlatList, ActivityIndicator, Animated } from "react-native"
+import React, { useState, useEffect } from "react"
+import { View, Text, Pressable, ActivityIndicator, Animated } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { useNavigation } from "@react-navigation/native"
 import { useQuery } from "@tanstack/react-query"
 import { useSetAtom } from "jotai"
+import { FlashList } from "@shopify/flash-list"
 import { authFetchAtom } from "@/src/store/auth-store"
-import { ProfileSocialUserType } from "@/src/types/user.type"
+import { GeneralUserProfileType, ProfileSocialUserType } from "@/src/types/user.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { colors } from "@/src/utils/colors"
-import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
-import useCustomHeader from "@/src/utils/useCustomHeader"
 
-type Params = {
-  type?: "followers" | "following"
-  id?: string
-}
+const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
 export default function SocialListPage() {
-  const { type, id } = useLocalSearchParams<Params>()
+  const { type, id } = useLocalSearchParams<{ type?: "followers" | "following"; id?: string }>()
   const router = useRouter()
-  const navigation = useNavigation()
   const authFetch = useSetAtom(authFetchAtom)
   const [active, setActive] = useState<"followers" | "following">(
     type === "following" ? "following" : "followers"
   )
   const [containerWidth, setContainerWidth] = useState(0)
   const [slideAnim] = useState(new Animated.Value(0))
-
-  const headerOptions = useCustomHeader("Social List", true)
-
-  useLayoutEffect(() => {
-    navigation.setOptions(headerOptions)
-  }, [navigation, headerOptions])
 
   useEffect(() => {
     if (containerWidth > 0) {
@@ -48,13 +36,13 @@ export default function SocialListPage() {
   async function fetchSocial() {
     if (id) {
       const res = await authFetch(`/api/users/profile/${id}`)
-      const data = await res.json()
-      return { followers: data.followers || [], following: data.following || [] }
+      const data: GeneralUserProfileType = await res.json()
+      return data
     }
 
     const res = await authFetch(`/api/users/my-social`)
-    const data = await res.json()
-    return { followers: data.followers || [], following: data.following || [] }
+    const data: GeneralUserProfileType = await res.json()
+    return data
   }
 
   const { data, isPending, isError } = useQuery({
@@ -112,7 +100,7 @@ export default function SocialListPage() {
         </Pressable>
       </View>
 
-      <FlatList
+      <FlashList
         data={list}
         keyExtractor={item => item._id}
         contentContainerStyle={profileStyles.socialListContent}
@@ -136,9 +124,7 @@ export default function SocialListPage() {
             style={profileStyles.socialRow}
           >
             <Image
-              source={
-                item.picture ? { uri: item.picture } : require("@/assets/images/default_pfp.png")
-              }
+              source={item.picture ? { uri: item.picture } : defaultProfilePicture}
               style={profileStyles.socialAvatar}
             />
             <View style={{ flex: 1 }}>
