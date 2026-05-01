@@ -12,7 +12,6 @@ import { formatDateDayMonthYear } from "@/src/utils/format-date"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
 import { authFetchAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
-import SocialListModal from "@/src/components/SocialListModal"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
