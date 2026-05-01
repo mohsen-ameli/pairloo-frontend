@@ -24,7 +24,6 @@ export default function userProfile() {
     queryFn: fetchPosts,
   })
   const [activeView, setActiveView] = useState<"posts" | "reviews">("reviews")
-  const [activeSocialList, setActiveSocialList] = useState<"followers" | "following" | null>(null)
 
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {
@@ -91,14 +90,24 @@ export default function userProfile() {
         <View style={profileStyles.socialContainer}>
           <Pressable
             style={profileStyles.socialPressable}
-            onPress={() => setActiveSocialList("followers")}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "followers", id },
+              })
+            }
           >
             <Text style={profileStyles.socialPressableCount}>{data.followersCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Followers</Text>
           </Pressable>
           <Pressable
             style={profileStyles.socialPressable}
-            onPress={() => setActiveSocialList("following")}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "following", id },
+              })
+            }
           >
             <Text style={profileStyles.socialPressableCount}>{data.followingCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Following</Text>
@@ -294,15 +303,7 @@ export default function userProfile() {
             ))}
         </View>
       </ScrollView>
-      <SocialListModal
-        visible={activeSocialList !== null}
-        title={activeSocialList === "followers" ? "Followers" : "Following"}
-        users={activeSocialList === "followers" ? data.followers : data.following}
-        emptyText={
-          activeSocialList === "followers" ? "No followers yet." : "Not following anyone yet."
-        }
-        onClose={() => setActiveSocialList(null)}
-      />
+      {/* Social list moved to its own page: (details)/social-list */}
     </View>
   )
 }

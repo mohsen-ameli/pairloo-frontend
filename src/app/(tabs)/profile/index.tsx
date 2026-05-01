@@ -27,7 +27,6 @@ export default function ProfileScreen() {
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
-  const [activeSocialList, setActiveSocialList] = useState<"followers" | "following" | null>(null)
 
   const {
     data: social,
@@ -116,14 +115,24 @@ export default function ProfileScreen() {
         <View style={profileStyles.socialContainer}>
           <Pressable
             style={profileStyles.socialPressable}
-            onPress={() => setActiveSocialList("followers")}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "followers" },
+              })
+            }
           >
             <Text style={profileStyles.socialPressableCount}>{social.followersCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Followers</Text>
           </Pressable>
           <Pressable
             style={profileStyles.socialPressable}
-            onPress={() => setActiveSocialList("following")}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "following" },
+              })
+            }
           >
             <Text style={profileStyles.socialPressableCount}>{social.followingCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Following</Text>
@@ -305,15 +314,7 @@ export default function ProfileScreen() {
             ))}
         </View>
       </ScrollView>
-      <SocialListModal
-        visible={activeSocialList !== null}
-        title={activeSocialList === "followers" ? "Followers" : "Following"}
-        users={activeSocialList === "followers" ? social.followers : social.following}
-        emptyText={
-          activeSocialList === "followers" ? "No followers yet." : "Not following anyone yet."
-        }
-        onClose={() => setActiveSocialList(null)}
-      />
+      {/* Social list moved to its own page: (details)/social-list */}
     </View>
   )
 }
