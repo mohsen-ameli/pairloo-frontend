@@ -9,13 +9,6 @@ export type ProfileSocialUserType = {
   lastName: string
 }
 
-export type ProfileSocialType = {
-  followersCount: number
-  followingCount: number
-  followers: ProfileSocialUserType[]
-  following: ProfileSocialUserType[]
-}
-
 // Basic user info stored in async storage
 export type UserType = null | {
   username: string
@@ -38,25 +31,26 @@ export type UserType = null | {
 
 export type GeneralUserProfileType = UserType & {
   posts: GeneralPostType[]
-} & ProfileSocialType & {
-    ratingCount: number
-    ratingAvg: number
-    reviews: {
-      rating: number
-      review: string
-      createdAt: Date
-      reviewer: {
-        _id: string
-        picture: string
-        username: string
-        firstName: string
-        lastName: string
-      }
-    }[]
-    isFollowing: boolean
-  }
-
-export type MySocialType = {} & ProfileSocialType
+  followersCount: number
+  followingCount: number
+  followers: ProfileSocialUserType[]
+  following: ProfileSocialUserType[]
+  ratingCount: number
+  ratingAvg: number
+  reviews: {
+    rating: number
+    review: string
+    createdAt: Date
+    reviewer: {
+      _id: string
+      picture: string
+      username: string
+      firstName: string
+      lastName: string
+    }
+  }[]
+  isFollowing: boolean
+}
 
 export type MyReviewsType = {
   ratingCount: number
