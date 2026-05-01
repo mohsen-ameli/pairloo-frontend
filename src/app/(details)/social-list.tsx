@@ -8,7 +8,6 @@ import { authFetchAtom } from "@/src/store/auth-store"
 import { ProfileSocialUserType } from "@/src/types/user.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { colors } from "@/src/utils/colors"
-import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 
@@ -72,7 +71,7 @@ export default function SocialListPage() {
 
   return (
     <SafeAreaView style={profileStyles.socialModalContainer}>
-      <View style={{ flexDirection: "row", gap: 12, paddingHorizontal: 16, marginTop: 12 }}>
+      <View style={{ flexDirection: "row", gap: 12, paddingHorizontal: 16, marginVertical: 15 }}>
         <Pressable
           onPress={() => setActive("followers")}
           style={{
