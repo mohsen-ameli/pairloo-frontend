@@ -1,7 +1,7 @@
 import { errorStyles } from "@/src/styles/error.styles"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { useSetAtom } from "jotai"
+import { useSetAtom, useAtomValue } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { GeneralUserProfileType } from "@/src/types/user.type"
@@ -10,13 +10,14 @@ import { colors } from "@/src/utils/colors"
 import { useState, useRef, useEffect } from "react"
 import { formatDateDayMonthYear } from "@/src/utils/format-date"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
-import { authFetchAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
+  const currentUserSecure = useAtomValue(userSecureAtom)
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
     queryKey: ["user-profile-" + id],
@@ -136,17 +137,22 @@ export default function userProfile() {
         </View>
 
         {/* Follow, unfollow buttons */}
-        <View style={profileStyles.followContainer}>
-          {data.isFollowing ? (
-            <Pressable style={profileStyles.unfollowButton} onPress={() => mutateUser("unfollow")}>
-              <Text style={{ color: colors.purple, fontSize: 16 }}>Unfollow</Text>
-            </Pressable>
-          ) : (
-            <Pressable style={profileStyles.followButton} onPress={() => mutateUser("follow")}>
-              <Text style={{ color: "white", fontSize: 16 }}>Follow</Text>
-            </Pressable>
-          )}
-        </View>
+        {currentUserSecure && currentUserSecure._id !== id && (
+          <View style={profileStyles.followContainer}>
+            {data.isFollowing ? (
+              <Pressable
+                style={profileStyles.unfollowButton}
+                onPress={() => mutateUser("unfollow")}
+              >
+                <Text style={{ color: colors.purple, fontSize: 16 }}>Unfollow</Text>
+              </Pressable>
+            ) : (
+              <Pressable style={profileStyles.followButton} onPress={() => mutateUser("follow")}>
+                <Text style={{ color: "white", fontSize: 16 }}>Follow</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
 
         {/* Posts & Reviews show/hide buttons */}
         <View
