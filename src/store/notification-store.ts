@@ -72,7 +72,7 @@ export const registerForPushNotificationsAsyncAtom = atom(null, async (get, set)
       token = `${e}`
     }
   } else {
-    alert("Must use physical device for Push Notifications")
+    console.warn("Must use physical device for push notifications")
   }
 
   return token
