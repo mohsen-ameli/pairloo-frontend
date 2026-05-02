@@ -15,7 +15,7 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import Feather from "@expo/vector-icons/Feather"
-import { GeneralUserProfileType, MyReviewsType } from "@/src/types/user.type"
+import { MyUserType, ReviewsType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
@@ -34,14 +34,14 @@ export default function ProfileScreen() {
   const slideAnim = useRef(new Animated.Value(0)).current
 
   const {
-    data: social,
-    isError: isSocialError,
-    isPending: isSocialPending,
-  } = useQuery({ queryKey: ["my-social"], queryFn: fetchMySocial })
+    data: myUser,
+    isError: isMyUserError,
+    isPending: isMyUserPending,
+  } = useQuery({ queryKey: ["my-user"], queryFn: fetchMyUser })
 
-  async function fetchMySocial() {
-    const res = await authFetch("/api/users/social/" + userSecure?._id)
-    const data: GeneralUserProfileType = await res.json()
+  async function fetchMyUser() {
+    const res = await authFetch("/api/users/my-user/")
+    const data: MyUserType = await res.json()
     return data
   }
 
@@ -49,11 +49,11 @@ export default function ProfileScreen() {
     data: reviews,
     isError: isReviewsError,
     isPending: isReviewsPending,
-  } = useQuery({ queryKey: ["my-reviews"], queryFn: fetchMyReviews })
+  } = useQuery({ queryKey: ["reviews-" + userSecure?._id], queryFn: fetchMyReviews })
 
   async function fetchMyReviews() {
-    const res = await authFetch("/api/users/my-reviews")
-    const data: MyReviewsType = await res.json()
+    const res = await authFetch("/api/users/reviews/" + userSecure?._id)
+    const data: ReviewsType = await res.json()
     return data
   }
 
@@ -88,8 +88,7 @@ export default function ProfileScreen() {
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["my-posts"] })
-    queryClient.invalidateQueries({ queryKey: ["my-reviews"] })
-    queryClient.invalidateQueries({ queryKey: ["my-social"] })
+    queryClient.invalidateQueries({ queryKey: ["reviews-" + userSecure?._id] })
     queryClient.invalidateQueries({ queryKey: ["my-saved-posts"] })
   }
 
@@ -110,7 +109,7 @@ export default function ProfileScreen() {
 
   if (!user) return null
 
-  if (isPostsPending || isReviewsPending || isSocialPending) {
+  if (isPostsPending || isReviewsPending || isMyUserPending) {
     return (
       <View style={profileStyles.generalContainer}>
         <LoadingIndicator loading={true} />
@@ -118,7 +117,7 @@ export default function ProfileScreen() {
     )
   }
 
-  if (isPostsError || isReviewsError || isSocialError) {
+  if (isPostsError || isReviewsError || isMyUserError || !myUser || !reviews) {
     return (
       <View style={errorStyles.container}>
         <Text style={errorStyles.errorText}>Error loading profile. Please try again.</Text>
@@ -155,7 +154,7 @@ export default function ProfileScreen() {
               })
             }
           >
-            <Text style={profileStyles.socialPressableCount}>{social.followersCount}</Text>
+            <Text style={profileStyles.socialPressableCount}>{myUser.followersCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Followers</Text>
           </Pressable>
           <Pressable
@@ -167,7 +166,7 @@ export default function ProfileScreen() {
               })
             }
           >
-            <Text style={profileStyles.socialPressableCount}>{social.followingCount}</Text>
+            <Text style={profileStyles.socialPressableCount}>{myUser.followingCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Following</Text>
           </Pressable>
           {reviews.ratingCount > 0 && (

@@ -24,29 +24,21 @@ export type UserType = null | {
   timezone: string
   locationId: number // reference to Location _id
   email: string
+  expoPushToken?: string
   savedPosts?: string[]
   createdAt: Date
   updatedAt: Date
+}
+
+export type MyUserType = UserType & {
+  followersCount: number
+  followingCount: number
 }
 
 export type GeneralUserProfileType = UserType & {
   posts: GeneralPostType[]
   followersCount: number
   followingCount: number
-  ratingCount: number
-  ratingAvg: number
-  reviews: {
-    rating: number
-    review: string
-    createdAt: Date
-    reviewer: {
-      _id: string
-      picture: string
-      username: string
-      firstName: string
-      lastName: string
-    }
-  }[]
   isFollowing: boolean
 }
 
@@ -55,7 +47,7 @@ export type UserSocialType = {
   following: ProfileSocialUserType[]
 }
 
-export type MyReviewsType = {
+export type ReviewsType = {
   ratingCount: number
   ratingAvg: number
   reviews: {
