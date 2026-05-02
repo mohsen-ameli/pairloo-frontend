@@ -49,7 +49,7 @@ export default function ProfileScreen() {
     data: reviews,
     isError: isReviewsError,
     isPending: isReviewsPending,
-  } = useQuery({ queryKey: ["reviews-" + userSecure?._id], queryFn: fetchMyReviews })
+  } = useQuery({ queryKey: ["reviews", userSecure?._id], queryFn: fetchMyReviews })
 
   async function fetchMyReviews() {
     const res = await authFetch("/api/users/reviews/" + userSecure?._id)
@@ -88,7 +88,7 @@ export default function ProfileScreen() {
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["my-posts"] })
-    queryClient.invalidateQueries({ queryKey: ["reviews-" + userSecure?._id] })
+    queryClient.invalidateQueries({ queryKey: ["reviews", userSecure?._id] })
     queryClient.invalidateQueries({ queryKey: ["my-saved-posts"] })
   }
 
