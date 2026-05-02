@@ -57,7 +57,7 @@ export default function userProfile() {
     data: reviews,
     isError: isReviewsError,
     isPending: isReviewsPending,
-  } = useQuery({ queryKey: ["reviews-" + id], queryFn: fetchMyReviews })
+  } = useQuery({ queryKey: ["reviews", id], queryFn: fetchMyReviews })
 
   async function fetchMyReviews() {
     const res = await authFetch("/api/users/reviews/" + id)
@@ -67,7 +67,7 @@ export default function userProfile() {
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
-    queryClient.invalidateQueries({ queryKey: ["reviews-" + id] })
+    queryClient.invalidateQueries({ queryKey: ["reviews", id] })
   }
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { CountryCode } from "react-native-country-picker-modal"
-import { GeneralPostType, MyPostType } from "./post.type"
+import { GeneralPostType } from "./post.type"
 
 export type ProfileSocialUserType = {
   _id: string
