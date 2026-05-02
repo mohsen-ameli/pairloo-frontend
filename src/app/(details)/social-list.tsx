@@ -52,7 +52,7 @@ export default function SocialListPage() {
   }
 
   const { data, isPending, isError } = useQuery({
-    queryKey: [`user-social-${id}`],
+    queryKey: ["user-social", id],
     queryFn: fetchSocial,
   })
 

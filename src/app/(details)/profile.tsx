@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router"
 import { useSetAtom, useAtomValue } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { GeneralUserProfileType } from "@/src/types/user.type"
+import { GeneralUserProfileType, ReviewsType } from "@/src/types/user.type"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
 import { useState, useRef, useEffect } from "react"
@@ -17,7 +17,7 @@ export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
-  const currentUserSecure = useAtomValue(userSecureAtom)
+  const userSecure = useAtomValue(userSecureAtom)
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
     queryKey: ["user-profile-" + id],
@@ -40,6 +40,9 @@ export default function userProfile() {
 
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
     queryClient.invalidateQueries({ queryKey: ["my-social"] })
+    queryClient.invalidateQueries({ queryKey: ["my-user"] })
+    queryClient.invalidateQueries({ queryKey: ["user-social", id] })
+    queryClient.invalidateQueries({ queryKey: ["user-social", userSecure?._id] })
 
     return data
   }
@@ -50,8 +53,21 @@ export default function userProfile() {
     return data
   }
 
+  const {
+    data: reviews,
+    isError: isReviewsError,
+    isPending: isReviewsPending,
+  } = useQuery({ queryKey: ["reviews-" + id], queryFn: fetchMyReviews })
+
+  async function fetchMyReviews() {
+    const res = await authFetch("/api/users/reviews/" + id)
+    const data: ReviewsType = await res.json()
+    return data
+  }
+
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
+    queryClient.invalidateQueries({ queryKey: ["reviews-" + id] })
   }
 
   useEffect(() => {
@@ -64,7 +80,7 @@ export default function userProfile() {
     }).start()
   }, [activeView, slideAnim, containerWidth])
 
-  if (isPending) {
+  if (isPending || isReviewsPending) {
     return (
       <View style={profileStyles.generalContainer}>
         <LoadingIndicator loading={true} />
@@ -72,7 +88,7 @@ export default function userProfile() {
     )
   }
 
-  if (isError || !data) {
+  if (isError || isReviewsError || !reviews || !data) {
     return (
       <View style={errorStyles.container}>
         <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
@@ -125,11 +141,11 @@ export default function userProfile() {
             <Text style={profileStyles.socialPressableCount}>{data.followingCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Following</Text>
           </Pressable>
-          {data.ratingCount > 0 && (
+          {reviews.ratingCount > 0 && (
             <View style={profileStyles.ratingContainer}>
               <View style={profileStyles.ratingValueRow}>
-                <Text style={profileStyles.text}>{data.ratingAvg}</Text>
-                <RatingStarSingle value={data.ratingAvg} />
+                <Text style={profileStyles.text}>{reviews.ratingAvg}</Text>
+                <RatingStarSingle value={reviews.ratingAvg} />
               </View>
               <Text style={profileStyles.socialPressableLabel}>Rating</Text>
             </View>
@@ -137,7 +153,7 @@ export default function userProfile() {
         </View>
 
         {/* Follow, unfollow buttons */}
-        {currentUserSecure && currentUserSecure._id !== id && (
+        {userSecure?._id !== id && (
           <View style={profileStyles.followContainer}>
             {data.isFollowing ? (
               <Pressable
@@ -239,12 +255,12 @@ export default function userProfile() {
             ))}
 
           {activeView === "reviews" &&
-            (data.reviews.length === 0 ? (
+            (reviews.reviews.length === 0 ? (
               <View style={profileStyles.emptyStateContainer}>
                 <Text style={profileStyles.emptyStateText}>No reviews yet.</Text>
               </View>
             ) : (
-              data.reviews.map(r => {
+              reviews.reviews.map(r => {
                 return (
                   <View
                     key={r.reviewer._id}
