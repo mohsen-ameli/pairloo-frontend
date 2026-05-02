@@ -33,8 +33,6 @@ export type GeneralUserProfileType = UserType & {
   posts: GeneralPostType[]
   followersCount: number
   followingCount: number
-  followers: ProfileSocialUserType[]
-  following: ProfileSocialUserType[]
   ratingCount: number
   ratingAvg: number
   reviews: {
@@ -50,6 +48,11 @@ export type GeneralUserProfileType = UserType & {
     }
   }[]
   isFollowing: boolean
+}
+
+export type UserSocialType = {
+  followers: ProfileSocialUserType[]
+  following: ProfileSocialUserType[]
 }
 
 export type MyReviewsType = {

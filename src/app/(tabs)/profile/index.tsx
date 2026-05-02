@@ -1,7 +1,7 @@
 import { useAtomValue, useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
 import { Image } from "expo-image"
-import { authFetchAtom, userAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { colors } from "@/src/utils/colors"
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "expo-router"
@@ -23,6 +23,7 @@ import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
 export default function ProfileScreen() {
   const router = useRouter()
   const user = useAtomValue(userAtom)
+  const userSecure = useAtomValue(userSecureAtom)
   const resetEdit = useSetAtom(resetEditAtom)
   const authFetch = useSetAtom(authFetchAtom)
   const setSavedPostIds = useSetAtom(savedPostIdsAtom)
@@ -39,7 +40,7 @@ export default function ProfileScreen() {
   } = useQuery({ queryKey: ["my-social"], queryFn: fetchMySocial })
 
   async function fetchMySocial() {
-    const res = await authFetch("/api/users/my-social")
+    const res = await authFetch("/api/users/social/" + userSecure?._id)
     const data: GeneralUserProfileType = await res.json()
     return data
   }
@@ -150,7 +151,7 @@ export default function ProfileScreen() {
             onPress={() =>
               router.push({
                 pathname: "(details)/social-list",
-                params: { type: "followers" },
+                params: { type: "followers", id: userSecure?._id, username: user.username },
               })
             }
           >
@@ -162,7 +163,7 @@ export default function ProfileScreen() {
             onPress={() =>
               router.push({
                 pathname: "(details)/social-list",
-                params: { type: "following" },
+                params: { type: "following", id: userSecure?._id, username: user.username },
               })
             }
           >

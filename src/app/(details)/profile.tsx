@@ -10,7 +10,7 @@ import { colors } from "@/src/utils/colors"
 import { useState, useRef, useEffect } from "react"
 import { formatDateDayMonthYear } from "@/src/utils/format-date"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
-import { authFetchAtom, userAtom, userSecureAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
 
 export default function userProfile() {
@@ -21,7 +21,7 @@ export default function userProfile() {
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
     queryKey: ["user-profile-" + id],
-    queryFn: fetchPosts,
+    queryFn: fetchProfile,
   })
   const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
   const [containerWidth, setContainerWidth] = useState(0)
@@ -43,7 +43,7 @@ export default function userProfile() {
     return data
   }
 
-  async function fetchPosts() {
+  async function fetchProfile() {
     const res = await authFetch("/api/users/profile/" + id)
     const data: GeneralUserProfileType = await res.json()
     return data
@@ -105,7 +105,7 @@ export default function userProfile() {
             onPress={() =>
               router.push({
                 pathname: "(details)/social-list",
-                params: { type: "followers", id },
+                params: { type: "followers", id, username: data.username },
               })
             }
           >
@@ -117,7 +117,7 @@ export default function userProfile() {
             onPress={() =>
               router.push({
                 pathname: "(details)/social-list",
-                params: { type: "following", id },
+                params: { type: "following", id, username: data.username },
               })
             }
           >
