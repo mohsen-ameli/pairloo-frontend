@@ -66,6 +66,7 @@ export default function RootLayout() {
     undefined,
     true
   )
+
   const defaultOptions = useCustomHeader("", true)
   const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
 

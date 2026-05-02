@@ -1,7 +1,7 @@
 import { useAtomValue, useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
 import { Image } from "expo-image"
-import { authFetchAtom, userAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { colors } from "@/src/utils/colors"
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "expo-router"
@@ -15,7 +15,7 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/getScoreColor"
 import Feather from "@expo/vector-icons/Feather"
-import { MyReviewsType, MySocialType } from "@/src/types/user.type"
+import { MyUserType, ReviewsType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
@@ -23,6 +23,7 @@ import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
 export default function ProfileScreen() {
   const router = useRouter()
   const user = useAtomValue(userAtom)
+  const userSecure = useAtomValue(userSecureAtom)
   const resetEdit = useSetAtom(resetEditAtom)
   const authFetch = useSetAtom(authFetchAtom)
   const setSavedPostIds = useSetAtom(savedPostIdsAtom)
@@ -33,14 +34,14 @@ export default function ProfileScreen() {
   const slideAnim = useRef(new Animated.Value(0)).current
 
   const {
-    data: social,
-    isError: isSocialError,
-    isPending: isSocialPending,
-  } = useQuery({ queryKey: ["my-social"], queryFn: fetchMySocial })
+    data: myUser,
+    isError: isMyUserError,
+    isPending: isMyUserPending,
+  } = useQuery({ queryKey: ["my-user"], queryFn: fetchMyUser })
 
-  async function fetchMySocial() {
-    const res = await authFetch("/api/users/my-social")
-    const data: MySocialType = await res.json()
+  async function fetchMyUser() {
+    const res = await authFetch("/api/users/my-user/")
+    const data: MyUserType = await res.json()
     return data
   }
 
@@ -48,11 +49,11 @@ export default function ProfileScreen() {
     data: reviews,
     isError: isReviewsError,
     isPending: isReviewsPending,
-  } = useQuery({ queryKey: ["my-reviews"], queryFn: fetchMyReviews })
+  } = useQuery({ queryKey: ["reviews", userSecure?._id], queryFn: fetchMyReviews })
 
   async function fetchMyReviews() {
-    const res = await authFetch("/api/users/my-reviews")
-    const data: MyReviewsType = await res.json()
+    const res = await authFetch("/api/users/reviews/" + userSecure?._id)
+    const data: ReviewsType = await res.json()
     return data
   }
 
@@ -87,8 +88,7 @@ export default function ProfileScreen() {
 
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["my-posts"] })
-    queryClient.invalidateQueries({ queryKey: ["my-reviews"] })
-    queryClient.invalidateQueries({ queryKey: ["my-social"] })
+    queryClient.invalidateQueries({ queryKey: ["reviews", userSecure?._id] })
     queryClient.invalidateQueries({ queryKey: ["my-saved-posts"] })
   }
 
@@ -109,7 +109,7 @@ export default function ProfileScreen() {
 
   if (!user) return null
 
-  if (isPostsPending || isReviewsPending || isSocialPending) {
+  if (isPostsPending || isReviewsPending || isMyUserPending) {
     return (
       <View style={profileStyles.generalContainer}>
         <LoadingIndicator loading={true} />
@@ -117,7 +117,7 @@ export default function ProfileScreen() {
     )
   }
 
-  if (isPostsError || isReviewsError || isSocialError) {
+  if (isPostsError || isReviewsError || isMyUserError || !myUser || !reviews) {
     return (
       <View style={errorStyles.container}>
         <Text style={errorStyles.errorText}>Error loading profile. Please try again.</Text>
@@ -145,13 +145,37 @@ export default function ProfileScreen() {
 
         {/* show following, followers, current rating */}
         <View style={profileStyles.socialContainer}>
-          <Text style={profileStyles.text}>{social.followersCount} Followers</Text>
-          <Text style={profileStyles.text}>{social.followingCount} Following</Text>
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "followers", id: userSecure?._id, username: user.username },
+              })
+            }
+          >
+            <Text style={profileStyles.socialPressableCount}>{myUser.followersCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Followers</Text>
+          </Pressable>
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "following", id: userSecure?._id, username: user.username },
+              })
+            }
+          >
+            <Text style={profileStyles.socialPressableCount}>{myUser.followingCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Following</Text>
+          </Pressable>
           {reviews.ratingCount > 0 && (
             <View style={profileStyles.ratingContainer}>
-              <Text style={profileStyles.text}>{reviews.ratingAvg}</Text>
-              <RatingStarSingle value={reviews.ratingAvg} />
-              <Text style={profileStyles.text}>Rating</Text>
+              <View style={profileStyles.ratingValueRow}>
+                <Text style={profileStyles.text}>{reviews.ratingAvg}</Text>
+                <RatingStarSingle value={reviews.ratingAvg} />
+              </View>
+              <Text style={profileStyles.socialPressableLabel}>Rating</Text>
             </View>
           )}
         </View>
