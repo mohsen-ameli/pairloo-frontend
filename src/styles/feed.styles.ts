@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
   listStyles: {
     backgroundColor: colors.light,
     flex: 1,
+    paddingHorizontal: 10,
   },
   listContainerStyles: {
     backgroundColor: colors.light,
@@ -16,7 +17,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 15,
   },
   postCard: {
-    marginBottom: 8,
+    marginBottom: 14,
     backgroundColor: colors.light,
     borderRadius: 8,
     elevation: 2,

@@ -49,7 +49,7 @@ export default function Index() {
   async function handlePostPress(postId: string) {
     router.push({
       pathname: "/feed-post",
-      params: { id: postId },
+      params: { feedPostId: postId },
     })
 
     await authFetch("/api/posts/interaction", {
@@ -88,15 +88,7 @@ export default function Index() {
       renderItem={({ item: post, index }) => (
         <View key={post._id}>
           {index % 7 === 6 && <AdView />}
-          <Pressable
-            style={styles.postCard}
-            onPress={() => {
-              router.push({
-                pathname: "/feed-post",
-                params: { feedPostId: post._id },
-              })
-            }}
-          >
+          <Pressable style={styles.postCard} onPress={() => handlePostPress(post._id)}>
             <View style={styles.postHeader}>
               <Image
                 source={post.picture ? { uri: post.picture } : defaultProfilePicture}
