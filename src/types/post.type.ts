@@ -17,9 +17,8 @@ export type GeneralPostType = {
   picture?: string | null
   title: string
   description: string
-  summary: string
   images?: string[] | null | undefined
-  createdAt: string
+  createdAt: Date
   location?: {
     latitude: number
     longitude: number
