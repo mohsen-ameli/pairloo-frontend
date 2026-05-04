@@ -26,7 +26,6 @@ export default function userProfile() {
   const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
   const [containerWidth, setContainerWidth] = useState(0)
   const slideAnim = useRef(new Animated.Value(0)).current
-  const [activeSocialList, setActiveSocialList] = useState<"followers" | "following" | null>(null)
 
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {

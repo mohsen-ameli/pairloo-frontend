@@ -19,7 +19,6 @@ import { MyUserType, ReviewsType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
-import SocialListModal from "@/src/components/SocialListModal"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -33,7 +32,6 @@ export default function ProfileScreen() {
   const [activeView, setActiveView] = useState<"posts" | "reviews" | "savedPosts">("posts")
   const [containerWidth, setContainerWidth] = useState(0)
   const slideAnim = useRef(new Animated.Value(0)).current
-  const [activeSocialList, setActiveSocialList] = useState<"followers" | "following" | null>(null)
 
   const {
     data: myUser,
