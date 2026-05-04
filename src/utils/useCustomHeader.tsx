@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Pressable } from "react-native"
+import { View, Text, TouchableOpacity, Pressable, Alert } from "react-native"
 import React from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
@@ -12,11 +12,13 @@ import {
   qnaAtom,
 } from "@/src/store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
-import { useRouter } from "expo-router"
+import { useGlobalSearchParams, useRouter } from "expo-router"
 import { currentConversationAtom } from "@/src/store/chat-store"
 import { userSecureAtom } from "@/src/store/auth-store"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
+import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post-detail-store"
+import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -27,7 +29,8 @@ export default function useCustomHeader(
   inChat: boolean = false,
   createPost?: boolean,
   myPostsPage?: boolean,
-  id?: string | null
+  id?: string | null,
+  isPostDetails?: boolean
 ): ExtendedStackNavigationOptions {
   const router = useRouter()
 
@@ -149,6 +152,13 @@ export default function useCustomHeader(
     }
   }
 
+  if (isPostDetails) {
+    return {
+      ...options,
+      headerTitle: () => <PostDetailsHeader />,
+    }
+  }
+
   if (title === "Profile") {
     return {
       ...options,
@@ -205,6 +215,59 @@ function CreatePostHeader() {
             <Feather name="trash-2" size={24} color={colors.dark} />
           </Pressable>
         </View>
+      </View>
+    </View>
+  )
+}
+
+function PostDetailsHeader() {
+  const router = useRouter()
+  const { feedPostId } = useGlobalSearchParams<{ feedPostId: string }>()
+  const savePost = useSetAtom(savePostAtom)
+  const unsavePost = useSetAtom(unsavePostAtom)
+  const savedPostIds = useAtomValue(savedPostIdsAtom)
+  const isPostSaved = feedPostId ? savedPostIds.includes(feedPostId) : false
+
+  return (
+    <View style={styles.header}>
+      <View
+        style={[
+          styles.headerContent,
+          { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+        ]}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Pressable
+            style={styles.headerBackIcon}
+            onPress={() => {
+              router.back()
+            }}
+          >
+            <Feather name="arrow-left" size={26} color={colors.dark} />
+          </Pressable>
+          <Text style={[styles.headerTitle, { marginLeft: 50 }]}>Post Details</Text>
+        </View>
+        <Pressable
+          style={{ padding: 6 }}
+          onPress={async () => {
+            if (!feedPostId) {
+              Alert.alert("Error", "Something went wrong. Post was not saved.")
+              return
+            }
+
+            if (isPostSaved) {
+              await unsavePost(feedPostId)
+            } else {
+              await savePost(feedPostId)
+            }
+          }}
+        >
+          {isPostSaved ? (
+            <MaterialIcons name="bookmark" size={24} color={colors.purple} />
+          ) : (
+            <MaterialIcons name="bookmark-border" size={24} color={colors.dark} />
+          )}
+        </Pressable>
       </View>
     </View>
   )

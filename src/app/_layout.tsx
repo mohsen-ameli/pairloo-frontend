@@ -20,6 +20,12 @@ import {
   notificationAtom,
   registerForPushNotificationsAsyncAtom,
 } from "@/src/store/notification-store"
+import mobileAds, { MaxAdContentRating } from "react-native-google-mobile-ads"
+import {
+  getTrackingPermissionsAsync,
+  PermissionStatus,
+  requestTrackingPermissionsAsync,
+} from "expo-tracking-transparency"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -33,6 +39,8 @@ const toastConfig = {
       username: string
       message: string
       picture?: string
+      Icon?: React.ReactNode
+      attachmentUrl?: string
     }
     onPress: () => void
   }) => {
@@ -49,6 +57,16 @@ export default function RootLayout() {
   const forgotEmailOptions = useCustomHeader("Forgot Email", true)
   const chatOptions = useCustomHeader("Chat")
   const myPostOptions = useCustomHeader("My Post")
+  const postDetailsOptions = useCustomHeader(
+    "Post Details",
+    true,
+    false,
+    false,
+    false,
+    undefined,
+    true
+  )
+
   const defaultOptions = useCustomHeader("", true)
   const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
 
@@ -79,8 +97,33 @@ export default function RootLayout() {
     }
   }, [userJwt])
 
+  async function setupAds() {
+    const { status } = await getTrackingPermissionsAsync()
+    if (status === PermissionStatus.UNDETERMINED) {
+      await requestTrackingPermissionsAsync()
+    }
+
+    await mobileAds().setRequestConfiguration({
+      // Update all future requests suitable for parental guidance
+      maxAdContentRating: MaxAdContentRating.PG,
+
+      // Indicates that you want your content treated as child-directed for purposes of COPPA.
+      tagForChildDirectedTreatment: true,
+
+      // Indicates that you want the ad request to be handled in a
+      // manner suitable for users under the age of consent.
+      tagForUnderAgeOfConsent: true,
+
+      // An array of test device IDs to allow.
+      testDeviceIdentifiers: ["EMULATOR"],
+    })
+
+    await mobileAds().initialize()
+  }
+
   useEffect(() => {
     getDeviceInfo()
+    setupAds()
   }, [])
 
   return (
@@ -101,7 +144,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)/chat-details" options={chatOptions} />
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
-              <Stack.Screen name="(details)/feed-post" options={defaultOptions} />
+              <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
               <Stack.Screen name="(details)/profile" options={defaultOptions} />
               <Stack.Screen
                 name="(details)/review-user"

@@ -1,28 +1,31 @@
 import { errorStyles } from "@/src/styles/error.styles"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { useSetAtom } from "jotai"
-import { Pressable, ScrollView, Text, TouchableHighlight, View } from "react-native"
+import { useSetAtom, useAtomValue } from "jotai"
+import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { GeneralUserProfileType } from "@/src/types/user.type"
+import { GeneralUserProfileType, ReviewsType } from "@/src/types/user.type"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { formatDateDayMonthYear } from "@/src/utils/format-date"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
-import { authFetchAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
+  const userSecure = useAtomValue(userSecureAtom)
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
     queryKey: ["user-profile-" + id],
-    queryFn: fetchPosts,
+    queryFn: fetchProfile,
   })
-  const [activeView, setActiveView] = useState<"posts" | "reviews">("reviews")
+  const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
+  const [containerWidth, setContainerWidth] = useState(0)
+  const slideAnim = useRef(new Animated.Value(0)).current
 
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {
@@ -36,21 +39,47 @@ export default function userProfile() {
 
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
     queryClient.invalidateQueries({ queryKey: ["my-social"] })
+    queryClient.invalidateQueries({ queryKey: ["my-user"] })
+    queryClient.invalidateQueries({ queryKey: ["user-social", id] })
+    queryClient.invalidateQueries({ queryKey: ["user-social", userSecure?._id] })
 
     return data
   }
 
-  async function fetchPosts() {
+  async function fetchProfile() {
     const res = await authFetch("/api/users/profile/" + id)
     const data: GeneralUserProfileType = await res.json()
     return data
   }
 
-  async function refresh() {
-    queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
+  const {
+    data: reviews,
+    isError: isReviewsError,
+    isPending: isReviewsPending,
+  } = useQuery({ queryKey: ["reviews", id], queryFn: fetchMyReviews })
+
+  async function fetchMyReviews() {
+    const res = await authFetch("/api/users/reviews/" + id)
+    const data: ReviewsType = await res.json()
+    return data
   }
 
-  if (isPending) {
+  async function refresh() {
+    queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
+    queryClient.invalidateQueries({ queryKey: ["reviews", id] })
+  }
+
+  useEffect(() => {
+    const tabIndex = activeView === "posts" ? 0 : 1
+    const tabWidth = containerWidth / 2
+    Animated.timing(slideAnim, {
+      toValue: tabIndex * tabWidth,
+      duration: 300,
+      useNativeDriver: true,
+    }).start()
+  }, [activeView, slideAnim, containerWidth])
+
+  if (isPending || isReviewsPending) {
     return (
       <View style={profileStyles.generalContainer}>
         <LoadingIndicator loading={true} />
@@ -58,7 +87,7 @@ export default function userProfile() {
     )
   }
 
-  if (isError || !data) {
+  if (isError || isReviewsError || !reviews || !data) {
     return (
       <View style={errorStyles.container}>
         <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
@@ -87,50 +116,82 @@ export default function userProfile() {
 
         {/* show following, followers, current rating */}
         <View style={profileStyles.socialContainer}>
-          <Text style={profileStyles.text}>{data.followersCount} Followers</Text>
-          <Text style={profileStyles.text}>{data.followingCount} Following</Text>
-          {data.ratingCount > 0 && (
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "followers", id, username: data.username },
+              })
+            }
+          >
+            <Text style={profileStyles.socialPressableCount}>{data.followersCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Followers</Text>
+          </Pressable>
+          <Pressable
+            style={profileStyles.socialPressable}
+            onPress={() =>
+              router.push({
+                pathname: "(details)/social-list",
+                params: { type: "following", id, username: data.username },
+              })
+            }
+          >
+            <Text style={profileStyles.socialPressableCount}>{data.followingCount}</Text>
+            <Text style={profileStyles.socialPressableLabel}>Following</Text>
+          </Pressable>
+          {reviews.ratingCount > 0 && (
             <View style={profileStyles.ratingContainer}>
-              <Text style={profileStyles.text}>{data.ratingAvg}</Text>
-              <RatingStarSingle value={data.ratingAvg} />
-              <Text style={profileStyles.text}>Rating</Text>
+              <View style={profileStyles.ratingValueRow}>
+                <Text style={profileStyles.text}>{reviews.ratingAvg}</Text>
+                <RatingStarSingle value={reviews.ratingAvg} />
+              </View>
+              <Text style={profileStyles.socialPressableLabel}>Rating</Text>
             </View>
           )}
         </View>
 
         {/* Follow, unfollow buttons */}
-        <View style={profileStyles.followContainer}>
-          {data.isFollowing ? (
-            <Pressable style={profileStyles.unfollowButton} onPress={() => mutateUser("unfollow")}>
-              <Text style={{ color: colors.purple, fontSize: 16 }}>Unfollow</Text>
-            </Pressable>
-          ) : (
-            <Pressable style={profileStyles.followButton} onPress={() => mutateUser("follow")}>
-              <Text style={{ color: "white", fontSize: 16 }}>Follow</Text>
-            </Pressable>
-          )}
-        </View>
+        {userSecure?._id !== id && (
+          <View style={profileStyles.followContainer}>
+            {data.isFollowing ? (
+              <Pressable
+                style={profileStyles.unfollowButton}
+                onPress={() => mutateUser("unfollow")}
+              >
+                <Text style={{ color: colors.purple, fontSize: 16 }}>Unfollow</Text>
+              </Pressable>
+            ) : (
+              <Pressable style={profileStyles.followButton} onPress={() => mutateUser("follow")}>
+                <Text style={{ color: "white", fontSize: 16 }}>Follow</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
 
         {/* Posts & Reviews show/hide buttons */}
-        <View style={profileStyles.actionContainer}>
-          <Pressable onPress={() => setActiveView("posts")}>
+        <View
+          style={profileStyles.actionContainer}
+          onLayout={event => setContainerWidth(event.nativeEvent.layout.width)}
+        >
+          <Animated.View
+            style={[
+              profileStyles.actionTabAnimation,
+              { width: "50%", transform: [{ translateX: slideAnim }] },
+            ]}
+          />
+          <Pressable style={profileStyles.profileTab} onPress={() => setActiveView("posts")}>
             <Text
-              style={{
-                fontSize: 18,
-                fontWeight: activeView === "posts" ? "bold" : "normal",
-                color: activeView === "posts" ? colors.purple : colors.gray,
-              }}
+              style={activeView === "posts" ? profileStyles.activeTab : profileStyles.nonActiveTab}
             >
               Posts
             </Text>
           </Pressable>
-          <Pressable onPress={() => setActiveView("reviews")}>
+          <Pressable style={profileStyles.profileTab} onPress={() => setActiveView("reviews")}>
             <Text
-              style={{
-                fontSize: 18,
-                fontWeight: activeView === "reviews" ? "bold" : "normal",
-                color: activeView === "reviews" ? colors.purple : colors.gray,
-              }}
+              style={
+                activeView === "reviews" ? profileStyles.activeTab : profileStyles.nonActiveTab
+              }
             >
               Reviews
             </Text>
@@ -157,7 +218,7 @@ export default function userProfile() {
                       onPress={() => {
                         router.push({
                           pathname: "(details)/feed-post",
-                          params: { id: post._id },
+                          params: { feedPostId: post._id },
                         })
                       }}
                     >
@@ -193,12 +254,12 @@ export default function userProfile() {
             ))}
 
           {activeView === "reviews" &&
-            (data.reviews.length === 0 ? (
+            (reviews.reviews.length === 0 ? (
               <View style={profileStyles.emptyStateContainer}>
                 <Text style={profileStyles.emptyStateText}>No reviews yet.</Text>
               </View>
             ) : (
-              data.reviews.map(r => {
+              reviews.reviews.map(r => {
                 return (
                   <View
                     key={r.reviewer._id}

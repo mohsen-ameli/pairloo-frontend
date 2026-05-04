@@ -6,13 +6,15 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.light,
   },
-  feedContainer: {
+  listStyles: {
     backgroundColor: colors.light,
-    padding: 8,
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flex: 1,
   },
-  column: { flex: 1, marginHorizontal: 4 },
+  listContainerStyles: {
+    backgroundColor: colors.light,
+    padding: 10,
+    paddingBottom: 15,
+  },
   postCard: {
     marginBottom: 8,
     backgroundColor: colors.light,
@@ -30,7 +32,22 @@ export const styles = StyleSheet.create({
     width: 37,
     borderRadius: 25,
     aspectRatio: 1,
-    resizeMode: "cover",
+  },
+  postImageContainer: {
+    width: "100%",
+    height: 220,
+    backgroundColor: colors.lightGray,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    padding: 1,
+    marginTop: 8,
+  },
+  postImage: {
+    width: "100%",
+    height: "100%",
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    padding: 1,
   },
   postHeaderName: { fontSize: 14, color: colors.darkGray },
   postUsername: { fontSize: 12, color: colors.gray },
@@ -40,5 +57,10 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     color: colors.dark,
+  },
+  descriptionStyle: {
+    padding: 8,
+    fontSize: 14,
+    color: colors.darkGray,
   },
 })
