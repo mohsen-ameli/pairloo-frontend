@@ -54,10 +54,14 @@ export default function PostDetails() {
       })
     })
 
-    await authFetch("/api/posts/interaction", {
-      method: "POST",
-      body: JSON.stringify({ postId: post._id, type: "contact" }),
-    })
+    try {
+      await authFetch("/api/posts/interaction", {
+        method: "POST",
+        body: JSON.stringify({ postId: post._id, type: "contact" }),
+      })
+    } catch (error) {
+      console.error("Error recording contact interaction:", error)
+    }
   }
 
   async function viewProfile() {
@@ -68,10 +72,14 @@ export default function PostDetails() {
       params: { id: post.userId },
     })
 
-    await authFetch("/api/posts/interaction", {
-      method: "POST",
-      body: JSON.stringify({ postId: post._id, type: "profile_view" }),
-    })
+    try {
+      await authFetch("/api/posts/interaction", {
+        method: "POST",
+        body: JSON.stringify({ postId: post._id, type: "profile_view" }),
+      })
+    } catch (error) {
+      console.error("Error recording profile view interaction:", error)
+    }
   }
 
   if (isPending) {

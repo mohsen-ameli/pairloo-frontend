@@ -52,10 +52,14 @@ export default function Index() {
       params: { feedPostId: postId },
     })
 
-    await authFetch("/api/posts/interaction", {
-      method: "POST",
-      body: JSON.stringify({ postId, type: "post_view" }),
-    })
+    try {
+      await authFetch("/api/posts/interaction", {
+        method: "POST",
+        body: JSON.stringify({ postId, type: "post_view" }),
+      })
+    } catch (error) {
+      console.error("Error recording post view interaction:", error)
+    }
   }
 
   if (isPending) {
