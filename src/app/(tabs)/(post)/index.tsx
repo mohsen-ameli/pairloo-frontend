@@ -42,18 +42,6 @@ export default function Index() {
     queryClient.invalidateQueries({ queryKey: ["feed"] })
   }
 
-  async function handlePostPress(postId: string) {
-    router.push({
-      pathname: "/feed-post",
-      params: { id: postId },
-    })
-
-    await authFetch("/api/posts/interaction", {
-      method: "POST",
-      body: JSON.stringify({ postId, type: "post_view" }),
-    })
-  }
-  
   async function loadMore() {
     console.log("load more posts")
   }
