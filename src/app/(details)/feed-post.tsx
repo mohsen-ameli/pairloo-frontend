@@ -46,8 +46,8 @@ export default function PostDetails() {
   async function contactPoster() {
     if (!socket || !user || !post) return
 
-    socket.emit("newConversation", [user._id, post._id])
-    socket.once("conversation", async (conversation: ConversationType) => {
+    socket.emit("newConversation", [user._id, post.userId])
+    socket.once("conversation", (conversation: ConversationType) => {
       router.push({
         pathname: "/chat-details",
         params: { id: conversation._id },
