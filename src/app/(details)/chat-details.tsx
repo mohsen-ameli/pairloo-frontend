@@ -82,8 +82,6 @@ export default function ChatDetails() {
   const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 
-  console.log("here")
-
   // Handle automatic scrolling to replied messages
   useEffect(() => {
     if (!scrollTargetId || !chatRef.current) return
