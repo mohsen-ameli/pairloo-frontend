@@ -9,8 +9,8 @@ import {
   type LayoutChangeEvent,
   Pressable,
   TouchableOpacity,
+  FlatList,
 } from "react-native"
-import { FlatList } from "react-native-gesture-handler"
 import { Image } from "expo-image"
 import Zoom from "react-native-zoom-reanimated"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -137,7 +137,6 @@ export default function ImageGallery({
   doubleTapScale = 2,
   minZoomScale = 1,
   maxZoomScale = 5,
-  containerStyle,
   imageGap = 20,
 }: ImageGalleryProps) {
   const { width: deviceWidth } = useWindowDimensions()

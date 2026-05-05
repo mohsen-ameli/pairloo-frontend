@@ -177,6 +177,11 @@ export const chatStyles = StyleSheet.create({
   replyPreviewCloseButton: {
     padding: 8,
   },
+  editedLabel: {
+    fontSize: 10,
+    fontStyle: "italic",
+    marginLeft: 5,
+  },
   editingIndicatorContainer: {
     paddingHorizontal: 15,
     paddingVertical: 10,

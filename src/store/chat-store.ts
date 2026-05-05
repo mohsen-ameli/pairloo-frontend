@@ -11,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Toast from "react-native-toast-message"
 import { router } from "expo-router"
 import { Attachment } from "../types/attachment.type"
+import { Alert } from "react-native"
 
 const unreadMsgStorage = createJSONStorage<{
   [conversationId: string]: number
@@ -319,11 +320,69 @@ export const initChatAtom = atom(null, async (get, set) => {
 export const sendMessageAtom = atom(
   null,
   async (get, set, conversationId: string, content: string, replyToId?: string) => {
+    const editingMessage = get(editingMessageAtom)
+    const attachments = get(chatAttachmentsAtom)
     const socket = get(chatSocketAtom)
     const user = await get(userAtom)
-    if (!socket || !user) return
 
-    const attachments = get(chatAttachmentsAtom)
+    if (!socket || !user) return
+    if (!editingMessage && !content && attachments.length === 0) return
+
+    if (editingMessage) {
+      if (content === editingMessage.content) {
+        // No changes, just cancel editing
+        set(editingMessageAtom, null)
+        return
+      }
+
+      // If message is empty, show delete confirmation alert
+      if (!content.trim()) {
+        Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
+          {
+            text: "Cancel",
+            onPress: () => {},
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              try {
+                await set(deleteMessageAtom, editingMessage._id, editingMessage.conversationId)
+                set(editingMessageAtom, null)
+              } catch (error) {
+                console.error("Delete error:", error)
+                Alert.alert("Error", "Failed to delete message")
+              }
+            },
+            style: "destructive",
+          },
+        ])
+        return
+      }
+
+      set(messagesAtom, prev =>
+        prev.map(msg => {
+          if (msg._id === editingMessage._id) {
+            return {
+              ...msg,
+              content,
+              isEdited: true,
+              updatedAt: new Date().toISOString(),
+            }
+          }
+          return msg
+        })
+      )
+
+      socket.emit("editMessage", {
+        messageId: editingMessage._id,
+        conversationId: editingMessage.conversationId,
+        newContent: content,
+      })
+      set(editingMessageAtom, null)
+      return
+    }
+
     const replyingTo = get(replyingToAtom)
 
     const optimisticMessage: MessageType = {
@@ -382,40 +441,6 @@ export const sendAttachmentAtom = atom(null, async (get, set, option: "library" 
   //   mimeType: attachments[0].mimeType,
   // })
 })
-
-export const editMessageAtom = atom(
-  null,
-  async (get, set, messageId: string, conversationId: string, newContent: string) => {
-    const socket = get(chatSocketAtom)
-    if (!socket) return
-
-    // If the edited content is empty, trigger delete functionality instead
-    if (!newContent.trim()) {
-      await set(deleteMessageAtom, messageId, conversationId)
-      return
-    }
-
-    set(messagesAtom, prev =>
-      prev.map(msg => {
-        if (msg._id === messageId) {
-          return {
-            ...msg,
-            content: newContent,
-            isEdited: true,
-            updatedAt: new Date().toISOString(),
-          }
-        }
-        return msg
-      })
-    )
-
-    socket.emit("editMessage", {
-      messageId,
-      conversationId,
-      newContent,
-    })
-  }
-)
 
 // Delete a message in a conversation
 export const deleteMessageAtom = atom(

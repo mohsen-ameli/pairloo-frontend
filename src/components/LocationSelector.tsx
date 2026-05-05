@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react"
-import {
-  View,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  Text,
-  Keyboard,
-  Modal,
-  Pressable,
-} from "react-native"
+import { View, TextInput, TouchableOpacity, Text, Keyboard, Modal, Pressable } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { colors } from "@/src/utils/colors"
 import { BASE_URL } from "@/src/utils/constants"
@@ -19,6 +10,7 @@ import { locSelectStyles } from "@/src/styles/location-selector.styles"
 import CustomInput from "./CustomInput"
 import { City } from "@/src/types/city.types"
 import { inputStyles } from "../styles/input.styles"
+import { FlashList } from "@shopify/flash-list"
 
 export default function LocationSelector({
   onLocationChange,
@@ -109,7 +101,7 @@ export default function LocationSelector({
             />
           </View>
 
-          <FlatList
+          <FlashList
             data={cities}
             keyExtractor={item => item._id.toString()}
             keyboardShouldPersistTaps="always"

@@ -4,7 +4,6 @@ import {
   Text,
   Platform,
   TouchableOpacity,
-  FlatList,
   TextInput,
   StyleSheet,
   Keyboard,
@@ -23,6 +22,7 @@ import { zoomToRadiusMeters } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { AppleMaps, GoogleMaps } from "expo-maps"
+import { FlashList } from "@shopify/flash-list"
 
 type CameraEvent = {
   coordinates: {
@@ -209,7 +209,7 @@ export default function MapSelector() {
               borderRadius: 5,
             }}
           />
-          <FlatList
+          <FlashList
             data={cities}
             keyExtractor={item => item._id.toString()}
             style={{ maxHeight: 200, display: citySearchInput.length > 0 ? "flex" : "none" }}

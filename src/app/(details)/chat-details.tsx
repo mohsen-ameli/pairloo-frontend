@@ -3,7 +3,6 @@ import {
   Text,
   Pressable,
   TextInput,
-  FlatList,
   Dimensions,
   Alert,
   ActivityIndicator,
@@ -27,8 +26,6 @@ import {
   replyingToAtom,
   sendMessageAtom,
   editingMessageAtom,
-  editMessageAtom,
-  deleteMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/chat.type"
@@ -59,14 +56,12 @@ export default function ChatDetails() {
   const [inputHeight, setInputHeight] = useState<number>(40)
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
-  const editMessage = useSetAtom(editMessageAtom)
   const user = useAtomValue(userAtom)
   const userJwt = useAtomValue(userSecureAtom)
   const conversations = useAtomValue(conversationsAtom)
-  const setCurrentConversation = useSetAtom(currentConversationAtom)
+  const [currentConversation, setCurrentConversation] = useAtom(currentConversationAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
-  const deleteMessage = useSetAtom(deleteMessageAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
@@ -113,8 +108,9 @@ export default function ChatDetails() {
     }
   }, [messages, scrollTargetId, entireChatLoaded, socket])
 
+  // To set the current conversation and load initial messages
   useEffect(() => {
-    if (!conversations || !user || !socket || !userJwt) return
+    if (!conversations || !user || !socket || !userJwt || currentConversation) return
 
     setLoading(true)
     setEntireChatLoaded(false)
@@ -130,7 +126,9 @@ export default function ChatDetails() {
     socket.emit("getMessages", id, 0, NUM_MESSAGES_TO_LOAD)
   }, [conversations, user, socket, id])
 
+  // Checking if the user is allowed to review (only if they have received a message from the other user)
   useEffect(() => {
+    if (canReview) return
     for (const msg of messages) {
       if (msg.sender._id === otherUser.current?._id) {
         setCanReview(true)
@@ -139,17 +137,10 @@ export default function ChatDetails() {
     }
   }, [messages])
 
+  // Scroll to bottom when a new message is received
   useEffect(() => {
     chatRef.current && chatRef.current.scrollToTop({ animated: true })
   }, [receivedMsg])
-
-  useEffect(() => {
-    return () => {
-      setMessages([])
-      setCurrentConversation(null)
-      setScrollTargetId(null)
-    }
-  }, [])
 
   // When a message is selected for editing, populate the input
   useEffect(() => {
@@ -159,52 +150,18 @@ export default function ChatDetails() {
     }
   }, [editingMessage])
 
-  async function handleSendMessage() {
-    const msg = message.trim()
-    if (!editingMessage && !msg && attachments.length === 0) return
-
-    if (editingMessage) {
-      if (msg === editingMessage.content) {
-        // No changes, just cancel editing
-        setEditingMessage(null)
-        setMessage("")
-        return
-      }
-
-      // If message is empty, show delete confirmation alert
-      if (!msg) {
-        Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
-          {
-            text: "Cancel",
-            onPress: () => {},
-            style: "cancel",
-          },
-          {
-            text: "Delete",
-            onPress: async () => {
-              try {
-                await deleteMessage(editingMessage._id, editingMessage.conversationId)
-                setEditingMessage(null)
-                setMessage("")
-              } catch (error) {
-                console.error("Delete error:", error)
-                Alert.alert("Error", "Failed to delete message")
-              }
-            },
-            style: "destructive",
-          },
-        ])
-        return
-      }
-
-      await editMessage(editingMessage._id, editingMessage.conversationId, msg)
-      setEditingMessage(null)
-      setMessage("")
-    } else {
-      // Normal message sending
-      setMessage("")
-      await sendMessage(id, msg, replyingTo?._id)
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      setMessages([])
+      setCurrentConversation(null)
+      setScrollTargetId(null)
     }
+  }, [])
+
+  async function handleSendMessage() {
+    setMessage("")
+    await sendMessage(id, message, replyingTo?._id)
   }
 
   // Animate fake view height
@@ -388,7 +345,7 @@ function MessageItem({
   const setImages = useSetAtom(bigImageViewAtom)
   const setReplyingTo = useSetAtom(replyingToAtom)
   const setCurrentLongPressedMessage = useSetAtom(currentLongPressedMessageAtom)
-  const replyingToAtomValue = useAtomValue(replyingToAtom)
+  const replyingTo = useAtomValue(replyingToAtom)
   const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
   const router = useRouter()
   const translateX = useSharedValue(0)
@@ -405,16 +362,15 @@ function MessageItem({
       return
     }
 
-    chatRef.current?.scrollToIndex({
-      index: originalMessageIndex,
-      animated: true,
-      viewPosition: 0.5,
-    })
-
-    // Highlight the message after scroll completes (500ms delay)
-    setTimeout(() => {
-      setHighlightedMessageId(item.replyTo!._id)
-    }, 500)
+    chatRef.current
+      ?.scrollToIndex({
+        index: originalMessageIndex,
+        animated: true,
+        viewPosition: 0.5,
+      })
+      .then(() => {
+        setHighlightedMessageId(item.replyTo!._id)
+      })
   }
 
   function focusOnInput() {
@@ -463,7 +419,7 @@ function MessageItem({
     if (!highlightedMessageId) return
     const timer = setTimeout(() => {
       setHighlightedMessageId(null)
-    }, 700)
+    }, 500)
     return () => clearTimeout(timer)
   }, [highlightedMessageId])
 
@@ -514,8 +470,10 @@ function MessageItem({
               isOwnMessage ? chatStyles.ownMessageBubble : chatStyles.otherMessageBubble,
               {
                 backgroundColor:
-                  highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
-                    ? colors.chatHighlight
+                  highlightedMessageId === item._id || replyingTo?._id === item._id
+                    ? isOwnMessage
+                      ? colors.chatHighlightOwnBubble
+                      : colors.chatHighlightOtherBubble
                     : isOwnMessage
                       ? colors.purple
                       : colors.lightGray,
@@ -648,7 +606,8 @@ function MessageItem({
                   isOwnMessage ? chatStyles.ownMessageText : chatStyles.otherMessageText,
                 ]}
               >
-                {item.content}
+                {item.content}{" "}
+                {item.isEdited && <Text style={chatStyles.editedLabel}>(edited)</Text>}
               </Text>
             )}
 
@@ -681,7 +640,7 @@ function AttachmentPreview() {
 
   return (
     <View style={chatStyles.attachmentPreviewContainer}>
-      <FlatList
+      <FlashList
         data={attachments}
         horizontal
         showsHorizontalScrollIndicator={false}
