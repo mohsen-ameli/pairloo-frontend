@@ -211,7 +211,7 @@ export default function ChatDetails() {
               />
             </>
           )}
-          ListFooterComponent={<View style={chatStyles.flatListFooter} />}
+          ListFooterComponent={<View style={chatStyles.listFooter} />}
         />
       </View>
 

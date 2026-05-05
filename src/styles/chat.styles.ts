@@ -250,7 +250,7 @@ export const chatStyles = StyleSheet.create({
     maxHeight: 300,
     borderRadius: 10,
   },
-  flatListFooter: {
+  listFooter: {
     height: 16,
   },
   attachmentPreviewContainer: {
