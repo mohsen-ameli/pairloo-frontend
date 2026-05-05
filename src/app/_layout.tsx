@@ -49,27 +49,17 @@ const toastConfig = {
 }
 
 export default function RootLayout() {
+  const loginOptions = useCustomHeader({ title: "Log In" })
+  const registerOptions = useCustomHeader({ title: "Create Account" })
+  const forgotEmailOptions = useCustomHeader({ title: "Forgot Email" })
+  const chatOptions = useCustomHeader({ title: "Chat", backButtonVisible: false })
+  const myPostOptions = useCustomHeader({ title: "My Post", backButtonVisible: false })
+  const postDetailsOptions = useCustomHeader({ title: "Post Details", isPostDetails: true })
+  const defaultOptions = useCustomHeader({ title: "" })
+
   const userJwt = useAtomValue(userSecureAtom)
   const queryClient = useAtomValue(queryClientAtom)
-
-  const loginOptions = useCustomHeader("Log In", true)
-  const registerOptions = useCustomHeader("Create Account", true)
-  const forgotEmailOptions = useCustomHeader("Forgot Email", true)
-  const chatOptions = useCustomHeader("Chat")
-  const myPostOptions = useCustomHeader("My Post")
-  const postDetailsOptions = useCustomHeader(
-    "Post Details",
-    true,
-    false,
-    false,
-    false,
-    undefined,
-    true
-  )
-
-  const defaultOptions = useCustomHeader("", true)
   const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
-
   const setChannels = useSetAtom(channelsAtom)
   const setNotification = useSetAtom(notificationAtom)
   const registerForPushNotificationsAsync = useSetAtom(registerForPushNotificationsAsyncAtom)

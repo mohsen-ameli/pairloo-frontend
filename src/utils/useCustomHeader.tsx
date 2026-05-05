@@ -22,26 +22,26 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
-// OtherUser is only passed when viewing another user's profile or chat
-export default function useCustomHeader(
-  title: string,
-  backButtonVisible: boolean = false,
-  inChat: boolean = false,
-  createPost?: boolean,
-  myPostsPage?: boolean,
-  id?: string | null,
+export default function useCustomHeader({
+  title,
+  backButtonVisible = true,
+  id = null,
+  inChat = false,
+  createPost = false,
+  myPostsPage = false,
+  isPostDetails = false,
+  isProfile = false,
+}: {
+  title: string
+  backButtonVisible?: boolean
+  id?: string | null
+  inChat?: boolean
+  createPost?: boolean
+  myPostsPage?: boolean
   isPostDetails?: boolean
-): ExtendedStackNavigationOptions {
+  isProfile?: boolean
+}): ExtendedStackNavigationOptions {
   const router = useRouter()
-
-  function handleProfilePress(id: string) {
-    router.push({
-      pathname: "(details)/profile",
-      params: { id },
-    })
-  }
-  const currentConversation = useAtomValue(currentConversationAtom)
-  const user = useAtomValue(userSecureAtom)
 
   let options: ExtendedStackNavigationOptions = {
     title,
@@ -70,47 +70,10 @@ export default function useCustomHeader(
     ),
   }
 
-  if (inChat && user && currentConversation) {
-    const otherUser = currentConversation.members.find(member => member._id !== user._id)
-
-    if (!otherUser) {
-      return options
-    }
-
-    if (!otherUser) {
-      return options
-    }
-
+  if (inChat) {
     return {
       ...options,
-      headerTitle: () => (
-        <View style={styles.otherHeader}>
-          {backButtonVisible && (
-            <Pressable
-              style={styles.headerBackIcon}
-              onPress={() => {
-                router.back()
-              }}
-            >
-              <Feather name="arrow-left" size={26} color={colors.dark} />
-            </Pressable>
-          )}
-          <TouchableOpacity
-            onPress={() => handleProfilePress(otherUser._id)}
-            style={styles.otherProfileButton}
-          >
-            <Image
-              source={
-                otherUser.picture && otherUser.picture
-                  ? { uri: otherUser.picture }
-                  : defaultProfilePicture
-              }
-              style={styles.otherProfileImage}
-            />
-            <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
-          </TouchableOpacity>
-        </View>
-      ),
+      headerTitle: () => <ChatHeader />,
     }
   }
 
@@ -159,7 +122,7 @@ export default function useCustomHeader(
     }
   }
 
-  if (title === "Profile") {
+  if (isProfile) {
     return {
       ...options,
       headerTitle: () => (
@@ -186,6 +149,48 @@ export default function useCustomHeader(
   }
 
   return options
+}
+
+function ChatHeader() {
+  const currentConversation = useAtomValue(currentConversationAtom)
+  const user = useAtomValue(userSecureAtom)
+  const router = useRouter()
+
+  if (!currentConversation || !user) return <></>
+  const otherUser = currentConversation.members.find(member => member._id !== user._id)
+  if (!otherUser) return <></>
+
+  return (
+    <View style={styles.otherHeader}>
+      <Pressable
+        style={styles.headerBackIcon}
+        onPress={() => {
+          router.back()
+        }}
+      >
+        <Feather name="arrow-left" size={26} color={colors.dark} />
+      </Pressable>
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "(details)/profile",
+            params: { id: otherUser._id },
+          })
+        }
+        style={styles.otherProfileButton}
+      >
+        <Image
+          source={
+            otherUser.picture && otherUser.picture
+              ? { uri: otherUser.picture }
+              : defaultProfilePicture
+          }
+          style={styles.otherProfileImage}
+        />
+        <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
+      </TouchableOpacity>
+    </View>
+  )
 }
 
 function CreatePostHeader() {

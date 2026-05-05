@@ -2,7 +2,7 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 
 export default function Layout() {
-  const settingsOptions = useCustomHeader("Settings", true)
+  const settingsOptions = useCustomHeader({ title: "Settings" })
 
   return (
     <Stack>

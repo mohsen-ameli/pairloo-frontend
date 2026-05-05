@@ -70,7 +70,7 @@ export default function ChatDetails() {
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
-  const detailOptions = useCustomHeader("", true, true)
+  const detailOptions = useCustomHeader({ title: "", inChat: true })
   const [loading, setLoading] = useAtom(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
   const otherUser = useRef<{

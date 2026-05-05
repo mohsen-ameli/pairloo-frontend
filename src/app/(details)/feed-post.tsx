@@ -86,7 +86,7 @@ export default function PostDetails() {
           onPress={() =>
             router.push({
               pathname: "(details)/profile",
-              params: { id: post._id },
+              params: { id: post.userId },
             })
           }
           style={styles.headerContainer}

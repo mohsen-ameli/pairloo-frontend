@@ -45,7 +45,7 @@ export default function PostDetails() {
     }).start()
   }, [isQnaExpanded, animatedHeight])
 
-  const detailOptions = useCustomHeader("Details", true, false, false, true, id)
+  const detailOptions = useCustomHeader({ title: "Details", isPostDetails: true, id })
 
   async function fetchPost() {
     const res = await authFetch(`/api/posts/my-posts/${id}`)

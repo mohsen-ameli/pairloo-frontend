@@ -25,7 +25,7 @@ export default function SocialListPage() {
   const [containerWidth, setContainerWidth] = useState(0)
   const [slideAnim] = useState(new Animated.Value(0))
   const hasInitializedSlider = useRef(false)
-  const socialListOptions = useCustomHeader(`@${username}`, true)
+  const socialListOptions = useCustomHeader({ title: `@${username}` })
 
   useEffect(() => {
     if (containerWidth > 0) {
