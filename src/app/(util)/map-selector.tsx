@@ -237,15 +237,15 @@ export default function MapSelector() {
                   } catch (error) {
                     console.log("Error setting camera position: ", error)
                   }
-                  setSettings({
-                    ...settings,
+                  setSettings(async curr => ({
+                    ...(await curr),
                     location: {
                       latitude: region.current.latitude,
                       longitude: region.current.longitude,
                     },
                     distance: region.current.distance,
                     zoom: region.current.zoom,
-                  })
+                  }))
                   setCitySearchInput("")
                   setCities([])
                 }}
