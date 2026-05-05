@@ -5,7 +5,7 @@ export const chatStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.light,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
   notFoundContainer: {
     flex: 1,
@@ -330,5 +330,15 @@ export const chatStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     color: colors.dark,
+  },
+  scrollToBottomButton: {
+    position: "absolute",
+    bottom: 100,
+    right: 15,
+    alignSelf: "center",
+    backgroundColor: colors.lightGray,
+    padding: 10,
+    borderRadius: 50,
+    zIndex: 2,
   },
 })

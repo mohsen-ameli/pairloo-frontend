@@ -6,6 +6,7 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native"
 import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
@@ -79,6 +80,9 @@ export default function ChatDetails() {
   const receivedMsg = useAtomValue(receivedMsgAtom)
   const [scrollTargetId, setScrollTargetId] = useAtom(scrollTargetIdAtom)
   const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+
+  console.log("here")
 
   // Handle automatic scrolling to replied messages
   useEffect(() => {
@@ -181,39 +185,47 @@ export default function ChatDetails() {
       <Stack.Screen options={detailOptions} />
       <LoadingIndicator loading={loading} />
 
-      {/* Main chat */}
-      <View style={chatStyles.container}>
-        <FlashList
-          inverted
-          data={messages}
-          ref={chatRef}
-          keyboardDismissMode="on-drag"
-          keyExtractor={item => item._id}
-          onEndReached={loadMoreMessages}
-          scrollIndicatorInsets={{ left: 10 }}
-          contentContainerStyle={{ paddingTop: 10, paddingBottom: 20 }}
-          renderItem={({ item, index }) => (
-            <>
-              {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
-              {index === messages.length - 1 && !entireChatLoaded && (
-                <ActivityIndicator
-                  style={{ paddingVertical: 8 }}
-                  size="small"
-                  color={colors.blue}
-                />
-              )}
-              <MessageItem
-                item={item}
-                messages={messages}
-                chatRef={chatRef}
-                inputRef={inputRef}
-                isOwnMessage={userJwt?._id === item.sender._id}
-              />
-            </>
-          )}
-          ListFooterComponent={<View style={chatStyles.listFooter} />}
-        />
-      </View>
+      <FlashList
+        inverted
+        data={messages}
+        ref={chatRef}
+        keyboardDismissMode="on-drag"
+        style={chatStyles.container}
+        keyExtractor={item => item._id}
+        onEndReached={loadMoreMessages}
+        scrollIndicatorInsets={{ left: 10 }}
+        contentContainerStyle={{ paddingTop: 10, paddingBottom: 20, paddingHorizontal: 5 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item, index }) => (
+          <>
+            {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
+            {index === messages.length - 1 && !entireChatLoaded && (
+              <ActivityIndicator style={{ paddingVertical: 8 }} size="small" color={colors.blue} />
+            )}
+            <MessageItem
+              item={item}
+              messages={messages}
+              chatRef={chatRef}
+              inputRef={inputRef}
+              isOwnMessage={userJwt?._id === item.sender._id}
+            />
+          </>
+        )}
+        ListFooterComponent={<View style={chatStyles.listFooter} />}
+        onScroll={event => {
+          const offsetY = event.nativeEvent.contentOffset.y
+          setShowScrollToBottom(offsetY > 2000)
+        }}
+      />
+
+      {showScrollToBottom && (
+        <TouchableOpacity
+          onPress={() => chatRef.current?.scrollToTop({ animated: true })}
+          style={chatStyles.scrollToBottomButton}
+        >
+          <Feather name="arrow-down" size={24} color={colors.gray} />
+        </TouchableOpacity>
+      )}
 
       <AttachmentPreview />
 
