@@ -53,6 +53,33 @@ export default function PostDetails() {
         params: { id: conversation._id },
       })
     })
+
+    try {
+      await authFetch("/api/posts/interaction", {
+        method: "POST",
+        body: JSON.stringify({ postId: post._id, type: "contact" }),
+      })
+    } catch (error) {
+      console.error("Error recording contact interaction:", error)
+    }
+  }
+
+  async function viewProfile() {
+    if (!post) return
+
+    router.push({
+      pathname: "(details)/profile",
+      params: { id: post.userId },
+    })
+
+    try {
+      await authFetch("/api/posts/interaction", {
+        method: "POST",
+        body: JSON.stringify({ postId: post._id, type: "profile_view" }),
+      })
+    } catch (error) {
+      console.error("Error recording profile view interaction:", error)
+    }
   }
 
   if (isPending) {
@@ -82,15 +109,7 @@ export default function PostDetails() {
         scrollEnabled={true}
         keyboardShouldPersistTaps="handled"
       >
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "(details)/profile",
-              params: { id: post.userId },
-            })
-          }
-          style={styles.headerContainer}
-        >
+        <Pressable onPress={viewProfile} style={styles.headerContainer}>
           <Image
             source={
               post.picture ? { uri: post.picture } : require("@/assets/images/default_pfp.png")
