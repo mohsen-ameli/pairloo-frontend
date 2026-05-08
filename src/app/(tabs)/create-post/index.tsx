@@ -143,7 +143,7 @@ export default function CreatePost() {
     if (socket && socket.connected) {
       setFlow(prev => ({ ...prev, nextEnabled: false }))
       setLoading(true)
-      socket.emit("ai-title")
+      socket.emit("aiTitle")
     }
   }
 
