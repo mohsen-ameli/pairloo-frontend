@@ -41,7 +41,7 @@ export const profileStyles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    color: colors.gray,
+    color: colors.dark,
   },
   ratingContainer: {
     alignItems: "center",

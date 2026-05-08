@@ -169,7 +169,7 @@ export default function ChatDetails() {
 
   async function handleSendMessage() {
     setMessage("")
-    await sendMessage(id, message, replyingTo?._id)
+    await sendMessage(id, message)
   }
 
   // Animate fake view height

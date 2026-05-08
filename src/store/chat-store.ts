@@ -4,7 +4,6 @@ import io from "socket.io-client"
 import {
   ChatClientSocket,
   ConversationType,
-  LastMessageType,
   MessageType,
   ReplyTo,
 } from "@/src/types/socket/chat.type"
@@ -92,7 +91,7 @@ export const initChatAtom = atom(null, async (get, set) => {
     cleanup()
   })
 
-  socket.on("error", (err: any) => {
+  socket.on("error", err => {
     console.error("WebSocket error event:", err)
     cleanup()
   })
@@ -109,20 +108,20 @@ export const initChatAtom = atom(null, async (get, set) => {
   })
 
   // New conversation created
-  socket.on("conversation", (conversation: ConversationType) => {
+  socket.on("conversation", conversation => {
     const exists = get(conversationsAtom).some(conv => conv._id === conversation._id)
     if (exists) return
     set(conversationsAtom, prev => [...prev, conversation])
   })
 
   // Got all conversations
-  socket.on("conversations", (conversations: ConversationType[]) => {
+  socket.on("conversations", conversations => {
     set(conversationsAtom, conversations)
     set(loadingAtom, false)
   })
 
   // Got all messages for a conversation
-  socket.on("messages", async (messages: MessageType[]) => {
+  socket.on("messages", async messages => {
     if (messages.length === 0) {
       set(entireChatLoadedAtom, true)
       set(loadingAtom, false)
@@ -144,7 +143,7 @@ export const initChatAtom = atom(null, async (get, set) => {
   })
 
   // Received a message from the server
-  socket.on("message", async (message: MessageType) => {
+  socket.on("message", async message => {
     let isMyMessage = false
 
     set(messagesAtom, prev =>
@@ -232,94 +231,78 @@ export const initChatAtom = atom(null, async (get, set) => {
   })
 
   // Message was edited
-  socket.on(
-    "messageEdited",
-    async ({
-      messageId,
-      conversationId,
-      updatedAt,
-      content,
-    }: {
-      messageId: string
-      conversationId: string
-      updatedAt: Date
-      content: string
-    }) => {
-      set(messagesAtom, prev =>
-        prev.map(msg => {
-          // Update the edited message
-          if (msg._id === messageId) {
-            return { ...msg, content, updatedAt: new Date(updatedAt), isEdited: true }
+  socket.on("messageEdited", async ({ messageId, conversationId, updatedAt, content }) => {
+    set(messagesAtom, prev =>
+      prev.map(msg => {
+        // Update the edited message
+        if (msg._id === messageId) {
+          return { ...msg, content, updatedAt: new Date(updatedAt), isEdited: true }
+        }
+        // Update replyTo content if this message replies to the edited message
+        if (msg.replyTo?._id === messageId) {
+          return {
+            ...msg,
+            replyTo: { ...msg.replyTo, content },
           }
-          // Update replyTo content if this message replies to the edited message
+        }
+        return msg
+      })
+    )
+
+    set(receivedMsgAtom, prev => !prev)
+
+    // Update lastMessage if this is the last message
+    set(conversationsAtom, prev =>
+      prev.map(conv => {
+        if (conv._id === conversationId && conv.lastMessage?._id === messageId) {
+          return {
+            ...conv,
+            lastMessage: {
+              ...conv.lastMessage!,
+              content,
+              updatedAt: new Date(updatedAt),
+              isEdited: true,
+            },
+          }
+        }
+        return conv
+      })
+    )
+  })
+
+  socket.on("messageDeleted", ({ messageId, newLastMessage }) => {
+    // Remove the deleted message and clean up any replies to it
+    set(messagesAtom, prev =>
+      prev
+        .filter(msg => msg._id !== messageId)
+        .map(msg => {
+          // If this message was replying to the deleted message, clear the reply
           if (msg.replyTo?._id === messageId) {
-            return {
-              ...msg,
-              replyTo: { ...msg.replyTo, content },
-            }
+            return { ...msg, replyTo: undefined, replyToDeleted: true }
           }
           return msg
         })
-      )
+    )
 
-      set(receivedMsgAtom, prev => !prev)
+    set(receivedMsgAtom, prev => !prev) // trigger re-render
 
-      // Update lastMessage if this is the last message
-      set(conversationsAtom, prev =>
-        prev.map(conv => {
-          if (conv._id === conversationId && conv.lastMessage?._id === messageId) {
-            return {
-              ...conv,
-              lastMessage: {
-                ...conv.lastMessage!,
-                content,
-                updatedAt: new Date(updatedAt),
-                isEdited: true,
-              },
-            }
-          }
-          return conv
-        })
-      )
-    }
-  )
-
-  socket.on(
-    "messageDeleted",
-    ({ messageId, newLastMessage }: { messageId: string; newLastMessage: LastMessageType }) => {
-      // Remove the deleted message and clean up any replies to it
-      set(messagesAtom, prev =>
-        prev
-          .filter(msg => msg._id !== messageId)
-          .map(msg => {
-            // If this message was replying to the deleted message, clear the reply
-            if (msg.replyTo?._id === messageId) {
-              return { ...msg, replyTo: undefined, replyToDeleted: true }
-            }
-            return msg
-          })
-      )
-
-      set(receivedMsgAtom, prev => !prev) // trigger re-render
-
-      // Update lastMessage if this was the last message
-      const currentConversation = get(currentConversationAtom)
-      set(conversationsAtom, prev =>
-        prev.map(conv => {
-          if (conv._id === currentConversation?._id && conv.lastMessage?._id === messageId) {
-            return { ...conv, lastMessage: newLastMessage }
-          }
-          return conv
-        })
-      )
-    }
-  )
+    // Update lastMessage if this was the last message
+    const currentConversation = get(currentConversationAtom)
+    set(conversationsAtom, prev =>
+      prev.map(conv => {
+        if (conv._id === currentConversation?._id && conv.lastMessage?._id === messageId) {
+          return { ...conv, lastMessage: newLastMessage }
+        }
+        return conv
+      })
+    )
+  })
 })
 
 // Sends a message in a conversation
 export const sendMessageAtom = atom(
   null,
-  async (get, set, conversationId: string, content: string, replyToId?: string) => {
+  async (get, set, conversationId: string, content: string) => {
     const editingMessage = get(editingMessageAtom)
     const attachments = get(chatAttachmentsAtom)
     const socket = get(chatSocketAtom)
