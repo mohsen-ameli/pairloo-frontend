@@ -1,5 +1,13 @@
 import { useAtomValue, useSetAtom } from "jotai"
-import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
+import {
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableHighlight,
+  View,
+  Animated,
+  ActivityIndicator,
+} from "react-native"
 import { Image } from "expo-image"
 import { authFetchAtom, userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { colors } from "@/src/utils/colors"
@@ -356,7 +364,7 @@ export default function ProfileScreen() {
 
           {activeView === "savedPosts" &&
             (isSavedPostsPending ? (
-              <LoadingIndicator loading={true} />
+              <ActivityIndicator size="large" color={colors.blue} />
             ) : isSavedPostsError || !savedPosts || !Array.isArray(savedPosts) ? (
               <View style={profileStyles.emptyStateContainer}>
                 <Text style={profileStyles.emptyStateText}>

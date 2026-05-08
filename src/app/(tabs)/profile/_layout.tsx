@@ -2,11 +2,7 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack } from "expo-router"
 
 export default function Layout() {
-  const profileOptions = useCustomHeader({
-    title: "Profile",
-    backButtonVisible: false,
-    isProfile: true,
-  })
+  const profileOptions = useCustomHeader({ title: "Profile", isProfile: true })
 
   return (
     <Stack>

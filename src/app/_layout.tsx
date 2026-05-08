@@ -26,6 +26,7 @@ import {
   PermissionStatus,
   requestTrackingPermissionsAsync,
 } from "expo-tracking-transparency"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -52,10 +53,11 @@ export default function RootLayout() {
   const loginOptions = useCustomHeader({ title: "Log In" })
   const registerOptions = useCustomHeader({ title: "Create Account" })
   const forgotEmailOptions = useCustomHeader({ title: "Forgot Email" })
-  const chatOptions = useCustomHeader({ title: "Chat", backButtonVisible: false })
-  const myPostOptions = useCustomHeader({ title: "My Post", backButtonVisible: false })
+  const chatOptions = useCustomHeader({ title: "Chat" })
+  const myPostOptions = useCustomHeader({ title: "My Post" })
   const postDetailsOptions = useCustomHeader({ title: "Post Details", isPostDetails: true })
   const defaultOptions = useCustomHeader({ title: "" })
+  const insets = useSafeAreaInsets()
 
   const userJwt = useAtomValue(userSecureAtom)
   const queryClient = useAtomValue(queryClientAtom)
@@ -181,11 +183,11 @@ export default function RootLayout() {
                 presentation: "formSheet",
                 gestureDirection: "vertical",
                 animation: "slide_from_bottom",
-                contentStyle: { backgroundColor: colors.light },
+                contentStyle: { backgroundColor: colors.light, paddingBottom: insets.bottom + 20 },
                 headerShown: false,
                 sheetGrabberVisible: false,
                 sheetInitialDetentIndex: 0,
-                sheetAllowedDetents: [0.3],
+                sheetAllowedDetents: "fitToContents",
                 sheetExpandsWhenScrolledToEdge: false,
                 sheetElevation: 24,
               }}

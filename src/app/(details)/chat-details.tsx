@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
+  Keyboard,
 } from "react-native"
 import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
@@ -29,7 +30,7 @@ import {
   editingMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
-import { MessageType } from "@/src/types/chat.type"
+import { MessageType } from "@/src/types/socket/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
@@ -141,7 +142,12 @@ export default function ChatDetails() {
 
   // Scroll to bottom when a new message is received
   useEffect(() => {
-    chatRef.current && chatRef.current.scrollToTop({ animated: true })
+    // delay to ensure the list has been re-rendered
+    const timer = setTimeout(() => {
+      chatRef.current?.scrollToTop({ animated: true })
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [receivedMsg])
 
   // When a message is selected for editing, populate the input
@@ -169,7 +175,7 @@ export default function ChatDetails() {
   // Animate fake view height
   const fakeView = useAnimatedStyle(() => {
     return {
-      height: Math.abs(height.value) - 15,
+      height: Math.abs(height.value) - 20,
     }
   }, [])
 
@@ -221,7 +227,7 @@ export default function ChatDetails() {
           onPress={() => chatRef.current?.scrollToTop({ animated: true })}
           style={chatStyles.scrollToBottomButton}
         >
-          <Feather name="arrow-down" size={24} color={colors.gray} />
+          <Feather name="arrow-down" size={24} color={colors.dark} />
         </TouchableOpacity>
       )}
 
@@ -232,12 +238,6 @@ export default function ChatDetails() {
         <View style={chatStyles.replyPreviewContainer}>
           <View style={chatStyles.replyPreviewHeader}>
             <View style={chatStyles.replyPreviewContent}>
-              {replyingTo.attachments && replyingTo.attachments.length > 0 && (
-                <Image
-                  source={{ uri: replyingTo.attachments[0] }}
-                  style={chatStyles.replyPreviewImage}
-                />
-              )}
               <View style={chatStyles.replyPreviewTextContainer}>
                 <Text style={chatStyles.replyPreviewLabel}>
                   Replying to {replyingTo.sender.username}
@@ -246,7 +246,7 @@ export default function ChatDetails() {
                   <Text style={chatStyles.replyPreviewText} numberOfLines={2}>
                     {replyingTo.content}
                   </Text>
-                ) : replyingTo.attachments && replyingTo.attachments.length > 0 ? (
+                ) : replyingTo.attachmentsCount > 0 ? (
                   <Text style={chatStyles.replyPreviewImageText}>Image</Text>
                 ) : null}
               </View>
@@ -282,12 +282,13 @@ export default function ChatDetails() {
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
         <Pressable
-          onPress={() =>
+          onPress={() => {
+            Keyboard.dismiss()
             router.push({
               pathname: "/attachment-picker",
               params: { intent: "chat" },
             })
-          }
+          }}
           style={chatStyles.actionButton}
         >
           <Feather name="plus" size={24} color={colors.light} />
@@ -351,16 +352,15 @@ function MessageItem({
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
+  const router = useRouter()
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
-  const setReplyingTo = useSetAtom(replyingToAtom)
+  const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const setCurrentLongPressedMessage = useSetAtom(currentLongPressedMessageAtom)
-  const replyingTo = useAtomValue(replyingToAtom)
   const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
-  const router = useRouter()
+  const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
-  const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
 
   // scroll to the original replied message
   const scrollToReplyMessage = () => {
@@ -402,7 +402,12 @@ function MessageItem({
 
       if (event.translationX < -threshold) {
         translateX.value = withSpring(0)
-        scheduleOnRN(setReplyingTo, item)
+        scheduleOnRN(setReplyingTo, {
+          _id: item._id,
+          content: item.content,
+          attachmentsCount: item.attachments?.length || 0,
+          sender: item.sender,
+        })
         scheduleOnRN(focusOnInput)
       } else {
         translateX.value = withSpring(0)
@@ -410,6 +415,7 @@ function MessageItem({
     })
 
   const handleLongPress = () => {
+    Keyboard.dismiss()
     setHighlightedMessageId(item._id)
     setCurrentLongPressedMessage(item)
     router.push({
@@ -454,7 +460,12 @@ function MessageItem({
       <Animated.View style={[chatStyles.replyButtonContainer, replyButtonStyle]}>
         <Pressable
           onPress={() => {
-            setReplyingTo(item)
+            setReplyingTo({
+              _id: item._id,
+              content: item.content,
+              attachmentsCount: item.attachments?.length || 0,
+              sender: item.sender,
+            })
             translateX.value = withSpring(0)
           }}
           style={chatStyles.replyButton}
@@ -531,7 +542,7 @@ function MessageItem({
                     >
                       {item.replyTo.content}
                     </Text>
-                  ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
+                  ) : item.replyTo.attachmentsCount > 0 ? (
                     <Text
                       style={[
                         chatStyles.messageReplyImage,
@@ -540,16 +551,10 @@ function MessageItem({
                         },
                       ]}
                     >
-                      Image
+                      {item.replyTo.attachmentsCount} Attachments
                     </Text>
                   ) : null}
                 </View>
-                {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
-                  <Image
-                    source={{ uri: item.replyTo.attachments[0] }}
-                    style={chatStyles.messageReplyThumbnail}
-                  />
-                )}
               </Pressable>
             )}
 

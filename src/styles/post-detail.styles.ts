@@ -297,8 +297,7 @@ export const styles = StyleSheet.create({
   },
   contactButtonContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 24,
-    paddingTop: 16,
+    padding: 16,
   },
   closeIconContainer: {
     position: "absolute",
