@@ -179,6 +179,12 @@ export default function ChatDetails() {
     }
   }, [])
 
+  const botAnimation = useAnimatedStyle(() => {
+    return {
+      bottom: Math.abs(height.value) + 100,
+    }
+  }, [])
+
   async function loadMoreMessages() {
     if (!socket || entireChatLoaded) return
     socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
@@ -218,17 +224,19 @@ export default function ChatDetails() {
         ListFooterComponent={<View style={chatStyles.listFooter} />}
         onScroll={event => {
           const offsetY = event.nativeEvent.contentOffset.y
-          setShowScrollToBottom(offsetY > 2000)
+          setShowScrollToBottom(offsetY > 1000)
         }}
       />
 
       {showScrollToBottom && (
-        <TouchableOpacity
-          onPress={() => chatRef.current?.scrollToTop({ animated: true })}
-          style={chatStyles.scrollToBottomButton}
-        >
-          <Feather name="arrow-down" size={24} color={colors.dark} />
-        </TouchableOpacity>
+        <Animated.View style={[{ position: "absolute", right: 20, zIndex: 2 }, botAnimation]}>
+          <TouchableOpacity
+            onPress={() => chatRef.current?.scrollToTop({ animated: true })}
+            style={chatStyles.scrollToBottomButton}
+          >
+            <Feather name="arrow-down" size={24} color={colors.dark} />
+          </TouchableOpacity>
+        </Animated.View>
       )}
 
       <AttachmentPreview />

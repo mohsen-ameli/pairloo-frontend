@@ -93,7 +93,7 @@ export default function useCustomHeader({
     return {
       ...options,
       headerRight: () => (
-        <Pressable onPress={() => router.push("(tabs)/profile/settings")}>
+        <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
           <Feather name="settings" size={24} color={colors.dark} />
         </Pressable>
       ),

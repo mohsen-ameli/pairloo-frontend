@@ -330,13 +330,9 @@ export const chatStyles = StyleSheet.create({
     color: colors.dark,
   },
   scrollToBottomButton: {
-    position: "absolute",
-    bottom: 80,
-    right: 20,
-    alignSelf: "center",
+    right: 0,
     backgroundColor: colors.lightGray,
     padding: 10,
     borderRadius: 50,
-    zIndex: 2,
   },
 })
