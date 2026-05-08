@@ -64,12 +64,22 @@ export const initChatAtom = atom(null, async (get, set) => {
       token: userJwt.accessToken,
     },
     transports: ["websocket", "polling"],
+    reconnectionAttempts: 5,
   })
 
   set(chatSocketAtom, socket)
 
-  socket.io.on("reconnect_failed", () => {
+  function cleanup() {
+    get(chatSocketAtom)?.disconnect()
+    set(chatSocketAtom, null)
+    set(conversationsAtom, [])
+    set(currentConversationAtom, null)
+    set(messagesAtom, [])
     set(loadingAtom, false)
+  }
+
+  socket.io.on("reconnect_failed", () => {
+    cleanup()
   })
 
   socket.on("connected", () => {
@@ -79,15 +89,12 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   socket.on("disconnect", () => {
     console.log("Disconnected from WebSocket server for chatting")
-    set(chatSocketAtom, null)
-    set(conversationsAtom, [])
-    set(currentConversationAtom, null)
-    set(messagesAtom, [])
-    set(loadingAtom, false)
+    cleanup()
   })
 
   socket.on("error", (err: any) => {
     console.error("WebSocket error event:", err)
+    cleanup()
   })
 
   socket.on("connect_error", async () => {
