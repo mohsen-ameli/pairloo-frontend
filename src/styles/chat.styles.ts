@@ -5,7 +5,7 @@ export const chatStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.light,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
   },
   notFoundContainer: {
     flex: 1,
@@ -17,9 +17,8 @@ export const chatStyles = StyleSheet.create({
     backgroundColor: colors.lightGray,
     paddingVertical: 7,
     paddingHorizontal: 10,
-    paddingBottom: 35,
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 8,
     paddingTop: 12,
   },
@@ -177,6 +176,11 @@ export const chatStyles = StyleSheet.create({
   replyPreviewCloseButton: {
     padding: 8,
   },
+  editedLabel: {
+    fontSize: 10,
+    fontStyle: "italic",
+    marginLeft: 5,
+  },
   editingIndicatorContainer: {
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -245,7 +249,7 @@ export const chatStyles = StyleSheet.create({
     maxHeight: 300,
     borderRadius: 10,
   },
-  flatListFooter: {
+  listFooter: {
     height: 16,
   },
   attachmentPreviewContainer: {
@@ -269,7 +273,6 @@ export const chatStyles = StyleSheet.create({
     padding: 2,
   },
   modalContainer: {
-    flex: 1,
     backgroundColor: colors.light,
     paddingTop: 20,
     paddingHorizontal: 25,
@@ -325,5 +328,11 @@ export const chatStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     color: colors.dark,
+  },
+  scrollToBottomButton: {
+    right: 0,
+    backgroundColor: colors.lightGray,
+    padding: 10,
+    borderRadius: 50,
   },
 })

@@ -26,6 +26,7 @@ import {
   PermissionStatus,
   requestTrackingPermissionsAsync,
 } from "expo-tracking-transparency"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -49,27 +50,18 @@ const toastConfig = {
 }
 
 export default function RootLayout() {
+  const loginOptions = useCustomHeader({ title: "Log In" })
+  const registerOptions = useCustomHeader({ title: "Create Account" })
+  const forgotEmailOptions = useCustomHeader({ title: "Forgot Email" })
+  const chatOptions = useCustomHeader({ title: "Chat" })
+  const myPostOptions = useCustomHeader({ title: "My Post" })
+  const postDetailsOptions = useCustomHeader({ title: "Post Details", isPostDetails: true })
+  const defaultOptions = useCustomHeader({ title: "" })
+  const insets = useSafeAreaInsets()
+
   const userJwt = useAtomValue(userSecureAtom)
   const queryClient = useAtomValue(queryClientAtom)
-
-  const loginOptions = useCustomHeader("Log In", true)
-  const registerOptions = useCustomHeader("Create Account", true)
-  const forgotEmailOptions = useCustomHeader("Forgot Email", true)
-  const chatOptions = useCustomHeader("Chat")
-  const myPostOptions = useCustomHeader("My Post")
-  const postDetailsOptions = useCustomHeader(
-    "Post Details",
-    true,
-    false,
-    false,
-    false,
-    undefined,
-    true
-  )
-
-  const defaultOptions = useCustomHeader("", true)
   const getDeviceInfo = useSetAtom(getDeviceInfoAtom)
-
   const setChannels = useSetAtom(channelsAtom)
   const setNotification = useSetAtom(notificationAtom)
   const registerForPushNotificationsAsync = useSetAtom(registerForPushNotificationsAsyncAtom)
@@ -98,27 +90,31 @@ export default function RootLayout() {
   }, [userJwt])
 
   async function setupAds() {
-    const { status } = await getTrackingPermissionsAsync()
-    if (status === PermissionStatus.UNDETERMINED) {
-      await requestTrackingPermissionsAsync()
+    try {
+      const { status } = await getTrackingPermissionsAsync()
+      if (status === PermissionStatus.UNDETERMINED) {
+        await requestTrackingPermissionsAsync()
+      }
+
+      await mobileAds().setRequestConfiguration({
+        // Update all future requests suitable for parental guidance
+        maxAdContentRating: MaxAdContentRating.PG,
+
+        // Indicates that you want your content treated as child-directed for purposes of COPPA.
+        tagForChildDirectedTreatment: true,
+
+        // Indicates that you want the ad request to be handled in a
+        // manner suitable for users under the age of consent.
+        tagForUnderAgeOfConsent: true,
+
+        // An array of test device IDs to allow.
+        testDeviceIdentifiers: ["EMULATOR"],
+      })
+
+      await mobileAds().initialize()
+    } catch (error) {
+      console.error("Error setting up ads:", error)
     }
-
-    await mobileAds().setRequestConfiguration({
-      // Update all future requests suitable for parental guidance
-      maxAdContentRating: MaxAdContentRating.PG,
-
-      // Indicates that you want your content treated as child-directed for purposes of COPPA.
-      tagForChildDirectedTreatment: true,
-
-      // Indicates that you want the ad request to be handled in a
-      // manner suitable for users under the age of consent.
-      tagForUnderAgeOfConsent: true,
-
-      // An array of test device IDs to allow.
-      testDeviceIdentifiers: ["EMULATOR"],
-    })
-
-    await mobileAds().initialize()
   }
 
   useEffect(() => {
@@ -187,11 +183,11 @@ export default function RootLayout() {
                 presentation: "formSheet",
                 gestureDirection: "vertical",
                 animation: "slide_from_bottom",
-                contentStyle: { backgroundColor: colors.light },
+                contentStyle: { backgroundColor: colors.light, paddingBottom: insets.bottom + 20 },
                 headerShown: false,
                 sheetGrabberVisible: false,
                 sheetInitialDetentIndex: 0,
-                sheetAllowedDetents: [0.3],
+                sheetAllowedDetents: "fitToContents",
                 sheetExpandsWhenScrolledToEdge: false,
                 sheetElevation: 24,
               }}

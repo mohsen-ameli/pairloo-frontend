@@ -4,7 +4,6 @@ import {
   Text,
   Platform,
   TouchableOpacity,
-  FlatList,
   TextInput,
   StyleSheet,
   Keyboard,
@@ -23,6 +22,7 @@ import { zoomToRadiusMeters } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { AppleMaps, GoogleMaps } from "expo-maps"
+import { FlashList } from "@shopify/flash-list"
 
 type CameraEvent = {
   coordinates: {
@@ -83,30 +83,30 @@ export default function MapSelector() {
       clearTimeout(timeoutRef.current)
     }
     timeoutRef.current = setTimeout(() => {
-      setSettings({
-        ...settings,
+      setSettings(async curr => ({
+        ...(await curr),
         location: {
           latitude: region.current.latitude,
           longitude: region.current.longitude,
         },
         distance: region.current.distance,
         zoom: region.current.zoom,
-      })
+      }))
     }, 2000)
   }
 
   useFocusEffect(
     useCallback(() => {
-      return async () => {
-        await setSettings({
-          ...settings,
+      return () => {
+        setSettings(async curr => ({
+          ...(await curr),
           location: {
             latitude: region.current.latitude,
             longitude: region.current.longitude,
           },
           distance: region.current.distance,
           zoom: region.current.zoom,
-        })
+        }))
       }
     }, [currPage])
   )
@@ -158,7 +158,7 @@ export default function MapSelector() {
     }
 
     saveCurrentLocation()
-  }, [settings.location])
+  }, [settings.location, settings.zoom])
 
   return (
     <View style={{ flex: 1 }}>
@@ -209,7 +209,7 @@ export default function MapSelector() {
               borderRadius: 5,
             }}
           />
-          <FlatList
+          <FlashList
             data={cities}
             keyExtractor={item => item._id.toString()}
             style={{ maxHeight: 200, display: citySearchInput.length > 0 ? "flex" : "none" }}
@@ -237,15 +237,15 @@ export default function MapSelector() {
                   } catch (error) {
                     console.log("Error setting camera position: ", error)
                   }
-                  setSettings({
-                    ...settings,
+                  setSettings(async curr => ({
+                    ...(await curr),
                     location: {
-                      latitude: item.latitude,
-                      longitude: item.longitude,
+                      latitude: region.current.latitude,
+                      longitude: region.current.longitude,
                     },
                     distance: region.current.distance,
                     zoom: region.current.zoom,
-                  })
+                  }))
                   setCitySearchInput("")
                   setCities([])
                 }}
@@ -329,11 +329,11 @@ export default function MapSelector() {
                 const newZoom = region.current.zoom + 1
                 region.current.zoom = newZoom
                 region.current.distance = zoomToRadiusMeters(newZoom, region.current.latitude)
-                setSettings({
-                  ...settings,
+                setSettings(async curr => ({
+                  ...(await curr),
                   distance: region.current.distance,
                   zoom: region.current.zoom,
-                })
+                }))
               }}
               style={{
                 paddingVertical: 10,
@@ -349,11 +349,11 @@ export default function MapSelector() {
                 const newZoom = region.current.zoom - 1
                 region.current.zoom = newZoom
                 region.current.distance = zoomToRadiusMeters(newZoom, region.current.latitude)
-                setSettings({
-                  ...settings,
+                setSettings(async curr => ({
+                  ...(await curr),
                   distance: region.current.distance,
                   zoom: region.current.zoom,
-                })
+                }))
               }}
               style={{ paddingVertical: 10, paddingHorizontal: 12 }}
             >

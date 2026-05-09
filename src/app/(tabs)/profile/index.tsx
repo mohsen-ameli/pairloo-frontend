@@ -1,5 +1,13 @@
 import { useAtomValue, useSetAtom } from "jotai"
-import { Pressable, ScrollView, Text, TouchableHighlight, View, Animated } from "react-native"
+import {
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableHighlight,
+  View,
+  Animated,
+  ActivityIndicator,
+} from "react-native"
 import { Image } from "expo-image"
 import { authFetchAtom, userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { colors } from "@/src/utils/colors"
@@ -13,7 +21,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
-import { getScoreColor } from "@/src/utils/getScoreColor"
+import { getScoreColor } from "@/src/utils/get-score-color"
 import Feather from "@expo/vector-icons/Feather"
 import { MyUserType, ReviewsType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
@@ -356,7 +364,7 @@ export default function ProfileScreen() {
 
           {activeView === "savedPosts" &&
             (isSavedPostsPending ? (
-              <LoadingIndicator loading={true} />
+              <ActivityIndicator size="large" color={colors.blue} />
             ) : isSavedPostsError || !savedPosts || !Array.isArray(savedPosts) ? (
               <View style={profileStyles.emptyStateContainer}>
                 <Text style={profileStyles.emptyStateText}>

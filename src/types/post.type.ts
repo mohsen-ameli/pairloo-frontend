@@ -24,6 +24,7 @@ export type GeneralPostType = {
     longitude: number
   }
   distance?: number
+  score: number
 }
 
 export interface MyPostType {

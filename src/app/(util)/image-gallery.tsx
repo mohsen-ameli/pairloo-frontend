@@ -10,7 +10,6 @@ import {
   Pressable,
   TouchableOpacity,
 } from "react-native"
-import { FlatList } from "react-native-gesture-handler"
 import { Image } from "expo-image"
 import Zoom from "react-native-zoom-reanimated"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -19,6 +18,7 @@ import { chatStyles } from "@/src/styles/chat.styles"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
+import { FlashList, FlashListRef } from "@shopify/flash-list"
 
 const isZoomedAtom = atom(false)
 
@@ -58,7 +58,7 @@ interface GalleryImageItemProps {
   doubleTapScale: number
   minZoomScale: number
   maxZoomScale: number
-  flatListRef: React.RefObject<FlatList<ImageItem> | null>
+  flashListRef: React.RefObject<FlashListRef<ImageItem> | null>
   imageGap: number
   itemWidth: number
 }
@@ -74,7 +74,7 @@ function GalleryImageItem({
   doubleTapScale,
   minZoomScale,
   maxZoomScale,
-  flatListRef,
+  flashListRef,
   imageGap,
   itemWidth,
 }: GalleryImageItemProps): React.JSX.Element {
@@ -96,7 +96,7 @@ function GalleryImageItem({
           maxZoomScale,
         }}
         enableGallerySwipe
-        parentScrollRef={flatListRef}
+        parentScrollRef={flashListRef}
         currentIndex={index}
         itemWidth={itemWidth}
         onZoomStateChange={z => setIsZoomed(z)}
@@ -137,13 +137,12 @@ export default function ImageGallery({
   doubleTapScale = 2,
   minZoomScale = 1,
   maxZoomScale = 5,
-  containerStyle,
   imageGap = 20,
 }: ImageGalleryProps) {
   const { width: deviceWidth } = useWindowDimensions()
   const [currentIndex, setCurrentIndex] = useAtom(imgIndexAtom)
   const [containerHeight, setContainerHeight] = useState(0)
-  const flatListRef = useRef<FlatList<ImageItem> | null>(null)
+  const flashListRef = useRef<FlashListRef<ImageItem> | null>(null)
   const images = useAtomValue(bigImageViewAtom)
   const isZoomed = useAtomValue(isZoomedAtom)
   const router = useRouter()
@@ -176,8 +175,8 @@ export default function ImageGallery({
 
       {/* Gallery */}
       {containerHeight > 0 && (
-        <FlatList
-          ref={flatListRef}
+        <FlashList
+          ref={flashListRef}
           data={images}
           renderItem={({ item, index }) => (
             <GalleryImageItem
@@ -188,22 +187,17 @@ export default function ImageGallery({
               doubleTapScale={doubleTapScale}
               minZoomScale={minZoomScale}
               maxZoomScale={maxZoomScale}
-              flatListRef={flatListRef}
+              flashListRef={flashListRef}
               imageGap={index === images.length - 1 ? 0 : imageGap}
               itemWidth={index === images.length - 1 ? deviceWidth : itemWidth}
             />
           )}
-          getItemLayout={(_, index) => ({
-            length: itemWidth,
-            offset: itemWidth * index,
-            index,
-          })}
           initialScrollIndex={currentIndex}
           keyExtractor={item => item.id}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          style={styles.flatList}
+          style={styles.galleryList}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           snapToInterval={itemWidth}
@@ -215,7 +209,7 @@ export default function ImageGallery({
       {/* Footer */}
       {images.length > 1 && !isZoomed && (
         <View style={chatStyles.imageFooter}>
-          <FlatList
+          <FlashList
             data={images}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -224,7 +218,7 @@ export default function ImageGallery({
               <Pressable
                 onPress={() => {
                   setCurrentIndex(parseInt(item.id))
-                  flatListRef.current?.scrollToIndex({ index: parseInt(item.id), animated: false })
+                  flashListRef.current?.scrollToIndex({ index: parseInt(item.id), animated: false })
                 }}
               >
                 <Image
@@ -252,7 +246,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  flatList: {
+  galleryList: {
     flex: 1,
     backgroundColor: "#f0f0f0",
   },

@@ -3,10 +3,11 @@ import {
   Text,
   Pressable,
   TextInput,
-  FlatList,
   Dimensions,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
+  Keyboard,
 } from "react-native"
 import { useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
@@ -27,11 +28,9 @@ import {
   replyingToAtom,
   sendMessageAtom,
   editingMessageAtom,
-  editMessageAtom,
-  deleteMessageAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
-import { MessageType } from "@/src/types/chat.type"
+import { MessageType } from "@/src/types/socket/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
@@ -59,18 +58,16 @@ export default function ChatDetails() {
   const [inputHeight, setInputHeight] = useState<number>(40)
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
-  const editMessage = useSetAtom(editMessageAtom)
   const user = useAtomValue(userAtom)
   const userJwt = useAtomValue(userSecureAtom)
   const conversations = useAtomValue(conversationsAtom)
-  const setCurrentConversation = useSetAtom(currentConversationAtom)
+  const [currentConversation, setCurrentConversation] = useAtom(currentConversationAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
-  const deleteMessage = useSetAtom(deleteMessageAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const inputRef = useRef<TextInput>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
-  const detailOptions = useCustomHeader("", true, true)
+  const detailOptions = useCustomHeader({ title: "", inChat: true })
   const [loading, setLoading] = useAtom(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
   const otherUser = useRef<{
@@ -84,6 +81,7 @@ export default function ChatDetails() {
   const receivedMsg = useAtomValue(receivedMsgAtom)
   const [scrollTargetId, setScrollTargetId] = useAtom(scrollTargetIdAtom)
   const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 
   // Handle automatic scrolling to replied messages
   useEffect(() => {
@@ -113,8 +111,9 @@ export default function ChatDetails() {
     }
   }, [messages, scrollTargetId, entireChatLoaded, socket])
 
+  // To set the current conversation and load initial messages
   useEffect(() => {
-    if (!conversations || !user || !socket || !userJwt) return
+    if (!conversations || !user || !socket || !userJwt || currentConversation) return
 
     setLoading(true)
     setEntireChatLoaded(false)
@@ -130,7 +129,9 @@ export default function ChatDetails() {
     socket.emit("getMessages", id, 0, NUM_MESSAGES_TO_LOAD)
   }, [conversations, user, socket, id])
 
+  // Checking if the user is allowed to review (only if they have received a message from the other user)
   useEffect(() => {
+    if (canReview) return
     for (const msg of messages) {
       if (msg.sender._id === otherUser.current?._id) {
         setCanReview(true)
@@ -139,17 +140,15 @@ export default function ChatDetails() {
     }
   }, [messages])
 
+  // Scroll to bottom when a new message is received
   useEffect(() => {
-    chatRef.current && chatRef.current.scrollToTop({ animated: true })
-  }, [receivedMsg])
+    // delay to ensure the list has been re-rendered
+    const timer = setTimeout(() => {
+      chatRef.current?.scrollToTop({ animated: true })
+    }, 100)
 
-  useEffect(() => {
-    return () => {
-      setMessages([])
-      setCurrentConversation(null)
-      setScrollTargetId(null)
-    }
-  }, [])
+    return () => clearTimeout(timer)
+  }, [receivedMsg])
 
   // When a message is selected for editing, populate the input
   useEffect(() => {
@@ -159,58 +158,30 @@ export default function ChatDetails() {
     }
   }, [editingMessage])
 
-  async function handleSendMessage() {
-    const msg = message.trim()
-    if (!editingMessage && !msg && attachments.length === 0) return
-
-    if (editingMessage) {
-      if (msg === editingMessage.content) {
-        // No changes, just cancel editing
-        setEditingMessage(null)
-        setMessage("")
-        return
-      }
-
-      // If message is empty, show delete confirmation alert
-      if (!msg) {
-        Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
-          {
-            text: "Cancel",
-            onPress: () => {},
-            style: "cancel",
-          },
-          {
-            text: "Delete",
-            onPress: async () => {
-              try {
-                await deleteMessage(editingMessage._id, editingMessage.conversationId)
-                setEditingMessage(null)
-                setMessage("")
-              } catch (error) {
-                console.error("Delete error:", error)
-                Alert.alert("Error", "Failed to delete message")
-              }
-            },
-            style: "destructive",
-          },
-        ])
-        return
-      }
-
-      await editMessage(editingMessage._id, editingMessage.conversationId, msg)
-      setEditingMessage(null)
-      setMessage("")
-    } else {
-      // Normal message sending
-      setMessage("")
-      await sendMessage(id, msg, replyingTo?._id)
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      setMessages([])
+      setCurrentConversation(null)
+      setScrollTargetId(null)
     }
+  }, [])
+
+  async function handleSendMessage() {
+    setMessage("")
+    await sendMessage(id, message)
   }
 
   // Animate fake view height
   const fakeView = useAnimatedStyle(() => {
     return {
-      height: Math.abs(height.value) - 15,
+      height: Math.abs(height.value) - 20,
+    }
+  }, [])
+
+  const botAnimation = useAnimatedStyle(() => {
+    return {
+      bottom: Math.abs(height.value) + 100,
     }
   }, [])
 
@@ -224,39 +195,49 @@ export default function ChatDetails() {
       <Stack.Screen options={detailOptions} />
       <LoadingIndicator loading={loading} />
 
-      {/* Main chat */}
-      <View style={chatStyles.container}>
-        <FlashList
-          inverted
-          data={messages}
-          ref={chatRef}
-          keyboardDismissMode="on-drag"
-          keyExtractor={item => item._id}
-          onEndReached={loadMoreMessages}
-          scrollIndicatorInsets={{ left: 10 }}
-          contentContainerStyle={{ paddingTop: 10, paddingBottom: 20 }}
-          renderItem={({ item, index }) => (
-            <>
-              {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
-              {index === messages.length - 1 && !entireChatLoaded && (
-                <ActivityIndicator
-                  style={{ paddingVertical: 8 }}
-                  size="small"
-                  color={colors.blue}
-                />
-              )}
-              <MessageItem
-                item={item}
-                messages={messages}
-                chatRef={chatRef}
-                inputRef={inputRef}
-                isOwnMessage={userJwt?._id === item.sender._id}
-              />
-            </>
-          )}
-          ListFooterComponent={<View style={chatStyles.flatListFooter} />}
-        />
-      </View>
+      <FlashList
+        inverted
+        data={messages}
+        ref={chatRef}
+        keyboardDismissMode="on-drag"
+        style={chatStyles.container}
+        keyExtractor={item => item._id}
+        onEndReached={loadMoreMessages}
+        scrollIndicatorInsets={{ left: 10 }}
+        contentContainerStyle={{ paddingTop: 10, paddingBottom: 20, paddingHorizontal: 5 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item, index }) => (
+          <>
+            {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
+            {index === messages.length - 1 && !entireChatLoaded && (
+              <ActivityIndicator style={{ paddingVertical: 8 }} size="small" color={colors.blue} />
+            )}
+            <MessageItem
+              item={item}
+              messages={messages}
+              chatRef={chatRef}
+              inputRef={inputRef}
+              isOwnMessage={userJwt?._id === item.sender._id}
+            />
+          </>
+        )}
+        ListFooterComponent={<View style={chatStyles.listFooter} />}
+        onScroll={event => {
+          const offsetY = event.nativeEvent.contentOffset.y
+          setShowScrollToBottom(offsetY > 1000)
+        }}
+      />
+
+      {showScrollToBottom && (
+        <Animated.View style={[{ position: "absolute", right: 20, zIndex: 2 }, botAnimation]}>
+          <TouchableOpacity
+            onPress={() => chatRef.current?.scrollToTop({ animated: true })}
+            style={chatStyles.scrollToBottomButton}
+          >
+            <Feather name="arrow-down" size={24} color={colors.dark} />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       <AttachmentPreview />
 
@@ -265,12 +246,6 @@ export default function ChatDetails() {
         <View style={chatStyles.replyPreviewContainer}>
           <View style={chatStyles.replyPreviewHeader}>
             <View style={chatStyles.replyPreviewContent}>
-              {replyingTo.attachments && replyingTo.attachments.length > 0 && (
-                <Image
-                  source={{ uri: replyingTo.attachments[0] }}
-                  style={chatStyles.replyPreviewImage}
-                />
-              )}
               <View style={chatStyles.replyPreviewTextContainer}>
                 <Text style={chatStyles.replyPreviewLabel}>
                   Replying to {replyingTo.sender.username}
@@ -279,7 +254,7 @@ export default function ChatDetails() {
                   <Text style={chatStyles.replyPreviewText} numberOfLines={2}>
                     {replyingTo.content}
                   </Text>
-                ) : replyingTo.attachments && replyingTo.attachments.length > 0 ? (
+                ) : replyingTo.attachmentsCount > 0 ? (
                   <Text style={chatStyles.replyPreviewImageText}>Image</Text>
                 ) : null}
               </View>
@@ -315,12 +290,13 @@ export default function ChatDetails() {
       {/* Input Area */}
       <View style={chatStyles.inputContainer}>
         <Pressable
-          onPress={() =>
+          onPress={() => {
+            Keyboard.dismiss()
             router.push({
               pathname: "/attachment-picker",
               params: { intent: "chat" },
             })
-          }
+          }}
           style={chatStyles.actionButton}
         >
           <Feather name="plus" size={24} color={colors.light} />
@@ -384,16 +360,15 @@ function MessageItem({
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
+  const router = useRouter()
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
-  const setReplyingTo = useSetAtom(replyingToAtom)
+  const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const setCurrentLongPressedMessage = useSetAtom(currentLongPressedMessageAtom)
-  const replyingToAtomValue = useAtomValue(replyingToAtom)
   const [highlightedMessageId, setHighlightedMessageId] = useAtom(highlightedMessageIdAtom)
-  const router = useRouter()
+  const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
-  const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
 
   // scroll to the original replied message
   const scrollToReplyMessage = () => {
@@ -405,16 +380,15 @@ function MessageItem({
       return
     }
 
-    chatRef.current?.scrollToIndex({
-      index: originalMessageIndex,
-      animated: true,
-      viewPosition: 0.5,
-    })
-
-    // Highlight the message after scroll completes (500ms delay)
-    setTimeout(() => {
-      setHighlightedMessageId(item.replyTo!._id)
-    }, 500)
+    chatRef.current
+      ?.scrollToIndex({
+        index: originalMessageIndex,
+        animated: true,
+        viewPosition: 0.5,
+      })
+      .then(() => {
+        setHighlightedMessageId(item.replyTo!._id)
+      })
   }
 
   function focusOnInput() {
@@ -436,7 +410,12 @@ function MessageItem({
 
       if (event.translationX < -threshold) {
         translateX.value = withSpring(0)
-        scheduleOnRN(setReplyingTo, item)
+        scheduleOnRN(setReplyingTo, {
+          _id: item._id,
+          content: item.content,
+          attachmentsCount: item.attachments?.length || 0,
+          sender: item.sender,
+        })
         scheduleOnRN(focusOnInput)
       } else {
         translateX.value = withSpring(0)
@@ -444,6 +423,7 @@ function MessageItem({
     })
 
   const handleLongPress = () => {
+    Keyboard.dismiss()
     setHighlightedMessageId(item._id)
     setCurrentLongPressedMessage(item)
     router.push({
@@ -463,7 +443,7 @@ function MessageItem({
     if (!highlightedMessageId) return
     const timer = setTimeout(() => {
       setHighlightedMessageId(null)
-    }, 700)
+    }, 500)
     return () => clearTimeout(timer)
   }, [highlightedMessageId])
 
@@ -488,7 +468,12 @@ function MessageItem({
       <Animated.View style={[chatStyles.replyButtonContainer, replyButtonStyle]}>
         <Pressable
           onPress={() => {
-            setReplyingTo(item)
+            setReplyingTo({
+              _id: item._id,
+              content: item.content,
+              attachmentsCount: item.attachments?.length || 0,
+              sender: item.sender,
+            })
             translateX.value = withSpring(0)
           }}
           style={chatStyles.replyButton}
@@ -514,8 +499,10 @@ function MessageItem({
               isOwnMessage ? chatStyles.ownMessageBubble : chatStyles.otherMessageBubble,
               {
                 backgroundColor:
-                  highlightedMessageId === item._id || replyingToAtomValue?._id === item._id
-                    ? colors.chatHighlight
+                  highlightedMessageId === item._id || replyingTo?._id === item._id
+                    ? isOwnMessage
+                      ? colors.chatHighlightOwnBubble
+                      : colors.chatHighlightOtherBubble
                     : isOwnMessage
                       ? colors.purple
                       : colors.lightGray,
@@ -563,7 +550,7 @@ function MessageItem({
                     >
                       {item.replyTo.content}
                     </Text>
-                  ) : item.replyTo.attachments && item.replyTo.attachments.length > 0 ? (
+                  ) : item.replyTo.attachmentsCount > 0 ? (
                     <Text
                       style={[
                         chatStyles.messageReplyImage,
@@ -572,16 +559,10 @@ function MessageItem({
                         },
                       ]}
                     >
-                      Image
+                      {item.replyTo.attachmentsCount} Attachments
                     </Text>
                   ) : null}
                 </View>
-                {item.replyTo.attachments && item.replyTo.attachments.length > 0 && (
-                  <Image
-                    source={{ uri: item.replyTo.attachments[0] }}
-                    style={chatStyles.messageReplyThumbnail}
-                  />
-                )}
               </Pressable>
             )}
 
@@ -648,7 +629,8 @@ function MessageItem({
                   isOwnMessage ? chatStyles.ownMessageText : chatStyles.otherMessageText,
                 ]}
               >
-                {item.content}
+                {item.content}{" "}
+                {item.isEdited && <Text style={chatStyles.editedLabel}>(edited)</Text>}
               </Text>
             )}
 
@@ -681,7 +663,7 @@ function AttachmentPreview() {
 
   return (
     <View style={chatStyles.attachmentPreviewContainer}>
-      <FlatList
+      <FlashList
         data={attachments}
         horizontal
         showsHorizontalScrollIndicator={false}

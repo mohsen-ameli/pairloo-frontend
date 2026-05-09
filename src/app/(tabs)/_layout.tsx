@@ -10,7 +10,8 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useState } from "react"
 import { useAudioPlayer } from "expo-audio"
 import { notificationSoundAtom } from "@/src/store/general-store"
-import { View } from "react-native"
+import { Platform, View } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const audioSource = require("@/assets/audio/new-notification.mp3")
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
@@ -26,6 +27,7 @@ export default function ProtectedLayout() {
   const player = useAudioPlayer(audioSource)
   const setNotificationSound = useSetAtom(notificationSoundAtom)
   const fetchUserInfo = useSetAtom(fetchUserInfoAtom)
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     fetchUserInfo()
@@ -53,9 +55,16 @@ export default function ProtectedLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.purple,
+        tabBarActiveBackgroundColor: colors.light,
+        tabBarInactiveTintColor: colors.dark,
+        tabBarInactiveBackgroundColor: colors.light,
+        headerShown: false,
         tabBarBackground() {
           return <View style={{ backgroundColor: colors.light, flex: 1 }} />
         },
+      }}
+      safeAreaInsets={{
+        bottom: Platform.OS === "android" ? insets.bottom + 10 : insets.bottom,
       }}
     >
       <Tabs.Screen

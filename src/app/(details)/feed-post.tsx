@@ -10,7 +10,7 @@ import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
-import { ConversationType } from "@/src/types/chat.type"
+import { ConversationType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { sinceNow } from "@/src/utils/format-date"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
@@ -47,7 +47,7 @@ export default function PostDetails() {
     if (!socket || !user || !post) return
 
     socket.emit("newConversation", [user._id, post.userId])
-    socket.once("conversation", async (conversation: ConversationType) => {
+    socket.once("conversation", (conversation: ConversationType) => {
       router.push({
         pathname: "/chat-details",
         params: { id: conversation._id },

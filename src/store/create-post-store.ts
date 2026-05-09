@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { ImageObject } from "@/src/types/image-object.type"
 import { queryClientAtom } from "./general-store"
 import { LocationType } from "@/src/types/location.type"
+import { CreatePostClientSocket } from "../types/socket/create-post-socket.types"
 
 /**
  * How things work:
@@ -45,8 +46,14 @@ const settings = {
   distance: 5_000,
   zoom: 12,
 }
-const newUserStorage = createJSONStorage<typeof settings>(() => AsyncStorage)
-export const settingsAtom = atomWithStorage("post-settings", settings, newUserStorage)
+export const settingsAtom = atomWithStorage(
+  "post-settings",
+  settings,
+  createJSONStorage(() => AsyncStorage),
+  {
+    getOnInit: true,
+  }
+)
 
 export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }])
 export const loadingAtom = atom(false)
@@ -62,7 +69,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
 
   set(loadingAtom, true)
 
-  const socket = io(WS_BASE_URL + "/create-post", {
+  const socket: CreatePostClientSocket = io(WS_BASE_URL + "/create-post", {
     auth: {
       token: user.accessToken,
     },
@@ -102,27 +109,27 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     socket.connect()
   })
 
-  socket.on("draft-saved", () => {
+  socket.on("draftSaved", () => {
     // If on first page, invalidate my-posts to show the new draft
     if (get(currPageAtom) <= 1) {
       get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
     }
   })
 
-  socket.on("ai-title-generated", async (title: string) => {
+  socket.on("aiTitleGenerated", async (title: string) => {
     const prevSettings = await get(settingsAtom)
     await set(settingsAtom, { ...prevSettings, title })
     set(loadingAtom, false)
   })
 
-  socket.on("question", (qna: QnaType) => {
+  socket.on("question", qna => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
     set(currPageAtom, curr => curr + 1)
     set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT - 1) // -1 because the first question is already counted in INITIAL_PAGE_COUNT
   })
 
-  socket.on("draft-restored", (qna: QnaType) => {
+  socket.on("draftRestored", qna => {
     set(qnaAtom, qna)
     set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT - 1) // -1 because the first question is already counted in INITIAL_PAGE_COUNT
 
@@ -137,16 +144,16 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(loadingAtom, false)
   })
 
-  socket.on("chat-finished", () => {
+  socket.on("chatFinished", () => {
     set(currPageAtom, curr => curr + 1)
     set(loadingAtom, false)
   })
 
-  socket.on("success", (postId: string) => {
+  socket.on("success", async postId => {
     set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
-    set(settingsAtom, settings)
+    await set(settingsAtom, settings)
     set(loadingAtom, false)
 
     router.navigate({
@@ -156,11 +163,11 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
   })
 
-  socket.on("draft-discarded", () => {
+  socket.on("draftDiscarded", async () => {
     set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
-    set(settingsAtom, settings)
+    await set(settingsAtom, settings)
     set(editedAtom, false)
     set(loadingAtom, false)
     get(queryClientAtom).invalidateQueries({ queryKey: ["my-posts"] })
@@ -286,7 +293,7 @@ export const discardDraftAtom = atom(null, async (get, set) => {
       style: "destructive",
       onPress: () => {
         set(loadingAtom, true)
-        socket.emit("discard-draft")
+        socket.emit("discardDraft")
       },
     },
   ])
@@ -312,7 +319,7 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
           if (currPage === 0) {
             // If on the first page, just restart
             set(loadingAtom, true)
-            socket.emit("discard-draft")
+            socket.emit("discardDraft")
             return
           } else if (currPage === qna.length + 1) {
             // If on the last page, do nothing

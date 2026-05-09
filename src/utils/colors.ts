@@ -22,7 +22,8 @@ const baseColors = {
   lightTransparent: "#ffffff8e",
   darkTransparent: "#0000008e",
   transparent: "transparent",
-  chatHighlight: "#8f7dd728",
+  chatHighlightOwnBubble: "#b192f4",
+  chatHighlightOtherBubble: "#c4b0ed",
   blue: "#007AFF",
   lightBlue: "#5ac8ff",
   muted: "#999999",
@@ -40,6 +41,8 @@ if (colorScheme === "dark") {
   colors.lightGray = "#3a3a3aff"
   colors.darkTransparent = baseColors.lightTransparent
   colors.lightTransparent = baseColors.darkTransparent
+  colors.chatHighlightOwnBubble = "#d8cbf4"
+  colors.chatHighlightOtherBubble = "#6d4ab8"
   colors.gray = baseColors.lightGray
   colors.darkGray = baseColors.lightGray
   colors.purple = baseColors.lightPurple
