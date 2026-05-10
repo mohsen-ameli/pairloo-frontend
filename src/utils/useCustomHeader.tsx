@@ -26,6 +26,7 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function useCustomHeader({
   title,
   postId,
+  isHome = false,
   inChat = false,
   createPost = false,
   isPostDetails = false,
@@ -34,6 +35,7 @@ export default function useCustomHeader({
 }: {
   title: string
   postId?: string
+  isHome?: boolean
   inChat?: boolean
   createPost?: boolean
   isPostDetails?: boolean
@@ -51,6 +53,13 @@ export default function useCustomHeader({
     headerStyle: styles.header,
     headerBackButtonDisplayMode: "minimal",
     headerTitleStyle: styles.headerTitle,
+  }
+
+  if (isHome) {
+    return {
+      ...options,
+      headerRight: () => <HomeHeader />,
+    }
   }
 
   if (inChat) {
@@ -186,5 +195,15 @@ function PostDetailsHeader() {
         <MaterialIcons name="bookmark-border" size={24} color={colors.dark} />
       )}
     </Pressable>
+  )
+}
+
+function HomeHeader() {
+  const router = useRouter()
+
+  return (
+    <TouchableOpacity onPress={() => router.push("/search")} style={{ padding: 6 }}>
+      <Feather name="search" size={24} color={colors.dark} />
+    </TouchableOpacity>
   )
 }
