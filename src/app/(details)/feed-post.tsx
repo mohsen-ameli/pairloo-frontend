@@ -5,6 +5,7 @@ import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import CustomButton from "@/src/components/CustomButton"
+import CustomLabel from "@/src/components/CustomLabel"
 import { GeneralPostType } from "@/src/types/post.type"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -16,6 +17,7 @@ import { sinceNow } from "@/src/utils/format-date"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
+import { getStatusColor } from "@/src/utils/get-color"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -125,6 +127,9 @@ export default function PostDetails() {
         </Pressable>
 
         <Text style={styles.title}>{post.title}</Text>
+        <View style={styles.statusLabel}>
+          <CustomLabel backgroundColor={getStatusColor(post.status)}>{post.status}</CustomLabel>
+        </View>
         <Text style={styles.description}>{post.description}</Text>
 
         {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}

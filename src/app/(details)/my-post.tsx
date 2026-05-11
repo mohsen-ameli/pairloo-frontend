@@ -1,12 +1,13 @@
 import { useRouter, useLocalSearchParams, Stack } from "expo-router"
 import { View, Text, ScrollView, Pressable, Animated, Platform } from "react-native"
 import { useState, useEffect, useRef } from "react"
+import { MenuView, type MenuComponentRef } from "@react-native-menu/menu"
 import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { MyPostType } from "@/src/types/post.type"
-import { getScoreColor } from "@/src/utils/get-score-color"
+import { getScoreColor } from "@/src/utils/get-color"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -19,6 +20,8 @@ import { authFetchAtom } from "@/src/store/auth-store"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
+import { sinceNow } from "@/src/utils/format-date"
+import { getStatusColor } from "@/src/utils/get-color"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -27,6 +30,8 @@ export default function PostDetails() {
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
   const [isQnaExpanded, setIsQnaExpanded] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState<string>("")
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const loading = useAtomValue(loadingAtom)
   const animatedHeight = useRef(new Animated.Value(0)).current
   const {
@@ -36,6 +41,7 @@ export default function PostDetails() {
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
+  const statusMenuRef = useRef<MenuComponentRef>(null)
 
   useEffect(() => {
     Animated.timing(animatedHeight, {
@@ -44,6 +50,31 @@ export default function PostDetails() {
       useNativeDriver: false,
     }).start()
   }, [isQnaExpanded, animatedHeight])
+
+  useEffect(() => {
+    if (post?.status) {
+      setSelectedStatus(post.status)
+    }
+  }, [post])
+
+  async function updatePostStatus(newStatus: string) {
+    try {
+      setIsUpdatingStatus(true)
+      const res = await authFetch(`/api/posts/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (res.ok) {
+        setSelectedStatus(newStatus)
+        queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
+        queryClient.invalidateQueries({ queryKey: ["my-posts"] })
+      }
+    } catch (error) {
+      console.error("Error updating post status:", error)
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
 
   const detailOptions = useCustomHeader({ title: "Details", isMyPostDetails: true, postId: id })
 
@@ -90,6 +121,44 @@ export default function PostDetails() {
           <View style={styles.postContainer}>
             {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
             <Text style={styles.title}>{post.title}</Text>
+            <View style={styles.statusMenuContainer}>
+              <MenuView
+                ref={statusMenuRef}
+                onPressAction={({ nativeEvent }) => {
+                  updatePostStatus(nativeEvent.event)
+                }}
+                actions={[
+                  {
+                    id: "Active",
+                    title: "Active",
+                    titleColor: colors.successGreen,
+                  },
+                  {
+                    id: "Inactive",
+                    title: "Inactive",
+                    titleColor: colors.warningYellow,
+                  },
+                  {
+                    id: "Hidden",
+                    title: "Hidden",
+                    titleColor: colors.errorRed,
+                  },
+                ]}
+              >
+                <Pressable style={styles.statusMenuButton} disabled={isUpdatingStatus}>
+                  <Text
+                    style={{
+                      color: getStatusColor(selectedStatus),
+                      fontWeight: "600",
+                      fontSize: 13,
+                    }}
+                  >
+                    {selectedStatus}
+                  </Text>
+                  <Feather name="chevron-down" size={16} color={getStatusColor(selectedStatus)} />
+                </Pressable>
+              </MenuView>
+            </View>
             <Text style={styles.description}>{post.description}</Text>
           </View>
 
@@ -150,6 +219,10 @@ export default function PostDetails() {
               </View>
             </View>
           )}
+
+          <View>
+            <Text style={styles.timestampText}>Post Created {sinceNow(post.createdAt)} Ago</Text>
+          </View>
 
           {/* QNA Information */}
           {post.qna && post.qna.length > 0 && (

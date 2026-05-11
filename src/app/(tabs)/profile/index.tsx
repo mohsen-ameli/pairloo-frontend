@@ -21,12 +21,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
-import { getScoreColor } from "@/src/utils/get-score-color"
+import { getScoreColor } from "@/src/utils/get-color"
 import Feather from "@expo/vector-icons/Feather"
 import { MyUserType, ReviewsType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
+import { getStatusColor } from "@/src/utils/get-color"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -283,6 +284,9 @@ export default function ProfileScreen() {
                                 <CustomLabel backgroundColor={colors.purple}>Draft</CustomLabel>
                               ) : (
                                 <>
+                                  <CustomLabel backgroundColor={getStatusColor(post.status)}>
+                                    {post.status}
+                                  </CustomLabel>
                                   {!post.publicPost && (
                                     <CustomLabel backgroundColor={colors.shadow}>
                                       <Feather name="lock" size={12} color={colors.light} />{" "}
@@ -410,10 +414,15 @@ export default function ProfileScreen() {
                           </View>
 
                           <View style={profileStyles.postCardFooter}>
-                            <View style={profileStyles.postCardFooterContent}>
-                              <Text style={{ fontSize: 12, color: colors.muted }}>
-                                {formatDateDayMonthYear(post.createdAt.toString())}
-                              </Text>
+                            <Text style={{ fontSize: 12, color: colors.muted }}>
+                              {formatDateDayMonthYear(post.createdAt.toString())}
+                            </Text>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                              <CustomLabel
+                                backgroundColor={getStatusColor(post.status ?? "active")}
+                              >
+                                {post.status}
+                              </CustomLabel>
                               <Pressable
                                 onPress={async event => {
                                   event.stopPropagation()

@@ -25,6 +25,7 @@ export type GeneralPostType = {
   }
   distance?: number
   score: number
+  status?: "Active" | "Inactive" | "Hidden"
 }
 
 export interface MyPostType {
@@ -34,6 +35,7 @@ export interface MyPostType {
   description: string
   publicPost: boolean
   isDraft: boolean
+  status?: "Active" | "Inactive" | "Hidden"
   qna?: QnaItemType[]
   location?: {
     latitude: number
