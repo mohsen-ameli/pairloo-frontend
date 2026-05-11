@@ -35,9 +35,10 @@ import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
 import { inputStyles } from "@/src/styles/input.styles"
-import MapSelector from "@/src/app/(util)/map-selector"
+import { useRouter } from "expo-router"
 
 export default function CreatePost() {
+  const router = useRouter()
   const [QNAs, setQNAs] = useAtom(qnaAtom)
   const socket = useAtomValue(createPostSocketAtom)
   const loading = useAtomValue(loadingAtom)
@@ -56,13 +57,10 @@ export default function CreatePost() {
 
     let nextEnabled = false
 
-    // The flow is: initial question -> 0 or more questions -> extra info page -> location page -> final page
+    // The flow is: initial question -> 0 or more questions -> extra info page -> final page
     if (currPage === 0) {
       // initial question page
       nextEnabled = QNAs[0].answer.length > 0
-    } else if (currPage === pageCount - 2) {
-      // location page
-      nextEnabled = true
     } else if (currPage === pageCount - 1) {
       // last page
       nextEnabled = settings.title.trim().length > 0 && settings.description.trim().length > 0
@@ -259,19 +257,9 @@ export default function CreatePost() {
           )
         })}
 
-        {/* Location page */}
-        <View key={QNAs.length}>
-          <View style={createPostStyles.container}>
-            <Text style={{ fontSize: 20, fontWeight: "600", color: colors.dark }}>
-              Location (Optional)
-            </Text>
-            <MapSelector />
-          </View>
-        </View>
-
         {/* The last page */}
         <ScrollView
-          key={QNAs.length + 1}
+          key={QNAs.length}
           style={createPostStyles.scrollView}
           keyboardShouldPersistTaps="handled"
         >
@@ -294,6 +282,8 @@ export default function CreatePost() {
                 <Octicons name="sparkles-fill" size={24} color={colors.purple} />
               </Pressable>
             </View>
+
+            {/* Description */}
             <CustomInput
               title="Description"
               headerStyles={{ fontSize: 16, fontWeight: "600" }}
@@ -305,6 +295,32 @@ export default function CreatePost() {
               editable={!loading}
               mandatory
             />
+
+            {/* Location */}
+            <View>
+              <Text style={inputStyles.header}>Location (Optional)</Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ flex: 1 }}>
+                  <Pressable onPress={() => router.push("/map-selector")}>
+                    <Text style={inputStyles.input}>{settings.closeCity}</Text>
+                  </Pressable>
+                </View>
+                {settings.location && settings.closeCity && (
+                  <Pressable
+                    style={createPostStyles.locationClearButton}
+                    onPress={() => {
+                      setSettings(async curr => ({
+                        ...(await curr),
+                        location: null,
+                        closeCity: "",
+                      }))
+                    }}
+                  >
+                    <Feather name="x" size={24} color={colors.darkGray} />
+                  </Pressable>
+                )}
+              </View>
+            </View>
 
             {/* Images */}
             <View>

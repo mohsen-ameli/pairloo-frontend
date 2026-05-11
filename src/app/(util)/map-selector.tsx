@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   View,
   Text,
@@ -7,22 +7,26 @@ import {
   TextInput,
   StyleSheet,
   Keyboard,
+  Pressable,
 } from "react-native"
 import { BASE_URL } from "@/src/utils/constants"
 import { City } from "@/src/types/city.types"
 import { locSelectStyles } from "@/src/styles/location-selector.styles"
-import { colors } from "@/src/utils/colors"
-import { useFocusEffect } from "expo-router"
+import { baseColors, colors } from "@/src/utils/colors"
+import { useRouter } from "expo-router"
 import { settingsAtom } from "@/src/store/create-post-store"
 import { useAtom, useAtomValue } from "jotai"
 import { userAtom } from "@/src/store/auth-store"
-import { currPageAtom } from "@/src/store/pager-store"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { zoomToRadiusMeters } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { AppleMaps, GoogleMaps } from "expo-maps"
 import { FlashList } from "@shopify/flash-list"
+import Feather from "@expo/vector-icons/Feather"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import CustomButton from "@/src/components/CustomButton"
+import { debounce } from "lodash"
 
 type CameraEvent = {
   coordinates: {
@@ -37,6 +41,7 @@ type CameraEvent = {
 const DEFAULT_ZOOM = 12
 
 export default function MapSelector() {
+  const router = useRouter()
   const user = useAtomValue(userAtom)!
   const { maps, isExpoGo, isLoading } = useExpoMaps()
   const region = useRef({
@@ -50,122 +55,113 @@ export default function MapSelector() {
   const androidMapRef = useRef<GoogleMaps.MapView>(null)
   const appleMapRef = useRef<AppleMaps.MapView>(null)
   const [settings, setSettings] = useAtom(settingsAtom)
-  const currPage = useAtomValue(currPageAtom)
-  const timeoutRef = useRef(0)
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
+  const insets = useSafeAreaInsets()
 
-  async function handleCitySearch(text: string) {
-    setCitySearchInput(text)
-    if (text.length === 0) {
-      setCities([])
-      return
-    }
+  async function handleDebounceFn(text: string) {
     try {
       const url = `${BASE_URL}/api/locations/search?q=${encodeURIComponent(text)}`
       const res = await fetch(url)
-      const data = await res.json()
+      const data: City[] = await res.json()
       setCities(data)
     } catch (error) {
       setCities([])
     }
   }
 
-  function handleCameraMove(event: CameraEvent) {
-    const radiusMeters = zoomToRadiusMeters(event.zoom, event.coordinates.latitude!)
-    region.current.distance = radiusMeters
-    region.current.zoom = event.zoom
-    region.current.latitude = event.coordinates.latitude!
-    region.current.longitude = event.coordinates.longitude!
+  const debounceFn = useMemo(() => debounce(handleDebounceFn, 500), [])
 
-    // TODO: temporary fix to save settings. Once a onMoveEnd or something similar is implemented in expo-maps, this can be removed
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
+  async function handleCitySearch(text: string) {
+    setCitySearchInput(text)
+    if (text.length === 0) {
+      setCities([])
+      debounceFn.cancel()
+      return
     }
-    timeoutRef.current = setTimeout(() => {
-      setSettings(async curr => ({
-        ...(await curr),
-        location: {
-          latitude: region.current.latitude,
-          longitude: region.current.longitude,
-        },
-        distance: region.current.distance,
-        zoom: region.current.zoom,
-      }))
-    }, 2000)
+
+    debounceFn(text)
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        setSettings(async curr => ({
-          ...(await curr),
-          location: {
+  function handleClear() {
+    setCitySearchInput("")
+    setCities([])
+    debounceFn.cancel()
+  }
+
+  function handleCameraMove(event: CameraEvent) {
+    region.current.latitude = event.coordinates.latitude!
+    region.current.longitude = event.coordinates.longitude!
+    region.current.zoom = event.zoom
+  }
+
+  async function saveCurrentLocation() {
+    region.current.distance = zoomToRadiusMeters(region.current.zoom, region.current.latitude)
+
+    const url = `${BASE_URL}/api/locations/closest-location?latitude=${region.current.latitude}&longitude=${region.current.longitude}`
+    const res = await fetch(url)
+    const data: City = await res.json()
+
+    let closeCity = "Location set."
+    if (data) {
+      if (data.state_name) {
+        closeCity = `Near ${data.name}, ${data.state_name}, ${data.country_name}`
+      } else {
+        closeCity = `Near ${data.name}, ${data.country_name}`
+      }
+    }
+
+    setSettings(async curr => ({
+      ...(await curr),
+      location: {
+        latitude: region.current.latitude,
+        longitude: region.current.longitude,
+      },
+      distance: region.current.distance,
+      zoom: region.current.zoom,
+      closeCity,
+    }))
+
+    router.back()
+  }
+
+  useEffect(() => {
+    if (!settings.location) return
+    region.current = {
+      latitude: settings.location.latitude,
+      longitude: settings.location.longitude,
+      zoom: settings.zoom,
+      distance: settings.distance,
+    }
+    try {
+      if (Platform.OS === "android") {
+        androidMapRef.current?.setCameraPosition({
+          coordinates: {
             latitude: region.current.latitude,
             longitude: region.current.longitude,
           },
-          distance: region.current.distance,
           zoom: region.current.zoom,
-        }))
+        })
+      } else {
+        appleMapRef.current?.setCameraPosition({
+          coordinates: {
+            latitude: region.current.latitude,
+            longitude: region.current.longitude,
+          },
+          zoom: region.current.zoom,
+        })
       }
-    }, [currPage])
-  )
-
-  useEffect(() => {
-    async function saveCurrentLocation() {
-      if (settings.location) {
-        region.current.latitude = settings.location.latitude
-        region.current.longitude = settings.location.longitude
-        region.current.distance = zoomToRadiusMeters(settings.zoom, settings.location.latitude)
-        region.current.zoom = settings.zoom
-        const newPosition = {
-          coordinates: { latitude: region.current.latitude, longitude: region.current.longitude },
-          zoom: settings.zoom,
-        }
-
-        try {
-          if (Platform.OS === "android") {
-            androidMapRef.current?.setCameraPosition(newPosition)
-          } else {
-            appleMapRef.current?.setCameraPosition(newPosition)
-          }
-        } catch (error) {
-          console.log("Error setting camera position: ", error)
-        }
-        return
-      }
-
-      // let { status } = await Location.requestForegroundPermissionsAsync()
-      // if (status !== "granted") {
-      //   console.log("Permission to access location was denied")
-      //   return
-      // }
-
-      // try {
-      //   const lastKnownLocation = await Location.getLastKnownPositionAsync()
-      //   if (lastKnownLocation) {
-      //     console.log("last known location: ", lastKnownLocation)
-      //     setPosition(lastKnownLocation.coords.latitude, lastKnownLocation.coords.longitude)
-      //   }
-      //   const currLocation = await Location.getCurrentPositionAsync({})
-      //   if (currLocation) {
-      //     console.log("current location: ", currLocation)
-      //     setPosition(currLocation.coords.latitude, currLocation.coords.longitude)
-      //   }
-      // } catch (error) {
-      //   console.log("Error getting location: ", error)
-      // }
+    } catch (error) {
+      console.log("Error setting camera position: ", error)
     }
-
-    saveCurrentLocation()
-  }, [settings.location, settings.zoom])
+  }, [settings.location])
 
   return (
     <View style={{ flex: 1 }}>
       <View
         style={{
           position: "absolute",
-          top: 10,
+          top: insets.top + 10,
           left: 10,
           right: 10,
           zIndex: 1,
@@ -174,7 +170,7 @@ export default function MapSelector() {
           gap: 10,
         }}
       >
-        {/* <Pressable
+        <Pressable
           onPress={() => {
             router.back()
           }}
@@ -188,7 +184,7 @@ export default function MapSelector() {
           }}
         >
           <Feather name="arrow-left" size={26} color={colors.dark} />
-        </Pressable> */}
+        </Pressable>
         <View
           style={{
             flex: 1,
@@ -203,23 +199,58 @@ export default function MapSelector() {
             style={{
               color: colors.dark,
               height: 40,
-              paddingHorizontal: 10,
+              paddingLeft: 10,
+              paddingRight: 50,
               borderWidth: 1,
               borderColor: colors.borderGray,
               borderRadius: 5,
             }}
           />
+          {citySearchInput.length > 0 && (
+            <Pressable
+              style={{
+                position: "absolute",
+                right: 5,
+                top: 2.5,
+                backgroundColor: colors.lightGray,
+                padding: 5,
+                borderRadius: 5,
+              }}
+              onPress={handleClear}
+            >
+              <Feather name="x" size={24} color={colors.darkGray} />
+            </Pressable>
+          )}
+        </View>
+      </View>
+      {cities.length > 0 && (
+        <View
+          style={{
+            position: "absolute",
+            top: insets.top + 55,
+            left: 10,
+            right: 10,
+            zIndex: 1,
+            backgroundColor: colors.light,
+            borderRadius: 5,
+          }}
+        >
           <FlashList
             data={cities}
+            keyboardShouldPersistTaps="handled"
             keyExtractor={item => item._id.toString()}
             style={{ maxHeight: 200, display: citySearchInput.length > 0 ? "flex" : "none" }}
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => {
-                  region.current.latitude = item.latitude
-                  region.current.longitude = item.longitude
+                  region.current.latitude = item.location.coordinates[1]
+                  region.current.longitude = item.location.coordinates[0]
                   region.current.zoom = DEFAULT_ZOOM
-                  region.current.distance = zoomToRadiusMeters(DEFAULT_ZOOM, item.latitude)
+                  region.current.distance = zoomToRadiusMeters(
+                    DEFAULT_ZOOM,
+                    item.location.coordinates[1]
+                  )
                   const newPosition = {
                     coordinates: {
                       latitude: region.current.latitude,
@@ -246,6 +277,7 @@ export default function MapSelector() {
                     distance: region.current.distance,
                     zoom: region.current.zoom,
                   }))
+                  Keyboard.dismiss()
                   setCitySearchInput("")
                   setCities([])
                 }}
@@ -258,6 +290,23 @@ export default function MapSelector() {
             )}
           />
         </View>
+      )}
+      <View
+        style={{
+          position: "absolute",
+          bottom: insets.bottom + (Platform.OS === "ios" ? 30 : 10),
+          left: 10,
+          right: 10,
+          zIndex: 1,
+          borderRadius: 8,
+          flexDirection: "row",
+          gap: 10,
+          width: "82%",
+        }}
+      >
+        <CustomButton color={colors.blue} onPress={saveCurrentLocation}>
+          <Text style={{ color: baseColors.light }}>Confirm</Text>
+        </CustomButton>
       </View>
 
       {isLoading ? (
@@ -281,13 +330,9 @@ export default function MapSelector() {
             },
             zoom: region.current.zoom,
           }}
-          ref={androidMapRef}
           onCameraMove={handleCameraMove}
-          onMapClick={() => {
-            Keyboard.dismiss()
-            setCitySearchInput("")
-            setCities([])
-          }}
+          ref={androidMapRef}
+          onMapClick={() => Keyboard.dismiss()}
         />
       ) : AppleMapView ? (
         <>
@@ -300,16 +345,14 @@ export default function MapSelector() {
               },
               zoom: region.current.zoom,
             }}
-            ref={appleMapRef}
             onCameraMove={handleCameraMove}
-            onMapClick={() => {
-              Keyboard.dismiss()
-              setCitySearchInput("")
-              setCities([])
-            }}
+            ref={appleMapRef}
+            onMapClick={() => Keyboard.dismiss()}
             uiSettings={{
-              myLocationButtonEnabled: true,
-              togglePitchEnabled: true,
+              myLocationButtonEnabled: false,
+              togglePitchEnabled: false,
+              compassEnabled: false,
+              scaleBarEnabled: false,
             }}
           />
 
@@ -317,9 +360,9 @@ export default function MapSelector() {
           <View
             style={{
               position: "absolute",
-              bottom: 15,
+              bottom: insets.bottom + 15,
               right: 12,
-              backgroundColor: colors.darkTransparent,
+              backgroundColor: colors.lightTransparent,
               borderRadius: 5,
               overflow: "hidden",
             }}
@@ -342,7 +385,7 @@ export default function MapSelector() {
                 borderBottomColor: colors.borderGray,
               }}
             >
-              <FontAwesome name="plus" size={18} color={colors.lightTransparent} />
+              <FontAwesome name="plus" size={18} color={colors.darkGray} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
@@ -357,7 +400,7 @@ export default function MapSelector() {
               }}
               style={{ paddingVertical: 10, paddingHorizontal: 12 }}
             >
-              <FontAwesome name="minus" size={18} color={colors.lightTransparent} />
+              <FontAwesome name="minus" size={18} color={colors.darkGray} />
             </TouchableOpacity>
           </View>
         </>

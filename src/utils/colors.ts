@@ -2,14 +2,14 @@ import { Appearance } from "react-native"
 
 const colorScheme = Appearance.getColorScheme()
 
-const baseColors = {
+export const baseColors = {
   purple: "#6B46C1",
   lightPurple: "#9880f5",
   darkPurple: "#3a1d8bff",
   dark: "#1d1d25",
   light: "#ffffff",
   gray: "#8e8e93",
-  darkGray: "#3a3a3a",
+  darkGray: "#525252",
   lightGray: "#e6e6e6",
   textSecondary: "#3c3c4399",
   errorRed: "#ff3b30",
