@@ -47,7 +47,7 @@ export default function CustomPager({ children }: { children: React.ReactNode })
         style={{
           position: "absolute",
           top: 30,
-          width: "100%",
+          alignSelf: "center",
           zIndex: 1,
           backgroundColor: colors.light,
         }}
