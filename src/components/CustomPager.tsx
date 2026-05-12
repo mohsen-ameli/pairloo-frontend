@@ -33,19 +33,12 @@ export default function CustomPager({ children }: { children: React.ReactNode })
     }).start()
   }, [currPage])
 
-  // Animate fake view height
-  const fakeView = useAnimatedStyle(() => {
-    return {
-      height: Math.abs(height.value) + 20,
-    }
-  }, [])
-
   // Animate next/back (flow) buttons position
   const flowButtons = useAnimatedStyle(() => {
     return {
-      bottom: height.value + 20,
+      bottom: height.value + 10,
     }
-  }, [])
+  }, [isAuthenticated])
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.light }}>
@@ -53,9 +46,8 @@ export default function CustomPager({ children }: { children: React.ReactNode })
       <View
         style={{
           position: "absolute",
-          top: 0,
-          paddingVertical: 15,
-          width: "100%",
+          top: 30,
+          alignSelf: "center",
           zIndex: 1,
           backgroundColor: colors.light,
         }}
@@ -115,7 +107,6 @@ export default function CustomPager({ children }: { children: React.ReactNode })
           {
             position: "absolute",
             right: 20,
-            backgroundColor: colors.light,
             borderRadius: "50%",
             zIndex: 1,
           },
@@ -158,7 +149,6 @@ export default function CustomPager({ children }: { children: React.ReactNode })
             {
               position: "absolute",
               left: 20,
-              backgroundColor: colors.light,
               borderRadius: "50%",
               zIndex: 1,
             },
@@ -191,9 +181,6 @@ export default function CustomPager({ children }: { children: React.ReactNode })
           </Pressable>
         </Animated.View>
       )}
-
-      {/* To push the content up when keyboard is visible */}
-      <Animated.View style={[fakeView, { backgroundColor: colors.light }]} />
     </View>
   )
 }
