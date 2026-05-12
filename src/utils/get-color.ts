@@ -18,7 +18,9 @@ export function getStatusColor(status?: StatusType): string {
     return colors.yellow
   } else if (status === "Hidden") {
     return colors.errorRed
-  } else {
+  } else if (status === "Draft") {
     return colors.lightGray
+  } else {
+    return colors.darkGray
   }
 }
