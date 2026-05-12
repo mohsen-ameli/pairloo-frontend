@@ -49,7 +49,7 @@ export default function SearchPage() {
     }
   }
 
-  const debounceFn = useMemo(() => debounce(handleDebounceFn, 1000), [])
+  const debounceFn = useMemo(() => debounce(handleDebounceFn, 500), [])
 
   function handleSearch(query: string) {
     const queryClean = query.trim()

@@ -26,7 +26,6 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function useCustomHeader({
   title,
   postId,
-  isHome = false,
   inChat = false,
   createPost = false,
   isPostDetails = false,
@@ -35,14 +34,12 @@ export default function useCustomHeader({
 }: {
   title: string
   postId?: string
-  isHome?: boolean
   inChat?: boolean
   createPost?: boolean
   isPostDetails?: boolean
   isMyPostDetails?: boolean
   isProfile?: boolean
 }): ExtendedStackNavigationOptions {
-  const router = useRouter()
   const insets = useSafeAreaInsets()
 
   let options: ExtendedStackNavigationOptions = {
@@ -53,13 +50,6 @@ export default function useCustomHeader({
     headerStyle: styles.header,
     headerBackButtonDisplayMode: "minimal",
     headerTitleStyle: styles.headerTitle,
-  }
-
-  if (isHome) {
-    return {
-      ...options,
-      headerRight: () => <HomeHeader />,
-    }
   }
 
   if (inChat) {
@@ -101,11 +91,7 @@ export default function useCustomHeader({
   if (isProfile) {
     return {
       ...options,
-      headerRight: () => (
-        <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
-          <Feather name="settings" size={24} color={colors.dark} />
-        </Pressable>
-      ),
+      headerRight: () => <ProfileHeader />,
     }
   }
 
@@ -198,12 +184,17 @@ function PostDetailsHeader() {
   )
 }
 
-function HomeHeader() {
+function ProfileHeader() {
   const router = useRouter()
 
   return (
-    <TouchableOpacity onPress={() => router.push("/search")} style={{ padding: 6 }}>
-      <Feather name="search" size={24} color={colors.dark} />
-    </TouchableOpacity>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <TouchableOpacity onPress={() => router.push("/profile/search")} style={{ padding: 6 }}>
+        <Feather name="search" size={24} color={colors.dark} />
+      </TouchableOpacity>
+      <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
+        <Feather name="settings" size={24} color={colors.dark} />
+      </Pressable>
+    </View>
   )
 }
