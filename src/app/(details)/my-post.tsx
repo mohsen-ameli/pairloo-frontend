@@ -6,7 +6,7 @@ import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { MyPostType } from "@/src/types/post.type"
+import { MyPostType, StatusType } from "@/src/types/post.type"
 import { getScoreColor } from "@/src/utils/get-color"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
@@ -30,7 +30,7 @@ export default function PostDetails() {
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
   const [isQnaExpanded, setIsQnaExpanded] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState<string>("")
+  const [selectedStatus, setSelectedStatus] = useState<StatusType>("Active")
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const loading = useAtomValue(loadingAtom)
   const animatedHeight = useRef(new Animated.Value(0)).current
@@ -57,7 +57,7 @@ export default function PostDetails() {
     }
   }, [post])
 
-  async function updatePostStatus(newStatus: string) {
+  async function updatePostStatus(newStatus: StatusType) {
     try {
       setIsUpdatingStatus(true)
       const res = await authFetch(`/api/posts/${id}/status`, {
@@ -125,23 +125,23 @@ export default function PostDetails() {
               <MenuView
                 ref={statusMenuRef}
                 onPressAction={({ nativeEvent }) => {
-                  updatePostStatus(nativeEvent.event)
+                  updatePostStatus(nativeEvent.event as StatusType)
                 }}
                 actions={[
                   {
                     id: "Active",
                     title: "Active",
-                    titleColor: colors.successGreen,
+                    titleColor: getStatusColor("Active"),
                   },
                   {
                     id: "Inactive",
                     title: "Inactive",
-                    titleColor: colors.warningYellow,
+                    titleColor: getStatusColor("Inactive"),
                   },
                   {
                     id: "Hidden",
                     title: "Hidden",
-                    titleColor: colors.errorRed,
+                    titleColor: getStatusColor("Hidden"),
                   },
                 ]}
               >

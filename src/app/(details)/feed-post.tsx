@@ -127,9 +127,11 @@ export default function PostDetails() {
         </Pressable>
 
         <Text style={styles.title}>{post.title}</Text>
-        <View style={styles.statusLabel}>
-          <CustomLabel backgroundColor={getStatusColor(post.status)}>{post.status}</CustomLabel>
-        </View>
+        {post.status === "Inactive" && (
+          <View style={styles.statusLabel}>
+            <CustomLabel backgroundColor={getStatusColor(post.status)}>{post.status}</CustomLabel>
+          </View>
+        )}
         <Text style={styles.description}>{post.description}</Text>
 
         {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}

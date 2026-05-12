@@ -1,4 +1,5 @@
 import { colors } from "@/src/utils/colors"
+import { StatusType } from "../types/post.type"
 
 export function getScoreColor(score: number): string {
   if (score < 0.25) {
@@ -10,7 +11,7 @@ export function getScoreColor(score: number): string {
   }
 }
 
-export function getStatusColor(status?: string): string {
+export function getStatusColor(status?: StatusType): string {
   if (status === "Active") {
     return colors.successGreen
   } else if (status === "Inactive") {
