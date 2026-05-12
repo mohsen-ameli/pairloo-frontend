@@ -40,7 +40,6 @@ export default function useCustomHeader({
   isMyPostDetails?: boolean
   isProfile?: boolean
 }): ExtendedStackNavigationOptions {
-  const router = useRouter()
   const insets = useSafeAreaInsets()
 
   let options: ExtendedStackNavigationOptions = {
@@ -92,11 +91,7 @@ export default function useCustomHeader({
   if (isProfile) {
     return {
       ...options,
-      headerRight: () => (
-        <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
-          <Feather name="settings" size={24} color={colors.dark} />
-        </Pressable>
-      ),
+      headerRight: () => <ProfileHeader />,
     }
   }
 
@@ -186,5 +181,20 @@ function PostDetailsHeader() {
         <MaterialIcons name="bookmark-border" size={24} color={colors.dark} />
       )}
     </Pressable>
+  )
+}
+
+function ProfileHeader() {
+  const router = useRouter()
+
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <TouchableOpacity onPress={() => router.push("/profile/search")} style={{ padding: 6 }}>
+        <Feather name="search" size={24} color={colors.dark} />
+      </TouchableOpacity>
+      <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
+        <Feather name="settings" size={24} color={colors.dark} />
+      </Pressable>
+    </View>
   )
 }
