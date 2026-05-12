@@ -8,7 +8,7 @@ export type QnaItemType = {
   answer: string[]
 }
 
-export type StatusType = "Active" | "Inactive" | "Hidden" | "Draft"
+export type StatusType = "active" | "inactive" | "hidden" | "draft"
 
 export type GeneralPostType = {
   _id: string // postId

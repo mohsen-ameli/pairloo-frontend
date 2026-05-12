@@ -242,7 +242,7 @@ export default function ProfileScreen() {
                       key={index}
                       style={profileStyles.postCard}
                       onPress={() => {
-                        if (post.status === "Draft") {
+                        if (post.status === "draft") {
                           router.push({
                             pathname: "/create-post",
                           })
@@ -280,25 +280,31 @@ export default function ProfileScreen() {
                               {formatDate(post.createdAt.toString())}
                             </Text>
                             <View style={profileStyles.postCardLabelContainer}>
-                              <CustomLabel backgroundColor={getStatusColor(post.status)}>
-                                {post.status}
-                              </CustomLabel>
-                              {!post.publicPost && (
-                                <CustomLabel backgroundColor={colors.shadow}>
-                                  <Feather name="lock" size={12} color={colors.light} />{" "}
-                                  <Text style={profileStyles.privatePostText}>Private</Text>
+                              {post.status !== "active" && (
+                                <CustomLabel backgroundColor={getStatusColor(post.status)}>
+                                  <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
                                 </CustomLabel>
                               )}
-                              {post.closestPosts && post.closestPosts.length > 0 ? (
-                                <CustomLabel
-                                  backgroundColor={getScoreColor(post.closestPosts[0].score)}
-                                >
-                                  {Math.round(post.closestPosts[0].score * 100)}% match
-                                </CustomLabel>
-                              ) : (
-                                <CustomLabel backgroundColor={getScoreColor(0)}>
-                                  No match
-                                </CustomLabel>
+                              {post.status !== "draft" && (
+                                <>
+                                  {!post.publicPost && (
+                                    <CustomLabel backgroundColor={colors.shadow}>
+                                      <Feather name="lock" size={12} color={colors.light} />{" "}
+                                      <Text style={profileStyles.privatePostText}>Private</Text>
+                                    </CustomLabel>
+                                  )}
+                                  {post.closestPosts && post.closestPosts.length > 0 ? (
+                                    <CustomLabel
+                                      backgroundColor={getScoreColor(post.closestPosts[0].score)}
+                                    >
+                                      {Math.round(post.closestPosts[0].score * 100)}% match
+                                    </CustomLabel>
+                                  ) : (
+                                    <CustomLabel backgroundColor={getScoreColor(0)}>
+                                      No match
+                                    </CustomLabel>
+                                  )}
+                                </>
                               )}
                             </View>
                           </View>
@@ -412,11 +418,11 @@ export default function ProfileScreen() {
                               {formatDateDayMonthYear(post.createdAt.toString())}
                             </Text>
                             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                              <CustomLabel
-                                backgroundColor={getStatusColor(post.status ?? "active")}
-                              >
-                                {post.status}
-                              </CustomLabel>
+                              {post.status !== "active" && (
+                                <CustomLabel backgroundColor={getStatusColor(post.status)}>
+                                  <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
+                                </CustomLabel>
+                              )}
                               <Pressable
                                 onPress={async event => {
                                   event.stopPropagation()

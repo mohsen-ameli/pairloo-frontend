@@ -127,9 +127,11 @@ export default function PostDetails() {
         </Pressable>
 
         <Text style={styles.title}>{post.title}</Text>
-        {post.status === "Inactive" && (
+        {post.status === "inactive" && (
           <View style={styles.statusLabel}>
-            <CustomLabel backgroundColor={getStatusColor(post.status)}>{post.status}</CustomLabel>
+            <CustomLabel backgroundColor={getStatusColor(post.status)}>
+              <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
+            </CustomLabel>
           </View>
         )}
         <Text style={styles.description}>{post.description}</Text>

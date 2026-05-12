@@ -11,15 +11,15 @@ export function getScoreColor(score: number): string {
   }
 }
 
-export function getStatusColor(status?: StatusType): string {
-  if (status === "Active") {
+export function getStatusColor(status: StatusType): string {
+  if (status === "active") {
     return colors.successGreen
-  } else if (status === "Inactive") {
+  } else if (status === "inactive") {
     return colors.yellow
-  } else if (status === "Hidden") {
+  } else if (status === "hidden") {
     return colors.errorRed
-  } else if (status === "Draft") {
-    return colors.lightGray
+  } else if (status === "draft") {
+    return colors.purple
   } else {
     return colors.darkGray
   }

@@ -246,9 +246,11 @@ export default function userProfile() {
                             <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
                               {formatDateDayMonthYear(post.createdAt.toString())}
                             </Text>
-                            <CustomLabel backgroundColor={getStatusColor(post.status)}>
-                              {post.status}
-                            </CustomLabel>
+                            {post.status !== "active" && (
+                              <CustomLabel backgroundColor={getStatusColor(post.status)}>
+                                <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
+                              </CustomLabel>
+                            )}
                           </View>
                         </View>
                       </View>

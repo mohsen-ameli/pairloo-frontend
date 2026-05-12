@@ -30,8 +30,7 @@ export default function PostDetails() {
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
   const [isQnaExpanded, setIsQnaExpanded] = useState(false)
-  const [selectedStatus, setSelectedStatus] = useState<StatusType>("Active")
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [isCooldown, setIsCooldown] = useState(false)
   const loading = useAtomValue(loadingAtom)
   const animatedHeight = useRef(new Animated.Value(0)).current
   const {
@@ -51,28 +50,23 @@ export default function PostDetails() {
     }).start()
   }, [isQnaExpanded, animatedHeight])
 
-  useEffect(() => {
-    if (post?.status) {
-      setSelectedStatus(post.status)
-    }
-  }, [post])
-
   async function updatePostStatus(newStatus: StatusType) {
     try {
-      setIsUpdatingStatus(true)
+      setIsCooldown(true)
       const res = await authFetch(`/api/posts/${id}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status: newStatus }),
       })
       if (res.ok) {
-        setSelectedStatus(newStatus)
         queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
         queryClient.invalidateQueries({ queryKey: ["my-posts"] })
       }
+      // Add 1 second cooldown to prevent spam
+      await new Promise(resolve => setTimeout(resolve, 1000))
     } catch (error) {
       console.error("Error updating post status:", error)
     } finally {
-      setIsUpdatingStatus(false)
+      setIsCooldown(false)
     }
   }
 
@@ -129,33 +123,34 @@ export default function PostDetails() {
                 }}
                 actions={[
                   {
-                    id: "Active",
+                    id: "active",
                     title: "Active",
-                    titleColor: getStatusColor("Active"),
+                    titleColor: getStatusColor("active"),
                   },
                   {
-                    id: "Inactive",
+                    id: "inactive",
                     title: "Inactive",
-                    titleColor: getStatusColor("Inactive"),
+                    titleColor: getStatusColor("inactive"),
                   },
                   {
-                    id: "Hidden",
+                    id: "hidden",
                     title: "Hidden",
-                    titleColor: getStatusColor("Hidden"),
+                    titleColor: getStatusColor("hidden"),
                   },
                 ]}
               >
-                <Pressable style={styles.statusMenuButton} disabled={isUpdatingStatus}>
+                <Pressable style={styles.statusMenuButton} disabled={isCooldown}>
                   <Text
                     style={{
-                      color: getStatusColor(selectedStatus),
+                      color: getStatusColor(post.status),
                       fontWeight: "600",
                       fontSize: 13,
+                      textTransform: "capitalize",
                     }}
                   >
-                    {selectedStatus}
+                    {post.status}
                   </Text>
-                  <Feather name="chevron-down" size={16} color={getStatusColor(selectedStatus)} />
+                  <Feather name="chevron-down" size={16} color={getStatusColor(post.status)} />
                 </Pressable>
               </MenuView>
             </View>
