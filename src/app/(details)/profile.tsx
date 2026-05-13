@@ -12,6 +12,8 @@ import { formatDateDayMonthYear } from "@/src/utils/format-date"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
 import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
+import CustomLabel from "@/src/components/CustomLabel"
+import { getStatusColor } from "@/src/utils/get-color"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -244,6 +246,11 @@ export default function userProfile() {
                             <Text style={{ fontSize: 12, color: colors.muted, marginTop: 8 }}>
                               {formatDateDayMonthYear(post.createdAt.toString())}
                             </Text>
+                            {post.status !== "active" && (
+                              <CustomLabel backgroundColor={getStatusColor(post.status)}>
+                                <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
+                              </CustomLabel>
+                            )}
                           </View>
                         </View>
                       </View>

@@ -21,12 +21,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
-import { getScoreColor } from "@/src/utils/get-score-color"
+import { getScoreColor } from "@/src/utils/get-color"
 import Feather from "@expo/vector-icons/Feather"
 import { MyUserType, ReviewsType } from "@/src/types/user.type"
 import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
+import { getStatusColor } from "@/src/utils/get-color"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -241,7 +242,7 @@ export default function ProfileScreen() {
                       key={index}
                       style={profileStyles.postCard}
                       onPress={() => {
-                        if (post.isDraft) {
+                        if (post.status === "draft") {
                           router.push({
                             pathname: "/create-post",
                           })
@@ -279,9 +280,12 @@ export default function ProfileScreen() {
                               {formatDate(post.createdAt.toString())}
                             </Text>
                             <View style={profileStyles.postCardLabelContainer}>
-                              {post.isDraft ? (
-                                <CustomLabel backgroundColor={colors.purple}>Draft</CustomLabel>
-                              ) : (
+                              {post.status !== "active" && (
+                                <CustomLabel backgroundColor={getStatusColor(post.status)}>
+                                  <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
+                                </CustomLabel>
+                              )}
+                              {post.status !== "draft" && (
                                 <>
                                   {!post.publicPost && (
                                     <CustomLabel backgroundColor={colors.shadow}>
@@ -410,10 +414,15 @@ export default function ProfileScreen() {
                           </View>
 
                           <View style={profileStyles.postCardFooter}>
-                            <View style={profileStyles.postCardFooterContent}>
-                              <Text style={{ fontSize: 12, color: colors.muted }}>
-                                {formatDateDayMonthYear(post.createdAt.toString())}
-                              </Text>
+                            <Text style={{ fontSize: 12, color: colors.muted }}>
+                              {formatDateDayMonthYear(post.createdAt.toString())}
+                            </Text>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                              {post.status !== "active" && (
+                                <CustomLabel backgroundColor={getStatusColor(post.status)}>
+                                  <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
+                                </CustomLabel>
+                              )}
                               <Pressable
                                 onPress={async event => {
                                   event.stopPropagation()
