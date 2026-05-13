@@ -126,8 +126,10 @@ export type NewUserType = {
   country: string
   city: string
   state: string
-  latitude: number
-  longitude: number
+  location: {
+    type: string
+    coordinates: [number, number] // [longitude, latitude]
+  }
   timezone: string
   locationId: number
   cca2: CountryCode

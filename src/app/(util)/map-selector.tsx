@@ -152,7 +152,7 @@ export default function MapSelector() {
         })
       }
     } catch (error) {
-      console.log("Error setting camera position: ", error)
+      console.error("Error setting camera position: ", error)
     }
   }, [settings.location])
 
@@ -266,7 +266,7 @@ export default function MapSelector() {
                       appleMapRef.current?.setCameraPosition(newPosition)
                     }
                   } catch (error) {
-                    console.log("Error setting camera position: ", error)
+                    console.error("Error setting camera position: ", error)
                   }
                   setSettings(async curr => ({
                     ...(await curr),

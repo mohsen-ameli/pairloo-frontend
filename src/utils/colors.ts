@@ -46,5 +46,6 @@ if (colorScheme === "dark") {
   colors.gray = baseColors.lightGray
   colors.darkGray = baseColors.lightGray
   colors.purple = baseColors.lightPurple
+  colors.darkPurple = baseColors.lightPurple
   colors.lightPurple = baseColors.purple
 }

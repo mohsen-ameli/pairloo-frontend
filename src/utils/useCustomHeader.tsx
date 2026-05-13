@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, Pressable, Alert } from "react-native"
-import React from "react"
+import React, { act, useEffect, useState } from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import {
   discardDraftAtom,
   getNewQuestionAtom,
@@ -13,13 +13,20 @@ import {
 } from "@/src/store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useGlobalSearchParams, useRouter } from "expo-router"
-import { currentConversationAtom } from "@/src/store/chat-store"
+import {
+  currentConversationAtom,
+  messagesAtom,
+  loadingAtom as chatLoadingAtom,
+} from "@/src/store/chat-store"
 import { userSecureAtom } from "@/src/store/auth-store"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
 import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post-detail-store"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { MyPostMenu } from "../components/MyPostMenu"
+import { MenuView } from "@react-native-menu/menu"
+import FontAwesome from "@expo/vector-icons/FontAwesome"
+import { chatSocketAtom } from "../store/socket-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -59,7 +66,7 @@ export default function useCustomHeader({
         paddingBottom: insets.bottom,
         backgroundColor: colors.lightGray,
       },
-      headerTitle: () => <ChatHeader />,
+      header: () => <ChatHeader />,
     }
   }
 
@@ -99,34 +106,172 @@ export default function useCustomHeader({
 }
 
 function ChatHeader() {
-  const currentConversation = useAtomValue(currentConversationAtom)
+  const DEFAULT_CHAT_TITLE = "General Chat"
+  const [currentConversation, setCurrentConversation] = useAtom(currentConversationAtom)
   const user = useAtomValue(userSecureAtom)
+  const socket = useAtomValue(chatSocketAtom)
+  const setMessages = useSetAtom(messagesAtom)
+  const setChatLoading = useSetAtom(chatLoadingAtom)
   const router = useRouter()
+  const [activeChat, setActiveChat] = useState<string>()
+  const insets = useSafeAreaInsets()
 
-  if (!user) return <></>
+  useEffect(() => {
+    if (!currentConversation) return
 
-  const otherUser = currentConversation?.members.find(member => member._id !== user._id)
+    if (currentConversation.activePostId) {
+      const activePost = currentConversation.contactedPosts.find(
+        post => post.postId === currentConversation.activePostId
+      )
+      setActiveChat(activePost ? activePost.title : DEFAULT_CHAT_TITLE)
+    } else {
+      setActiveChat(DEFAULT_CHAT_TITLE)
+    }
+  }, [currentConversation])
+
+  if (!socket || !user || !currentConversation) return <></>
+
+  const otherUser = currentConversation.members.find(member => member._id !== user._id)
 
   return (
-    <TouchableOpacity
-      onPress={() =>
-        router.push({
-          pathname: "(details)/profile",
-          params: { id: otherUser?._id },
-        })
-      }
-      style={styles.otherProfileButton}
+    <View
+      style={{
+        gap: 5,
+        paddingBottom: 20,
+        paddingLeft: 6,
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: colors.light,
+        borderBottomColor: colors.lightGray,
+        borderBottomWidth: 1,
+        paddingTop: insets.top,
+      }}
     >
-      <Image
-        source={
-          otherUser?.picture && otherUser?.picture
-            ? { uri: otherUser?.picture }
-            : defaultProfilePicture
+      <Pressable
+        onPress={() => {
+          router.back()
+        }}
+        style={{
+          width: 40,
+          height: 40,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.light,
+          borderRadius: 50,
+        }}
+      >
+        <Feather name="arrow-left" size={26} color={colors.dark} />
+      </Pressable>
+
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "(details)/profile",
+            params: { id: otherUser?._id },
+          })
         }
-        style={styles.otherProfileImage}
-      />
-      <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
-    </TouchableOpacity>
+      >
+        <Image
+          source={
+            otherUser?.picture && otherUser?.picture
+              ? { uri: otherUser?.picture }
+              : defaultProfilePicture
+          }
+          style={
+            currentConversation.contactedPosts.length > 0
+              ? styles.profileImageContacted
+              : styles.profileImageNotContacted
+          }
+        />
+      </TouchableOpacity>
+
+      <View style={{ gap: 2 }}>
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: "(details)/profile",
+              params: { id: otherUser?._id },
+            })
+          }
+          style={styles.otherProfileUsername}
+        >
+          <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+        </TouchableOpacity>
+
+        {currentConversation.contactedPosts.length > 0 && (
+          <MenuView
+            onPressAction={({ nativeEvent }) => {
+              if (nativeEvent.event === "general") {
+                setActiveChat(DEFAULT_CHAT_TITLE)
+                setChatLoading(true)
+                setMessages([])
+                setCurrentConversation(prev => prev && { ...prev, activePostId: null })
+                socket.emit("getMessages", {
+                  conversationId: currentConversation._id,
+                  start: 0,
+                  end: 20,
+                })
+              } else {
+                const post = currentConversation.contactedPosts.find(
+                  post => post.postId === nativeEvent.event
+                )
+                if (post) {
+                  setActiveChat(post.title)
+                  setChatLoading(true)
+                  setMessages([])
+                  setCurrentConversation(prev => prev && { ...prev, activePostId: post.postId })
+                  socket.emit("getMessages", {
+                    conversationId: currentConversation._id,
+                    postId: post.postId,
+                    start: 0,
+                    end: 20,
+                  })
+                }
+              }
+            }}
+            actions={[
+              {
+                id: "general",
+                title: DEFAULT_CHAT_TITLE,
+              },
+              ...currentConversation.contactedPosts.map(post => ({
+                id: post.postId,
+                title: post.title,
+                titleColor: colors.dark,
+              })),
+            ]}
+            testID="menuView"
+            style={{ width: "90%" }}
+          >
+            <View
+              style={{
+                minWidth: "90%",
+                maxWidth: "90%",
+                minHeight: 50, // trolling?
+                paddingVertical: 4,
+                paddingHorizontal: 14,
+                marginTop: 4,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                borderRadius: 6,
+                borderColor: colors.darkPurple,
+                borderWidth: 1.5,
+              }}
+            >
+              <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
+              <Text
+                style={{ color: colors.dark, fontSize: 14 }}
+                numberOfLines={2} // trolling?
+              >
+                {activeChat}
+              </Text>
+            </View>
+          </MenuView>
+        )}
+      </View>
+    </View>
   )
 }
 

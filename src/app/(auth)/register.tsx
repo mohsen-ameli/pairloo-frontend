@@ -329,8 +329,7 @@ export default function Register() {
                 city: location.name,
                 state: location.state_name,
                 country: location.country_name,
-                latitude: location.latitude,
-                longitude: location.longitude,
+                location: location.location,
                 timezone: location.timezone,
               })
               setErrors({ ...errors, location: "" })

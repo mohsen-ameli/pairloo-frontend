@@ -87,7 +87,8 @@ export default function SearchPage() {
                   flexGrow: 1,
                   borderWidth: 1,
                   borderColor: colors.borderGray,
-                  paddingHorizontal: 8,
+                  padding: 8,
+                  marginRight: 10,
                   borderRadius: 5,
                   fontSize: 16,
                 }}

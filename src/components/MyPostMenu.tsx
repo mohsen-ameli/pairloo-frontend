@@ -20,7 +20,6 @@ export const MyPostMenu = ({ id }: { id: string }) => {
         if (nativeEvent.event === "edit") {
           editPost()
         } else if (nativeEvent.event === "share") {
-          console.log("Share action pressed")
         } else if (nativeEvent.event === "destructive") {
           deletePost(id)
         }

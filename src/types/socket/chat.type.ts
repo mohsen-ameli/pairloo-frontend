@@ -29,6 +29,7 @@ export type MessageType = {
     username: string
     picture?: string | null
   }
+  postId?: string | undefined
   content: string
   attachments?: string[]
   replyTo?: ReplyTo
@@ -44,11 +45,18 @@ export type LastMessageType =
   | {
       _id: string
       sender: SenderType
+      postId?: string
       content: string
       attachmentsCount: number
       createdAt: Date
       updatedAt: Date
     }
+
+export type ContactedPost = {
+  postId: string
+  title: string
+  isDeleted: boolean
+}
 
 export interface ConversationType {
   _id: string
@@ -58,7 +66,12 @@ export interface ConversationType {
     picture?: string | null
     email: string
   }[]
+  contactedPosts: ContactedPost[]
   lastMessage?: LastMessageType
+}
+
+export type CurrentConversationType = ConversationType & {
+  activePostId?: string | null | undefined
 }
 
 export type OtherUser = {
@@ -87,13 +100,19 @@ interface ServerToClientEvents {
 interface ClientToServerEvents {
   newMessage: (data: {
     conversationId: string
+    postId?: string | null
     content: string
     attachments?: Attachment[]
     replyTo?: ReplyTo
   }) => void
   getConversations: () => void
-  newConversation: (memberIds: string[]) => void
-  getMessages: (conversationId: string, start: number, end: number) => void
+  newConversation: (memberIds: string[], post?: { postId: string; title: string }) => void
+  getMessages: (data: {
+    conversationId: string
+    postId?: string | null
+    start: number
+    end: number
+  }) => void
   editMessage: (data: { messageId: string; conversationId: string; newContent: string }) => void
   deleteMessage: (data: { messageId: string; conversationId: string }) => void
 }

@@ -11,13 +11,13 @@ import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
-import { ConversationType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { sinceNow } from "@/src/utils/format-date"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { getStatusColor } from "@/src/utils/get-color"
+import { conversationsAtom, currentConversationAtom } from "@/src/store/chat-store"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -25,6 +25,8 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userSecureAtom)
+  const setCurrentConversation = useSetAtom(currentConversationAtom)
+  const setConversations = useSetAtom(conversationsAtom)
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
   const {
@@ -48,11 +50,16 @@ export default function PostDetails() {
   async function contactPoster() {
     if (!socket || !user || !post) return
 
-    socket.emit("newConversation", [user._id, post.userId])
-    socket.once("conversation", (conversation: ConversationType) => {
+    socket.emit("newConversation", [user._id, post.userId], { postId: post._id, title: post.title })
+    socket.once("conversation", conversation => {
       router.push({
         pathname: "/chat-details",
-        params: { id: conversation._id },
+        params: { conversationId: conversation._id, postId: post._id },
+      })
+      setCurrentConversation({ ...conversation, activePostId: post._id })
+      setConversations(prev => {
+        const otherConversations = prev.filter(c => c._id !== conversation._id)
+        return [conversation, ...otherConversations]
       })
     })
 
