@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from "react-native"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
@@ -41,7 +41,7 @@ import { userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
-import { Stack } from "expo-router"
+import { Stack, useFocusEffect } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
@@ -114,25 +114,6 @@ export default function ChatDetails() {
     }
   }, [messages, scrollTargetId, entireChatLoaded, socket])
 
-  // To set the current conversation and load initial messages
-  useEffect(() => {
-    if (!conversations || !user || !socket || !userJwt || currentConversation) return
-
-    setLoading(true)
-    setEntireChatLoaded(false)
-
-    // Find the current conversation
-    const conv = conversations.find(c => c._id === conversationId)
-    if (!conv) return
-    setCurrentConversation({ ...conv, activePostId: postId })
-
-    otherUser.current = conv.members.find(member => member._id !== userJwt._id)
-
-    if (messages.length > 0) return
-
-    socket.emit("getMessages", { conversationId, postId, start: 0, end: NUM_MESSAGES_TO_LOAD })
-  }, [conversations, user, socket, conversationId, postId])
-
   // Checking if the user is allowed to review (only if they have received a message from the other user)
   useEffect(() => {
     if (canReview) return
@@ -162,14 +143,36 @@ export default function ChatDetails() {
     }
   }, [editingMessage])
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      setMessages([])
-      setCurrentConversation(null)
-      setScrollTargetId(null)
-    }
-  }, [])
+  // To set the current conversation and load initial messages
+  useFocusEffect(
+    useCallback(() => {
+      if (!conversations || !user || !socket || !userJwt) return
+
+      if (!currentConversation) {
+        // Find the current conversation
+        const conv = conversations.find(c => c._id === conversationId)
+        if (!conv) return
+        setCurrentConversation({ ...conv, activePostId: postId })
+
+        otherUser.current = conv.members.find(member => member._id !== userJwt._id)
+      }
+
+      if (messages.length > 0) return
+
+      setLoading(true)
+      setEntireChatLoaded(false)
+
+      socket.emit("getMessages", { conversationId, postId, start: 0, end: NUM_MESSAGES_TO_LOAD })
+
+      return () => {
+        setMessages([])
+        setCurrentConversation(null)
+        setScrollTargetId(null)
+        setEntireChatLoaded(false)
+        setLoading(false)
+      }
+    }, [user, socket, conversationId, postId])
+  )
 
   async function handleSendMessage() {
     setMessage("")
@@ -190,7 +193,7 @@ export default function ChatDetails() {
   }, [])
 
   async function loadMoreMessages() {
-    if (!socket || entireChatLoaded || loading) return
+    if (!socket || entireChatLoaded || loading || !currentConversation) return
     // if we have already sent a request to load more messages, don't send another one until we get a response
     socket.emit("getMessages", {
       conversationId,

@@ -137,7 +137,7 @@ function ChatHeader() {
     <View
       style={{
         gap: 5,
-        paddingBottom: 20,
+        paddingBottom: 12,
         paddingLeft: 6,
         flexDirection: "row",
         alignItems: "center",
@@ -247,13 +247,12 @@ function ChatHeader() {
               style={{
                 minWidth: "90%",
                 maxWidth: "90%",
-                minHeight: 50, // trolling?
-                paddingVertical: 4,
-                paddingHorizontal: 14,
+                paddingVertical: 8,
+                paddingLeft: 6,
+                paddingRight: 20,
                 marginTop: 4,
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "center",
                 gap: 8,
                 borderRadius: 6,
                 borderColor: colors.darkPurple,
@@ -261,10 +260,7 @@ function ChatHeader() {
               }}
             >
               <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
-              <Text
-                style={{ color: colors.dark, fontSize: 14 }}
-                numberOfLines={2} // trolling?
-              >
+              <Text style={{ color: colors.dark, fontSize: 14 }} numberOfLines={1}>
                 {activeChat}
               </Text>
             </View>
