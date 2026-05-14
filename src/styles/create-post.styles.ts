@@ -115,4 +115,10 @@ export const createPostStyles = StyleSheet.create({
     alignItems: "flex-end",
     gap: 12,
   },
+  locationClearButton: {
+    backgroundColor: colors.lightGray,
+    padding: 5,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
 })

@@ -1,4 +1,4 @@
-export function formatDate(dateString: string) {
+export function formatDate(dateString: string | Date) {
   const date = new Date(dateString)
   const now = new Date()
   const yesterday = new Date()
@@ -30,7 +30,7 @@ export function formatDate(dateString: string) {
   }
 }
 
-export function sinceNow(dateString: string | null | undefined): string {
+export function sinceNow(dateString: string | Date | null | undefined): string {
   if (!dateString) return ""
   const date = new Date(dateString)
   const now = new Date()
@@ -53,7 +53,7 @@ export function sinceNow(dateString: string | null | undefined): string {
   return "now"
 }
 
-export function formatDateDayMonthYear(dateString: string) {
+export function formatDateDayMonthYear(dateString: string | Date) {
   const date = new Date(dateString)
   return date.toLocaleDateString(undefined, {
     day: "numeric",

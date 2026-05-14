@@ -3,7 +3,7 @@ import * as Device from "expo-device"
 import * as Notifications from "expo-notifications"
 import Constants from "expo-constants"
 import { atom } from "jotai"
-import { authFetchAtom, userSecureAtom } from "./auth-store"
+import { authFetchAtom, fetchUserInfoAtom, userSecureAtom } from "./auth-store"
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,7 +18,7 @@ export const notificationAtom = atom<Notifications.Notification | undefined>(und
 
 export const registerForPushNotificationsAsyncAtom = atom(null, async (get, set) => {
   let token
-  const user = await get(userSecureAtom)
+  const user = await set(fetchUserInfoAtom)
   if (!user) return
 
   if (Platform.OS === "android") {
@@ -65,14 +65,17 @@ export const registerForPushNotificationsAsyncAtom = atom(null, async (get, set)
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ expoPushToken: token }),
         })
-        const data = await res.json()
-        await set(userSecureAtom, { ...user, expoPushToken: token })
+        const currentUser = await get(userSecureAtom)
+        if (!res.ok || !currentUser) {
+          throw new Error("Failed to update push token")
+        }
+        await set(userSecureAtom, { ...currentUser, expoPushToken: token })
       }
     } catch (e) {
       token = `${e}`
     }
   } else {
-    alert("Must use physical device for Push Notifications")
+    console.warn("Must use physical device for push notifications")
   }
 
   return token

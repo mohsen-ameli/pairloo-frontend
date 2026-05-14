@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import { useCallback, useEffect } from "react"
+import { useEffect } from "react"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
@@ -29,16 +29,16 @@ import {
   settingsAtom,
   initCreatePostAtom,
 } from "@/src/store/create-post-store"
-import { useFocusEffect } from "expo-router"
 import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
-import MapSelector from "../../(util)/map-selector"
 import { inputStyles } from "@/src/styles/input.styles"
+import { useRouter } from "expo-router"
 
 export default function CreatePost() {
+  const router = useRouter()
   const [QNAs, setQNAs] = useAtom(qnaAtom)
   const socket = useAtomValue(createPostSocketAtom)
   const loading = useAtomValue(loadingAtom)
@@ -57,13 +57,10 @@ export default function CreatePost() {
 
     let nextEnabled = false
 
-    // The flow is: initial question -> 0 or more questions -> extra info page -> location page -> final page
+    // The flow is: initial question -> 0 or more questions -> extra info page -> final page
     if (currPage === 0) {
       // initial question page
       nextEnabled = QNAs[0].answer.length > 0
-    } else if (currPage === pageCount - 2) {
-      // location page
-      nextEnabled = true
     } else if (currPage === pageCount - 1) {
       // last page
       nextEnabled = settings.title.trim().length > 0 && settings.description.trim().length > 0
@@ -144,15 +141,9 @@ export default function CreatePost() {
     if (socket && socket.connected) {
       setFlow(prev => ({ ...prev, nextEnabled: false }))
       setLoading(true)
-      socket.emit("ai-title")
+      socket.emit("aiTitle")
     }
   }
-
-  useFocusEffect(
-    useCallback(() => {
-      refresh()
-    }, [])
-  )
 
   if (!socket || socket.connected === false) {
     return (
@@ -170,6 +161,7 @@ export default function CreatePost() {
       <LoadingIndicator loading={loading} opacity={0.5} />
 
       <CustomPager>
+        {/* Questionnaire */}
         {QNAs.map((qna, i) => {
           const question = qna.question
           const answer = qna.answer
@@ -265,18 +257,9 @@ export default function CreatePost() {
           )
         })}
 
-        <View key={QNAs.length}>
-          <View style={createPostStyles.container}>
-            <Text style={{ fontSize: 20, fontWeight: "600", color: colors.dark }}>
-              Location (Optional)
-            </Text>
-            <MapSelector />
-          </View>
-        </View>
-
         {/* The last page */}
         <ScrollView
-          key={QNAs.length + 1}
+          key={QNAs.length}
           style={createPostStyles.scrollView}
           keyboardShouldPersistTaps="handled"
         >
@@ -288,7 +271,9 @@ export default function CreatePost() {
                   title="Title"
                   headerStyles={{ fontSize: 16, fontWeight: "600" }}
                   value={settings.title}
-                  onChangeText={text => setSettings({ ...settings, title: text })}
+                  onChangeText={text => {
+                    setSettings(async curr => ({ ...(await curr), title: text }))
+                  }}
                   editable={!loading}
                   mandatory
                 />
@@ -297,15 +282,45 @@ export default function CreatePost() {
                 <Octicons name="sparkles-fill" size={24} color={colors.purple} />
               </Pressable>
             </View>
+
+            {/* Description */}
             <CustomInput
               title="Description"
               headerStyles={{ fontSize: 16, fontWeight: "600" }}
               value={settings.description}
               multiline
-              onChangeText={text => setSettings({ ...settings, description: text })}
+              onChangeText={async text => {
+                setSettings(async curr => ({ ...(await curr), description: text }))
+              }}
               editable={!loading}
               mandatory
             />
+
+            {/* Location */}
+            <View>
+              <Text style={inputStyles.header}>Location (Optional)</Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ flex: 1 }}>
+                  <Pressable onPress={() => router.push("/map-selector")}>
+                    <Text style={inputStyles.input}>{settings.closeCity}</Text>
+                  </Pressable>
+                </View>
+                {settings.location && settings.closeCity && (
+                  <Pressable
+                    style={createPostStyles.locationClearButton}
+                    onPress={() => {
+                      setSettings(async curr => ({
+                        ...(await curr),
+                        location: null,
+                        closeCity: "",
+                      }))
+                    }}
+                  >
+                    <Feather name="x" size={24} color={colors.darkGray} />
+                  </Pressable>
+                )}
+              </View>
+            </View>
 
             {/* Images */}
             <View>
@@ -358,7 +373,9 @@ export default function CreatePost() {
                 <Switch
                   trackColor={{ true: colors.purple }}
                   thumbColor={colors.light}
-                  onValueChange={value => setSettings({ ...settings, publicPost: value })}
+                  onValueChange={value =>
+                    setSettings(async curr => ({ ...(await curr), publicPost: value }))
+                  }
                   value={settings.publicPost}
                 />
               </View>

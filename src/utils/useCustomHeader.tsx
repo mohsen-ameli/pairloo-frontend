@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Pressable } from "react-native"
+import { View, Text, TouchableOpacity, Pressable, Alert } from "react-native"
 import React from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
@@ -12,170 +12,122 @@ import {
   qnaAtom,
 } from "@/src/store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
-import { useRouter } from "expo-router"
+import { useGlobalSearchParams, useRouter } from "expo-router"
 import { currentConversationAtom } from "@/src/store/chat-store"
 import { userSecureAtom } from "@/src/store/auth-store"
-import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
+import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post-detail-store"
+import MaterialIcons from "@expo/vector-icons/MaterialIcons"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { MyPostMenu } from "../components/MyPostMenu"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
-// OtherUser is only passed when viewing another user's profile or chat
-export default function useCustomHeader(
-  title: string,
-  backButtonVisible: boolean = false,
-  inChat: boolean = false,
-  createPost?: boolean,
-  myPostsPage?: boolean,
-  id?: string | null
-): ExtendedStackNavigationOptions {
-  const router = useRouter()
-
-  function handleProfilePress(id: string) {
-    router.push({
-      pathname: "(details)/profile",
-      params: { id },
-    })
-  }
-  const currentConversation = useAtomValue(currentConversationAtom)
-  const user = useAtomValue(userSecureAtom)
+export default function useCustomHeader({
+  title,
+  postId,
+  inChat = false,
+  createPost = false,
+  isPostDetails = false,
+  isMyPostDetails = false,
+  isProfile = false,
+}: {
+  title: string
+  postId?: string
+  inChat?: boolean
+  createPost?: boolean
+  isPostDetails?: boolean
+  isMyPostDetails?: boolean
+  isProfile?: boolean
+}): ExtendedStackNavigationOptions {
+  const insets = useSafeAreaInsets()
 
   let options: ExtendedStackNavigationOptions = {
     title,
     headerShown: true,
-    headerBackVisible: false,
-    headerBackButtonMenuEnabled: false,
+    headerTitleAlign: "center",
     headerTintColor: colors.dark,
-    headerBackButtonDisplayMode: "default",
-    headerBackground() {
-      return <View style={styles.headerBackground} />
-    },
-    headerTitle: () => (
-      <View style={styles.header}>
-        {backButtonVisible && (
-          <Pressable
-            style={styles.headerBackIcon}
-            onPress={() => {
-              router.back()
-            }}
-          >
-            <Feather name="arrow-left" size={26} color={colors.dark} />
-          </Pressable>
-        )}
-        <Text style={styles.headerTitle}>{title}</Text>
-      </View>
-    ),
+    headerStyle: styles.header,
+    headerBackButtonDisplayMode: "minimal",
+    headerTitleStyle: styles.headerTitle,
   }
 
-  if (inChat && user && currentConversation) {
-    const otherUser = currentConversation.members.find(member => member._id !== user._id)
-
-    if (!otherUser) {
-      return options
-    }
-
-    if (!otherUser) {
-      return options
-    }
-
+  if (inChat) {
     return {
       ...options,
-      headerTitle: () => (
-        <View style={styles.otherHeader}>
-          {backButtonVisible && (
-            <Pressable
-              style={styles.headerBackIcon}
-              onPress={() => {
-                router.back()
-              }}
-            >
-              <Feather name="arrow-left" size={26} color={colors.dark} />
-            </Pressable>
-          )}
-          <TouchableOpacity
-            onPress={() => handleProfilePress(otherUser._id)}
-            style={styles.otherProfileButton}
-          >
-            <Image
-              source={
-                otherUser.picture && otherUser.picture
-                  ? { uri: otherUser.picture }
-                  : defaultProfilePicture
-              }
-              style={styles.otherProfileImage}
-            />
-            <Text style={styles.otherHeaderTitle}>{otherUser.username}</Text>
-          </TouchableOpacity>
-        </View>
-      ),
+      contentStyle: {
+        paddingBottom: insets.bottom,
+        backgroundColor: colors.lightGray,
+      },
+      headerTitle: () => <ChatHeader />,
     }
   }
 
   if (createPost) {
     return {
       ...options,
-      headerTitle: () => <CreatePostHeader />,
+      headerRight: () => <CreatePostHeader />,
     }
   }
 
-  if (myPostsPage && id) {
+  if (isPostDetails) {
     return {
       ...options,
-      headerTitle: () => (
-        <View style={styles.header}>
-          <View
-            style={[
-              styles.headerContent,
-              { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-            ]}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              {backButtonVisible && (
-                <Pressable
-                  style={styles.headerBackIcon}
-                  onPress={() => {
-                    router.back()
-                  }}
-                >
-                  <Feather name="arrow-left" size={26} color={colors.dark} />
-                </Pressable>
-              )}
-              <Text style={[styles.headerTitle, { marginLeft: 50 }]}>{title}</Text>
-            </View>
-            <MyPostMenu id={id} />
-          </View>
-        </View>
-      ),
+      contentStyle: {
+        paddingBottom: insets.bottom,
+        backgroundColor: colors.light,
+      },
+      headerRight: () => <PostDetailsHeader />,
     }
   }
 
-  if (title === "Profile") {
+  if (isMyPostDetails && postId) {
     return {
       ...options,
-      headerTitle: () => (
-        <View
-          style={[
-            styles.header,
-            { flexDirection: "row", justifyContent: "center", alignItems: "center" },
-          ]}
-        >
-          <Text style={styles.headerTitle}>{title}</Text>
-          <Pressable
-            onPress={() => router.push("(tabs)/profile/settings")}
-            style={{
-              position: "absolute",
-              top: 5,
-              right: 10,
-            }}
-          >
-            <Feather name="settings" size={24} color={colors.dark} />
-          </Pressable>
-        </View>
-      ),
+      headerRight: () => <MyPostMenu id={postId} />,
+    }
+  }
+
+  if (isProfile) {
+    return {
+      ...options,
+      headerRight: () => <ProfileHeader />,
     }
   }
 
   return options
+}
+
+function ChatHeader() {
+  const currentConversation = useAtomValue(currentConversationAtom)
+  const user = useAtomValue(userSecureAtom)
+  const router = useRouter()
+
+  if (!user) return <></>
+
+  const otherUser = currentConversation?.members.find(member => member._id !== user._id)
+
+  return (
+    <TouchableOpacity
+      onPress={() =>
+        router.push({
+          pathname: "(details)/profile",
+          params: { id: otherUser?._id },
+        })
+      }
+      style={styles.otherProfileButton}
+    >
+      <Image
+        source={
+          otherUser?.picture && otherUser?.picture
+            ? { uri: otherUser?.picture }
+            : defaultProfilePicture
+        }
+        style={styles.otherProfileImage}
+      />
+      <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+    </TouchableOpacity>
+  )
 }
 
 function CreatePostHeader() {
@@ -187,25 +139,62 @@ function CreatePostHeader() {
   const qna = useAtomValue(qnaAtom)
 
   return (
-    <View style={styles.header}>
-      <View
-        style={[
-          styles.headerContent,
-          { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-        ]}
-      >
-        <Text style={styles.headerTitle}>Create Post</Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          {0 < currPage && currPage <= pageCount - 3 && qna[currPage].question.intention && (
-            <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
-              <Feather name="rotate-ccw" size={24} color={colors.dark} />
-            </Pressable>
-          )}
-          <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
-            <Feather name="trash-2" size={24} color={colors.dark} />
-          </Pressable>
-        </View>
-      </View>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      {0 < currPage && currPage <= pageCount - 3 && qna[currPage].question.intention && (
+        <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
+          <Feather name="rotate-ccw" size={24} color={colors.dark} />
+        </Pressable>
+      )}
+      <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
+        <Feather name="trash-2" size={24} color={colors.dark} />
+      </Pressable>
+    </View>
+  )
+}
+
+function PostDetailsHeader() {
+  const { feedPostId } = useGlobalSearchParams<{ feedPostId: string }>()
+  const savePost = useSetAtom(savePostAtom)
+  const unsavePost = useSetAtom(unsavePostAtom)
+  const savedPostIds = useAtomValue(savedPostIdsAtom)
+  const isPostSaved = feedPostId ? savedPostIds.includes(feedPostId) : false
+
+  return (
+    <Pressable
+      style={{ padding: 6 }}
+      onPress={async () => {
+        if (!feedPostId) {
+          Alert.alert("Error", "Something went wrong. Post was not saved.")
+          return
+        }
+
+        if (isPostSaved) {
+          await unsavePost(feedPostId)
+        } else {
+          await savePost(feedPostId)
+        }
+      }}
+    >
+      {isPostSaved ? (
+        <MaterialIcons name="bookmark" size={24} color={colors.purple} />
+      ) : (
+        <MaterialIcons name="bookmark-border" size={24} color={colors.dark} />
+      )}
+    </Pressable>
+  )
+}
+
+function ProfileHeader() {
+  const router = useRouter()
+
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <TouchableOpacity onPress={() => router.push("/profile/search")} style={{ padding: 6 }}>
+        <Feather name="search" size={24} color={colors.dark} />
+      </TouchableOpacity>
+      <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
+        <Feather name="settings" size={24} color={colors.dark} />
+      </Pressable>
     </View>
   )
 }

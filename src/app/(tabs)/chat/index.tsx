@@ -13,7 +13,7 @@ import { useFocusEffect, useRouter } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Pressable, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
-import { MessageType } from "@/src/types/chat.type"
+import { LastMessageType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { errorStyles } from "@/src/styles/error.styles"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -30,23 +30,17 @@ export default function index() {
   const initChat = useSetAtom(initChatAtom)
   const loading = useAtomValue(loadingAtom)
 
-  function getLastMessagePreview(lastMessage: MessageType): string {
-    if (!lastMessage || !lastMessage.sender || !user) return ""
-    let senderName = ""
-    if (lastMessage.sender._id === user._id) {
-      senderName = "You"
-    } else {
-      senderName = lastMessage.sender.username
-    }
+  function getLastMessagePreview(lastMessage: LastMessageType): string {
+    if (!lastMessage || !user) return ""
 
     let contentPreview = ""
-    if (lastMessage.attachments && lastMessage.attachments.length > 0) {
+    if (lastMessage.attachmentsCount > 0) {
       contentPreview = "sent an attachment"
     } else {
       contentPreview = formatString(lastMessage.content, 32)
     }
 
-    return `${senderName}: ${contentPreview}`
+    return `${lastMessage.sender.username}: ${contentPreview}`
   }
 
   async function refresh() {

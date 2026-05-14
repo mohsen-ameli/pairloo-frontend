@@ -11,7 +11,7 @@ import type { AnimatedProps } from "react-native-reanimated"
 import Animated from "react-native-reanimated"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
-import { useAtom, useSetAtom } from "jotai"
+import { useSetAtom } from "jotai"
 import { settingsAtom } from "../store/create-post-store"
 import { imgIndexAtom } from "../store/chat-store"
 import { useRouter } from "expo-router"
@@ -24,7 +24,7 @@ interface Props extends AnimatedProps<ViewProps> {
 }
 
 export function SlideItem({ style, index, source, editable = false, ...animatedViewProps }: Props) {
-  const [settings, setSettings] = useAtom(settingsAtom)
+  const setSettings = useSetAtom(settingsAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
   const router = useRouter()
 
@@ -42,9 +42,12 @@ export function SlideItem({ style, index, source, editable = false, ...animatedV
             <Pressable
               style={styles.removeOverlayButton}
               onPress={() => {
-                setSettings({
-                  ...settings,
-                  images: settings.images.filter((_, i) => i !== index),
+                setSettings(async curr => {
+                  const currSettings = await curr
+                  return {
+                    ...currSettings,
+                    images: currSettings.images.filter((_, i) => i !== index),
+                  }
                 })
               }}
             >

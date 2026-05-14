@@ -8,22 +8,26 @@ export type QnaItemType = {
   answer: string[]
 }
 
+export type StatusType = "active" | "inactive" | "hidden" | "draft"
+
 export type GeneralPostType = {
-  _id: string // userId of the poster
+  _id: string // postId
+  userId: string
   username: string
   firstName: string
   lastName: string
   picture?: string | null
   title: string
   description: string
-  summary: string
   images?: string[] | null | undefined
-  createdAt: string
+  createdAt: Date
   location?: {
     latitude: number
     longitude: number
   }
   distance?: number
+  score: number
+  status: StatusType
 }
 
 export interface MyPostType {
@@ -32,7 +36,7 @@ export interface MyPostType {
   title: string
   description: string
   publicPost: boolean
-  isDraft: boolean
+  status: StatusType
   qna?: QnaItemType[]
   location?: {
     latitude: number

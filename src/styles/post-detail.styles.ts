@@ -297,8 +297,29 @@ export const styles = StyleSheet.create({
   },
   contactButtonContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 24,
-    paddingTop: 16,
+    padding: 16,
+  },
+  statusLabel: {
+    marginLeft: -5,
+    marginTop: 2,
+    paddingBottom: 10,
+    alignSelf: "flex-start",
+  },
+  statusMenuButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: colors.lightGray,
+    borderRadius: 6,
+    gap: 6,
+  },
+  statusMenuContainer: {
+    marginTop: 12,
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   closeIconContainer: {
     position: "absolute",

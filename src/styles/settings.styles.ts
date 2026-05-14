@@ -48,11 +48,6 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.dark,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: colors.gray,
-    marginTop: 4,
-  },
   section: {
     marginTop: 16,
   },

@@ -5,21 +5,23 @@ import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import CustomButton from "@/src/components/CustomButton"
+import CustomLabel from "@/src/components/CustomLabel"
 import { GeneralPostType } from "@/src/types/post.type"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { errorStyles } from "@/src/styles/error.styles"
 import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
-import { ConversationType } from "@/src/types/chat.type"
+import { ConversationType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { sinceNow } from "@/src/utils/format-date"
 import { radiusMetersToZoom } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
+import { getStatusColor } from "@/src/utils/get-color"
 
 export default function PostDetails() {
   const router = useRouter()
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { feedPostId } = useLocalSearchParams<{ feedPostId: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userSecureAtom)
@@ -29,30 +31,57 @@ export default function PostDetails() {
     data: post,
     isError,
     isPending,
-  } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+  } = useQuery({ queryKey: [`post-${feedPostId}`], queryFn: fetchPost })
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
 
   async function fetchPost() {
-    const res = await authFetch(`/api/posts/${id}`)
+    const res = await authFetch(`/api/posts/${feedPostId}`)
     const data: GeneralPostType = await res.json()
     return data
   }
 
   async function refresh() {
-    queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
+    queryClient.invalidateQueries({ queryKey: [`post-${feedPostId}`] })
   }
 
   async function contactPoster() {
     if (!socket || !user || !post) return
 
-    socket.emit("newConversation", [user._id, post._id])
-    socket.once("conversation", async (conversation: ConversationType) => {
+    socket.emit("newConversation", [user._id, post.userId])
+    socket.once("conversation", (conversation: ConversationType) => {
       router.push({
         pathname: "/chat-details",
         params: { id: conversation._id },
       })
     })
+
+    try {
+      await authFetch("/api/posts/interaction", {
+        method: "POST",
+        body: JSON.stringify({ postId: post._id, type: "contact" }),
+      })
+    } catch (error) {
+      console.error("Error recording contact interaction:", error)
+    }
+  }
+
+  async function viewProfile() {
+    if (!post) return
+
+    router.push({
+      pathname: "(details)/profile",
+      params: { id: post.userId },
+    })
+
+    try {
+      await authFetch("/api/posts/interaction", {
+        method: "POST",
+        body: JSON.stringify({ postId: post._id, type: "profile_view" }),
+      })
+    } catch (error) {
+      console.error("Error recording profile view interaction:", error)
+    }
   }
 
   if (isPending) {
@@ -82,15 +111,7 @@ export default function PostDetails() {
         scrollEnabled={true}
         keyboardShouldPersistTaps="handled"
       >
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "(details)/profile",
-              params: { id: post._id },
-            })
-          }
-          style={styles.headerContainer}
-        >
+        <Pressable onPress={viewProfile} style={styles.headerContainer}>
           <Image
             source={
               post.picture ? { uri: post.picture } : require("@/assets/images/default_pfp.png")
@@ -106,6 +127,13 @@ export default function PostDetails() {
         </Pressable>
 
         <Text style={styles.title}>{post.title}</Text>
+        {post.status === "inactive" && (
+          <View style={styles.statusLabel}>
+            <CustomLabel backgroundColor={getStatusColor(post.status)}>
+              <Text style={{ textTransform: "capitalize" }}>{post.status}</Text>
+            </CustomLabel>
+          </View>
+        )}
         <Text style={styles.description}>{post.description}</Text>
 
         {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}
