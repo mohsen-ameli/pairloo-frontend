@@ -56,11 +56,6 @@ export default function PostDetails() {
         pathname: "/chat-details",
         params: { conversationId: conversation._id, postId: post._id },
       })
-      // Update the conversations list to include the new conversation
-      setConversations(prev => {
-        const otherConversations = prev.filter(c => c._id !== conversation._id)
-        return [conversation, ...otherConversations]
-      })
     })
 
     try {

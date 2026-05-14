@@ -163,7 +163,12 @@ export default function ChatDetails() {
       setEntireChatLoaded(false)
 
       socket.emit("getMessages", { conversationId, postId, start: 0, end: NUM_MESSAGES_TO_LOAD })
+    }, [user, socket, conversationId, postId])
+  )
 
+  // Cleanup on unmount
+  useFocusEffect(
+    useCallback(() => {
       return () => {
         setMessages([])
         setCurrentConversation(null)
@@ -171,7 +176,7 @@ export default function ChatDetails() {
         setEntireChatLoaded(false)
         setLoading(false)
       }
-    }, [user, socket, conversationId, postId])
+    }, [])
   )
 
   async function handleSendMessage() {

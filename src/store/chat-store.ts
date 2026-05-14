@@ -104,6 +104,14 @@ export const initChatAtom = atom(null, async (get, set) => {
     socket.connect()
   })
 
+  // Update the conversations list to include the new conversation
+  socket.on("conversation", conversation => {
+    set(conversationsAtom, prev => {
+      const otherConversations = prev.filter(c => c._id !== conversation._id)
+      return [conversation, ...otherConversations]
+    })
+  })
+
   // Got all conversations
   socket.on("conversations", conversations => {
     set(conversationsAtom, conversations)
@@ -138,35 +146,15 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   // Received a message from the server
   socket.on("message", async message => {
-    let isMyMessage = false
-
-    set(messagesAtom, prev =>
-      prev.map(msg => {
-        // This is our optimistic message, replace it
-        if (msg.optimistic && msg.content === message.content) {
-          isMyMessage = true
-          return message
-        }
-        return msg
-      })
-    )
-
-    set(receivedMsgAtom, prev => !prev) // trigger re-render for messages list
-
-    const currentConversation = get(currentConversationAtom)
+    // Update last message
     set(conversationsAtom, prev =>
       prev.map(conv => {
-        if (conv._id === currentConversation?._id) {
+        if (conv._id === message.conversationId) {
           return {
             ...conv,
             lastMessage: {
-              _id: message._id,
-              sender: message.sender,
-              postId: message.postId,
-              content: message.content,
+              ...message,
               attachmentsCount: message.attachments ? message.attachments.length : 0,
-              createdAt: new Date(message.createdAt),
-              updatedAt: new Date(message.updatedAt),
             },
           }
         }
@@ -175,10 +163,11 @@ export const initChatAtom = atom(null, async (get, set) => {
     )
 
     // we received a message from other user
-    if (!isMyMessage) {
+    if (message.sender._id !== userJwt._id) {
       set(messagesAtom, prev => [message, ...prev])
 
       // If user is not in the chat that received the message
+      const currentConversation = get(currentConversationAtom)
       if (currentConversation?._id !== message.conversationId) {
         Toast.show({
           type: "newMessage",
@@ -194,7 +183,7 @@ export const initChatAtom = atom(null, async (get, set) => {
           onPress: () => {
             router.push({
               pathname: "/chat-details",
-              params: { id: message.conversationId },
+              params: { conversationId: message.conversationId, postId: message.postId },
             })
             socket.emit("getMessages", {
               conversationId: message.conversationId,
@@ -227,6 +216,18 @@ export const initChatAtom = atom(null, async (get, set) => {
         })
       }
     }
+
+    set(messagesAtom, prev =>
+      prev.map(msg => {
+        // This is our optimistic message, replace it
+        if (msg.optimistic && msg.content === message.content) {
+          return message
+        }
+        return msg
+      })
+    )
+
+    set(receivedMsgAtom, prev => !prev) // trigger re-render for messages list
   })
 
   // Message was edited
