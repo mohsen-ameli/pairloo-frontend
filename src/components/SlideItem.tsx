@@ -23,6 +23,20 @@ export function SlideItem({
   const router = useRouter()
   const isDragging = useAtomValue(isDraggingAtom)
 
+  const handleRemove = () => {
+    if (onRemove) {
+      onRemove()
+    } else {
+      setSettings(async curr => {
+        const currSettings = await curr
+        return {
+          ...currSettings,
+          images: currSettings.images.filter((_, i) => i !== index),
+        }
+      })
+    }
+  }
+
   return (
     <Pressable
       style={{

@@ -15,10 +15,12 @@ export default function ImageCarousel({
   images,
   widthOffset = 0,
   editable = false,
+  onRemove,
 }: {
   images: string[]
   widthOffset?: number
   editable?: boolean
+  onRemove?: (index: number) => void
 }) {
   const ref = useRef<ICarouselInstance>(null)
   const progress = useSharedValue(0)

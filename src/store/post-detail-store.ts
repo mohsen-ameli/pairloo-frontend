@@ -131,9 +131,9 @@ export const deletePostAtom = atom(null, async (get, set, id: string) => {
   ])
 })
 
-export const editPostAtom = atom(null, (get, set) => {
-  Toast.show({
-    type: "error",
-    text1: "Edit Functionality Will Be Added Soon",
+export const editPostAtom = atom(null, (get, set, id: string) => {
+  router.push({
+    pathname: "(details)/edit-post",
+    params: { id },
   })
 })
