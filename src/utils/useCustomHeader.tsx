@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Pressable, Alert } from "react-native"
-import React, { act, useEffect, useState } from "react"
+import React, { act, useCallback, useEffect, useState } from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
@@ -12,7 +12,7 @@ import {
   qnaAtom,
 } from "@/src/store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
-import { useGlobalSearchParams, useRouter } from "expo-router"
+import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router"
 import {
   currentConversationAtom,
   messagesAtom,
@@ -116,18 +116,20 @@ function ChatHeader() {
   const [activeChat, setActiveChat] = useState<string>()
   const insets = useSafeAreaInsets()
 
-  useEffect(() => {
-    if (!currentConversation) return
+  useFocusEffect(
+    useCallback(() => {
+      if (!currentConversation) return
 
-    if (currentConversation.activePostId) {
-      const activePost = currentConversation.contactedPosts.find(
-        post => post.postId === currentConversation.activePostId
-      )
-      setActiveChat(activePost ? activePost.title : DEFAULT_CHAT_TITLE)
-    } else {
-      setActiveChat(DEFAULT_CHAT_TITLE)
-    }
-  }, [currentConversation])
+      if (currentConversation.activePostId) {
+        const activePost = currentConversation.contactedPosts.find(
+          post => post.postId === currentConversation.activePostId
+        )
+        setActiveChat(activePost ? activePost.title : DEFAULT_CHAT_TITLE)
+      } else {
+        setActiveChat(DEFAULT_CHAT_TITLE)
+      }
+    }, [currentConversation])
+  )
 
   if (!socket || !user || !currentConversation) return <></>
 

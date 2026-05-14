@@ -146,7 +146,7 @@ export default function ChatDetails() {
   // To set the current conversation and load initial messages
   useFocusEffect(
     useCallback(() => {
-      if (!conversations || !user || !socket || !userJwt) return
+      if (!user || !socket || !userJwt) return
 
       if (!currentConversation) {
         // Find the current conversation

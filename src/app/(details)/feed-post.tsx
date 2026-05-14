@@ -17,6 +17,7 @@ import { radiusMetersToZoom } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { getStatusColor } from "@/src/utils/get-color"
+import { conversationsAtom, currentConversationAtom } from "@/src/store/chat-store"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -24,6 +25,8 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userSecureAtom)
+  const setCurrentConversation = useSetAtom(currentConversationAtom)
+  const setConversations = useSetAtom(conversationsAtom)
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
   const {
@@ -52,6 +55,11 @@ export default function PostDetails() {
       router.push({
         pathname: "/chat-details",
         params: { conversationId: conversation._id, postId: post._id },
+      })
+      // Update the conversations list to include the new conversation
+      setConversations(prev => {
+        const otherConversations = prev.filter(c => c._id !== conversation._id)
+        return [conversation, ...otherConversations]
       })
     })
 
