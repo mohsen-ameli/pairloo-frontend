@@ -565,10 +565,12 @@ export const authFetchAtom = atom(
   async (get, set, url: string, options: FetchRequestInit = {}) => {
     // Native flow: rely on secure storage
     function fetchWithToken(token: string) {
+      const isFormDataBody = options.body
+
       return fetch(`${BASE_URL}${url}`, {
         ...options,
         headers: {
-          "Content-Type": "application/json",
+          ...(isFormDataBody ? {} : { "Content-Type": "application/json" }),
           ...options.headers,
           Authorization: `Bearer ${token}`,
         },

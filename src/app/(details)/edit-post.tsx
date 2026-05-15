@@ -1,5 +1,6 @@
 import { useRouter, useLocalSearchParams, Stack, useFocusEffect } from "expo-router"
-import { View, Text, ScrollView, Pressable, Alert, Switch, BackHandler } from "react-native"
+import { useNavigation } from "@react-navigation/native"
+import { View, Text, ScrollView, Pressable, Alert, Switch } from "react-native"
 import { useState, useEffect, useCallback } from "react"
 import Feather from "@expo/vector-icons/Feather"
 import { useSetAtom, useAtomValue } from "jotai"
@@ -11,31 +12,33 @@ import { editPostStyles } from "@/src/styles/edit-post.styles"
 import CustomInput from "@/src/components/CustomInput"
 import { colors } from "@/src/utils/colors"
 import useCustomHeader from "@/src/utils/useCustomHeader"
-import { ImageObject } from "@/src/types/image-object.type"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { settingsAtom } from "@/src/store/create-post-store"
+import { getAttachmentAtom } from "@/src/store/general-store"
+import { Attachment } from "@/src/types/attachment.type"
 import React from "react"
-import * as ImagePicker from "expo-image-picker"
 
 export default function EditPost() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
+  const getAttachment = useSetAtom(getAttachmentAtom)
   const settings = useAtomValue(settingsAtom)
   const [loading, setLoading] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
 
-  // Form state
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [publicPost, setPublicPost] = useState(false)
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null)
-  const [closeCity, setCloseCity] = useState("")
-  const [distance, setDistance] = useState(5000)
-  const [newImages, setNewImages] = useState<ImageObject[]>([])
-  const [existingImages, setExistingImages] = useState<string[]>([])
-  const [removedImages, setRemovedImages] = useState<string[]>([])
+  const [formState, setFormState] = useState({
+    title: "",
+    description: "",
+    publicPost: false,
+    location: null as { latitude: number; longitude: number } | null,
+    closeCity: "",
+    distance: 5000,
+    newImages: [] as Attachment[],
+    existingImages: [] as string[],
+    removedImages: [] as string[],
+  })
 
   const { data: post } = useQuery({
     queryKey: [`post-${id}`],
@@ -51,131 +54,117 @@ export default function EditPost() {
   useEffect(() => {
     if (!post) return
 
-    setTitle(post.title)
-    setDescription(post.description)
-    setPublicPost(post.publicPost)
-    setLocation(post.location || null)
-    setExistingImages(post.images || [])
-    setDistance(post.distance || 5000)
+    setFormState(prev => ({
+      ...prev,
+      title: post.title,
+      description: post.description,
+      publicPost: post.publicPost,
+      location: post.location || null,
+      existingImages: post.images || [],
+      distance: post.distance || 5000,
+    }))
   }, [post])
 
   useFocusEffect(
     useCallback(() => {
       if (settings.location && settings.closeCity) {
-        setLocation(settings.location)
-        setCloseCity(settings.closeCity)
+        setFormState(prev => ({
+          ...prev,
+          location: settings.location,
+          closeCity: settings.closeCity,
+        }))
         setHasChanges(true)
       }
     }, [settings.location, settings.closeCity])
   )
 
   async function pickImages() {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
-
-    if (!permissionResult.granted) {
-      Alert.alert("Permission required", "Permission to access the media library is required.")
-      return
-    }
-
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-    })
-
-    if (!result.canceled && result.assets.length > 0) {
-      const newImagesList: ImageObject[] = []
-      for (const asset of result.assets) {
-        const localUri = asset.uri
-        const mimeType = asset.mimeType || "image/jpeg"
-        newImagesList.push({ localUri, mimeType, url: "", key: "" })
-      }
-      setNewImages(prev => [...prev, ...newImagesList])
+    const attachments = await getAttachment(false, "library", true)
+    if (attachments.length > 0) {
+      setFormState(prev => ({
+        ...prev,
+        newImages: [...prev.newImages, ...attachments],
+      }))
       setHasChanges(true)
     }
   }
 
+  function handleImageCarouselRemove(index: number) {
+    const totalExisting = formState.existingImages.length
+
+    if (index < totalExisting) {
+      // Removing an existing image
+      const removedImage = formState.existingImages[index]
+      setFormState(prev => ({
+        ...prev,
+        existingImages: prev.existingImages.filter((_, i) => i !== index),
+        removedImages: [...prev.removedImages, removedImage],
+      }))
+    } else {
+      // Removing a new image
+      const newImageIndex = index - totalExisting
+      setFormState(prev => ({
+        ...prev,
+        newImages: prev.newImages.filter((_, i) => i !== newImageIndex),
+      }))
+    }
+    setHasChanges(true)
+  }
+
   async function handleSave() {
-    if (!title.trim() || !description.trim()) {
+    if (!formState.title.trim() || !formState.description.trim()) {
       Alert.alert("Error", "Title and description are required")
       return
     }
-
     setLoading(true)
 
     try {
-      const imagesWithFiles: { file: Blob; mimeType: string }[] = []
-      for (const img of newImages) {
-        const response = await fetch(img.localUri)
-        const blob = await response.blob()
-        imagesWithFiles.push({ file: blob, mimeType: img.mimeType })
-      }
-
       const formData = new FormData()
-      formData.append("title", title.trim())
-      formData.append("description", description.trim())
-      formData.append("publicPost", publicPost.toString())
-      if (location) {
-        formData.append("location", JSON.stringify(location))
+      const metadata = {
+        title: formState.title,
+        description: formState.description,
+        publicPost: formState.publicPost,
+        distance: formState.distance,
+        location: formState.location || null,
+        existingImages: formState.existingImages,
+        removedImages: formState.removedImages,
       }
-      formData.append("distance", distance.toString())
+      formData.append("metadata", JSON.stringify(metadata))
 
-      // Add existing images that weren't removed
-      const keptExistingImages = existingImages.filter(img => !removedImages.includes(img))
-      keptExistingImages.forEach((img, index) => {
-        formData.append(`images[${index}]`, img)
-      })
-
-      // Add new images
-      imagesWithFiles.forEach((img, index) => {
-        formData.append(
-          `newImages[${index}]`,
-          img.file,
-          `image_${index}.${img.mimeType.split("/")[1]}`
-        )
-      })
-
-      if (removedImages.length > 0) {
-        formData.append("removedImages", JSON.stringify(removedImages))
+      for (const newImage of formState.newImages) {
+        const filename = `image-${Date.now()}.${newImage.mimeType?.split("/")[1] || "jpg"}`
+        formData.append("images", {
+          uri: newImage.uri,
+          name: filename,
+          type: newImage.mimeType || "image/jpeg",
+        } as any)
       }
 
-      const res = await authFetch(`/api/posts/${id}`, {
+      const response = await authFetch(`/api/posts/${id}`, {
         method: "PATCH",
         body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       })
 
-      if (res.ok) {
-        queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
-        queryClient.invalidateQueries({ queryKey: ["my-posts"] })
-        router.back()
-      } else {
-        Alert.alert("Error", "Failed to update post. Please try again.")
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error("Failed to update post:", { status: response.status, error: errorData })
+        Alert.alert("Error", "Failed to update post")
+        setLoading(false)
+        return
       }
+
+      await queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
+      await queryClient.invalidateQueries({ queryKey: ["my-posts"] })
+
+      setHasChanges(false)
+      router.back()
     } catch (error) {
       console.error("Error saving post:", error)
-      Alert.alert("Error", "An error occurred while saving. Please try again.")
-    } finally {
+      Alert.alert("Error", "An unexpected error occurred")
       setLoading(false)
-    }
-  }
-
-  function handleRemoveExistingImage(image: string) {
-    setExistingImages(prev => prev.filter(img => img !== image))
-    setRemovedImages(prev => [...prev, image])
-    setHasChanges(true)
-  }
-
-  function handleRemoveNewImage(index: number) {
-    setNewImages(prev => prev.filter((_, i) => i !== index))
-    setHasChanges(true)
-  }
-
-  function handleImageCarouselRemove(index: number) {
-    const totalExisting = existingImages.length
-
-    if (index < totalExisting) {
-      handleRemoveExistingImage(existingImages[index])
-    } else {
-      handleRemoveNewImage(index - totalExisting)
     }
   }
 
@@ -183,43 +172,46 @@ export default function EditPost() {
     router.push("/map-selector")
   }
 
-  const handleBackPress = useCallback(() => {
-    if (hasChanges) {
-      Alert.alert(
-        "Discard Changes",
-        "Your changes will be lost. Are you sure you want to discard your changes?",
-        [
-          { text: "Cancel", onPress: () => {}, style: "cancel" },
-          {
-            text: "Discard",
-            onPress: () => router.back(),
-            style: "destructive",
-          },
-        ]
-      )
-      return true
-    } else {
-      router.back()
-      return true
-    }
-  }, [hasChanges, router])
+  const navigation = useNavigation()
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", e => {
+      if (e.data.action.type === "POP" || e.data.action.type === "GO_BACK") {
+        if (hasChanges) {
+          e.preventDefault()
+          Alert.alert(
+            "Discard Changes",
+            "Your changes will be lost. Are you sure you want to discard your changes?",
+            [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Discard",
+                onPress: () => {
+                  setHasChanges(false)
+                  navigation.goBack()
+                },
+                style: "destructive",
+              },
+            ]
+          )
+        }
+      }
+    })
+
+    return unsubscribe
+  }, [hasChanges, navigation])
 
   const detailOptions = useCustomHeader({
     title: "Edit Post",
     isEditMode: true,
     onSave: handleSave,
+    onBackPress: () => {
+      router.back()
+      return true
+    },
     canSave: hasChanges && !loading,
-    onBackPress: handleBackPress,
   })
 
-  useFocusEffect(
-    useCallback(() => {
-      const subscription = BackHandler.addEventListener("hardwareBackPress", handleBackPress)
-      return () => subscription.remove()
-    }, [handleBackPress])
-  )
-
-  const hasImages = existingImages.length > 0 || newImages.length > 0
+  const hasImages = formState.existingImages.length > 0 || formState.newImages.length > 0
 
   return (
     <>
@@ -233,9 +225,9 @@ export default function EditPost() {
           <CustomInput
             title="Title"
             headerStyles={{ fontSize: 16, fontWeight: "600" }}
-            value={title}
+            value={formState.title}
             onChangeText={text => {
-              setTitle(text)
+              setFormState(prev => ({ ...prev, title: text }))
               setHasChanges(true)
             }}
             editable={!loading}
@@ -245,10 +237,10 @@ export default function EditPost() {
           <CustomInput
             title="Description"
             headerStyles={{ fontSize: 16, fontWeight: "600" }}
-            value={description}
+            value={formState.description}
             multiline
             onChangeText={text => {
-              setDescription(text)
+              setFormState(prev => ({ ...prev, description: text }))
               setHasChanges(true)
             }}
             editable={!loading}
@@ -260,15 +252,16 @@ export default function EditPost() {
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={{ flex: 1 }}>
                 <Pressable onPress={handleLocationPress} disabled={loading}>
-                  <Text style={inputStyles.input}>{closeCity || "Tap to select location"}</Text>
+                  <Text style={inputStyles.input}>
+                    {formState.closeCity || "Tap to select location"}
+                  </Text>
                 </Pressable>
               </View>
-              {location && closeCity && (
+              {formState.location && formState.closeCity && (
                 <Pressable
                   style={editPostStyles.locationClearButton}
                   onPress={() => {
-                    setLocation(null)
-                    setCloseCity("")
+                    setFormState(prev => ({ ...prev, location: null, closeCity: "" }))
                     setHasChanges(true)
                   }}
                   disabled={loading}
@@ -286,7 +279,7 @@ export default function EditPost() {
             {hasImages ? (
               <>
                 <ImageCarousel
-                  images={[...existingImages, ...newImages.map(img => img.localUri)]}
+                  images={[...formState.existingImages, ...formState.newImages.map(img => img.uri)]}
                   editable
                   onRemove={handleImageCarouselRemove}
                 />
@@ -334,10 +327,10 @@ export default function EditPost() {
                 trackColor={{ true: colors.purple }}
                 thumbColor={colors.light}
                 onValueChange={value => {
-                  setPublicPost(value)
+                  setFormState(prev => ({ ...prev, publicPost: value }))
                   setHasChanges(true)
                 }}
-                value={publicPost}
+                value={formState.publicPost}
                 disabled={loading}
               />
             </View>

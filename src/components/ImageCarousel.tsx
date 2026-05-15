@@ -46,6 +46,7 @@ export default function ImageCarousel({
   }
 
   if (images.length === 1) {
+    // TODO: onRemove refactor
     return <SlideItem index={0} src={images[0]} editable={editable} />
   }
 
