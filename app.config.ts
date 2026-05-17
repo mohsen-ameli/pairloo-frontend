@@ -72,6 +72,15 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
         },
       ],
       [
+        "expo-media-library",
+        {
+          // "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          savePhotosPermission: "Allow $(PRODUCT_NAME) to save photos.",
+          // "isAccessMediaLocationEnabled": true,
+          // "granularPermissions": ["audio", "photo"]
+        },
+      ],
+      [
         "expo-location",
         {
           locationAlwaysAndWhenInUsePermission: "Allow $(PRODUCT_NAME) to use your location.",
