@@ -12,7 +12,7 @@ import CustomToast from "@/src/components/CustomToast"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { queryClientAtom } from "@/src/store/general-store"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { getDeviceInfoAtom } from "@/src/store/device-store"
 import * as Notifications from "expo-notifications"
 import {
@@ -65,27 +65,40 @@ export default function RootLayout() {
   const setChannels = useSetAtom(channelsAtom)
   const setNotification = useSetAtom(notificationAtom)
   const registerForPushNotificationsAsync = useSetAtom(registerForPushNotificationsAsyncAtom)
+  const [notificationListener, setNotificationListener] =
+    useState<Notifications.EventSubscription>()
+  const [responseListener, setResponseListener] = useState<Notifications.EventSubscription>()
 
   useEffect(() => {
-    // Guard to make sure only authenticated users can register for push notifications
-    if (!userJwt) return
+    async function setupNotifications() {
+      // Guard to make sure only authenticated users can register for push notifications
+      if (!userJwt) return
 
-    registerForPushNotificationsAsync()
+      const token = await registerForPushNotificationsAsync()
 
-    if (Platform.OS === "android") {
-      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []))
+      if (!token) return
+
+      if (Platform.OS === "android") {
+        Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []))
+      }
+      setNotificationListener(
+        Notifications.addNotificationReceivedListener(notification => {
+          setNotification(notification)
+        })
+      )
+
+      setResponseListener(
+        Notifications.addNotificationResponseReceivedListener(response => {
+          console.log(response)
+        })
+      )
     }
-    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification)
-    })
 
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response)
-    })
+    setupNotifications()
 
     return () => {
-      notificationListener.remove()
-      responseListener.remove()
+      notificationListener?.remove()
+      responseListener?.remove()
     }
   }, [userJwt])
 
