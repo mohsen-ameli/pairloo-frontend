@@ -48,8 +48,10 @@ const newUser: NewUserType = {
   phoneCode: "",
   state: "",
   city: "",
-  latitude: 0,
-  longitude: 0,
+  location: {
+    type: "Point",
+    coordinates: [0, 0], // [longitude, latitude]
+  },
   timezone: "",
   locationId: 0,
   country: "Canada",
@@ -94,8 +96,7 @@ export const signUpAtom = atom(null, async (get, set) => {
       country: userData.country,
       city: userData.city,
       state: userData.state,
-      latitude: userData.latitude,
-      longitude: userData.longitude,
+      location: userData.location,
       timezone: userData.timezone,
       locationId: userData.locationId,
     }

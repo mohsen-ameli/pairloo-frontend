@@ -100,7 +100,10 @@ export default function index() {
                 onPress={() => {
                   router.push({
                     pathname: "/chat-details",
-                    params: { id: conversation._id },
+                    params: {
+                      conversationId: conversation._id,
+                      postId: conversation.lastMessage?.postId,
+                    },
                   })
                 }}
               >

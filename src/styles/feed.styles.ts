@@ -13,8 +13,8 @@ export const styles = StyleSheet.create({
   },
   listContainerStyles: {
     backgroundColor: colors.light,
-    padding: 10,
-    paddingBottom: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
   },
   postCard: {
     marginBottom: 14,

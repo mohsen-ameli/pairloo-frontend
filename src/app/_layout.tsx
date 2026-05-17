@@ -88,9 +88,7 @@ export default function RootLayout() {
       )
 
       setResponseListener(
-        Notifications.addNotificationResponseReceivedListener(response => {
-          console.log(response)
-        })
+        Notifications.addNotificationResponseReceivedListener(response => {})
       )
     }
 

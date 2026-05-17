@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from "react-native"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
@@ -41,7 +41,7 @@ import { userAtom, userSecureAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
-import { Stack } from "expo-router"
+import { Stack, useFocusEffect } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
@@ -52,7 +52,10 @@ const scrollTargetIdAtom = atom<string | null>(null)
 
 export default function ChatDetails() {
   const router = useRouter()
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { conversationId, postId } = useLocalSearchParams<{
+    conversationId: string
+    postId?: string
+  }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")
   const [inputHeight, setInputHeight] = useState<number>(40)
@@ -65,7 +68,7 @@ export default function ChatDetails() {
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<TextInput>(null!)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader({ title: "", inChat: true })
   const [loading, setLoading] = useAtom(loadingAtom)
@@ -103,31 +106,13 @@ export default function ChatDetails() {
       setScrollTargetId(null)
     } else {
       if (!entireChatLoaded && socket) {
-        socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
+        loadMoreMessages()
       } else if (entireChatLoaded) {
         Alert.alert("Error", "The original message could not be found.")
         setScrollTargetId(null)
       }
     }
   }, [messages, scrollTargetId, entireChatLoaded, socket])
-
-  // To set the current conversation and load initial messages
-  useEffect(() => {
-    if (!conversations || !user || !socket || !userJwt || currentConversation) return
-
-    setLoading(true)
-    setEntireChatLoaded(false)
-
-    // Find the current conversation
-    const conv = conversations.find(c => c._id === id)
-
-    if (!conv) return
-    setCurrentConversation(conv)
-    otherUser.current = conv.members.find(member => member._id !== userJwt._id)
-
-    if (messages.length > 0) return
-    socket.emit("getMessages", id, 0, NUM_MESSAGES_TO_LOAD)
-  }, [conversations, user, socket, id])
 
   // Checking if the user is allowed to review (only if they have received a message from the other user)
   useEffect(() => {
@@ -153,23 +138,50 @@ export default function ChatDetails() {
   // When a message is selected for editing, populate the input
   useEffect(() => {
     if (editingMessage) {
-      setMessage(editingMessage.content || "")
-      inputRef.current?.focus()
+      setMessage(editingMessage.content)
+      inputRef.current.focus()
     }
   }, [editingMessage])
 
+  // To set the current conversation and load initial messages
+  useFocusEffect(
+    useCallback(() => {
+      if (!user || !socket || !userJwt) return
+
+      if (!currentConversation) {
+        // Find the current conversation
+        const conv = conversations.find(c => c._id === conversationId)
+        if (!conv) return
+        setCurrentConversation({ ...conv, activePostId: postId })
+
+        otherUser.current = conv.members.find(member => member._id !== userJwt._id)
+      }
+
+      if (messages.length > 0) return
+
+      setLoading(true)
+      setEntireChatLoaded(false)
+
+      socket.emit("getMessages", { conversationId, postId, start: 0, end: NUM_MESSAGES_TO_LOAD })
+    }, [user, socket, conversationId, postId])
+  )
+
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      setMessages([])
-      setCurrentConversation(null)
-      setScrollTargetId(null)
-    }
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setMessages([])
+        setCurrentConversation(null)
+        setScrollTargetId(null)
+        setEntireChatLoaded(false)
+        setLoading(false)
+      }
+    }, [])
+  )
 
   async function handleSendMessage() {
     setMessage("")
-    await sendMessage(id, message)
+    await sendMessage(message.trim())
   }
 
   // Animate fake view height
@@ -186,14 +198,20 @@ export default function ChatDetails() {
   }, [])
 
   async function loadMoreMessages() {
-    if (!socket || entireChatLoaded) return
-    socket.emit("getMessages", id, messages.length, messages.length + NUM_MESSAGES_TO_LOAD)
+    if (!socket || entireChatLoaded || loading || !currentConversation) return
+    // if we have already sent a request to load more messages, don't send another one until we get a response
+    socket.emit("getMessages", {
+      conversationId,
+      postId: currentConversation?.activePostId,
+      start: messages.length,
+      end: messages.length + NUM_MESSAGES_TO_LOAD,
+    })
   }
 
   return (
     <>
       <Stack.Screen options={detailOptions} />
-      <LoadingIndicator loading={loading} />
+      <LoadingIndicator loading={loading} opacity={0.5} />
 
       <FlashList
         inverted

@@ -24,15 +24,17 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.dark,
   },
-  otherProfileButton: {
+  otherProfileUsername: {
     backgroundColor: colors.light,
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "center",
-    alignItems: "center",
     overflow: "hidden",
+    marginLeft: 4,
   },
-  otherProfileImage: {
+  profileImageContacted: {
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+  },
+  profileImageNotContacted: {
     width: 35,
     height: 35,
     borderRadius: 20,
