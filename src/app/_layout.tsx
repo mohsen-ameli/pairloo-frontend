@@ -12,7 +12,7 @@ import CustomToast from "@/src/components/CustomToast"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { queryClientAtom } from "@/src/store/general-store"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { useEffect, useState } from "react"
+import { useEffect, useRef } from "react"
 import { getDeviceInfoAtom } from "@/src/store/device-store"
 import * as Notifications from "expo-notifications"
 import {
@@ -65,9 +65,8 @@ export default function RootLayout() {
   const setChannels = useSetAtom(channelsAtom)
   const setNotification = useSetAtom(notificationAtom)
   const registerForPushNotificationsAsync = useSetAtom(registerForPushNotificationsAsyncAtom)
-  const [notificationListener, setNotificationListener] =
-    useState<Notifications.EventSubscription>()
-  const [responseListener, setResponseListener] = useState<Notifications.EventSubscription>()
+  const notificationListener = useRef<Notifications.EventSubscription>(null)
+  const responseListener = useRef<Notifications.EventSubscription>(null)
 
   useEffect(() => {
     async function setupNotifications() {
@@ -81,22 +80,20 @@ export default function RootLayout() {
       if (Platform.OS === "android") {
         Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []))
       }
-      setNotificationListener(
-        Notifications.addNotificationReceivedListener(notification => {
-          setNotification(notification)
-        })
-      )
+      notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        setNotification(notification)
+      })
 
-      setResponseListener(
-        Notifications.addNotificationResponseReceivedListener(response => {})
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(
+        response => {}
       )
     }
 
     setupNotifications()
 
     return () => {
-      notificationListener?.remove()
-      responseListener?.remove()
+      notificationListener.current?.remove()
+      responseListener.current?.remove()
     }
   }, [userJwt])
 

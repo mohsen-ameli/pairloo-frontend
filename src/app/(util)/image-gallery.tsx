@@ -208,13 +208,16 @@ function Menu() {
   }, [images])
 
   async function saveImage(index: number) {
-    try {
-      const image = images[index]
-      if (!image?.uri) {
-        Toast.show({ type: "error", text1: "Could not save image" })
-        return
-      }
+    const destination = new Directory(Paths.cache, `image_${Date.now()}.jpg`)
+    destination.create()
 
+    const image = images[index]
+    if (!image?.uri) {
+      Toast.show({ type: "error", text1: "Could not save image" })
+      return
+    }
+
+    try {
       // Request media library permissions
       const permission = await MediaLibrary.requestPermissionsAsync()
       if (!permission.granted) {
@@ -226,18 +229,15 @@ function Menu() {
       }
 
       // Download image to cache directory first
-      const destination = new Directory(Paths.cache, `image_${Date.now()}.jpg`)
-      destination.create()
       const output = await File.downloadFileAsync(image.uri, destination)
 
       // Save to media library
       await MediaLibrary.saveToLibraryAsync(output.uri)
-
-      // Clean up temporary file
-      destination.delete()
     } catch (err: any) {
       console.error("Error saving image:", err)
       Toast.show({ type: "error", text1: "Failed to save image" })
+    } finally {
+      destination.delete()
     }
   }
 
