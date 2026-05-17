@@ -42,9 +42,7 @@ export default function Index() {
     queryClient.invalidateQueries({ queryKey: ["feed"] })
   }
 
-  async function loadMore() {
-    console.log("load more posts")
-  }
+  async function loadMore() {}
 
   async function handlePostPress(postId: string) {
     router.push({

@@ -103,6 +103,7 @@ export const profileStyles = StyleSheet.create({
   },
   profileTab: {
     flex: 1,
+    paddingVertical: 6,
     justifyContent: "center",
     alignItems: "center",
   },

@@ -84,16 +84,13 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   })
 
   socket.on("connect", () => {
-    console.log("Connected to WebSocket server for create-post")
     set(loadingAtom, false)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
     set(currPageAtom, 0)
   })
 
-  socket.on("disconnect", () => {
-    console.log("Disconnected from WebSocket server for create-post")
-  })
+  socket.on("disconnect", () => {})
 
   socket.on("error", (err: any) => {
     console.error("WebSocket error event:", err)

@@ -79,9 +79,7 @@ export default function RootLayout() {
       setNotification(notification)
     })
 
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response)
-    })
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {})
 
     return () => {
       notificationListener.remove()

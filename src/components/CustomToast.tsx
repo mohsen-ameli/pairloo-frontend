@@ -3,6 +3,7 @@ import { Image } from "expo-image"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 import useImageAspectRatio from "../utils/useImageAspectRatio"
+import Toast from "react-native-toast-message"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -44,7 +45,9 @@ export default function CustomToast({
           />
         )}
       </View>
-      <Feather name="x" size={20} color={colors.darkGray} />
+      <Pressable onPress={() => Toast.hide()} style={{ padding: 5 }}>
+        <Feather name="x" size={20} color={colors.darkGray} />
+      </Pressable>
     </Pressable>
   )
 }
