@@ -1,24 +1,30 @@
-import React, { useState, useCallback, useRef } from "react"
+import React, { useState, useCallback, useRef, useEffect } from "react"
 import {
   useWindowDimensions,
   View,
-  StyleSheet,
   Text,
   ActivityIndicator,
+  Alert,
   type ViewStyle,
   type LayoutChangeEvent,
   Pressable,
   TouchableOpacity,
+  Platform,
 } from "react-native"
 import { Image } from "expo-image"
 import Zoom from "react-native-zoom-reanimated"
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { bigImageViewAtom, imgIndexAtom } from "@/src/store/chat-store"
-import { chatStyles } from "@/src/styles/chat.styles"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useRouter } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
+import * as MediaLibrary from "expo-media-library"
+import { Directory, File, Paths } from "expo-file-system"
+import { MenuAction, MenuView } from "@react-native-menu/menu"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { styles } from "@/src/styles/image-gallery.styles"
+import Toast from "react-native-toast-message"
 
 const isZoomedAtom = atom(false)
 
@@ -30,10 +36,12 @@ export interface ImageItem {
   uri: string
 }
 
-/**
- * Props for ImageGallery component
- */
-export interface ImageGalleryProps {
+export default function ImageGallery({
+  doubleTapScale = 2,
+  minZoomScale = 1,
+  maxZoomScale = 5,
+  imageGap = 20,
+}: {
   showTitles?: boolean
   doubleTapScale?: number
   minZoomScale?: number
@@ -45,22 +53,225 @@ export interface ImageGalleryProps {
    * Default is 20.
    */
   imageGap?: number
+}) {
+  const { width: deviceWidth } = useWindowDimensions()
+  const [currentIndex, setCurrentIndex] = useAtom(imgIndexAtom)
+  const [containerHeight, setContainerHeight] = useState(0)
+  const flashListRef = useRef<FlashListRef<ImageItem> | null>(null)
+  const images = useAtomValue(bigImageViewAtom)
+  const isZoomed = useAtomValue(isZoomedAtom)
+  const router = useRouter()
+
+  // Item width includes gap for proper snapping
+  const itemWidth = deviceWidth + imageGap
+
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    setContainerHeight(event.nativeEvent.layout.height)
+  }, [])
+
+  const handleScroll = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / itemWidth)
+    if (index !== currentIndex && index >= 0 && index < images.length) setCurrentIndex(index)
+  }
+
+  const insets = useSafeAreaInsets()
+
+  return (
+    <View style={styles.container} onLayout={handleLayout}>
+      {/* Header */}
+      {!isZoomed && (
+        <View style={[styles.imageHeader, { paddingTop: insets.top }]}>
+          <TouchableOpacity style={styles.imageHeaderButton} onPress={() => router.back()}>
+            <Feather name="x" size={25} color={colors.dark} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.imageHeaderButton}>
+            <Menu />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Gallery */}
+      {containerHeight > 0 && (
+        <FlashList
+          ref={flashListRef}
+          data={images}
+          renderItem={({ item, index }) => (
+            <GalleryImageItem
+              item={item}
+              index={index}
+              deviceWidth={deviceWidth}
+              deviceHeight={containerHeight}
+              doubleTapScale={doubleTapScale}
+              minZoomScale={minZoomScale}
+              maxZoomScale={maxZoomScale}
+              flashListRef={flashListRef}
+              imageGap={index === images.length - 1 ? 0 : imageGap}
+              itemWidth={index === images.length - 1 ? deviceWidth : itemWidth}
+            />
+          )}
+          initialScrollIndex={currentIndex}
+          keyExtractor={item => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={styles.galleryList}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          snapToInterval={itemWidth}
+          snapToAlignment="start"
+          decelerationRate="fast"
+        />
+      )}
+
+      {/* Footer */}
+      {images.length > 1 && !isZoomed && (
+        <View style={styles.imageFooter}>
+          <FlashList
+            data={images}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={item => item.uri}
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() => {
+                  setCurrentIndex(parseInt(item.id))
+                  flashListRef.current?.scrollToIndex({ index: parseInt(item.id), animated: false })
+                }}
+              >
+                <Image
+                  source={{ uri: item.uri }}
+                  style={{
+                    width: 30,
+                    height: 60,
+                    borderRadius: 4,
+                    marginHorizontal: parseInt(item.id) === currentIndex ? 10 : 1,
+                    opacity: parseInt(item.id) === currentIndex ? 1 : 0.5,
+                  }}
+                  allowDownscaling
+                />
+              </Pressable>
+            )}
+          />
+        </View>
+      )}
+    </View>
+  )
 }
 
-/**
- * Props for individual gallery image item
- */
-interface GalleryImageItemProps {
-  item: ImageItem
-  index: number
-  deviceWidth: number
-  deviceHeight: number
-  doubleTapScale: number
-  minZoomScale: number
-  maxZoomScale: number
-  flashListRef: React.RefObject<FlashListRef<ImageItem> | null>
-  imageGap: number
-  itemWidth: number
+function Menu() {
+  const images = useAtomValue(bigImageViewAtom)
+  const currentIndex = useAtomValue(imgIndexAtom)
+  const menuRef = useRef(null)
+  const [actions, setActions] = useState<MenuAction[]>([])
+
+  useEffect(() => {
+    const baseActions: MenuAction[] = [
+      {
+        id: "save",
+        title: "Save",
+        titleColor: colors.dark,
+        image: Platform.select({
+          ios: "square.and.arrow.down",
+          android: "",
+        }),
+        imageColor: colors.dark,
+      },
+      {
+        id: "report",
+        title: "Report",
+        titleColor: colors.dark,
+        image: Platform.select({
+          ios: "square.and.arrow.up",
+          android: "",
+        }),
+        imageColor: colors.dark,
+      },
+    ]
+    if (images.length > 1) {
+      setActions(() => {
+        const newActions = [...baseActions]
+        newActions.splice(1, 0, {
+          id: "saveAll",
+          title: "Save All",
+          titleColor: colors.dark,
+          image: Platform.select({
+            ios: "square.and.arrow.down",
+            android: "",
+          }),
+          imageColor: colors.dark,
+        })
+        return newActions
+      })
+    } else {
+      setActions(baseActions)
+    }
+  }, [images])
+
+  async function saveImage(index: number) {
+    const destination = new Directory(Paths.cache, `image_${Date.now()}.jpg`)
+    destination.create()
+
+    const image = images[index]
+    if (!image?.uri) {
+      Toast.show({ type: "error", text1: "Could not save image" })
+      return
+    }
+
+    try {
+      // Request media library permissions
+      const permission = await MediaLibrary.requestPermissionsAsync()
+      if (!permission.granted) {
+        Toast.show({
+          type: "error",
+          text1: "Please allow access to photo library in your settings",
+        })
+        return
+      }
+
+      // Download image to cache directory first
+      const output = await File.downloadFileAsync(image.uri, destination)
+
+      // Save to media library
+      await MediaLibrary.saveToLibraryAsync(output.uri)
+    } catch (err: any) {
+      console.error("Error saving image:", err)
+      Toast.show({ type: "error", text1: "Failed to save image" })
+    } finally {
+      destination.delete()
+    }
+  }
+
+  async function handleSaveAll() {
+    for (let i = 0; i < images.length; i++) {
+      await saveImage(i)
+    }
+    Toast.show({ type: "success", text1: `${images.length} images saved!` })
+  }
+
+  function handleReport() {
+    Alert.alert("Feature Coming Soon", "Report button will be implemented later")
+  }
+
+  return (
+    <MenuView
+      ref={menuRef}
+      style={{ padding: 8 }}
+      onPressAction={({ nativeEvent }) => {
+        if (nativeEvent.event === "save") {
+          saveImage(currentIndex)
+          Toast.show({ type: "success", text1: "Image saved!" })
+        } else if (nativeEvent.event === "saveAll") {
+          handleSaveAll()
+        } else if (nativeEvent.event === "report") {
+          handleReport()
+        }
+      }}
+      actions={actions}
+      testID="menuView"
+    >
+      <Feather name="more-vertical" size={24} color={colors.dark} />
+    </MenuView>
+  )
 }
 
 /**
@@ -77,7 +288,18 @@ function GalleryImageItem({
   flashListRef,
   imageGap,
   itemWidth,
-}: GalleryImageItemProps): React.JSX.Element {
+}: {
+  item: ImageItem
+  index: number
+  deviceWidth: number
+  deviceHeight: number
+  doubleTapScale: number
+  minZoomScale: number
+  maxZoomScale: number
+  flashListRef: React.RefObject<FlashListRef<ImageItem> | null>
+  imageGap: number
+  itemWidth: number
+}): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const setIsZoomed = useSetAtom(isZoomedAtom)
@@ -88,7 +310,11 @@ function GalleryImageItem({
       <Zoom
         style={[
           styles.zoomContainer,
-          { width: deviceWidth, height: deviceHeight, marginRight: imageGap },
+          {
+            width: deviceWidth,
+            height: deviceHeight,
+            marginRight: imageGap,
+          },
         ]}
         doubleTapConfig={{
           defaultScale: doubleTapScale,
@@ -132,169 +358,3 @@ function GalleryImageItem({
     </View>
   )
 }
-
-export default function ImageGallery({
-  doubleTapScale = 2,
-  minZoomScale = 1,
-  maxZoomScale = 5,
-  imageGap = 20,
-}: ImageGalleryProps) {
-  const { width: deviceWidth } = useWindowDimensions()
-  const [currentIndex, setCurrentIndex] = useAtom(imgIndexAtom)
-  const [containerHeight, setContainerHeight] = useState(0)
-  const flashListRef = useRef<FlashListRef<ImageItem> | null>(null)
-  const images = useAtomValue(bigImageViewAtom)
-  const isZoomed = useAtomValue(isZoomedAtom)
-  const router = useRouter()
-
-  // Item width includes gap for proper snapping
-  const itemWidth = deviceWidth + imageGap
-
-  const handleLayout = useCallback((event: LayoutChangeEvent) => {
-    setContainerHeight(event.nativeEvent.layout.height)
-  }, [])
-
-  const handleScroll = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
-    const index = Math.round(event.nativeEvent.contentOffset.x / itemWidth)
-    if (index !== currentIndex && index >= 0 && index < images.length) setCurrentIndex(index)
-  }
-
-  return (
-    <View style={styles.container} onLayout={handleLayout}>
-      {/* Header */}
-      {!isZoomed && (
-        <View style={chatStyles.imageHeader}>
-          <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => router.back()}>
-            <Feather name="x" size={25} color={colors.dark} />
-          </TouchableOpacity>
-          <TouchableOpacity style={chatStyles.imageHeaderButton} onPress={() => {}}>
-            <Feather name="menu" size={25} color={colors.dark} />
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Gallery */}
-      {containerHeight > 0 && (
-        <FlashList
-          ref={flashListRef}
-          data={images}
-          renderItem={({ item, index }) => (
-            <GalleryImageItem
-              item={item}
-              index={index}
-              deviceWidth={deviceWidth}
-              deviceHeight={containerHeight}
-              doubleTapScale={doubleTapScale}
-              minZoomScale={minZoomScale}
-              maxZoomScale={maxZoomScale}
-              flashListRef={flashListRef}
-              imageGap={index === images.length - 1 ? 0 : imageGap}
-              itemWidth={index === images.length - 1 ? deviceWidth : itemWidth}
-            />
-          )}
-          initialScrollIndex={currentIndex}
-          keyExtractor={item => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          style={styles.galleryList}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          snapToInterval={itemWidth}
-          snapToAlignment="start"
-          decelerationRate="fast"
-        />
-      )}
-
-      {/* Footer */}
-      {images.length > 1 && !isZoomed && (
-        <View style={chatStyles.imageFooter}>
-          <FlashList
-            data={images}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.uri}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => {
-                  setCurrentIndex(parseInt(item.id))
-                  flashListRef.current?.scrollToIndex({ index: parseInt(item.id), animated: false })
-                }}
-              >
-                <Image
-                  source={{ uri: item.uri }}
-                  style={{
-                    width: 30,
-                    height: 60,
-                    borderRadius: 4,
-                    marginHorizontal: parseInt(item.id) === currentIndex ? 10 : 1,
-                    opacity: parseInt(item.id) === currentIndex ? 1 : 0.5,
-                  }}
-                  allowDownscaling
-                />
-              </Pressable>
-            )}
-          />
-        </View>
-      )}
-    </View>
-  )
-}
-
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    height: "100%",
-  },
-  galleryList: {
-    flex: 1,
-    backgroundColor: "#f0f0f0",
-  },
-  imageContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.light,
-  },
-  zoomContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.light,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "transparent",
-  },
-  errorText: {
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
-  pageIndicator: {
-    position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    shadowColor: colors.light,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  pageIndicatorText: {
-    fontSize: 13,
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  pageTitleText: {
-    fontSize: 11,
-    fontWeight: "400",
-    textAlign: "center",
-    marginTop: 2,
-  },
-})
