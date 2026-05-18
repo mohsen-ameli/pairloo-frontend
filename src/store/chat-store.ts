@@ -182,9 +182,10 @@ export const initChatAtom = atom(null, async (get, set) => {
                 : undefined,
           },
           onPress: () => {
+            set(prepareChatAtom, message.postId)
             router.push({
               pathname: "/chat-details",
-              params: { conversationId: message.conversationId, postId: message.postId },
+              params: { conversationId: message.conversationId },
             })
             socket.emit("getMessages", {
               conversationId: message.conversationId,
@@ -438,10 +439,16 @@ export const deleteMessageAtom = atom(
   }
 )
 
+export const prepareChatAtom = atom(null, async (get, set, postId?: string | null) => {
+  set(activePostIdAtom, postId)
+  set(loadingAtom, true)
+  set(entireChatLoadedAtom, false)
+  set(messagesAtom, [])
+})
+
 export const cleanupChatAtom = atom(null, async (get, set) => {
   set(entireChatLoadedAtom, false)
   set(loadingAtom, false)
   set(messagesAtom, [])
   set(currentConversationAtom, null)
-  set(activePostIdAtom, null)
 })

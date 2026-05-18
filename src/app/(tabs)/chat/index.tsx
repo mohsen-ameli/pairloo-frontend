@@ -3,6 +3,7 @@ import {
   conversationsAtom,
   initChatAtom,
   loadingAtom,
+  prepareChatAtom,
   unreadMessagesAtom,
 } from "@/src/store/chat-store"
 import { sinceNow } from "@/src/utils/format-date"
@@ -29,6 +30,7 @@ export default function index() {
   const socket = useAtomValue(chatSocketAtom)
   const initChat = useSetAtom(initChatAtom)
   const loading = useAtomValue(loadingAtom)
+  const prepareChat = useSetAtom(prepareChatAtom)
 
   function getLastMessagePreview(lastMessage: LastMessageType): string {
     if (!lastMessage || !user) return ""
@@ -98,12 +100,10 @@ export default function index() {
                 key={conversation._id}
                 style={conversationStyles.item}
                 onPress={() => {
+                  prepareChat(conversation.lastMessage?.postId)
                   router.push({
                     pathname: "/chat-details",
-                    params: {
-                      conversationId: conversation._id,
-                      postId: conversation.lastMessage?.postId,
-                    },
+                    params: { conversationId: conversation._id },
                   })
                 }}
               >
