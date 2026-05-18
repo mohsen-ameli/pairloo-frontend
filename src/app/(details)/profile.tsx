@@ -14,12 +14,15 @@ import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
 import CustomLabel from "@/src/components/CustomLabel"
 import { getStatusColor } from "@/src/utils/get-color"
+import { prepareChatAtom } from "@/src/store/chat-store"
+import { chatSocketAtom } from "@/src/store/socket-store"
 
 export default function userProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
   const userSecure = useAtomValue(userSecureAtom)
+  const prepareChat = useSetAtom(prepareChatAtom)
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
     queryKey: ["user-profile-" + id],
@@ -27,6 +30,7 @@ export default function userProfile() {
   })
   const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
   const [containerWidth, setContainerWidth] = useState(0)
+  const socket = useAtomValue(chatSocketAtom)
   const slideAnim = useRef(new Animated.Value(0)).current
 
   async function mutateUser(action: "follow" | "unfollow") {
@@ -69,6 +73,18 @@ export default function userProfile() {
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
     queryClient.invalidateQueries({ queryKey: ["reviews", id] })
+  }
+
+  function handleMessage() {
+    if (!socket || !userSecure || !data) return
+    socket.emit("newConversation", [userSecure._id, id])
+    socket.once("conversation", conversation => {
+      prepareChat()
+      router.dismissTo({
+        pathname: "/chat-details",
+        params: { conversationId: conversation._id },
+      })
+    })
   }
 
   useEffect(() => {
@@ -154,22 +170,27 @@ export default function userProfile() {
         </View>
 
         {/* Follow, unfollow buttons */}
-        {userSecure?._id !== id && (
-          <View style={profileStyles.followContainer}>
-            {data.isFollowing ? (
-              <Pressable
-                style={profileStyles.unfollowButton}
-                onPress={() => mutateUser("unfollow")}
-              >
-                <Text style={{ color: colors.purple, fontSize: 16 }}>Unfollow</Text>
+        <View style={profileStyles.followContainer}>
+          {userSecure?._id !== id && (
+            <>
+              {data.isFollowing ? (
+                <Pressable
+                  style={profileStyles.unfollowButton}
+                  onPress={() => mutateUser("unfollow")}
+                >
+                  <Text style={{ color: colors.purple, fontSize: 16 }}>Unfollow</Text>
+                </Pressable>
+              ) : (
+                <Pressable style={profileStyles.followButton} onPress={() => mutateUser("follow")}>
+                  <Text style={{ color: "white", fontSize: 16 }}>Follow</Text>
+                </Pressable>
+              )}
+              <Pressable style={profileStyles.followButton} onPress={handleMessage}>
+                <Text style={{ color: "white", fontSize: 16 }}>Message</Text>
               </Pressable>
-            ) : (
-              <Pressable style={profileStyles.followButton} onPress={() => mutateUser("follow")}>
-                <Text style={{ color: "white", fontSize: 16 }}>Follow</Text>
-              </Pressable>
-            )}
-          </View>
-        )}
+            </>
+          )}
+        </View>
 
         {/* Posts & Reviews show/hide buttons */}
         <View
