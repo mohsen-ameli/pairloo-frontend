@@ -70,10 +70,6 @@ export interface ConversationType {
   lastMessage?: LastMessageType
 }
 
-export type CurrentConversationType = ConversationType & {
-  activePostId?: string | null | undefined
-}
-
 export type OtherUser = {
   _id: string
   username: string

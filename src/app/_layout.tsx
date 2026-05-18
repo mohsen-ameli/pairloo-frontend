@@ -194,7 +194,6 @@ export default function RootLayout() {
                 contentStyle: { backgroundColor: colors.light, paddingBottom: insets.bottom + 20 },
                 headerShown: false,
                 sheetGrabberVisible: false,
-                sheetInitialDetentIndex: 0,
                 sheetAllowedDetents: "fitToContents",
                 sheetExpandsWhenScrolledToEdge: false,
                 sheetElevation: 24,

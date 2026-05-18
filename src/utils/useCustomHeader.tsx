@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Pressable, Alert } from "react-native"
-import React, { act, useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
@@ -15,8 +15,10 @@ import Feather from "@expo/vector-icons/Feather"
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router"
 import {
   currentConversationAtom,
+  activePostIdAtom,
+  cleanupChatAtom,
+  entireChatLoadedAtom,
   messagesAtom,
-  loadingAtom as chatLoadingAtom,
 } from "@/src/store/chat-store"
 import { userSecureAtom } from "@/src/store/auth-store"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
@@ -107,29 +109,45 @@ export default function useCustomHeader({
 
 function ChatHeader() {
   const DEFAULT_CHAT_TITLE = "General Chat"
-  const [currentConversation, setCurrentConversation] = useAtom(currentConversationAtom)
+  const currentConversation = useAtomValue(currentConversationAtom)
+  const [activePostId, setActivePostId] = useAtom(activePostIdAtom)
   const user = useAtomValue(userSecureAtom)
   const socket = useAtomValue(chatSocketAtom)
-  const setMessages = useSetAtom(messagesAtom)
-  const setChatLoading = useSetAtom(chatLoadingAtom)
   const router = useRouter()
   const [activeChat, setActiveChat] = useState<string>()
+  const cleanupChat = useSetAtom(cleanupChatAtom)
+  const setLoading = useSetAtom(loadingAtom)
+  const setEntireChatLoaded = useSetAtom(entireChatLoadedAtom)
+  const setMessages = useSetAtom(messagesAtom)
   const insets = useSafeAreaInsets()
 
   useFocusEffect(
     useCallback(() => {
       if (!currentConversation) return
 
-      if (currentConversation.activePostId) {
+      if (activePostId) {
         const activePost = currentConversation.contactedPosts.find(
-          post => post.postId === currentConversation.activePostId
+          post => post.postId === activePostId
         )
         setActiveChat(activePost ? activePost.title : DEFAULT_CHAT_TITLE)
       } else {
         setActiveChat(DEFAULT_CHAT_TITLE)
       }
-    }, [currentConversation])
+    }, [currentConversation, activePostId])
   )
+
+  function goToUserProfile() {
+    cleanupChat()
+    router.push({
+      pathname: "(details)/profile",
+      params: { id: otherUser?._id },
+    })
+  }
+
+  function goBack() {
+    cleanupChat()
+    router.back()
+  }
 
   if (!socket || !user || !currentConversation) return <></>
 
@@ -150,9 +168,7 @@ function ChatHeader() {
       }}
     >
       <Pressable
-        onPress={() => {
-          router.back()
-        }}
+        onPress={goBack}
         style={{
           width: 40,
           height: 40,
@@ -165,14 +181,7 @@ function ChatHeader() {
         <Feather name="arrow-left" size={26} color={colors.dark} />
       </Pressable>
 
-      <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: "(details)/profile",
-            params: { id: otherUser?._id },
-          })
-        }
-      >
+      <TouchableOpacity onPress={goToUserProfile}>
         <Image
           source={
             otherUser?.picture && otherUser?.picture
@@ -188,15 +197,7 @@ function ChatHeader() {
       </TouchableOpacity>
 
       <View style={{ gap: 2 }}>
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "(details)/profile",
-              params: { id: otherUser?._id },
-            })
-          }
-          style={styles.otherProfileUsername}
-        >
+        <TouchableOpacity onPress={goToUserProfile} style={styles.otherProfileUsername}>
           <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
         </TouchableOpacity>
 
@@ -204,32 +205,13 @@ function ChatHeader() {
           <MenuView
             onPressAction={({ nativeEvent }) => {
               if (nativeEvent.event === "general") {
-                setActiveChat(DEFAULT_CHAT_TITLE)
-                setChatLoading(true)
-                setMessages([])
-                setCurrentConversation(prev => prev && { ...prev, activePostId: null })
-                socket.emit("getMessages", {
-                  conversationId: currentConversation._id,
-                  start: 0,
-                  end: 20,
-                })
+                setActivePostId(null)
               } else {
-                const post = currentConversation.contactedPosts.find(
-                  post => post.postId === nativeEvent.event
-                )
-                if (post) {
-                  setActiveChat(post.title)
-                  setChatLoading(true)
-                  setMessages([])
-                  setCurrentConversation(prev => prev && { ...prev, activePostId: post.postId })
-                  socket.emit("getMessages", {
-                    conversationId: currentConversation._id,
-                    postId: post.postId,
-                    start: 0,
-                    end: 20,
-                  })
-                }
+                setActivePostId(nativeEvent.event)
               }
+              setLoading(true)
+              setEntireChatLoaded(false)
+              setMessages([])
             }}
             actions={[
               {

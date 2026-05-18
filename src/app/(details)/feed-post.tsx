@@ -17,7 +17,12 @@ import { radiusMetersToZoom } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { getStatusColor } from "@/src/utils/get-color"
-import { conversationsAtom, currentConversationAtom } from "@/src/store/chat-store"
+import {
+  activePostIdAtom,
+  entireChatLoadedAtom,
+  loadingAtom,
+  messagesAtom,
+} from "@/src/store/chat-store"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -25,8 +30,10 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userSecureAtom)
-  const setCurrentConversation = useSetAtom(currentConversationAtom)
-  const setConversations = useSetAtom(conversationsAtom)
+  const setActivePostId = useSetAtom(activePostIdAtom)
+  const setLoading = useSetAtom(loadingAtom)
+  const setEntireChatLoaded = useSetAtom(entireChatLoadedAtom)
+  const setMessages = useSetAtom(messagesAtom)
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
   const {
@@ -52,9 +59,13 @@ export default function PostDetails() {
 
     socket.emit("newConversation", [user._id, post.userId], { postId: post._id, title: post.title })
     socket.once("conversation", conversation => {
-      router.push({
+      setActivePostId(post._id)
+      setLoading(true)
+      setEntireChatLoaded(false)
+      setMessages([])
+      router.dismissTo({
         pathname: "/chat-details",
-        params: { conversationId: conversation._id, postId: post._id },
+        params: { conversationId: conversation._id },
       })
     })
 

@@ -4,7 +4,6 @@ import io from "socket.io-client"
 import {
   ChatClientSocket,
   ConversationType,
-  CurrentConversationType,
   MessageType,
   ReplyTo,
 } from "@/src/types/socket/chat.type"
@@ -26,7 +25,9 @@ export const unreadMessagesAtom = atomWithStorage("unread-messages", {}, unreadM
 
 export const conversationsAtom = atom<ConversationType[]>([])
 
-export const currentConversationAtom = atom<CurrentConversationType | null>(null)
+export const currentConversationAtom = atom<ConversationType | null>(null)
+
+export const activePostIdAtom = atom<string | null | undefined>(null)
 
 export const messagesAtom = atom<MessageType[]>([])
 
@@ -312,7 +313,7 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
   if (!editingMessage && !content && attachments.length === 0) return
 
   const conversationId = currentConversation._id
-  const postId = currentConversation.activePostId
+  const postId = get(activePostIdAtom)
 
   if (editingMessage) {
     if (content === editingMessage.content) {
@@ -436,3 +437,11 @@ export const deleteMessageAtom = atom(
     })
   }
 )
+
+export const cleanupChatAtom = atom(null, async (get, set) => {
+  set(entireChatLoadedAtom, false)
+  set(loadingAtom, false)
+  set(messagesAtom, [])
+  set(currentConversationAtom, null)
+  set(activePostIdAtom, null)
+})

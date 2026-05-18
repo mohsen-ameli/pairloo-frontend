@@ -28,6 +28,8 @@ import {
   replyingToAtom,
   sendMessageAtom,
   editingMessageAtom,
+  activePostIdAtom,
+  cleanupChatAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
 import { MessageType } from "@/src/types/socket/chat.type"
@@ -37,7 +39,7 @@ import { formatDate } from "@/src/utils/format-date"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import useGradualAnimation from "@/src/utils/gradual-animation"
-import { userAtom, userSecureAtom } from "@/src/store/auth-store"
+import { userSecureAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
@@ -52,19 +54,16 @@ const scrollTargetIdAtom = atom<string | null>(null)
 
 export default function ChatDetails() {
   const router = useRouter()
-  const { conversationId, postId } = useLocalSearchParams<{
-    conversationId: string
-    postId?: string
-  }>()
+  const { conversationId } = useLocalSearchParams<{ conversationId: string }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")
   const [inputHeight, setInputHeight] = useState<number>(40)
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
-  const user = useAtomValue(userAtom)
   const userJwt = useAtomValue(userSecureAtom)
   const conversations = useAtomValue(conversationsAtom)
   const [currentConversation, setCurrentConversation] = useAtom(currentConversationAtom)
+  const activePostId = useAtomValue(activePostIdAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
   const chatRef = useRef<FlashListRef<MessageType>>(null)
@@ -85,6 +84,7 @@ export default function ChatDetails() {
   const [scrollTargetId, setScrollTargetId] = useAtom(scrollTargetIdAtom)
   const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const cleanupChat = useSetAtom(cleanupChatAtom)
 
   // Handle automatic scrolling to replied messages
   useEffect(() => {
@@ -146,38 +146,37 @@ export default function ChatDetails() {
   // To set the current conversation and load initial messages
   useFocusEffect(
     useCallback(() => {
-      if (!user || !socket || !userJwt) return
+      if (!socket || !userJwt || messages.length > 0) return
 
+      // Find the current conversation
       if (!currentConversation) {
-        // Find the current conversation
-        const conv = conversations.find(c => c._id === conversationId)
-        if (!conv) return
-        setCurrentConversation({ ...conv, activePostId: postId })
+        const conversation = conversations.find(c => c._id === conversationId)
+        if (!conversation) return
 
-        otherUser.current = conv.members.find(member => member._id !== userJwt._id)
+        setCurrentConversation(conversation)
+        otherUser.current = conversation.members.find(member => member._id !== userJwt._id)
       }
-
-      if (messages.length > 0) return
 
       setLoading(true)
       setEntireChatLoaded(false)
+      setMessages([])
 
-      socket.emit("getMessages", { conversationId, postId, start: 0, end: NUM_MESSAGES_TO_LOAD })
-    }, [user, socket, conversationId, postId])
+      socket.emit("getMessages", {
+        conversationId,
+        postId: activePostId,
+        start: 0,
+        end: NUM_MESSAGES_TO_LOAD,
+      })
+    }, [userJwt, socket, activePostId, conversationId, messages.length])
   )
 
   // Cleanup on unmount
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        setMessages([])
-        setCurrentConversation(null)
-        setScrollTargetId(null)
-        setEntireChatLoaded(false)
-        setLoading(false)
-      }
-    }, [])
-  )
+  useEffect(() => {
+    return () => {
+      setScrollTargetId(null)
+      cleanupChat()
+    }
+  }, [])
 
   async function handleSendMessage() {
     setMessage("")
@@ -202,7 +201,7 @@ export default function ChatDetails() {
     // if we have already sent a request to load more messages, don't send another one until we get a response
     socket.emit("getMessages", {
       conversationId,
-      postId: currentConversation?.activePostId,
+      postId: activePostId,
       start: messages.length,
       end: messages.length + NUM_MESSAGES_TO_LOAD,
     })
