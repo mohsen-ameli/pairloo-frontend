@@ -117,6 +117,7 @@ export const profileStyles = StyleSheet.create({
   followContainer: {
     flexDirection: "row",
     marginTop: 16,
+    gap: 8,
   },
   unfollowButton: {
     backgroundColor: "transparent",
