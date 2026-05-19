@@ -1,7 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { Pressable, ScrollView, Text, View } from "react-native"
+import { Platform, Pressable, ScrollView, Text, View } from "react-native"
 import CustomInput from "@/src/components/CustomInput"
-import PhoneNumber from "@/src/components/phoneNumber"
 import LocationSelector from "@/src/components/LocationSelector"
 import { colors } from "@/src/utils/colors"
 import {
@@ -20,12 +19,15 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { TextInput } from "react-native"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
 import { currPageAtom, flowAtom, pageCountAtom, resetPagerAtom } from "@/src/store/pager-store"
-import CustomPager from "@/src/components/CustomPager"
 import { useFocusEffect, useRouter } from "expo-router"
 import { Image } from "expo-image"
 import Feather from "@expo/vector-icons/Feather"
 import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
 import BlockedAttempts from "@/src/components/BlockedAttempts"
+// @ts-ignore: Multi-platform file import
+import PhoneNumber from "@/src/components/phoneNumber"
+// @ts-ignore: Multi-platform file import
+import CustomPager from "@/src/components/CustomPager"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 const INITIAL_PAGE_COUNT = 6

@@ -13,7 +13,7 @@ import {
 import { chatSocketAtom, createPostSocketAtom } from "./socket-store"
 import z from "zod"
 import { currPageAtom, flowAtom, resetPagerAtom } from "./pager-store"
-import { Alert } from "react-native"
+import { Alert, Platform } from "react-native"
 import { router } from "expo-router"
 import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
@@ -70,13 +70,25 @@ export const phoneAttemptsAtom = atom(null as [string, number] | null) // [phone
 // user atom
 const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
   getItem: async (key: string) => {
+    if (Platform.OS === "web") {
+      return await AsyncStorage.getItem(key)
+    }
+
     return await SecureStore.getItemAsync(key)
   },
   setItem: async (key: string, value: string) => {
-    await SecureStore.setItemAsync(key, value)
+    if (Platform.OS === "web") {
+      return await AsyncStorage.setItem(key, value)
+    } else {
+      await SecureStore.setItemAsync(key, value)
+    }
   },
   removeItem: async (key: string) => {
-    await SecureStore.deleteItemAsync(key)
+    if (Platform.OS === "web") {
+      await AsyncStorage.removeItem(key)
+    } else {
+      await SecureStore.deleteItemAsync(key)
+    }
   },
 }))
 export const userSecureAtom = atomWithStorage("user-secure", null, userSecureStorage)

@@ -13,9 +13,10 @@ import {
   verifyEmailCodeAtom,
   returningUserAtom,
 } from "@/src/store/auth-store"
-import CustomPager from "@/src/components/CustomPager"
 import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
 import BlockedAttempts from "@/src/components/BlockedAttempts"
+// @ts-ignore: Multi-platform file import
+import CustomPager from "@/src/components/CustomPager"
 
 const INITIAL_PAGE_COUNT = 2
 

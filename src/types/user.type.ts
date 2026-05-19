@@ -1,4 +1,3 @@
-import { CountryCode } from "react-native-country-picker-modal"
 import { GeneralPostType } from "./post.type"
 
 export type ProfileSocialUserType = {
@@ -132,6 +131,6 @@ export type NewUserType = {
   }
   timezone: string
   locationId: number
-  cca2: CountryCode
+  cca2: string
   callingCode: string
 }

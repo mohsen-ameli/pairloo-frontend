@@ -43,6 +43,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       favicon: "./assets/images/favicon.png",
     },
     plugins: [
+      "expo-web-browser",
       "expo-router",
       "expo-secure-store",
       "expo-audio",

@@ -11,15 +11,14 @@ import { isBlockedAtom } from "@/src/store/device-store"
 
 const colorScheme = Appearance.getColorScheme()
 
-export default function PhoneNumber() {
-  const [countryCode, setCountryCode] = useState<CountryCode>("CA")
+export default function PhoneNumberNative() {
+  const [countryCode, setCountryCode] = useState("CA")
   const [visible, setVisible] = useState<boolean>(false)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [errors, setErrors] = useAtom(authErrorsAtom)
   const [flow, setFlow] = useAtom(flowAtom)
   const isBlocked = useAtomValue(isBlockedAtom)
 
-  // Get country code from storage
   useEffect(() => {
     if (newUser.cca2 && newUser.cca2 !== countryCode) setCountryCode(newUser.cca2)
   }, [newUser.cca2])
@@ -56,7 +55,7 @@ export default function PhoneNumber() {
       >
         <CountryPicker
           theme={colorScheme === "dark" ? DARK_THEME : {}}
-          countryCode={countryCode}
+          countryCode={countryCode as CountryCode}
           withFilter={true}
           excludeCountries={[]}
           withFlag={true}

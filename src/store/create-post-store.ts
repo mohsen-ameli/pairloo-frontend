@@ -50,10 +50,7 @@ const settings = {
 export const settingsAtom = atomWithStorage(
   "post-settings",
   settings,
-  createJSONStorage(() => AsyncStorage),
-  {
-    getOnInit: true,
-  }
+  createJSONStorage(() => AsyncStorage)
 )
 
 export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }])

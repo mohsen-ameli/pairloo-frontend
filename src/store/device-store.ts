@@ -3,6 +3,7 @@ import { atom } from "jotai"
 import * as Crypto from "expo-crypto"
 import { currPageAtom, flowAtom } from "./pager-store"
 import { BLOCK_TIME, MAX_ATTEMPTS } from "../utils/constants"
+import { Platform } from "react-native"
 
 export type DeviceInfoType = {
   uuid: string
@@ -18,6 +19,14 @@ export const isBlockedAtom = atom(false)
 
 // Store a singleton device info object in secure storage, which can be used for rate limiting login attempts.
 export const getDeviceInfoAtom = atom(null, async (get, set) => {
+  if (Platform.OS === "web") {
+    // For web, we can just generate a random uuid on each load since secure storage isn't available and rate limiting is less important
+    return {
+      uuid: Crypto.randomUUID(),
+      blockedUntil: 0,
+      attempts: 0,
+    }
+  }
   const item = await SecureStore.getItemAsync(DEVICE_INFO_KEY)
   let deviceInfo: DeviceInfoType = item ? JSON.parse(item) : null
 
@@ -101,6 +110,9 @@ export const resetDeviceInfoAtom = atom(null, async (get, set) => {
     uuid: Crypto.randomUUID(),
     blockedUntil: 0,
     attempts: 0,
+  }
+  if (Platform.OS === "web") {
+    return deviceInfo
   }
   await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(deviceInfo))
 })

@@ -12,7 +12,6 @@ import {
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { useEffect } from "react"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
-import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
 import CustomInput from "@/src/components/CustomInput"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -36,6 +35,8 @@ import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 import { errorStyles } from "@/src/styles/error.styles"
 import { inputStyles } from "@/src/styles/input.styles"
 import { useRouter } from "expo-router"
+// @ts-ignore: Multi-platform file import
+import CustomPager from "@/src/components/CustomPager"
 
 export default function CreatePost() {
   const router = useRouter()
