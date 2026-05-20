@@ -11,7 +11,7 @@ import { Platform, View } from "react-native"
 import CustomButton from "@/src/components/CustomButton"
 import { fetchUserInfoAtom, newUserAtom, userSecureAtom } from "@/src/store/auth-store"
 import { BASE_URL } from "@/src/utils/constants"
-import { NewUserType, RegisteredUserType } from "@/src/types/user.type"
+import { AuthResponseType, NewUserType } from "@/src/types/user.type"
 import Toast from "react-native-toast-message"
 
 const config: AuthRequestConfig = {
@@ -51,6 +51,7 @@ export default function ContinueWithGoogle({
         code: response.params.code,
         platform: Platform.OS === "web" ? "web" : "native",
       }),
+      credentials: Platform.OS === "web" ? "include" : "same-origin",
     })
 
     // If user not found, redirect to registration with prefilled data
@@ -62,7 +63,7 @@ export default function ContinueWithGoogle({
       return
     }
 
-    const userData: RegisteredUserType = await res.json()
+    const userData: AuthResponseType = await res.json()
 
     setUserJwt({
       _id: userData._id,

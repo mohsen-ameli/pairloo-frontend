@@ -2,22 +2,15 @@ import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
 export const profileStyles = StyleSheet.create({
-  generalContainer: {
-    flex: 1,
-    backgroundColor: colors.light,
-  },
-  container: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 20,
-    alignItems: "center",
-    backgroundColor: colors.light,
-  },
   profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
     marginBottom: 16,
+    alignSelf: "center",
+  },
+  headerContainer: {
+    alignItems: "center",
   },
   reviewerImage: {
     width: 40,
@@ -213,28 +206,6 @@ export const profileStyles = StyleSheet.create({
     fontSize: 14,
     color: colors.gray,
     marginTop: 2,
-  },
-  postCard: {
-    marginBottom: 16,
-    backgroundColor: colors.light,
-    borderRadius: 12,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: colors.borderGray,
-    elevation: 1,
-    shadowColor: colors.shadow,
-    shadowOpacity: 1,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  postCardImage: {
-    width: "100%",
-    height: 220,
-    backgroundColor: colors.lightGray,
-  },
-  postCardImageFill: {
-    width: "100%",
-    height: "100%",
   },
   postCardHeader: {
     flexDirection: "row",

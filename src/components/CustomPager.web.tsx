@@ -7,6 +7,7 @@ import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import { userAtom } from "@/src/store/auth-store"
 import CustomButton from "./CustomButton"
+import { commonStyles } from "../styles/common.styles"
 
 export default function CustomPager({ children }: { children: ReactNode }) {
   const pageCount = useAtomValue(pageCountAtom)
@@ -24,17 +25,8 @@ export default function CustomPager({ children }: { children: ReactNode }) {
   }, [isAuthenticated])
 
   return (
-    <View style={{ flex: 1, width: "50%", alignSelf: "center", backgroundColor: colors.light }}>
-      <CustomButton
-        onPress={() => {
-          console.log("sdssssssssssssssssss")
-          Alert.alert("sdddddddddddddddd")
-        }}
-      >
-        <Text>Hello</Text>
-      </CustomButton>
-
-      {children}
+    <View style={commonStyles.generalContainer}>
+      <View style={commonStyles.container}>{children}</View>
 
       <Animated.View
         style={[

@@ -1,13 +1,7 @@
 import { StyleSheet } from "react-native"
-import { colors } from "@/src/utils/colors"
+import { boxShadow, colors } from "@/src/utils/colors"
 
 export const conversationStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    gap: 10,
-    padding: 10,
-    backgroundColor: colors.light,
-  },
   emptyStateContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -17,7 +11,6 @@ export const conversationStyles = StyleSheet.create({
     fontSize: 16,
     color: colors.muted,
   },
-
   item: {
     flexDirection: "row",
     alignItems: "center",
@@ -25,8 +18,9 @@ export const conversationStyles = StyleSheet.create({
     padding: 10,
     backgroundColor: colors.light,
     borderRadius: 8,
+    marginBottom: 12,
     elevation: 2,
-    boxShadow: `0px 0px 1.5px 0.2px ${colors.shadow}`,
+    boxShadow,
   },
   image: { width: 50, height: 50, borderRadius: 25 },
   itemTitle: {

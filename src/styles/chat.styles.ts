@@ -2,11 +2,6 @@ import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
 export const chatStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light,
-    paddingHorizontal: 5,
-  },
   notFoundContainer: {
     flex: 1,
     justifyContent: "center",

@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react"
 import { colors } from "@/src/utils/colors"
 import { useSetAtom } from "jotai"
 import { bigImageViewAtom } from "../store/chat-store"
-import ImageGallery from "../app/image-gallery"
 
 export default function ImageCarousel({
   images,
@@ -32,7 +31,11 @@ export default function ImageCarousel({
   }, [images])
 
   useEffect(() => {
-    setWidth(Dimensions.get("window").width - widthOffset)
+    if (Platform.OS === "web") {
+      setWidth(600)
+    } else {
+      setWidth(Dimensions.get("window").width - widthOffset)
+    }
   }, [widthOffset])
 
   const onPressPagination = (index: number) => {
@@ -43,15 +46,11 @@ export default function ImageCarousel({
   }
 
   if (images.length === 1) {
-    return (
-      <View style={{ width: "auto", height: 250, borderRadius: 15, overflow: "hidden" }}>
-        <SlideItem index={0} source={{ uri: images[0] }} editable={editable} />
-      </View>
-    )
+    return <SlideItem index={0} source={{ uri: images[0] }} editable={editable} />
   }
 
   return (
-    <View style={{ alignItems: "center", paddingBottom: 20, height: 280 }}>
+    <View style={{ alignItems: "center", paddingBottom: 20, height: 500 }}>
       <Carousel
         autoPlayInterval={2000}
         data={images}
@@ -61,7 +60,7 @@ export default function ImageCarousel({
         width={width}
         style={{
           width,
-          height: 250,
+          height: 450,
         }}
         mode="parallax"
         modeConfig={{

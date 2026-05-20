@@ -68,7 +68,7 @@ export default function LocationSelector({
         title={"Location" + (mandatory ? "*" : "")}
         editable={false}
         selectTextOnFocus={false}
-        pointerEvents="none"
+        style={{ pointerEvents: "none" }}
       >
         {locationInput}
       </CustomInput>

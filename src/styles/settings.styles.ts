@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
-import { colors } from "@/src/utils/colors"
+import { boxShadow, colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
   fabContainer: {
@@ -19,10 +19,7 @@ export const styles = StyleSheet.create({
     width: 150,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow,
     elevation: 8,
   },
   fabText: {
@@ -30,10 +27,6 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 18,
     letterSpacing: 0.5,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colors.light,
   },
   content: {
     paddingHorizontal: 16,

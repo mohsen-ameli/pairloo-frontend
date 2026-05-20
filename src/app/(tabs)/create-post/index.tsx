@@ -32,11 +32,12 @@ import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import { inputStyles } from "@/src/styles/input.styles"
 import { useRouter } from "expo-router"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
+import { commonStyles } from "@/src/styles/common.styles"
 
 export default function CreatePost() {
   const router = useRouter()
@@ -146,12 +147,12 @@ export default function CreatePost() {
     }
   }
 
-  if (!socket || socket.connected === false) {
+  if (!socket || !socket.connected) {
     return (
-      <View style={errorStyles.container}>
-        <Text style={errorStyles.errorText}>An error occurred. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>An error occurred. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     )

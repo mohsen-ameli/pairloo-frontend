@@ -18,6 +18,7 @@ import {
   resetEditAtom,
 } from "@/src/store/settings-store"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
+import { commonStyles } from "@/src/styles/common.styles"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -42,7 +43,7 @@ export default function SettingsScreen() {
     <>
       <LoadingIndicator loading={loading} opacity={0.75} />
 
-      <View style={styles.container}>
+      <View style={commonStyles.generalContainer}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {/* Account */}
           <View style={styles.section}>

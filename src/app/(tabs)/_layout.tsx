@@ -59,6 +59,9 @@ export default function ProtectedLayout() {
         tabBarInactiveTintColor: colors.dark,
         tabBarInactiveBackgroundColor: colors.light,
         headerShown: false,
+        tabBarStyle: Platform.OS === "web" && {
+          height: 60,
+        },
         tabBarBackground() {
           return <View style={{ backgroundColor: colors.light, flex: 1 }} />
         },

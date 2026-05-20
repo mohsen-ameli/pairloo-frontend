@@ -9,7 +9,7 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { GeneralPostType } from "@/src/types/post.type"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { sinceNow } from "@/src/utils/format-date"
@@ -18,6 +18,7 @@ import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { getStatusColor } from "@/src/utils/get-color"
 import { prepareChatAtom } from "@/src/store/chat-store"
+import { commonStyles } from "@/src/styles/common.styles"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -88,7 +89,7 @@ export default function PostDetails() {
 
   if (isPending) {
     return (
-      <View style={errorStyles.container}>
+      <View style={commonStyles.generalContainer}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -96,19 +97,18 @@ export default function PostDetails() {
 
   if (isError) {
     return (
-      <View style={errorStyles.container}>
-        <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>Error loading posts. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     )
   }
 
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.container}>
       <ScrollView
-        style={styles.scrollViewContainer}
         contentContainerStyle={styles.content}
         scrollEnabled={true}
         keyboardShouldPersistTaps="handled"
@@ -145,7 +145,7 @@ export default function PostDetails() {
         {/* Location Map */}
         {post.location && (
           <View style={styles.mapContainer}>
-            <View style={styles.mapFlexContainer} pointerEvents="none">
+            <View style={styles.mapFlexContainer}>
               {isLoading ? (
                 <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                   <LoadingIndicator loading={true} />
@@ -194,7 +194,7 @@ export default function PostDetails() {
                 />
               )}
             </View>
-            <View pointerEvents="none" style={styles.mapOverlayContainer}>
+            <View style={styles.mapOverlayContainer}>
               <View style={styles.radiusCircle} />
             </View>
           </View>

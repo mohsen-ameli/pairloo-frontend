@@ -5,6 +5,7 @@ import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
 import {
   AuthErrorType,
+  AuthResponseType,
   NewUserType,
   RegisteredUserType,
   UserSecureType,
@@ -71,21 +72,21 @@ export const phoneAttemptsAtom = atom(null as [string, number] | null) // [phone
 const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
   getItem: async (key: string) => {
     if (Platform.OS === "web") {
-      return await AsyncStorage.getItem(key)
+      return AsyncStorage.getItem(key)
     }
 
     return await SecureStore.getItemAsync(key)
   },
   setItem: async (key: string, value: string) => {
     if (Platform.OS === "web") {
-      return await AsyncStorage.setItem(key, value)
+      AsyncStorage.setItem(key, value)
     } else {
       await SecureStore.setItemAsync(key, value)
     }
   },
   removeItem: async (key: string) => {
     if (Platform.OS === "web") {
-      await AsyncStorage.removeItem(key)
+      AsyncStorage.removeItem(key)
     } else {
       await SecureStore.deleteItemAsync(key)
     }
@@ -338,9 +339,10 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, code, isSignUp }),
+      body: JSON.stringify({ email, code, isSignUp, platform: Platform.OS }),
+      credentials: Platform.OS === "web" ? "include" : "same-origin",
     })
-    const data: RegisteredUserType = await res.json()
+    const data: AuthResponseType = await res.json()
 
     if (res.ok) {
       if (isSignUp) {
@@ -554,7 +556,7 @@ export const setUserPictureAtom = atom(null, async (get, set, option: "library" 
 export const authFetchAtom = atom(
   null,
   async (get, set, url: string, options: FetchRequestInit = {}) => {
-    // Attach access token
+    // Native flow: rely on secure storage
     function fetchWithToken(token: string) {
       return fetch(`${BASE_URL}${url}`, {
         ...options,
@@ -566,26 +568,54 @@ export const authFetchAtom = atom(
       })
     }
 
-    const user = await get(userSecureAtom)
-
-    if (!user) {
-      throw new Error("User is not authenticated")
+    // Web flow: rely on cookies
+    function fetchWithCookies() {
+      return fetch(`${BASE_URL}${url}`, {
+        ...options,
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...options.headers,
+        },
+      })
     }
 
     try {
-      const res = await fetchWithToken(user.accessToken)
+      if (Platform.OS === "web") {
+        let res = await fetchWithCookies()
+
+        if (res.status === 401 || res.status === 403) {
+          await refreshAccessToken()
+          res = await fetchWithCookies()
+
+          if (res.status === 401 || res.status === 403) {
+            set(logOutAtom)
+            throw new Error("Session expired. Please log in again.")
+          }
+        }
+
+        return res
+      }
+
+      const user = await get(userSecureAtom)
+
+      if (!user || !user.accessToken || !user.refreshToken) {
+        throw new Error("User is not authenticated")
+      }
+
+      let res = await fetchWithToken(user.accessToken)
 
       if (res.status === 401 || res.status === 403) {
         const accessToken = await refreshAccessToken(user.refreshToken)
 
-        if (accessToken !== null) {
+        if (accessToken) {
           set(userSecureAtom, { ...user, accessToken })
-          const newRes = await fetchWithToken(accessToken)
-          return newRes
-        } else {
-          set(logOutAtom)
-          throw new Error("Session expired. Please log in again.")
+          res = await fetchWithToken(accessToken)
+          return res
         }
+
+        set(logOutAtom)
+        throw new Error("Session expired. Please log in again.")
       }
 
       return res

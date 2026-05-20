@@ -4,9 +4,9 @@ import * as Crypto from "expo-crypto"
 import { currPageAtom, flowAtom } from "./pager-store"
 import { BLOCK_TIME, MAX_ATTEMPTS } from "../utils/constants"
 import { Platform } from "react-native"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export type DeviceInfoType = {
-  uuid: string
   blockedUntil: number
   attempts: number // login attempts
 }
@@ -19,24 +19,25 @@ export const isBlockedAtom = atom(false)
 
 // Store a singleton device info object in secure storage, which can be used for rate limiting login attempts.
 export const getDeviceInfoAtom = atom(null, async (get, set) => {
+  let item: string | null
+
   if (Platform.OS === "web") {
-    // For web, we can just generate a random uuid on each load since secure storage isn't available and rate limiting is less important
-    return {
-      uuid: Crypto.randomUUID(),
-      blockedUntil: 0,
-      attempts: 0,
-    }
+    item = await AsyncStorage.getItem(DEVICE_INFO_KEY)
+  } else {
+    item = await SecureStore.getItemAsync(DEVICE_INFO_KEY)
   }
-  const item = await SecureStore.getItemAsync(DEVICE_INFO_KEY)
   let deviceInfo: DeviceInfoType = item ? JSON.parse(item) : null
 
   if (!deviceInfo) {
     deviceInfo = {
-      uuid: Crypto.randomUUID(),
       blockedUntil: 0,
       attempts: 0,
     }
-    await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(deviceInfo))
+    if (Platform.OS === "web") {
+      await AsyncStorage.setItem(DEVICE_INFO_KEY, JSON.stringify(deviceInfo))
+    } else {
+      await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(deviceInfo))
+    }
   }
 
   return deviceInfo
@@ -49,7 +50,11 @@ export const incrementAttemptsAtom = atom(null, async (get, set) => {
   if (shouldBlock) return
 
   const updatedDeviceInfo = { ...deviceInfo, blockedUntil: 0, attempts: deviceInfo.attempts + 1 }
-  await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(updatedDeviceInfo))
+  if (Platform.OS === "web") {
+    AsyncStorage.setItem(DEVICE_INFO_KEY, JSON.stringify(updatedDeviceInfo))
+  } else {
+    await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(updatedDeviceInfo))
+  }
 })
 
 export const checkIfBlockedAtom = atom(null, async (get, set) => {
@@ -69,7 +74,11 @@ export const checkIfBlockedAtom = atom(null, async (get, set) => {
   if (deviceInfo.attempts >= MAX_ATTEMPTS) {
     const newBlockedUntil = Date.now() + BLOCK_TIME
     const updatedDeviceInfo = { ...deviceInfo, blockedUntil: newBlockedUntil, attempts: 0 }
-    await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(updatedDeviceInfo))
+    if (Platform.OS === "web") {
+      AsyncStorage.setItem(DEVICE_INFO_KEY, JSON.stringify(updatedDeviceInfo))
+    } else {
+      await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(updatedDeviceInfo))
+    }
     set(blockedTimerAtom, Math.ceil((newBlockedUntil - Date.now()) / 1000))
 
     blocking = true
@@ -112,7 +121,7 @@ export const resetDeviceInfoAtom = atom(null, async (get, set) => {
     attempts: 0,
   }
   if (Platform.OS === "web") {
-    return deviceInfo
+    return AsyncStorage.setItem(DEVICE_INFO_KEY, JSON.stringify(deviceInfo))
   }
   await SecureStore.setItemAsync(DEVICE_INFO_KEY, JSON.stringify(deviceInfo))
 })

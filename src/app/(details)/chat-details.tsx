@@ -49,6 +49,7 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
 import { atom } from "jotai"
+import { commonStyles } from "@/src/styles/common.styles"
 
 const scrollTargetIdAtom = atom<string | null>(null)
 
@@ -212,38 +213,43 @@ export default function ChatDetails() {
       <Stack.Screen options={detailOptions} />
       <LoadingIndicator loading={loading} opacity={0.5} />
 
-      <FlashList
-        inverted
-        data={messages}
-        ref={chatRef}
-        keyboardDismissMode="on-drag"
-        style={chatStyles.container}
-        keyExtractor={item => item._id}
-        onEndReached={loadMoreMessages}
-        scrollIndicatorInsets={{ left: 10 }}
-        contentContainerStyle={{ paddingTop: 10, paddingBottom: 20, paddingHorizontal: 5 }}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item, index }) => (
-          <>
-            {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
-            {index === messages.length - 1 && !entireChatLoaded && (
-              <ActivityIndicator style={{ paddingVertical: 8 }} size="small" color={colors.blue} />
-            )}
-            <MessageItem
-              item={item}
-              messages={messages}
-              chatRef={chatRef}
-              inputRef={inputRef}
-              isOwnMessage={userJwt?._id === item.sender._id}
-            />
-          </>
-        )}
-        ListFooterComponent={<View style={chatStyles.listFooter} />}
-        onScroll={event => {
-          const offsetY = event.nativeEvent.contentOffset.y
-          setShowScrollToBottom(offsetY > 1000)
-        }}
-      />
+      <View style={commonStyles.generalContainer}>
+        <FlashList
+          inverted
+          data={messages}
+          ref={chatRef}
+          keyboardDismissMode="on-drag"
+          style={commonStyles.container}
+          keyExtractor={item => item._id}
+          onEndReached={loadMoreMessages}
+          scrollIndicatorInsets={{ left: 10 }}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item, index }) => (
+            <>
+              {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
+              {index === messages.length - 1 && !entireChatLoaded && (
+                <ActivityIndicator
+                  style={{ paddingVertical: 8 }}
+                  size="small"
+                  color={colors.blue}
+                />
+              )}
+              <MessageItem
+                item={item}
+                messages={messages}
+                chatRef={chatRef}
+                inputRef={inputRef}
+                isOwnMessage={userJwt?._id === item.sender._id}
+              />
+            </>
+          )}
+          ListFooterComponent={<View style={chatStyles.listFooter} />}
+          onScroll={event => {
+            const offsetY = event.nativeEvent.contentOffset.y
+            setShowScrollToBottom(offsetY > 1000)
+          }}
+        />
+      </View>
 
       {showScrollToBottom && (
         <Animated.View style={[{ position: "absolute", right: 20, zIndex: 2 }, botAnimation]}>

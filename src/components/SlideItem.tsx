@@ -15,6 +15,7 @@ import { useSetAtom } from "jotai"
 import { settingsAtom } from "../store/create-post-store"
 import { imgIndexAtom } from "../store/chat-store"
 import { useRouter } from "expo-router"
+import { commonStyles } from "../styles/common.styles"
 
 interface Props extends AnimatedProps<ViewProps> {
   style?: StyleProp<ImageStyle>
@@ -35,7 +36,7 @@ export function SlideItem({ style, index, source, editable = false, ...animatedV
         router.push("/image-gallery")
       }}
     >
-      <Animated.View {...animatedViewProps}>
+      <Animated.View style={commonStyles.cardImageContainer} {...animatedViewProps}>
         <Animated.Image style={[style, styles.container]} source={source} />
         {editable && (
           <View style={styles.removeOverlay}>
@@ -62,8 +63,8 @@ export function SlideItem({ style, index, source, editable = false, ...animatedV
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    height: 250,
+    width: 600,
+    height: 300,
     borderRadius: 15,
     backgroundColor: colors.lightGray,
   },

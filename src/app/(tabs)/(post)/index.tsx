@@ -5,7 +5,6 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { styles } from "@/src/styles/feed.styles"
 import { GeneralPostType } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { errorStyles } from "@/src/styles/error.styles"
 import { authFetchAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
@@ -13,6 +12,7 @@ import { FlashList } from "@shopify/flash-list"
 import { sinceNow } from "@/src/utils/format-date"
 // @ts-ignore: Multi-platform file import
 import FeedAdView from "@/src/components/FeedAdView"
+import { commonStyles } from "@/src/styles/common.styles"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -53,7 +53,7 @@ export default function Index() {
 
   if (isPending) {
     return (
-      <View style={styles.container}>
+      <View style={commonStyles.generalContainer}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -61,10 +61,10 @@ export default function Index() {
 
   if (isError) {
     return (
-      <View style={styles.container}>
-        <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>Error loading posts. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     )
@@ -73,15 +73,15 @@ export default function Index() {
   return (
     <FlashList
       data={posts}
-      style={styles.listStyles}
-      contentContainerStyle={styles.listContainerStyles}
+      style={commonStyles.generalContainer}
+      contentContainerStyle={commonStyles.container}
       refreshControl={<RefreshControl refreshing={isPending} onRefresh={refresh} />}
       onEndReached={loadMore}
       keyExtractor={item => item._id}
       renderItem={({ item: post, index }) => (
         <View key={post._id}>
           {index % 7 === 6 && <FeedAdView />}
-          <Pressable style={styles.postCard} onPress={() => handlePostPress(post._id)}>
+          <Pressable style={commonStyles.card} onPress={() => handlePostPress(post._id)}>
             <View style={styles.postHeader}>
               <Image
                 source={post.picture ? { uri: post.picture } : defaultProfilePicture}
@@ -104,10 +104,10 @@ export default function Index() {
             </View>
             <Text style={styles.postContent}>{post.title}</Text>
             {post.images && post.images.length > 0 ? (
-              <View style={styles.postImageContainer}>
+              <View style={commonStyles.cardImageContainer}>
                 <Image
                   source={{ uri: post.images[0] }}
-                  style={styles.postImage}
+                  style={commonStyles.cardImage}
                   contentFit="cover"
                 />
               </View>

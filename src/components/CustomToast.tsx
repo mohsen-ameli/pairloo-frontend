@@ -1,7 +1,7 @@
 import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
 import { Pressable, StyleSheet, Text, View } from "react-native"
-import { colors } from "@/src/utils/colors"
+import { boxShadow, colors } from "@/src/utils/colors"
 import useImageAspectRatio from "../utils/useImageAspectRatio"
 import Toast from "react-native-toast-message"
 
@@ -60,10 +60,7 @@ const styles = StyleSheet.create({
     padding: 15,
     flexDirection: "row",
     alignItems: "center",
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    boxShadow,
     elevation: 5,
   },
   iconContainer: {

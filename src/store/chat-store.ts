@@ -16,7 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Toast from "react-native-toast-message"
 import { router } from "expo-router"
 import { Attachment } from "../types/attachment.type"
-import { Alert } from "react-native"
+import { Alert, Platform } from "react-native"
 
 const unreadMsgStorage = createJSONStorage<{
   [conversationId: string]: number
@@ -62,10 +62,11 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   const socket: ChatClientSocket = io(WS_BASE_URL + "/chat", {
     auth: {
-      token: userJwt.accessToken,
+      token: userJwt.accessToken || "",
     },
     transports: ["websocket", "polling"],
     reconnectionAttempts: 5,
+    reconnectionDelay: 2000,
   })
 
   set(chatSocketAtom, socket)
@@ -95,14 +96,25 @@ export const initChatAtom = atom(null, async (get, set) => {
   })
 
   socket.on("connect_error", async () => {
-    const accessToken = await refreshAccessToken(userJwt.refreshToken)
-    if (accessToken === null) {
-      set(logOutAtom)
-      return
+    try {
+      if (Platform.OS === "web") {
+        await refreshAccessToken()
+        socket.disconnect()
+        socket.connect()
+      } else {
+        const accessToken = await refreshAccessToken(userJwt.refreshToken)
+        if (accessToken === null) {
+          set(logOutAtom)
+          return
+        }
+        await set(userSecureAtom, { ...userJwt, accessToken })
+        socket.io.opts.auth = { token: accessToken }
+        socket.connect()
+      }
+    } catch (err) {
+      console.error("chat socket reconnect failed:", err)
+      cleanup()
     }
-    await set(userAtom, { ...user, accessToken })
-    socket.io.opts.auth = { token: accessToken }
-    socket.connect()
   })
 
   // Update the conversations list to include the new conversation

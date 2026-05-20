@@ -11,7 +11,7 @@ import { getScoreColor } from "@/src/utils/get-color"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import CustomLabel from "@/src/components/CustomLabel"
 import { colors } from "@/src/utils/colors"
@@ -22,6 +22,7 @@ import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { sinceNow } from "@/src/utils/format-date"
 import { getStatusColor } from "@/src/utils/get-color"
+import { commonStyles } from "@/src/styles/common.styles"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -86,7 +87,7 @@ export default function PostDetails() {
     return (
       <>
         <Stack.Screen options={detailOptions} />
-        <View style={styles.container}>
+        <View style={commonStyles.generalContainer}>
           <LoadingIndicator loading={true} />
         </View>
       </>
@@ -97,10 +98,10 @@ export default function PostDetails() {
     return (
       <>
         <Stack.Screen options={detailOptions} />
-        <View style={errorStyles.container}>
-          <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
-          <Pressable style={errorStyles.retryButton} onPress={refresh}>
-            <Text style={errorStyles.retryButtonText}>Retry</Text>
+        <View style={commonStyles.generalContainer}>
+          <Text style={commonStyles.errorText}>Error loading posts. Please try again.</Text>
+          <Pressable style={commonStyles.retryButton} onPress={refresh}>
+            <Text style={commonStyles.retryButtonText}>Retry</Text>
           </Pressable>
         </View>
       </>
@@ -110,8 +111,8 @@ export default function PostDetails() {
   return (
     <>
       <Stack.Screen options={detailOptions} />
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.content}>
+      <View style={commonStyles.generalContainer}>
+        <ScrollView contentContainerStyle={commonStyles.container}>
           <View style={styles.postContainer}>
             {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
             <Text style={styles.title}>{post.title}</Text>
@@ -160,7 +161,7 @@ export default function PostDetails() {
           {/* Location Map */}
           {post.location && (
             <View style={styles.mapContainer}>
-              <View style={styles.mapFlexContainer} pointerEvents="none">
+              <View style={styles.mapFlexContainer}>
                 {isLoading ? (
                   <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                     <LoadingIndicator loading={true} />
@@ -209,7 +210,7 @@ export default function PostDetails() {
                   />
                 )}
               </View>
-              <View pointerEvents="none" style={styles.mapOverlayContainer}>
+              <View style={styles.mapOverlayContainer}>
                 <View style={styles.radiusCircle} />
               </View>
             </View>
@@ -282,7 +283,7 @@ export default function PostDetails() {
               {post.closestPosts.map(post => (
                 <Pressable
                   key={post.postId}
-                  style={styles.closestPost}
+                  style={[commonStyles.card, { padding: 12 }]}
                   onPress={() => {
                     router.push({
                       pathname: "/feed-post",

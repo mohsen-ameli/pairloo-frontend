@@ -6,7 +6,7 @@ import { refreshAccessToken } from "@/src/utils/refresh-access-token"
 import io from "socket.io-client"
 import { currPageAtom, pageCountAtom } from "./pager-store"
 import { router } from "expo-router"
-import { Alert } from "react-native"
+import { Alert, Platform } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import { QnaType, Question } from "@/src/types/question.types"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
@@ -60,8 +60,8 @@ export const imagesAtom = atom<ImageObject[]>([])
 export const editedAtom = atom(false)
 
 export const initCreatePostAtom = atom(null, async (get, set) => {
-  const user = await get(userSecureAtom)
-  if (!user) return
+  const userJwt = await get(userSecureAtom)
+  if (!userJwt) return
   const currSocket = get(createPostSocketAtom)
   if (currSocket && (currSocket.connected || get(loadingAtom))) return
 
@@ -69,12 +69,19 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
 
   const socket: CreatePostClientSocket = io(WS_BASE_URL + "/create-post", {
     auth: {
-      token: user.accessToken,
+      token: userJwt.accessToken || "",
     },
     transports: ["websocket", "polling"],
+    reconnectionAttempts: 5,
+    reconnectionDelay: 2000,
   })
 
   set(createPostSocketAtom, socket)
+
+  function cleanup() {
+    get(createPostSocketAtom)?.disconnect()
+    set(createPostSocketAtom, null)
+  }
 
   socket.io.on("reconnect_failed", () => {
     set(loadingAtom, false)
@@ -96,14 +103,25 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   })
 
   socket.on("connect_error", async () => {
-    const accessToken = await refreshAccessToken(user.refreshToken)
-    if (accessToken === null) {
-      set(logOutAtom)
-      return
+    try {
+      if (Platform.OS === "web") {
+        await refreshAccessToken()
+        socket.disconnect()
+        socket.connect()
+      } else {
+        const accessToken = await refreshAccessToken(userJwt.refreshToken)
+        if (accessToken === null) {
+          set(logOutAtom)
+          return
+        }
+        await set(userSecureAtom, { ...userJwt, accessToken })
+        socket.io.opts.auth = { token: accessToken }
+        socket.connect()
+      }
+    } catch (err) {
+      console.error("create post socket reconnect failed:", err)
+      cleanup()
     }
-    await set(userSecureAtom, { ...user, accessToken })
-    socket.io.opts.auth = { token: accessToken }
-    socket.connect()
   })
 
   socket.on("draftSaved", () => {

@@ -412,11 +412,11 @@ export default function MapSelector() {
       )}
 
       <View
-        pointerEvents="none"
         style={{
           ...StyleSheet.absoluteFillObject,
           justifyContent: "center",
           alignItems: "center",
+          pointerEvents: "none",
         }}
       >
         <View

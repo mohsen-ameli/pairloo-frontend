@@ -2,6 +2,10 @@ import { Appearance } from "react-native"
 
 const colorScheme = Appearance.getColorScheme()
 
+// https://getcssscan.com/css-box-shadow-examples
+// we're using #28
+export const boxShadow = "rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px"
+
 export const baseColors = {
   purple: "#6B46C1",
   lightPurple: "#9880f5",
