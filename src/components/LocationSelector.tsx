@@ -11,6 +11,7 @@ import CustomInput from "./CustomInput"
 import { City } from "@/src/types/city.types"
 import { inputStyles } from "../styles/input.styles"
 import { FlashList } from "@shopify/flash-list"
+import { commonStyles } from "../styles/common.styles"
 
 export default function LocationSelector({
   onLocationChange,
@@ -54,6 +55,7 @@ export default function LocationSelector({
     setCitySearchInput("")
     setShowModal(false)
     onLocationChange(city)
+    setCities([])
   }
 
   return (
@@ -66,33 +68,32 @@ export default function LocationSelector({
     >
       <CustomInput
         title={"Location" + (mandatory ? "*" : "")}
+        value={locationInput}
         editable={false}
         selectTextOnFocus={false}
         style={{ pointerEvents: "none" }}
-      >
-        {locationInput}
-      </CustomInput>
+      />
       {errors ? <Text style={inputStyles.errors}>{errors}</Text> : null}
 
       <Modal
         visible={showModal}
-        animationType="slide"
+        animationType="fade"
         presentationStyle="pageSheet"
         onRequestClose={() => setShowModal(false)}
       >
-        <SafeAreaView style={locSelectStyles.modalContainer}>
-          <View style={locSelectStyles.searchContainer}>
+        <SafeAreaView style={commonStyles.modalContainer}>
+          <View style={commonStyles.searchContainer}>
             <TouchableOpacity
               onPress={() => {
                 setShowModal(false)
                 setCitySearchInput("")
               }}
-              style={locSelectStyles.dismissButton}
+              style={commonStyles.dismissButton}
             >
               <Feather name="x" size={20} color={colors.dark} />
             </TouchableOpacity>
             <TextInput
-              style={locSelectStyles.searchInput}
+              style={commonStyles.searchInput}
               placeholder="Search for a city"
               placeholderTextColor={colors.gray}
               value={citySearchInput}

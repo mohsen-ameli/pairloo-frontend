@@ -196,14 +196,20 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
     return
   }
 
-  Alert.alert("Logout", "Are you sure you want to logout?", [
-    { text: "Cancel", style: "cancel" },
-    {
-      text: "Logout",
-      style: "destructive",
-      onPress: async () => await logout(),
-    },
-  ])
+  if (Platform.OS === "web") {
+    if (window.confirm("Are you sure you want to log out?")) {
+      await logout()
+    }
+  } else {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => await logout(),
+      },
+    ])
+  }
 })
 
 export const requestEmailVerificationAtom = atom(

@@ -8,6 +8,7 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Platform,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
 import { useEffect } from "react"
@@ -172,7 +173,7 @@ export default function CreatePost() {
           const options = question.options
 
           return (
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} key={i}>
+            <Dismissable key={i}>
               <View style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>{questionText}</Text>
                 {type === "multiple_choice" && options && options.length > 0 ? (
@@ -255,7 +256,7 @@ export default function CreatePost() {
                   />
                 )}
               </View>
-            </TouchableWithoutFeedback>
+            </Dismissable>
           )
         })}
 
@@ -373,7 +374,7 @@ export default function CreatePost() {
                   </Pressable>
                 </View>
                 <Switch
-                  trackColor={{ true: colors.purple }}
+                  trackColor={{ true: colors.lightGreen, false: colors.gray }}
                   thumbColor={colors.light}
                   onValueChange={value =>
                     setSettings(async curr => ({ ...(await curr), publicPost: value }))
@@ -389,4 +390,12 @@ export default function CreatePost() {
       </CustomPager>
     </>
   )
+}
+
+function Dismissable({ children }: { children: React.ReactNode }) {
+  if (Platform.OS === "web") {
+    return <>{children}</>
+  }
+
+  return <TouchableWithoutFeedback onPress={Keyboard.dismiss}>{children}</TouchableWithoutFeedback>
 }

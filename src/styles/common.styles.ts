@@ -14,7 +14,7 @@ export const commonStyles = StyleSheet.create({
   container: {
     backgroundColor: colors.light,
     padding: 10,
-    width: isWeb && windowWidth > 720 ? "40%" : "100%",
+    width: isWeb && windowWidth > 600 ? 600 : "100%",
     alignSelf: "center",
   },
 
@@ -43,6 +43,29 @@ export const commonStyles = StyleSheet.create({
     alignSelf: "center",
     paddingHorizontal: 16,
     padding: 16,
+  },
+  dismissButton: { paddingVertical: 10, paddingLeft: 20, paddingRight: 10 },
+
+  // Search Modal
+  searchContainer: {
+    paddingVertical: 15,
+    paddingRight: 25,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: colors.borderGray,
+    padding: 10,
+    borderRadius: 5,
+    color: colors.dark,
+    fontSize: 16,
+    flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.light,
   },
 
   // Error styles

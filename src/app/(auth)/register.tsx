@@ -24,8 +24,7 @@ import { Image } from "expo-image"
 import Feather from "@expo/vector-icons/Feather"
 import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
 import BlockedAttempts from "@/src/components/BlockedAttempts"
-// @ts-ignore: Multi-platform file import
-import PhoneNumber from "@/src/components/phoneNumber"
+import PhoneNumber from "@/src/components/PhoneNumber"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
 

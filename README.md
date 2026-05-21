@@ -35,6 +35,8 @@ EXPO_PUBLIC_WS_SERVER_URL="ws://localhost:8000"
 
 However, if you are running the app on a real device (either expo go or development build) then you will need to be on the same network as the servers, and know the IP address of the backend. You can use the `copy_public_ip_to_env.sh` script to change the .env file accordingly.
 
+We use the following repo to gather the calling codes of all countries: https://www.npmjs.com/package/world-countries
+
 ## Development
 
 | Command                                 | What it does                                          | When to use it                                                                  |
