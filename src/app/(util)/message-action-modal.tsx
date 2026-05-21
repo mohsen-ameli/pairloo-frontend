@@ -29,31 +29,31 @@ export default function MessageActionModal() {
 
   const isOwnMsg = isOwnMessage === "true"
 
-  const handleModalClose = () => {
+  function handleModalClose() {
     setCurrentLongPressedMessage(null)
     router.back()
   }
 
-  const handleReply = () => {
+  function handleReply() {
     if (currentLongPressedMessage) {
       setReplyingTo(currentLongPressedMessage)
     }
     handleModalClose()
   }
 
-  const handleCopy = async () => {
+  async function handleCopy() {
     if (!currentLongPressedMessage) return
     const content = currentLongPressedMessage.content || ""
 
     try {
-      await Clipboard.setString(content)
+      Clipboard.setString(content)
       handleModalClose()
     } catch (error) {
       console.error("Copy error:", error)
     }
   }
 
-  const handleShare = async () => {
+  async function handleShare() {
     if (!currentLongPressedMessage) return
 
     try {
@@ -67,14 +67,14 @@ export default function MessageActionModal() {
     }
   }
 
-  const handleEditPress = () => {
+  function handleEditPress() {
     if (currentLongPressedMessage) {
       setEditingMessage(currentLongPressedMessage)
     }
     handleModalClose()
   }
 
-  const handleDeletePress = () => {
+  function handleDeletePress() {
     if (!currentLongPressedMessage) return
 
     Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
@@ -105,18 +105,17 @@ export default function MessageActionModal() {
   const buttonStyle = {
     alignItems: "flex-start" as const,
     paddingLeft: 10,
-    backgroundColor: colors.light,
-    shadowRadius: 0,
     elevation: 0,
-    shadowOpacity: 0,
   }
 
   return (
-    <SafeAreaView>
-      <TouchableOpacity
-        onPress={handleModalClose}
-        style={[chatStyles.dismissButton, { zIndex: 10 }]}
-      >
+    <SafeAreaView
+      style={{
+        flex: Platform.OS === "web" ? 1 : undefined,
+        backgroundColor: colors.light,
+      }}
+    >
+      <TouchableOpacity onPress={handleModalClose} style={chatStyles.dismissButton}>
         <Feather name="x" size={24} color={colors.darkGray} />
       </TouchableOpacity>
 
@@ -124,29 +123,30 @@ export default function MessageActionModal() {
         style={{
           width: 40,
           height: 4,
-          backgroundColor: colors.gray,
+          backgroundColor: colors.lightGray,
           borderRadius: 2,
           alignSelf: "center",
           marginTop: Platform.OS === "android" ? 0 : 10,
+          marginBottom: 40,
         }}
       />
 
       <View style={{ paddingHorizontal: 15, marginBottom: Platform.OS === "android" ? 60 : 0 }}>
-        <CustomButton style={buttonStyle} onPress={handleReply}>
+        <CustomButton color={colors.light} style={buttonStyle} onPress={handleReply}>
           <Text style={{ color: colors.dark, fontSize: 16 }}>
             <MaterialIcons name="reply" size={18} /> Reply
           </Text>
         </CustomButton>
 
         {currentLongPressedMessage?.content && (
-          <CustomButton style={buttonStyle} onPress={handleCopy}>
+          <CustomButton color={colors.light} style={buttonStyle} onPress={handleCopy}>
             <Text style={{ color: colors.dark, fontSize: 16 }}>
               <Feather name="copy" size={18} /> Copy Message
             </Text>
           </CustomButton>
         )}
 
-        <CustomButton style={buttonStyle} onPress={handleShare}>
+        <CustomButton color={colors.light} style={buttonStyle} onPress={handleShare}>
           <Text style={{ color: colors.dark, fontSize: 16 }}>
             <Feather name="share" size={18} /> Share Message
           </Text>
@@ -154,20 +154,20 @@ export default function MessageActionModal() {
 
         {isOwnMsg ? (
           <>
-            <CustomButton style={buttonStyle} onPress={handleEditPress}>
+            <CustomButton color={colors.light} style={buttonStyle} onPress={handleEditPress}>
               <Text style={{ color: colors.dark, fontSize: 16 }}>
                 <Feather name="edit-2" size={18} /> Edit Message
               </Text>
             </CustomButton>
 
-            <CustomButton style={buttonStyle} onPress={handleDeletePress}>
+            <CustomButton color={colors.light} style={buttonStyle} onPress={handleDeletePress}>
               <Text style={{ color: colors.dark, fontSize: 16 }}>
                 <Feather name="trash-2" size={18} /> Delete Message
               </Text>
             </CustomButton>
           </>
         ) : (
-          <CustomButton style={buttonStyle} onPress={handleModalClose}>
+          <CustomButton color={colors.light} style={buttonStyle} onPress={handleModalClose}>
             <Text style={{ color: colors.dark, fontSize: 16 }}>
               <Feather name="flag" size={18} /> Report Message
             </Text>

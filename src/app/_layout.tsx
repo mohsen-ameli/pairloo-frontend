@@ -65,6 +65,7 @@ export default function RootLayout() {
   const setChannels = useSetAtom(channelsAtom)
   const setNotification = useSetAtom(notificationAtom)
   const registerForPushNotificationsAsync = useSetAtom(registerForPushNotificationsAsyncAtom)
+  const hasRegisteredPushRef = useRef(false)
   const notificationListener = useRef<Notifications.EventSubscription>(null)
   const responseListener = useRef<Notifications.EventSubscription>(null)
   const initialHrefRef = useRef<string | null>(
@@ -75,7 +76,13 @@ export default function RootLayout() {
   useEffect(() => {
     async function setupNotifications() {
       // Guard to make sure only authenticated users can register for push notifications
-      if (!userJwt) return
+      if (!userJwt) {
+        hasRegisteredPushRef.current = false
+        return
+      }
+
+      if (hasRegisteredPushRef.current) return
+      hasRegisteredPushRef.current = true
 
       const token = await registerForPushNotificationsAsync()
 
@@ -160,7 +167,6 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.lightGray }}>
       <StatusBar style="auto" />
-      <Toast config={toastConfig} />
 
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>
@@ -192,15 +198,13 @@ export default function RootLayout() {
                 name="(util)/map-selector"
                 options={{
                   headerShown: false,
-                  presentation: "fullScreenModal",
-                  animation: "default",
+                  animation: "fade",
                   contentStyle: { backgroundColor: colors.light },
                 }}
               />
               <Stack.Screen
                 name="(util)/image-gallery"
                 options={{
-                  presentation: "fullScreenModal",
                   animation: "fade",
                   contentStyle: { backgroundColor: colors.dark },
                   headerShown: false,
@@ -248,6 +252,8 @@ export default function RootLayout() {
           </Stack>
         </QueryClientProvider>
       </KeyboardProvider>
+
+      <Toast config={toastConfig} />
     </GestureHandlerRootView>
   )
 }

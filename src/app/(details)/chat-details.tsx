@@ -32,7 +32,7 @@ import {
   cleanupChatAtom,
 } from "@/src/store/chat-store"
 import { colors } from "@/src/utils/colors"
-import { MessageType } from "@/src/types/socket/chat.type"
+import { MessageType, ReplyTo } from "@/src/types/socket/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
@@ -138,7 +138,7 @@ export default function ChatDetails() {
 
   // When a message is selected for editing, populate the input
   useEffect(() => {
-    if (editingMessage) {
+    if (editingMessage && editingMessage.content) {
       setMessage(editingMessage.content)
       inputRef.current.focus()
     }
@@ -168,7 +168,7 @@ export default function ChatDetails() {
         start: 0,
         end: NUM_MESSAGES_TO_LOAD,
       })
-    }, [socket?.connected, conversationId, activePostId, conversations])
+    }, [socket?.connected, conversationId, activePostId, conversations, messages.length, userJwt])
   )
 
   // Cleanup on unmount
@@ -455,6 +455,7 @@ function MessageItem({
         scheduleOnRN(setReplyingTo, {
           _id: item._id,
           content: item.content,
+          conversationId: item.conversationId,
           attachmentsCount: item.attachments?.length || 0,
           sender: item.sender,
         })
@@ -467,7 +468,7 @@ function MessageItem({
   const handleLongPress = () => {
     Keyboard.dismiss()
     setHighlightedMessageId(item._id)
-    setCurrentLongPressedMessage(item)
+    setCurrentLongPressedMessage(item as ReplyTo)
     router.push({
       pathname: "/message-action-modal",
       params: { isOwnMessage: String(isOwnMessage) },
@@ -513,6 +514,7 @@ function MessageItem({
             setReplyingTo({
               _id: item._id,
               content: item.content,
+              conversationId: item.conversationId,
               attachmentsCount: item.attachments?.length || 0,
               sender: item.sender,
             })

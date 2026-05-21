@@ -29,6 +29,7 @@ import { MyPostMenu } from "../components/MyPostMenu"
 import { MenuView } from "@react-native-menu/menu"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { chatSocketAtom } from "../store/socket-store"
+import DropdownMenu from "../components/DropdownMenu"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -156,7 +157,6 @@ function ChatHeader() {
   return (
     <View
       style={{
-        flex: 1,
         paddingBottom: 12,
         paddingLeft: 6,
         flexDirection: "row",
@@ -188,7 +188,7 @@ function ChatHeader() {
           flexDirection: "row",
           alignItems: "center",
           gap: 10,
-          justifyContent: "center",
+          justifyContent: Platform.OS === "web" ? "center" : "flex-start",
         }}
       >
         {/* profile picture */}
@@ -214,12 +214,14 @@ function ChatHeader() {
           </TouchableOpacity>
 
           {currentConversation.contactedPosts.length > 0 && (
-            <MenuView
-              onPressAction={({ nativeEvent }) => {
-                if (nativeEvent.event === "general") {
+            <DropdownMenu
+              anchor="bottom-left"
+              width={Platform.OS === "web" ? 400 : 300}
+              onPressAction={action => {
+                if (action === "general") {
                   setActivePostId(null)
                 } else {
-                  setActivePostId(nativeEvent.event)
+                  setActivePostId(action)
                 }
                 setLoading(true)
                 setEntireChatLoaded(false)
@@ -229,6 +231,7 @@ function ChatHeader() {
                 {
                   id: "general",
                   title: DEFAULT_CHAT_TITLE,
+                  titleColor: colors.dark,
                 },
                 ...currentConversation.contactedPosts.map(post => ({
                   id: post.postId,
@@ -236,8 +239,6 @@ function ChatHeader() {
                   titleColor: colors.dark,
                 })),
               ]}
-              testID="menuView"
-              style={{ width: Platform.OS === "web" ? 240 : "90%" }}
             >
               <View
                 style={{
@@ -260,7 +261,7 @@ function ChatHeader() {
                   {activeChat}
                 </Text>
               </View>
-            </MenuView>
+            </DropdownMenu>
           )}
         </View>
       </View>

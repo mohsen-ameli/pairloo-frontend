@@ -1,7 +1,6 @@
 import { useRouter, useLocalSearchParams, Stack } from "expo-router"
 import { View, Text, ScrollView, Pressable, Animated, Platform } from "react-native"
 import { useState, useEffect, useRef } from "react"
-import { MenuView, type MenuComponentRef } from "@react-native-menu/menu"
 import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -24,6 +23,7 @@ import { sinceNow } from "@/src/utils/format-date"
 import { getStatusColor } from "@/src/utils/get-color"
 import { commonStyles } from "@/src/styles/common.styles"
 import WebGoogleMap from "@/src/utils/web-google-map"
+import DropdownMenu from "@/src/components/DropdownMenu"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -43,7 +43,6 @@ export default function PostDetails() {
 
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
-  const statusMenuRef = useRef<MenuComponentRef>(null)
 
   useEffect(() => {
     Animated.timing(animatedHeight, {
@@ -119,10 +118,11 @@ export default function PostDetails() {
             {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
             <Text style={styles.title}>{post.title}</Text>
             <View style={styles.statusMenuContainer}>
-              <MenuView
-                ref={statusMenuRef}
-                onPressAction={({ nativeEvent }) => {
-                  updatePostStatus(nativeEvent.event as StatusType)
+              <DropdownMenu
+                anchor="bottom"
+                disabled={isCooldown}
+                onPressAction={action => {
+                  updatePostStatus(action as StatusType)
                 }}
                 actions={[
                   {
@@ -142,7 +142,7 @@ export default function PostDetails() {
                   },
                 ]}
               >
-                <Pressable style={styles.statusMenuButton} disabled={isCooldown}>
+                <View style={styles.statusMenuButton}>
                   <Text
                     style={{
                       color: getStatusColor(post.status),
@@ -154,8 +154,8 @@ export default function PostDetails() {
                     {post.status}
                   </Text>
                   <Feather name="chevron-down" size={16} color={getStatusColor(post.status)} />
-                </Pressable>
-              </MenuView>
+                </View>
+              </DropdownMenu>
             </View>
             <Text style={styles.description}>{post.description}</Text>
           </View>
@@ -167,6 +167,13 @@ export default function PostDetails() {
                 {isLoading ? (
                   <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                     <LoadingIndicator loading={true} />
+                  </View>
+                ) : isExpoGo ? (
+                  <View style={{ flex: 1, paddingTop: 80 }}>
+                    <MapUnavailable
+                      title="Maps are unavailable in Expo Go"
+                      description="Search for a city above to set your approximate location. The map picker requires a development build."
+                    />
                   </View>
                 ) : Platform.OS === "android" && GoogleMapView ? (
                   <GoogleMapView
@@ -214,7 +221,7 @@ export default function PostDetails() {
                     zoomControl={false}
                   />
                 ) : (
-                  (isExpoGo || !maps) && (
+                  !maps && (
                     <MapUnavailable
                       title="Map preview unavailable"
                       description="The native map view failed to load."

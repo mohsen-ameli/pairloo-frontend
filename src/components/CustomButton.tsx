@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/colors"
+import { boxShadow, colors } from "@/src/utils/colors"
 import React from "react"
 import { Appearance, Pressable, PressableProps, StyleProp, Text, ViewStyle } from "react-native"
 
@@ -14,7 +14,6 @@ const colorScheme = Appearance.getColorScheme()
 
 export default function ({ color, children, disabled, fontSize, style, ...rest }: CustomProps) {
   const backgroundColor = disabled ? colors.borderGray : color || colors.purple
-  const shadowColor = disabled ? colors.borderGray : color || colors.purple
   return (
     <Pressable
       style={[
@@ -24,7 +23,7 @@ export default function ({ color, children, disabled, fontSize, style, ...rest }
           backgroundColor,
           borderRadius: 10,
           alignItems: "center",
-          boxShadow: `0px 2px 4px 0px ${shadowColor}`,
+          boxShadow: color ? undefined : boxShadow,
           elevation: 2,
           opacity: disabled ? 0.7 : 1,
         },

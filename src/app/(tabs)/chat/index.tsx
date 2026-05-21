@@ -99,7 +99,7 @@ export default function index() {
             return (
               <Pressable
                 key={conversation._id}
-                style={conversationStyles.item}
+                style={[commonStyles.card, conversationStyles.item]}
                 onPress={() => {
                   prepareChat(conversation.lastMessage?.postId)
                   router.push({

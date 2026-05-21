@@ -21,10 +21,11 @@ import { useRouter } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import * as MediaLibrary from "expo-media-library"
 import { Directory, File, Paths } from "expo-file-system"
-import { MenuAction, MenuView } from "@react-native-menu/menu"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { styles } from "@/src/styles/image-gallery.styles"
 import Toast from "react-native-toast-message"
+import DropdownMenu, { DropdownMenuAction } from "@/src/components/DropdownMenu"
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"
 
 const isZoomedAtom = atom(false)
 
@@ -75,6 +76,12 @@ export default function ImageGallery({
   }
 
   const insets = useSafeAreaInsets()
+
+  useEffect(() => {
+    if (images.length === 0) {
+      router.back()
+    }
+  }, [images, router])
 
   return (
     <View style={styles.container} onLayout={handleLayout}>
@@ -162,29 +169,21 @@ function Menu() {
   const images = useAtomValue(bigImageViewAtom)
   const currentIndex = useAtomValue(imgIndexAtom)
   const menuRef = useRef(null)
-  const [actions, setActions] = useState<MenuAction[]>([])
+  const [actions, setActions] = useState<DropdownMenuAction[]>([])
 
   useEffect(() => {
-    const baseActions: MenuAction[] = [
+    const baseActions: DropdownMenuAction[] = [
       {
         id: "save",
         title: "Save",
         titleColor: colors.dark,
-        image: Platform.select({
-          ios: "square.and.arrow.down",
-          android: "",
-        }),
-        imageColor: colors.dark,
+        icon: <Feather name="save" size={18} color={colors.dark} />,
       },
       {
         id: "report",
         title: "Report",
         titleColor: colors.dark,
-        image: Platform.select({
-          ios: "square.and.arrow.up",
-          android: "",
-        }),
-        imageColor: colors.dark,
+        icon: <Feather name="flag" size={18} color={colors.dark} />,
       },
     ]
     if (images.length > 1) {
@@ -194,11 +193,9 @@ function Menu() {
           id: "saveAll",
           title: "Save All",
           titleColor: colors.dark,
-          image: Platform.select({
-            ios: "square.and.arrow.down",
-            android: "",
-          }),
-          imageColor: colors.dark,
+          icon: (
+            <MaterialCommunityIcons name="content-save-all-outline" size={18} color={colors.dark} />
+          ),
         })
         return newActions
       })
@@ -208,6 +205,14 @@ function Menu() {
   }, [images])
 
   async function saveImage(index: number) {
+    if (Platform.OS === "web") {
+      Object.assign(document.createElement("a"), {
+        href: images[index].uri,
+        download: `image_${Date.now()}.jpg`,
+      }).click()
+      return
+    }
+
     const destination = new Directory(Paths.cache, `image_${Date.now()}.jpg`)
     destination.create()
 
@@ -242,6 +247,12 @@ function Menu() {
   }
 
   async function handleSaveAll() {
+    if (Platform.OS === "web") {
+      Toast.show({ type: "info", text1: "Not implemented yet!" })
+      return
+    }
+
+    Toast.show({ type: "success", text1: "Downloading..." })
     for (let i = 0; i < images.length; i++) {
       await saveImage(i)
     }
@@ -253,24 +264,23 @@ function Menu() {
   }
 
   return (
-    <MenuView
-      ref={menuRef}
+    <DropdownMenu
       style={{ padding: 8 }}
-      onPressAction={({ nativeEvent }) => {
-        if (nativeEvent.event === "save") {
-          saveImage(currentIndex)
+      onPressAction={async action => {
+        if (action === "save") {
+          Toast.show({ type: "success", text1: "Downloading..." })
+          await saveImage(currentIndex)
           Toast.show({ type: "success", text1: "Image saved!" })
-        } else if (nativeEvent.event === "saveAll") {
-          handleSaveAll()
-        } else if (nativeEvent.event === "report") {
+        } else if (action === "saveAll") {
+          await handleSaveAll()
+        } else if (action === "report") {
           handleReport()
         }
       }}
       actions={actions}
-      testID="menuView"
     >
       <Feather name="more-vertical" size={24} color={colors.dark} />
-    </MenuView>
+    </DropdownMenu>
   )
 }
 

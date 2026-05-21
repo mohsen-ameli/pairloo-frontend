@@ -163,6 +163,13 @@ export default function PostDetails() {
                 <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                   <LoadingIndicator loading={true} />
                 </View>
+              ) : isExpoGo ? (
+                <View style={{ flex: 1, paddingTop: 80 }}>
+                  <MapUnavailable
+                    title="Maps are unavailable in Expo Go"
+                    description="Search for a city above to set your approximate location. The map picker requires a development build."
+                  />
+                </View>
               ) : Platform.OS === "android" && GoogleMapView ? (
                 <GoogleMapView
                   style={styles.mapFlexContainer}
@@ -206,9 +213,10 @@ export default function PostDetails() {
                       ? radiusMetersToZoom(post.distance, post.location.latitude)
                       : 12,
                   }}
+                  zoomControl={false}
                 />
               ) : (
-                (!maps || !isExpoGo) && (
+                !maps && (
                   <MapUnavailable
                     title="Map preview unavailable"
                     description="The native map view failed to load."

@@ -39,13 +39,20 @@ type CameraEvent = {
   bearing: number
 }
 
+export type MapRegion = {
+  latitude: number
+  longitude: number
+  zoom: number
+  distance: number
+}
+
 const DEFAULT_ZOOM = 12
 
 export default function MapSelector() {
   const router = useRouter()
   const user = useAtomValue(userAtom)!
   const { maps, isExpoGo, isLoading } = useExpoMaps()
-  const region = useRef({
+  const region = useRef<MapRegion>({
     latitude: user.latitude,
     longitude: user.longitude,
     zoom: DEFAULT_ZOOM,
@@ -314,7 +321,7 @@ export default function MapSelector() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: colors.gray }}>Loading map...</Text>
         </View>
-      ) : isExpoGo || !maps ? (
+      ) : isExpoGo ? (
         <View style={{ flex: 1, paddingTop: 80 }}>
           <MapUnavailable
             title="Maps are unavailable in Expo Go"
@@ -414,12 +421,15 @@ export default function MapSelector() {
             },
             zoom: region.current.zoom,
           }}
+          region={region}
         />
       ) : (
-        <MapUnavailable
-          title="Map could not be loaded"
-          description="Try restarting the app or use a development build if the native map module is unavailable."
-        />
+        !maps && (
+          <MapUnavailable
+            title="Map could not be loaded"
+            description="Try restarting the app or use a development build if the native map module is unavailable."
+          />
+        )
       )}
 
       <View

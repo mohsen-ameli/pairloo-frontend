@@ -47,9 +47,9 @@ export const replyingToAtom = atom<ReplyTo | null>(null)
 
 export const highlightedMessageIdAtom = atom<string | null>(null)
 
-export const currentLongPressedMessageAtom = atom<MessageType | null>(null)
+export const currentLongPressedMessageAtom = atom<ReplyTo | null>(null)
 
-export const editingMessageAtom = atom<MessageType | null>(null)
+export const editingMessageAtom = atom<ReplyTo | null>(null)
 
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)

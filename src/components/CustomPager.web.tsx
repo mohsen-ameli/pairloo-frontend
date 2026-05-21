@@ -1,5 +1,5 @@
 import { ReactNode, useRef, useState } from "react"
-import { Animated as A, Alert, Keyboard, Pressable, Text, View } from "react-native"
+import { Animated as A, Alert, Keyboard, Pressable, ScrollView, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
@@ -26,7 +26,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
 
   return (
     <View style={commonStyles.generalContainer}>
-      <View style={commonStyles.container}>{children}</View>
+      <ScrollView style={commonStyles.container}>{children}</ScrollView>
 
       <Animated.View
         style={[
@@ -51,7 +51,6 @@ export default function CustomPager({ children }: { children: ReactNode }) {
             borderRadius: "50%",
           }}
           onPress={async () => {
-            console.log("pressed")
             Keyboard.dismiss()
             await new Promise(resolve => setTimeout(resolve, 100))
             flow.next && flow.next()
