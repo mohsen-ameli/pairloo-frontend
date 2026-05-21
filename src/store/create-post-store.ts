@@ -45,7 +45,7 @@ const settings = {
   location: null as LocationType,
   distance: 5_000,
   zoom: 12,
-  closeCity: "",
+  closeCity: "Click to select",
 }
 export const settingsAtom = atomWithStorage(
   "post-settings",
@@ -292,22 +292,29 @@ export const pickImageAtom = atom(null, async (get, set) => {
 
 export const discardDraftAtom = atom(null, async (get, set) => {
   const socket = get(createPostSocketAtom)
-  if (!socket) return
 
-  Alert.alert("Discard Draft", "Are you sure you want to discard the current draft?", [
-    {
-      text: "Cancel",
-      style: "cancel",
-    },
-    {
-      text: "Discard",
-      style: "destructive",
-      onPress: () => {
-        set(loadingAtom, true)
-        socket.emit("discardDraft")
+  function discard() {
+    set(loadingAtom, true)
+    socket?.emit("discardDraft")
+  }
+
+  if (Platform.OS === "web") {
+    if (window.confirm("Are you sure you want to discard the current draft?")) {
+      discard()
+    }
+  } else {
+    Alert.alert("Discard Draft", "Are you sure you want to discard the current draft?", [
+      {
+        text: "Cancel",
+        style: "cancel",
       },
-    },
-  ])
+      {
+        text: "Discard",
+        style: "destructive",
+        onPress: discard,
+      },
+    ])
+  }
 })
 
 export const getNewQuestionAtom = atom(null, async (get, set) => {

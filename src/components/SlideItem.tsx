@@ -1,4 +1,11 @@
-import { type ImageStyle, Pressable, type StyleProp, StyleSheet, View } from "react-native"
+import {
+  type ImageStyle,
+  Platform,
+  Pressable,
+  type StyleProp,
+  StyleSheet,
+  View,
+} from "react-native"
 import Animated from "react-native-reanimated"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
@@ -29,7 +36,7 @@ export function SlideItem({
     <Pressable
       style={{
         width: "100%",
-        height: 300,
+        height: Platform.OS === "web" ? 500 : 300,
         borderRadius: 8,
       }}
       onPress={() => {

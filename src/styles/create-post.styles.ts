@@ -9,7 +9,6 @@ export const createPostStyles = StyleSheet.create({
     paddingBottom: 85,
     paddingHorizontal: 20,
     borderColor: colors.borderGray,
-    borderRightWidth: 1,
   },
   questionText: {
     color: colors.dark,
@@ -64,8 +63,6 @@ export const createPostStyles = StyleSheet.create({
     gap: 10,
     padding: 20,
     paddingTop: 70,
-    borderColor: colors.borderGray,
-    borderRightWidth: 1,
   },
   gaptainer: {
     gap: 10,

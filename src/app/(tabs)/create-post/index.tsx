@@ -244,8 +244,7 @@ export default function CreatePost() {
                   <TextInput
                     style={createPostStyles.textInput}
                     placeholderTextColor={colors.gray}
-                    defaultValue={qna.answer[0]}
-                    value={qna.answer[0]}
+                    value={qna.answer[0] ?? ""}
                     onChangeText={text => handleChange(i, text, question)}
                     placeholder="Write as little or as much details as you want"
                     editable={!loading}
@@ -374,8 +373,6 @@ export default function CreatePost() {
                   </Pressable>
                 </View>
                 <Switch
-                  trackColor={{ true: colors.lightGreen, false: colors.gray }}
-                  thumbColor={colors.light}
                   onValueChange={value =>
                     setSettings(async curr => ({ ...(await curr), publicPost: value }))
                   }
