@@ -44,7 +44,10 @@ export default function SettingsScreen() {
       <LoadingIndicator loading={loading} opacity={0.75} />
 
       <View style={commonStyles.generalContainer}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={commonStyles.container}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Account */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Account</Text>
@@ -199,7 +202,7 @@ export default function SettingsScreen() {
           </View>
         </ScrollView>
 
-        <View style={{ paddingHorizontal: 16, marginBottom: 32, marginTop: 5 }}>
+        <View style={commonStyles.floatingButton}>
           <CustomButton onPress={async () => await logout(true)} color={colors.errorRed}>
             Log Out
           </CustomButton>

@@ -23,5 +23,5 @@ export async function refreshAccessToken(refreshToken?: string) {
   }
 
   const data: AuthResponseType = await refreshRes.json()
-  return data.accessToken ?? null
+  return data
 }

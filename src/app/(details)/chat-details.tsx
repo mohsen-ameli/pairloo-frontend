@@ -55,7 +55,7 @@ const scrollTargetIdAtom = atom<string | null>(null)
 
 export default function ChatDetails() {
   const router = useRouter()
-  const { conversationId } = useLocalSearchParams<{ conversationId: string }>()
+  const { conversationId } = useLocalSearchParams<{ conversationId?: string }>()
   const socket = useAtomValue(chatSocketAtom)
   const [message, setMessage] = useState<string>("")
   const [inputHeight, setInputHeight] = useState<number>(40)
@@ -147,7 +147,7 @@ export default function ChatDetails() {
   // To set the current conversation and load initial messages
   useFocusEffect(
     useCallback(() => {
-      if (!socket || !userJwt || messages.length > 0) return
+      if (!socket || !socket.connected || !conversationId || !userJwt || messages.length > 0) return
 
       // Find the current conversation
       if (!currentConversation) {
@@ -168,7 +168,7 @@ export default function ChatDetails() {
         start: 0,
         end: NUM_MESSAGES_TO_LOAD,
       })
-    }, [userJwt, socket, activePostId, conversationId, messages.length])
+    }, [socket?.connected, conversationId, activePostId, conversations])
   )
 
   // Cleanup on unmount
@@ -198,7 +198,15 @@ export default function ChatDetails() {
   }, [])
 
   async function loadMoreMessages() {
-    if (!socket || entireChatLoaded || loading || !currentConversation) return
+    if (
+      !socket ||
+      !socket.connected ||
+      !conversationId ||
+      entireChatLoaded ||
+      loading ||
+      !currentConversation
+    )
+      return
     // if we have already sent a request to load more messages, don't send another one until we get a response
     socket.emit("getMessages", {
       conversationId,
@@ -206,6 +214,17 @@ export default function ChatDetails() {
       start: messages.length,
       end: messages.length + NUM_MESSAGES_TO_LOAD,
     })
+  }
+
+  if (!currentConversation) {
+    return (
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>Conversation not found.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={() => router.back()}>
+          <Text style={commonStyles.retryButtonText}>Go Back</Text>
+        </Pressable>
+      </View>
+    )
   }
 
   return (

@@ -2,10 +2,6 @@ import { Appearance } from "react-native"
 
 const colorScheme = Appearance.getColorScheme()
 
-// https://getcssscan.com/css-box-shadow-examples
-// we're using #28
-export const boxShadow = "rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px"
-
 export const baseColors = {
   purple: "#6B46C1",
   lightPurple: "#9880f5",
@@ -32,6 +28,8 @@ export const baseColors = {
   lightBlue: "#5ac8ff",
   muted: "#999999",
   shadow: "#373535",
+  shadowA: "rgba(0, 0, 0, 0.16)",
+  shadowB: "rgba(0, 0, 0, 0.23)",
 }
 
 export const colors = { ...baseColors }
@@ -52,4 +50,11 @@ if (colorScheme === "dark") {
   colors.purple = baseColors.lightPurple
   colors.darkPurple = baseColors.lightPurple
   colors.lightPurple = baseColors.purple
+  colors.shadowA = "rgba(255, 255, 255, 0.16)"
+  colors.shadowB = "rgba(255, 255, 255, 0.23)"
 }
+
+// https://getcssscan.com/css-box-shadow-examples
+// we're using #28
+// rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px
+export const boxShadow = `${colors.shadowA} 0px 3px 6px, ${colors.shadowB} 0px 3px 6px`

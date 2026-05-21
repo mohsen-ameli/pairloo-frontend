@@ -17,7 +17,7 @@ import { prepareChatAtom } from "@/src/store/chat-store"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { commonStyles } from "@/src/styles/common.styles"
 
-export default function userProfile() {
+export default function GeneralProfile() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
@@ -120,19 +120,23 @@ export default function userProfile() {
     <View style={commonStyles.generalContainer}>
       <ScrollView contentContainerStyle={commonStyles.container}>
         {/* Top section for profile picture and username, firstname, lastname, date joined */}
-        <Image
-          source={data.picture ? { uri: data.picture } : require("@/assets/images/default_pfp.png")}
-          style={profileStyles.profileImage}
-        />
-        <Text style={profileStyles.name}>
-          {data.firstName} {data.lastName}
-        </Text>
-        <Text style={profileStyles.text}>@{data.username}</Text>
-        <Text style={profileStyles.textMd}>
-          Joined {new Date(data.createdAt).toLocaleDateString()}
-        </Text>
+        <View style={profileStyles.headerContainer}>
+          <Image
+            source={
+              data.picture ? { uri: data.picture } : require("@/assets/images/default_pfp.png")
+            }
+            style={profileStyles.profileImage}
+          />
+          <Text style={profileStyles.name}>
+            {data.firstName} {data.lastName}
+          </Text>
+          <Text style={profileStyles.text}>@{data.username}</Text>
+          <Text style={profileStyles.textMd}>
+            Joined {new Date(data.createdAt).toLocaleDateString()}
+          </Text>
+        </View>
 
-        {/* show following, followers, current rating */}
+        {/* following, followers, current rating */}
         <View style={profileStyles.socialContainer}>
           <Pressable
             style={profileStyles.socialPressable}

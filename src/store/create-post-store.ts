@@ -109,13 +109,13 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
         socket.disconnect()
         socket.connect()
       } else {
-        const accessToken = await refreshAccessToken(userJwt.refreshToken)
-        if (accessToken === null) {
+        const token = await refreshAccessToken(userJwt.refreshToken)
+        if (!token) {
           set(logOutAtom)
           return
         }
-        await set(userSecureAtom, { ...userJwt, accessToken })
-        socket.io.opts.auth = { token: accessToken }
+        await set(userSecureAtom, { ...userJwt, ...token })
+        socket.io.opts.auth = { token: token.accessToken! }
         socket.connect()
       }
     } catch (err) {

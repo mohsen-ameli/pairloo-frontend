@@ -27,6 +27,7 @@ import Feather from "@expo/vector-icons/Feather"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import CustomButton from "@/src/components/CustomButton"
 import { debounce } from "lodash"
+import WebGoogleMap from "@/src/utils/web-google-map"
 
 type CameraEvent = {
   coordinates: {
@@ -334,7 +335,7 @@ export default function MapSelector() {
           ref={androidMapRef}
           onMapClick={() => Keyboard.dismiss()}
         />
-      ) : AppleMapView ? (
+      ) : Platform.OS === "ios" && AppleMapView ? (
         <>
           <AppleMapView
             style={{ flex: 1 }}
@@ -404,6 +405,16 @@ export default function MapSelector() {
             </TouchableOpacity>
           </View>
         </>
+      ) : Platform.OS === "web" ? (
+        <WebGoogleMap
+          cameraPosition={{
+            coordinates: {
+              lat: region.current.latitude,
+              lng: region.current.longitude,
+            },
+            zoom: region.current.zoom,
+          }}
+        />
       ) : (
         <MapUnavailable
           title="Map could not be loaded"

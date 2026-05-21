@@ -277,10 +277,6 @@ export const styles = StyleSheet.create({
     marginLeft: 5,
     marginBottom: 16,
   },
-  contactButtonContainer: {
-    paddingHorizontal: 16,
-    padding: 16,
-  },
   statusLabel: {
     marginLeft: -5,
     marginTop: 2,

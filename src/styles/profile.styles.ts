@@ -108,6 +108,7 @@ export const profileStyles = StyleSheet.create({
     borderRadius: 20,
   },
   followContainer: {
+    alignSelf: "center",
     flexDirection: "row",
     marginTop: 16,
     gap: 8,

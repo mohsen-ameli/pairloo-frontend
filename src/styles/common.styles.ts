@@ -9,11 +9,11 @@ export const commonStyles = StyleSheet.create({
   generalContainer: {
     flex: 1,
     backgroundColor: colors.light,
-    padding: 10,
+    paddingHorizontal: 5,
   },
   container: {
     backgroundColor: colors.light,
-    paddingVertical: 10,
+    padding: 10,
     width: isWeb && windowWidth > 720 ? "40%" : "100%",
     alignSelf: "center",
   },
@@ -23,19 +23,26 @@ export const commonStyles = StyleSheet.create({
     backgroundColor: colors.light,
     borderRadius: 12,
     padding: 4,
-    marginBottom: 12,
+    marginBottom: 15,
     boxShadow,
   },
   cardImageContainer: {
     width: "100%",
     height: isWeb ? 450 : 250,
     borderRadius: 8,
-    margin: 8,
   },
   cardImage: {
     width: "100%",
     height: "100%",
     borderRadius: 8,
+  },
+
+  // Buttons
+  floatingButton: {
+    width: Platform.OS === "web" ? "40%" : "100%",
+    alignSelf: "center",
+    paddingHorizontal: 16,
+    padding: 16,
   },
 
   // Error styles

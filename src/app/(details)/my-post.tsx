@@ -23,6 +23,7 @@ import MapUnavailable from "@/src/components/MapUnavailable"
 import { sinceNow } from "@/src/utils/format-date"
 import { getStatusColor } from "@/src/utils/get-color"
 import { commonStyles } from "@/src/styles/common.styles"
+import WebGoogleMap from "@/src/utils/web-google-map"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -39,6 +40,7 @@ export default function PostDetails() {
     isError,
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
   const statusMenuRef = useRef<MenuComponentRef>(null)
@@ -166,11 +168,6 @@ export default function PostDetails() {
                   <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                     <LoadingIndicator loading={true} />
                   </View>
-                ) : isExpoGo || !maps ? (
-                  <MapUnavailable
-                    title="Map preview unavailable in Expo Go"
-                    description="This post still shows the location details, but native map rendering requires a development build."
-                  />
                 ) : Platform.OS === "android" && GoogleMapView ? (
                   <GoogleMapView
                     style={styles.mapFlexContainer}
@@ -203,11 +200,26 @@ export default function PostDetails() {
                       myLocationButtonEnabled: false,
                     }}
                   />
-                ) : (
-                  <MapUnavailable
-                    title="Map preview unavailable"
-                    description="The native map view failed to load."
+                ) : Platform.OS === "web" ? (
+                  <WebGoogleMap
+                    cameraPosition={{
+                      coordinates: {
+                        lat: post.location.latitude,
+                        lng: post.location.longitude,
+                      },
+                      zoom: post.distance
+                        ? radiusMetersToZoom(post.distance, post.location.latitude)
+                        : 12,
+                    }}
+                    zoomControl={false}
                   />
+                ) : (
+                  (isExpoGo || !maps) && (
+                    <MapUnavailable
+                      title="Map preview unavailable"
+                      description="The native map view failed to load."
+                    />
+                  )
                 )}
               </View>
               <View style={styles.mapOverlayContainer}>

@@ -585,13 +585,15 @@ export const authFetchAtom = atom(
         let res = await fetchWithCookies()
 
         if (res.status === 401 || res.status === 403) {
-          await refreshAccessToken()
-          res = await fetchWithCookies()
-
-          if (res.status === 401 || res.status === 403) {
-            set(logOutAtom)
-            throw new Error("Session expired. Please log in again.")
+          const token = await refreshAccessToken()
+          if (token) {
+            res = await fetchWithCookies()
+            set(userSecureAtom, { ...get(userSecureAtom), _id: token._id })
+            return res
           }
+
+          set(logOutAtom)
+          throw new Error("Session expired. Please log in again.")
         }
 
         return res
@@ -606,11 +608,11 @@ export const authFetchAtom = atom(
       let res = await fetchWithToken(user.accessToken)
 
       if (res.status === 401 || res.status === 403) {
-        const accessToken = await refreshAccessToken(user.refreshToken)
+        const token = await refreshAccessToken(user.refreshToken)
 
-        if (accessToken) {
-          set(userSecureAtom, { ...user, accessToken })
-          res = await fetchWithToken(accessToken)
+        if (token) {
+          set(userSecureAtom, { ...user, ...token })
+          res = await fetchWithToken(token.accessToken!)
           return res
         }
 

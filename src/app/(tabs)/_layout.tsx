@@ -62,9 +62,6 @@ export default function ProtectedLayout() {
         tabBarStyle: Platform.OS === "web" && {
           height: 60,
         },
-        tabBarBackground() {
-          return <View style={{ backgroundColor: colors.light, flex: 1 }} />
-        },
       }}
       safeAreaInsets={{
         bottom: Platform.OS === "android" ? insets.bottom + 10 : insets.bottom,

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Pressable, Alert } from "react-native"
+import { View, Text, TouchableOpacity, Pressable, Alert, Platform } from "react-native"
 import React, { useCallback, useState } from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
@@ -139,7 +139,7 @@ function ChatHeader() {
   function goToUserProfile() {
     cleanupChat()
     router.push({
-      pathname: "(details)/profile",
+      pathname: "(details)/general-profile",
       params: { id: otherUser?._id },
     })
   }
@@ -156,15 +156,16 @@ function ChatHeader() {
   return (
     <View
       style={{
-        gap: 5,
+        flex: 1,
         paddingBottom: 12,
         paddingLeft: 6,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
         backgroundColor: colors.light,
         borderBottomColor: colors.lightGray,
         borderBottomWidth: 1,
-        paddingTop: insets.top,
+        paddingTop: insets.top + 6,
       }}
     >
       <Pressable
@@ -181,76 +182,90 @@ function ChatHeader() {
         <Feather name="arrow-left" size={26} color={colors.dark} />
       </Pressable>
 
-      <TouchableOpacity onPress={goToUserProfile}>
-        <Image
-          source={
-            otherUser?.picture && otherUser?.picture
-              ? { uri: otherUser?.picture }
-              : defaultProfilePicture
-          }
-          style={
-            currentConversation.contactedPosts.length > 0
-              ? styles.profileImageContacted
-              : styles.profileImageNotContacted
-          }
-        />
-      </TouchableOpacity>
-
-      <View style={{ gap: 2 }}>
-        <TouchableOpacity onPress={goToUserProfile} style={styles.otherProfileUsername}>
-          <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          justifyContent: "center",
+        }}
+      >
+        {/* profile picture */}
+        <TouchableOpacity onPress={goToUserProfile}>
+          <Image
+            source={
+              otherUser?.picture && otherUser?.picture
+                ? { uri: otherUser?.picture }
+                : defaultProfilePicture
+            }
+            style={
+              currentConversation.contactedPosts.length > 0
+                ? styles.profileImageContacted
+                : styles.profileImageNotContacted
+            }
+          />
         </TouchableOpacity>
 
-        {currentConversation.contactedPosts.length > 0 && (
-          <MenuView
-            onPressAction={({ nativeEvent }) => {
-              if (nativeEvent.event === "general") {
-                setActivePostId(null)
-              } else {
-                setActivePostId(nativeEvent.event)
-              }
-              setLoading(true)
-              setEntireChatLoaded(false)
-              setMessages([])
-            }}
-            actions={[
-              {
-                id: "general",
-                title: DEFAULT_CHAT_TITLE,
-              },
-              ...currentConversation.contactedPosts.map(post => ({
-                id: post.postId,
-                title: post.title,
-                titleColor: colors.dark,
-              })),
-            ]}
-            testID="menuView"
-            style={{ width: "90%" }}
-          >
-            <View
-              style={{
-                minWidth: "90%",
-                maxWidth: "90%",
-                paddingVertical: 8,
-                paddingLeft: 6,
-                paddingRight: 20,
-                marginTop: 4,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-                borderRadius: 6,
-                borderColor: colors.darkPurple,
-                borderWidth: 1.5,
+        {/* username and dropdown menu */}
+        <View style={{ gap: 2 }}>
+          <TouchableOpacity onPress={goToUserProfile} style={styles.otherProfileUsername}>
+            <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+          </TouchableOpacity>
+
+          {currentConversation.contactedPosts.length > 0 && (
+            <MenuView
+              onPressAction={({ nativeEvent }) => {
+                if (nativeEvent.event === "general") {
+                  setActivePostId(null)
+                } else {
+                  setActivePostId(nativeEvent.event)
+                }
+                setLoading(true)
+                setEntireChatLoaded(false)
+                setMessages([])
               }}
+              actions={[
+                {
+                  id: "general",
+                  title: DEFAULT_CHAT_TITLE,
+                },
+                ...currentConversation.contactedPosts.map(post => ({
+                  id: post.postId,
+                  title: post.title,
+                  titleColor: colors.dark,
+                })),
+              ]}
+              testID="menuView"
+              style={{ width: Platform.OS === "web" ? 240 : "90%" }}
             >
-              <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
-              <Text style={{ color: colors.dark, fontSize: 14 }} numberOfLines={1}>
-                {activeChat}
-              </Text>
-            </View>
-          </MenuView>
-        )}
+              <View
+                style={{
+                  minWidth: Platform.OS === "web" ? 240 : "90%",
+                  maxWidth: Platform.OS === "web" ? 240 : "90%",
+                  paddingVertical: 8,
+                  paddingLeft: 6,
+                  paddingRight: 20,
+                  marginTop: 4,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  borderRadius: 6,
+                  borderColor: colors.darkPurple,
+                  borderWidth: 1.5,
+                }}
+              >
+                <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
+                <Text style={{ color: colors.dark, fontSize: 14 }} numberOfLines={1}>
+                  {activeChat}
+                </Text>
+              </View>
+            </MenuView>
+          )}
+        </View>
       </View>
+
+      {Platform.OS === "web" && <View style={{ width: 40, height: 40 }} />}
     </View>
   )
 }

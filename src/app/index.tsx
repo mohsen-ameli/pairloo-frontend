@@ -5,6 +5,7 @@ import { Text, View } from "react-native"
 import { useState } from "react"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import ContinueWithGoogle from "./(auth)/continue-with-google"
+import { commonStyles } from "../styles/common.styles"
 
 export default function Landing() {
   const [loading, setLoading] = useState(false)
@@ -13,60 +14,65 @@ export default function Landing() {
     <>
       <LoadingIndicator loading={loading} />
 
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.light,
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingTop: 120,
-          paddingBottom: 30,
-          padding: 20,
-        }}
-      >
+      <View style={commonStyles.generalContainer}>
         <View
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 20,
-            marginHorizontal: 20,
-          }}
+          style={[
+            commonStyles.container,
+            {
+              flex: 1,
+              backgroundColor: colors.light,
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingTop: 120,
+              paddingBottom: 30,
+              padding: 20,
+            },
+          ]}
         >
-          <Text
+          <View
             style={{
-              color: colors.dark,
-              fontSize: 50,
-              fontWeight: "bold",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 20,
+              marginHorizontal: 20,
             }}
           >
-            Pairloo
-          </Text>
-          <Text
-            style={{
-              color: colors.dark,
-              fontSize: 20,
-              fontWeight: "bold",
-              textAlign: "center",
-            }}
-          >
-            Connect with people
-          </Text>
-        </View>
-
-        <View style={{ width: "100%", gap: 20 }}>
-          <CustomLink href="/register">Create account</CustomLink>
-          <Link href="/login">
             <Text
               style={{
-                color: colors.purple,
-                textAlign: "center",
-                fontSize: 20,
+                color: colors.dark,
+                fontSize: 50,
+                fontWeight: "bold",
               }}
             >
-              Log in
+              Pairloo
             </Text>
-          </Link>
-          <ContinueWithGoogle setLoading={setLoading} />
+            <Text
+              style={{
+                color: colors.dark,
+                fontSize: 20,
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              Connect with people
+            </Text>
+          </View>
+
+          <View style={{ width: "100%", gap: 20 }}>
+            <CustomLink href="/register">Create account</CustomLink>
+            <Link href="/login" style={{ alignSelf: "center" }}>
+              <Text
+                style={{
+                  color: colors.purple,
+                  textAlign: "center",
+                  fontSize: 20,
+                }}
+              >
+                Log in
+              </Text>
+            </Link>
+            <ContinueWithGoogle setLoading={setLoading} />
+          </View>
         </View>
       </View>
     </>
