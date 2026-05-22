@@ -260,7 +260,11 @@ function Menu() {
   }
 
   function handleReport() {
-    Alert.alert("Feature Coming Soon", "Report button will be implemented later")
+    Toast.show({
+      type: "info",
+      text1: "Feature Coming Soon",
+      text2: "Report button will be implemented later",
+    })
   }
 
   return (

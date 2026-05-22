@@ -7,7 +7,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { colors } from "@/src/utils/colors"
 import { maybeCompleteAuthSession } from "expo-web-browser"
-import Toast from "react-native-toast-message"
+import Toast, { BaseToast, ToastProps } from "react-native-toast-message"
 import CustomToast from "@/src/components/CustomToast"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { queryClientAtom } from "@/src/store/general-store"
@@ -29,7 +29,25 @@ import { setupAds } from "@/src/store/ad-store"
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
 
+const BetterBaseToast = (props: ToastProps, color: string) => (
+  <BaseToast
+    {...props}
+    text1Style={{ fontSize: 16, fontWeight: "600" }}
+    text2Style={{ fontSize: 14, flexWrap: "wrap" }}
+    text1NumberOfLines={2}
+    text2NumberOfLines={10}
+    style={{
+      borderLeftColor: color,
+      minHeight: props.type === "info" ? 100 : undefined,
+      paddingVertical: 6,
+    }}
+  />
+)
+
 const toastConfig = {
+  success: (props: ToastProps) => BetterBaseToast(props, colors.successGreen),
+  error: (props: ToastProps) => BetterBaseToast(props, colors.errorRed),
+  info: (props: ToastProps) => BetterBaseToast(props, colors.blue),
   newMessage: ({
     props,
     onPress,
@@ -73,6 +91,7 @@ export default function RootLayout() {
   )
   const initialHrefHandledRef = useRef(false)
 
+  // Notifications
   useEffect(() => {
     async function setupNotifications() {
       // Guard to make sure only authenticated users can register for push notifications
@@ -113,6 +132,7 @@ export default function RootLayout() {
     setupAds()
   }, [])
 
+  // Deep linking
   useEffect(() => {
     if (Platform.OS === "web") return
 
@@ -138,6 +158,7 @@ export default function RootLayout() {
     }
   }, [])
 
+  // Reroute to initial href
   useEffect(() => {
     if (initialHrefHandledRef.current) return
     if (!userJwt) return

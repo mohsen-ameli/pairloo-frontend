@@ -50,6 +50,7 @@ import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
 import { atom } from "jotai"
 import { commonStyles } from "@/src/styles/common.styles"
+import Toast from "react-native-toast-message"
 
 const scrollTargetIdAtom = atom<string | null>(null)
 
@@ -109,7 +110,10 @@ export default function ChatDetails() {
       if (!entireChatLoaded && socket) {
         loadMoreMessages()
       } else if (entireChatLoaded) {
-        Alert.alert("Error", "The original message could not be found.")
+        Toast.show({
+          type: "error",
+          text1: "The original message could not be found.",
+        })
         setScrollTargetId(null)
       }
     }

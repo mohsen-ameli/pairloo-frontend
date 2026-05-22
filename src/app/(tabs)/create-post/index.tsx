@@ -39,6 +39,7 @@ import { useRouter } from "expo-router"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
 import { commonStyles } from "@/src/styles/common.styles"
+import Toast from "react-native-toast-message"
 
 export default function CreatePost() {
   const router = useRouter()
@@ -363,10 +364,12 @@ export default function CreatePost() {
                   <Text style={createPostStyles.lastPageQuestion}>Public Post</Text>
                   <Pressable
                     onPress={() =>
-                      Alert.alert(
-                        "Public Post",
-                        "Toggle this option to make your post visible to other users.\n\nYou can change this setting anytime."
-                      )
+                      Toast.show({
+                        type: "info",
+                        text1: "Public Post",
+                        text2:
+                          "Toggle this option to make your post visible to other users.\n\nYou can change this setting anytime.",
+                      })
                     }
                   >
                     <Feather name="info" size={20} color={colors.gray} />

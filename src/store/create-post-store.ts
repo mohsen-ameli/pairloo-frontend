@@ -15,6 +15,7 @@ import { ImageObject } from "@/src/types/image-object.type"
 import { queryClientAtom } from "./general-store"
 import { LocationType } from "@/src/types/location.type"
 import { CreatePostClientSocket } from "../types/socket/create-post-socket.types"
+import Toast from "react-native-toast-message"
 
 /**
  * How things work:
@@ -99,7 +100,11 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("error", (err: any) => {
     console.error("WebSocket error event:", err)
     set(loadingAtom, false)
-    Alert.alert("Connection Error", "An error occurred with the connection. Please try again.")
+    Toast.show({
+      type: "error",
+      text1: "Connection error",
+      text2: "An error occurred with the connection. Please try again.",
+    })
   })
 
   socket.on("connect_error", async () => {
@@ -208,13 +213,18 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   // If on the last page, submit
   if (currPage === pageCount - 1) {
     if (!title || title.trim() === "") {
-      Alert.alert("Title required", "Please enter a title for your post.")
+      Toast.show({
+        type: "error",
+        text1: "Title required",
+        text2: "Please enter a title for your post.",
+      })
       return
     } else if (description && description.trim() === "") {
-      Alert.alert(
-        "Description cannot be empty",
-        "If you want to add a description, it cannot be empty."
-      )
+      Toast.show({
+        type: "error",
+        text1: "Description required",
+        text2: "Please enter a description for your post.",
+      })
       return
     }
     set(loadingAtom, true)
@@ -302,30 +312,60 @@ export const discardDraftAtom = atom(null, async (get, set) => {
     if (window.confirm("Are you sure you want to discard the current draft?")) {
       discard()
     }
-  } else {
-    Alert.alert("Discard Draft", "Are you sure you want to discard the current draft?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Discard",
-        style: "destructive",
-        onPress: discard,
-      },
-    ])
+    return
   }
+
+  Alert.alert("Discard Draft", "Are you sure you want to discard the current draft?", [
+    {
+      text: "Cancel",
+      style: "cancel",
+    },
+    {
+      text: "Discard",
+      style: "destructive",
+      onPress: discard,
+    },
+  ])
 })
 
 export const getNewQuestionAtom = atom(null, async (get, set) => {
   const socket = get(createPostSocketAtom)
   const qna = get(qnaAtom)
   const currPage = get(currPageAtom)
-  if (!socket) return
   if (currPage >= qna.length) return
 
-  {
-    Alert.alert("Get New Question", "Are you sure you want to get a different question?", [
+  function getNew() {
+    if (currPage === 0) {
+      // If on the first page, just restart
+      set(loadingAtom, true)
+      socket?.emit("discardDraft")
+      return
+    } else if (currPage === qna.length + 1) {
+      // If on the last page, do nothing
+      return
+    }
+
+    set(loadingAtom, true)
+    const qnaSlice = qna.slice(0, currPage)
+    set(currPageAtom, curr => curr - 1)
+    socket?.emit("chat", qnaSlice)
+  }
+
+  if (Platform.OS === "web") {
+    if (
+      window.confirm(
+        "Are you sure you want to get a different question? Your current progress on this question will be lost."
+      )
+    ) {
+      getNew()
+    }
+    return
+  }
+
+  Alert.alert(
+    "Get New Question",
+    "Are you sure you want to get a different question? Your current progress on this question will be lost.",
+    [
       {
         text: "Cancel",
         style: "cancel",
@@ -333,23 +373,8 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
       {
         text: "Redo",
         style: "default",
-        onPress: () => {
-          if (currPage === 0) {
-            // If on the first page, just restart
-            set(loadingAtom, true)
-            socket.emit("discardDraft")
-            return
-          } else if (currPage === qna.length + 1) {
-            // If on the last page, do nothing
-            return
-          }
-
-          set(loadingAtom, true)
-          const qnaSlice = qna.slice(0, currPage)
-          set(currPageAtom, curr => curr - 1)
-          socket.emit("chat", qnaSlice)
-        },
+        onPress: getNew,
       },
-    ])
-  }
+    ]
+  )
 })

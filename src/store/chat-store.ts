@@ -337,26 +337,8 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
 
     // If message is empty, show delete confirmation alert
     if (!content.trim()) {
-      Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
-        {
-          text: "Cancel",
-          onPress: () => {},
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          onPress: async () => {
-            try {
-              await set(deleteMessageAtom, editingMessage._id, editingMessage.conversationId)
-              set(editingMessageAtom, null)
-            } catch (error) {
-              console.error("Delete error:", error)
-              Alert.alert("Error", "Failed to delete message")
-            }
-          },
-          style: "destructive",
-        },
-      ])
+      await set(deleteMessageAtom, editingMessage._id, editingMessage.conversationId)
+      set(editingMessageAtom, null)
       return
     }
 
@@ -439,15 +421,42 @@ export const sendAttachmentAtom = atom(null, async (get, set, option: "library" 
 export const deleteMessageAtom = atom(
   null,
   async (get, set, messageId: string, conversationId: string) => {
-    const socket = get(chatSocketAtom)
-    if (!socket) return
+    async function handleDelete() {
+      try {
+        set(messagesAtom, prev => prev.filter(msg => msg._id !== messageId))
 
-    set(messagesAtom, prev => prev.filter(msg => msg._id !== messageId))
+        get(chatSocketAtom)?.emit("deleteMessage", {
+          messageId,
+          conversationId,
+        })
+      } catch (error) {
+        console.error("Delete error:", error)
+        Toast.show({
+          type: "error",
+          text1: "Failed to delete message. Please try again.",
+        })
+      }
+    }
 
-    socket.emit("deleteMessage", {
-      messageId,
-      conversationId,
-    })
+    if (Platform.OS === "web") {
+      if (confirm("Are you sure you want to delete this message?")) {
+        handleDelete()
+      }
+      return
+    }
+
+    Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
+      {
+        text: "Cancel",
+        onPress: () => {},
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        onPress: handleDelete,
+        style: "destructive",
+      },
+    ])
   }
 )
 

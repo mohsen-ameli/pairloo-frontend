@@ -30,6 +30,7 @@ import { MenuView } from "@react-native-menu/menu"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { chatSocketAtom } from "../store/socket-store"
 import DropdownMenu from "../components/DropdownMenu"
+import Toast from "react-native-toast-message"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -305,7 +306,10 @@ function PostDetailsHeader() {
       style={{ padding: 6 }}
       onPress={async () => {
         if (!feedPostId) {
-          Alert.alert("Error", "Something went wrong. Post was not saved.")
+          Toast.show({
+            type: "error",
+            text1: "Could not save post. Please try again later.",
+          })
           return
         }
 

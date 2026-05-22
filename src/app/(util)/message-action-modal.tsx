@@ -74,32 +74,9 @@ export default function MessageActionModal() {
     handleModalClose()
   }
 
-  function handleDeletePress() {
-    if (!currentLongPressedMessage) return
-
-    Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
-      {
-        text: "Cancel",
-        onPress: () => {},
-        style: "cancel",
-      },
-      {
-        text: "Delete",
-        onPress: async () => {
-          try {
-            await deleteMessage(
-              currentLongPressedMessage._id,
-              currentLongPressedMessage.conversationId
-            )
-            handleModalClose()
-          } catch (error) {
-            console.error("Delete error:", error)
-            Alert.alert("Error", "Failed to delete message")
-          }
-        },
-        style: "destructive",
-      },
-    ])
+  async function handleDeletePress() {
+    await deleteMessage(currentLongPressedMessage!._id, currentLongPressedMessage!.conversationId)
+    handleModalClose()
   }
 
   const buttonStyle = {
