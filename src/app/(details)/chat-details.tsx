@@ -4,10 +4,10 @@ import {
   Pressable,
   TextInput,
   Dimensions,
-  Alert,
   ActivityIndicator,
   TouchableOpacity,
   Keyboard,
+  FlatList,
 } from "react-native"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
@@ -44,7 +44,7 @@ import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import { Stack, useFocusEffect } from "expo-router"
-import { FlashList, FlashListRef } from "@shopify/flash-list"
+import { FlashList } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
@@ -68,7 +68,7 @@ export default function ChatDetails() {
   const activePostId = useAtomValue(activePostIdAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
   const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
-  const chatRef = useRef<FlashListRef<MessageType>>(null)
+  const chatRef = useRef<FlatList>(null)
   const inputRef = useRef<TextInput>(null!)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const detailOptions = useCustomHeader({ title: "", inChat: true })
@@ -132,12 +132,7 @@ export default function ChatDetails() {
 
   // Scroll to bottom when a new message is received
   useEffect(() => {
-    // delay to ensure the list has been re-rendered
-    const timer = setTimeout(() => {
-      chatRef.current?.scrollToTop({ animated: true })
-    }, 100)
-
-    return () => clearTimeout(timer)
+    chatRef.current?.scrollToOffset({ offset: 0, animated: true })
   }, [receivedMsg])
 
   // When a message is selected for editing, populate the input
@@ -237,7 +232,7 @@ export default function ChatDetails() {
       <LoadingIndicator loading={loading} opacity={0.5} />
 
       <View style={commonStyles.generalContainer}>
-        <FlashList
+        <FlatList
           inverted
           data={messages}
           ref={chatRef}
@@ -245,10 +240,17 @@ export default function ChatDetails() {
           style={commonStyles.container}
           keyExtractor={item => item._id}
           onEndReached={loadMoreMessages}
-          scrollIndicatorInsets={{ left: 10 }}
-          showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
           renderItem={({ item, index }) => (
             <>
+              <MessageItem
+                item={item}
+                messages={messages}
+                chatRef={chatRef}
+                inputRef={inputRef}
+                isOwnMessage={userJwt?._id === item.sender._id}
+              />
               {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
               {index === messages.length - 1 && !entireChatLoaded && (
                 <ActivityIndicator
@@ -257,13 +259,6 @@ export default function ChatDetails() {
                   color={colors.blue}
                 />
               )}
-              <MessageItem
-                item={item}
-                messages={messages}
-                chatRef={chatRef}
-                inputRef={inputRef}
-                isOwnMessage={userJwt?._id === item.sender._id}
-              />
             </>
           )}
           ListFooterComponent={<View style={chatStyles.listFooter} />}
@@ -274,10 +269,11 @@ export default function ChatDetails() {
         />
       </View>
 
+      {/* Scroll to bottom button */}
       {showScrollToBottom && (
         <Animated.View style={[{ position: "absolute", right: 20, zIndex: 2 }, botAnimation]}>
           <TouchableOpacity
-            onPress={() => chatRef.current?.scrollToTop({ animated: true })}
+            onPress={() => chatRef.current?.scrollToOffset({ offset: 0, animated: true })}
             style={chatStyles.scrollToBottomButton}
           >
             <Feather name="arrow-down" size={24} color={colors.dark} />
@@ -402,7 +398,7 @@ function MessageItem({
 }: {
   item: MessageType
   messages: MessageType[]
-  chatRef: React.RefObject<FlashListRef<MessageType> | null>
+  chatRef: React.RefObject<FlatList | null>
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
@@ -426,15 +422,12 @@ function MessageItem({
       return
     }
 
-    chatRef.current
-      ?.scrollToIndex({
-        index: originalMessageIndex,
-        animated: true,
-        viewPosition: 0.5,
-      })
-      .then(() => {
-        setHighlightedMessageId(item.replyTo!._id)
-      })
+    chatRef.current?.scrollToIndex({
+      index: originalMessageIndex,
+      animated: true,
+      viewPosition: 0.5,
+    })
+    setHighlightedMessageId(item.replyTo!._id)
   }
 
   function focusOnInput() {
