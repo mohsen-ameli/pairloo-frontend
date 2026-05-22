@@ -22,7 +22,7 @@ import MapUnavailable from "@/src/components/MapUnavailable"
 import { sinceNow } from "@/src/utils/format-date"
 import { getStatusColor } from "@/src/utils/get-color"
 import { commonStyles } from "@/src/styles/common.styles"
-import WebGoogleMap from "@/src/utils/web-google-map"
+import WebGoogleMap from "@/src/components/WebGoogleMap"
 import DropdownMenu from "@/src/components/DropdownMenu"
 
 export default function PostDetails() {

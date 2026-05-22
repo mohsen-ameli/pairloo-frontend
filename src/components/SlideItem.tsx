@@ -1,4 +1,5 @@
 import {
+  Dimensions,
   type ImageStyle,
   Platform,
   Pressable,
@@ -15,6 +16,8 @@ import { imgIndexAtom } from "../store/chat-store"
 import { useRouter } from "expo-router"
 import { commonStyles } from "../styles/common.styles"
 import { isDraggingAtom } from "./ImageCarousel"
+
+const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
 
 export function SlideItem({
   style,
@@ -36,7 +39,7 @@ export function SlideItem({
     <Pressable
       style={{
         width: "100%",
-        height: Platform.OS === "web" ? 500 : 300,
+        height: isWeb ? 500 : 300,
         borderRadius: 8,
       }}
       onPress={() => {

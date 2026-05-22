@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Pressable, Alert, Platform } from "react-native"
+import { View, Text, TouchableOpacity, Pressable, Alert, Platform, Dimensions } from "react-native"
 import React, { useCallback, useState } from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
@@ -26,13 +26,13 @@ import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { MyPostMenu } from "../components/MyPostMenu"
-import { MenuView } from "@react-native-menu/menu"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { chatSocketAtom } from "../store/socket-store"
 import DropdownMenu from "../components/DropdownMenu"
 import Toast from "react-native-toast-message"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
+const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
 
 export default function useCustomHeader({
   title,
@@ -189,7 +189,7 @@ function ChatHeader() {
           flexDirection: "row",
           alignItems: "center",
           gap: 10,
-          justifyContent: Platform.OS === "web" ? "center" : "flex-start",
+          justifyContent: isWeb ? "center" : "flex-start",
         }}
       >
         {/* profile picture */}
@@ -217,7 +217,7 @@ function ChatHeader() {
           {currentConversation.contactedPosts.length > 0 && (
             <DropdownMenu
               anchor="bottom-left"
-              width={Platform.OS === "web" ? 400 : 300}
+              width={isWeb ? 400 : Dimensions.get("window").width - 120}
               onPressAction={action => {
                 if (action === "general") {
                   setActivePostId(null)
@@ -243,8 +243,8 @@ function ChatHeader() {
             >
               <View
                 style={{
-                  minWidth: Platform.OS === "web" ? 240 : "90%",
-                  maxWidth: Platform.OS === "web" ? 240 : "90%",
+                  minWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
+                  maxWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
                   paddingVertical: 8,
                   paddingLeft: 6,
                   paddingRight: 20,
@@ -267,7 +267,7 @@ function ChatHeader() {
         </View>
       </View>
 
-      {Platform.OS === "web" && <View style={{ width: 40, height: 40 }} />}
+      {isWeb && <View style={{ width: 40, height: 40 }} />}
     </View>
   )
 }

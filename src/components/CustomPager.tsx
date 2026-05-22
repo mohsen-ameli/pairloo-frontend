@@ -1,5 +1,14 @@
 import { Children, ReactNode, useEffect, useRef, useState } from "react"
-import { Animated as A, Easing, Keyboard, Platform, Pressable, Text, View } from "react-native"
+import {
+  Animated as A,
+  Dimensions,
+  Easing,
+  Keyboard,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native"
 import { colors } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
@@ -122,7 +131,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
       {/* Next button */}
       <Animated.View
         style={
-          Platform.OS === "web"
+          Platform.OS === "web" && Dimensions.get("window").width > 700
             ? [
                 {
                   position: "absolute",

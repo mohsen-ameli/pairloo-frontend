@@ -19,7 +19,7 @@ import MapUnavailable from "@/src/components/MapUnavailable"
 import { getStatusColor } from "@/src/utils/get-color"
 import { prepareChatAtom } from "@/src/store/chat-store"
 import { commonStyles } from "@/src/styles/common.styles"
-import WebGoogleMap from "@/src/utils/web-google-map"
+import WebGoogleMap from "@/src/components/WebGoogleMap"
 
 export default function PostDetails() {
   const router = useRouter()

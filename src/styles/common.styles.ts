@@ -2,7 +2,7 @@ import { Dimensions, Platform, StyleSheet } from "react-native"
 import { boxShadow, colors } from "@/src/utils/colors"
 
 const windowWidth = Dimensions.get("screen").width
-const isWeb = Platform.OS === "web"
+const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
 
 export const commonStyles = StyleSheet.create({
   // Containers
@@ -39,7 +39,7 @@ export const commonStyles = StyleSheet.create({
 
   // Buttons
   floatingButton: {
-    width: Platform.OS === "web" ? "40%" : "100%",
+    width: isWeb ? "40%" : "100%",
     alignSelf: "center",
     paddingHorizontal: 16,
     padding: 16,

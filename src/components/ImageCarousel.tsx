@@ -8,7 +8,8 @@ import { atom, useSetAtom } from "jotai"
 import { bigImageViewAtom } from "../store/chat-store"
 
 const w = Dimensions.get("window").width
-let width = Platform.OS === "web" ? w * 0.3 : w
+const isWeb = Platform.OS === "web" && w > 700
+let width = isWeb ? w * 0.3 : w
 
 export const isDraggingAtom = atom(false)
 
@@ -54,7 +55,7 @@ export default function ImageCarousel({
         flex: 1,
         alignItems: "center",
         paddingBottom: 20,
-        height: Platform.OS === "web" ? 550 : 350,
+        height: isWeb ? 550 : 350,
       }}
     >
       <Carousel
@@ -64,7 +65,7 @@ export default function ImageCarousel({
         pagingEnabled={true}
         snapEnabled={true}
         width={width}
-        style={{ width, height: Platform.OS === "web" ? 500 : 300 }}
+        style={{ width, height: isWeb ? 500 : 300 }}
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,

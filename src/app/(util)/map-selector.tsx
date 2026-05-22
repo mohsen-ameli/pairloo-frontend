@@ -27,7 +27,7 @@ import Feather from "@expo/vector-icons/Feather"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import CustomButton from "@/src/components/CustomButton"
 import { debounce } from "lodash"
-import WebGoogleMap from "@/src/utils/web-google-map"
+import WebGoogleMap from "@/src/components/WebGoogleMap"
 
 type CameraEvent = {
   coordinates: {
