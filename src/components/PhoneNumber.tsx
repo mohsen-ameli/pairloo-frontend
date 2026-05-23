@@ -82,6 +82,7 @@ export default function PhoneNumberNative() {
         <Text
           style={{
             fontSize: 16,
+            color: colors.dark,
           }}
         >{`${country?.flag}  (${country?.callingCode})`}</Text>
       </Pressable>
@@ -101,7 +102,7 @@ export default function PhoneNumberNative() {
               }}
               style={commonStyles.dismissButton}
             >
-              <Feather name="x" size={20} color={colors.dark} />
+              <Feather name="x" size={26} color={colors.dark} />
             </TouchableOpacity>
             <TextInput
               style={commonStyles.searchInput}
@@ -127,7 +128,7 @@ export default function PhoneNumberNative() {
                   marginBottom: 5,
                   borderBottomColor: colors.borderGray,
                   borderBottomWidth: 0.5,
-                  backgroundColor: colorScheme === "dark" ? colors.dark : colors.light,
+                  backgroundColor: colors.light,
                 }}
                 onPress={() => {
                   onSelect(item)
@@ -135,7 +136,7 @@ export default function PhoneNumberNative() {
                 }}
               >
                 <Text style={{ fontSize: 18, marginRight: 10 }}>{item.flag}</Text>
-                <Text style={{ fontSize: 18 }}>
+                <Text style={{ fontSize: 18, color: colors.dark }}>
                   {item.name} ({item.callingCode})
                 </Text>
               </Pressable>

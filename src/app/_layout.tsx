@@ -66,16 +66,16 @@ const toastConfig = {
 }
 
 export default function RootLayout() {
-  const loginOptions = useCustomHeader({ title: "Log In" })
-  const registerOptions = useCustomHeader({ title: "Create Account" })
-  const forgotEmailOptions = useCustomHeader({ title: "Forgot Email" })
+  const loginOptions = useCustomHeader({ title: "Log In", includeBottomPadding: true })
+  const registerOptions = useCustomHeader({ title: "Create Account", includeBottomPadding: true })
+  const forgotEmailOptions = useCustomHeader({ title: "Forgot Email", includeBottomPadding: true })
   const chatOptions = useCustomHeader({ title: "Chat" })
   const myPostOptions = useCustomHeader({ title: "My Post" })
   const postDetailsOptions = useCustomHeader({ title: "Post Details", isPostDetails: true })
-  const defaultOptions = useCustomHeader({ title: "" })
-  const insets = useSafeAreaInsets()
+  const generalProfileOptions = useCustomHeader({ title: "" })
   const router = useRouter()
   const pathname = usePathname()
+  const insets = useSafeAreaInsets()
 
   const userJwt = useAtomValue(userSecureAtom)
   const queryClient = useAtomValue(queryClientAtom)
@@ -186,7 +186,12 @@ export default function RootLayout() {
   }, [pathname, router, userJwt])
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.lightGray }}>
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+        backgroundColor: colors.light,
+      }}
+    >
       <StatusBar style="auto" />
 
       <KeyboardProvider>
@@ -204,7 +209,7 @@ export default function RootLayout() {
               <Stack.Screen name="(details)/chat-details" options={chatOptions} />
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
               <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
-              <Stack.Screen name="(details)/general-profile" options={defaultOptions} />
+              <Stack.Screen name="(details)/general-profile" options={generalProfileOptions} />
               <Stack.Screen
                 name="(details)/review-user"
                 options={{
@@ -233,7 +238,16 @@ export default function RootLayout() {
               />
             </Stack.Protected>
             <Stack.Protected guard={userJwt === null}>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="index"
+                options={{
+                  headerShown: false,
+                  contentStyle: {
+                    backgroundColor: colors.light,
+                    paddingBottom: insets.bottom,
+                  },
+                }}
+              />
               <Stack.Screen name="(auth)/register" options={registerOptions} />
               <Stack.Screen name="(auth)/login" options={loginOptions} />
               <Stack.Screen name="(auth)/forgot-email" options={forgotEmailOptions} />
@@ -244,10 +258,7 @@ export default function RootLayout() {
                 presentation: "formSheet",
                 gestureDirection: "vertical",
                 animation: "slide_from_bottom",
-                contentStyle: {
-                  backgroundColor: colors.light,
-                  paddingBottom: insets.bottom + 20,
-                },
+                contentStyle: { backgroundColor: colors.light },
                 headerShown: false,
                 sheetGrabberVisible: false,
                 sheetAllowedDetents: "fitToContents",

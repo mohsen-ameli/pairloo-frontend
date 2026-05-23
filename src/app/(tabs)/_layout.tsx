@@ -59,9 +59,15 @@ export default function ProtectedLayout() {
         tabBarInactiveTintColor: colors.dark,
         tabBarInactiveBackgroundColor: colors.light,
         headerShown: false,
-        tabBarStyle: Platform.OS === "web" && {
-          height: 60,
-        },
+        tabBarStyle:
+          Platform.OS === "web"
+            ? {
+                backgroundColor: colors.light,
+                height: 60,
+              }
+            : {
+                backgroundColor: colors.light,
+              },
       }}
       safeAreaInsets={{
         bottom: Platform.OS === "android" ? insets.bottom + 10 : insets.bottom,

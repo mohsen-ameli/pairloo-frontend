@@ -42,6 +42,7 @@ export default function useCustomHeader({
   isPostDetails = false,
   isMyPostDetails = false,
   isProfile = false,
+  includeBottomPadding = false,
 }: {
   title: string
   postId?: string
@@ -50,6 +51,7 @@ export default function useCustomHeader({
   isPostDetails?: boolean
   isMyPostDetails?: boolean
   isProfile?: boolean
+  includeBottomPadding?: boolean
 }): ExtendedStackNavigationOptions {
   const insets = useSafeAreaInsets()
 
@@ -61,6 +63,12 @@ export default function useCustomHeader({
     headerStyle: styles.header,
     headerBackButtonDisplayMode: "minimal",
     headerTitleStyle: styles.headerTitle,
+    contentStyle: includeBottomPadding
+      ? {
+          paddingBottom: insets.bottom,
+          backgroundColor: colors.light,
+        }
+      : {},
   }
 
   if (inChat) {

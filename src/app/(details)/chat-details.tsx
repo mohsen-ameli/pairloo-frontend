@@ -58,7 +58,8 @@ export default function ChatDetails() {
   const router = useRouter()
   const { conversationId } = useLocalSearchParams<{ conversationId?: string }>()
   const socket = useAtomValue(chatSocketAtom)
-  const [message, setMessage] = useState<string>("")
+  const message = useRef("")
+  const [inputEmpty, setInputEmpty] = useState(true)
   const [inputHeight, setInputHeight] = useState<number>(40)
   const [messages, setMessages] = useAtom(messagesAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
@@ -138,7 +139,7 @@ export default function ChatDetails() {
   // When a message is selected for editing, populate the input
   useEffect(() => {
     if (editingMessage && editingMessage.content) {
-      setMessage(editingMessage.content)
+      message.current = editingMessage.content
       inputRef.current.focus()
     }
   }, [editingMessage])
@@ -179,8 +180,10 @@ export default function ChatDetails() {
   }, [])
 
   async function handleSendMessage() {
-    setMessage("")
-    await sendMessage(message.trim())
+    await sendMessage(message.current.trim())
+    message.current = ""
+    setInputEmpty(true)
+    inputRef.current.clear()
   }
 
   // Animate fake view height
@@ -317,7 +320,7 @@ export default function ChatDetails() {
           <Pressable
             onPress={() => {
               setEditingMessage(null)
-              setMessage("")
+              message.current = ""
             }}
             style={{ backgroundColor: colors.light, padding: 4, borderRadius: 50 }}
           >
@@ -343,7 +346,7 @@ export default function ChatDetails() {
         >
           <Feather name="plus" size={24} color={colors.light} />
         </Pressable>
-        {message.trim() === "" && canReview && !editingMessage && (
+        {message.current.trim() === "" && canReview && !editingMessage && (
           <Pressable
             onPress={() =>
               router.push({ pathname: "review-user", params: { id: otherUser.current?._id } })
@@ -357,8 +360,10 @@ export default function ChatDetails() {
           style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
           placeholder="Type a message..."
           placeholderTextColor={colors.muted}
-          value={message}
-          onChangeText={text => setMessage(text)}
+          onChangeText={text => {
+            message.current = text
+            setInputEmpty(text.trim() === "")
+          }}
           onContentSizeChange={event => {
             setInputHeight(event.nativeEvent.contentSize.height)
           }}
@@ -374,7 +379,7 @@ export default function ChatDetails() {
           <Pressable
             style={[
               chatStyles.actionButton,
-              { display: message.trim() || attachments.length > 0 ? "flex" : "none" },
+              { display: !inputEmpty || attachments.length > 0 ? "flex" : "none" },
             ]}
             onPress={handleSendMessage}
           >
