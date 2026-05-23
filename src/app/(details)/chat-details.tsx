@@ -47,10 +47,11 @@ import { Stack, useFocusEffect } from "expo-router"
 import { FlashList } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
-import { NUM_MESSAGES_TO_LOAD } from "@/src/utils/constants"
+import { NUM_MESSAGES_TO_LOAD, TAB_HEIGHT } from "@/src/utils/constants"
 import { atom } from "jotai"
 import { commonStyles } from "@/src/styles/common.styles"
 import Toast from "react-native-toast-message"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const scrollTargetIdAtom = atom<string | null>(null)
 
@@ -88,6 +89,7 @@ export default function ChatDetails() {
   const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const cleanupChat = useSetAtom(cleanupChatAtom)
+  const insets = useSafeAreaInsets()
 
   // Handle automatic scrolling to replied messages
   useEffect(() => {
@@ -195,7 +197,7 @@ export default function ChatDetails() {
 
   const botAnimation = useAnimatedStyle(() => {
     return {
-      bottom: Math.abs(height.value) + 100,
+      bottom: Math.abs(height.value) + TAB_HEIGHT + insets.bottom,
     }
   }, [])
 

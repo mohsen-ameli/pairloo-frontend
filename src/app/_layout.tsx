@@ -258,7 +258,7 @@ export default function RootLayout() {
                 presentation: "formSheet",
                 gestureDirection: "vertical",
                 animation: "slide_from_bottom",
-                contentStyle: { backgroundColor: colors.light },
+                contentStyle: { backgroundColor: colors.light, paddingBottom: insets.bottom + 20 },
                 headerShown: false,
                 sheetGrabberVisible: false,
                 sheetAllowedDetents: "fitToContents",
