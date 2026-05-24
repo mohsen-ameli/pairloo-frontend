@@ -2,1751 +2,1251 @@
   {
     "name": "Aruba",
     "cca2": "AW",
-    "code": "AW",
-    "flag": "\ud83c\udde6\ud83c\uddfc",
     "callingCode": "+297"
   },
   {
     "name": "Afghanistan",
     "cca2": "AF",
-    "code": "AF",
-    "flag": "\ud83c\udde6\ud83c\uddeb",
     "callingCode": "+93"
   },
   {
     "name": "Angola",
     "cca2": "AO",
-    "code": "AO",
-    "flag": "\ud83c\udde6\ud83c\uddf4",
     "callingCode": "+244"
   },
   {
     "name": "Anguilla",
     "cca2": "AI",
-    "code": "AI",
-    "flag": "\ud83c\udde6\ud83c\uddee",
     "callingCode": "+1264"
   },
   {
     "name": "\u00c5land Islands",
     "cca2": "AX",
-    "code": "AX",
-    "flag": "\ud83c\udde6\ud83c\uddfd",
     "callingCode": "+35818"
   },
   {
     "name": "Albania",
     "cca2": "AL",
-    "code": "AL",
-    "flag": "\ud83c\udde6\ud83c\uddf1",
     "callingCode": "+355"
   },
   {
     "name": "Andorra",
     "cca2": "AD",
-    "code": "AD",
-    "flag": "\ud83c\udde6\ud83c\udde9",
     "callingCode": "+376"
   },
   {
     "name": "United Arab Emirates",
     "cca2": "AE",
-    "code": "AE",
-    "flag": "\ud83c\udde6\ud83c\uddea",
     "callingCode": "+971"
   },
   {
     "name": "Argentina",
     "cca2": "AR",
-    "code": "AR",
-    "flag": "\ud83c\udde6\ud83c\uddf7",
     "callingCode": "+54"
   },
   {
     "name": "Armenia",
     "cca2": "AM",
-    "code": "AM",
-    "flag": "\ud83c\udde6\ud83c\uddf2",
     "callingCode": "+374"
   },
   {
     "name": "American Samoa",
     "cca2": "AS",
-    "code": "AS",
-    "flag": "\ud83c\udde6\ud83c\uddf8",
     "callingCode": "+1684"
   },
   {
     "name": "Antarctica",
     "cca2": "AQ",
-    "code": "AQ",
-    "flag": "\ud83c\udde6\ud83c\uddf6",
     "callingCode": "+672"
   },
   {
     "name": "French Southern and Antarctic Lands",
     "cca2": "TF",
-    "code": "TF",
-    "flag": "\ud83c\uddf9\ud83c\uddeb",
     "callingCode": "+262"
   },
   {
     "name": "Antigua and Barbuda",
     "cca2": "AG",
-    "code": "AG",
-    "flag": "\ud83c\udde6\ud83c\uddec",
     "callingCode": "+1268"
   },
   {
     "name": "Australia",
     "cca2": "AU",
-    "code": "AU",
-    "flag": "\ud83c\udde6\ud83c\uddfa",
     "callingCode": "+61"
   },
   {
     "name": "Austria",
     "cca2": "AT",
-    "code": "AT",
-    "flag": "\ud83c\udde6\ud83c\uddf9",
     "callingCode": "+43"
   },
   {
     "name": "Azerbaijan",
     "cca2": "AZ",
-    "code": "AZ",
-    "flag": "\ud83c\udde6\ud83c\uddff",
     "callingCode": "+994"
   },
   {
     "name": "Burundi",
     "cca2": "BI",
-    "code": "BI",
-    "flag": "\ud83c\udde7\ud83c\uddee",
     "callingCode": "+257"
   },
   {
     "name": "Belgium",
     "cca2": "BE",
-    "code": "BE",
-    "flag": "\ud83c\udde7\ud83c\uddea",
     "callingCode": "+32"
   },
   {
     "name": "Benin",
     "cca2": "BJ",
-    "code": "BJ",
-    "flag": "\ud83c\udde7\ud83c\uddef",
     "callingCode": "+229"
   },
   {
     "name": "Burkina Faso",
     "cca2": "BF",
-    "code": "BF",
-    "flag": "\ud83c\udde7\ud83c\uddeb",
     "callingCode": "+226"
   },
   {
     "name": "Bangladesh",
     "cca2": "BD",
-    "code": "BD",
-    "flag": "\ud83c\udde7\ud83c\udde9",
     "callingCode": "+880"
   },
   {
     "name": "Bulgaria",
     "cca2": "BG",
-    "code": "BG",
-    "flag": "\ud83c\udde7\ud83c\uddec",
     "callingCode": "+359"
   },
   {
     "name": "Bahrain",
     "cca2": "BH",
-    "code": "BH",
-    "flag": "\ud83c\udde7\ud83c\udded",
     "callingCode": "+973"
   },
   {
     "name": "Bahamas",
     "cca2": "BS",
-    "code": "BS",
-    "flag": "\ud83c\udde7\ud83c\uddf8",
     "callingCode": "+1242"
   },
   {
     "name": "Bosnia and Herzegovina",
     "cca2": "BA",
-    "code": "BA",
-    "flag": "\ud83c\udde7\ud83c\udde6",
     "callingCode": "+387"
   },
   {
     "name": "Saint Barth\u00e9lemy",
     "cca2": "BL",
-    "code": "BL",
-    "flag": "\ud83c\udde7\ud83c\uddf1",
     "callingCode": "+590"
   },
   {
     "name": "Saint Helena, Ascension and Tristan da Cunha",
     "cca2": "SH",
-    "code": "SH",
-    "flag": "\ud83c\uddf8\ud83c\udded",
     "callingCode": "+290"
   },
   {
     "name": "Belarus",
     "cca2": "BY",
-    "code": "BY",
-    "flag": "\ud83c\udde7\ud83c\uddfe",
     "callingCode": "+375"
   },
   {
     "name": "Belize",
     "cca2": "BZ",
-    "code": "BZ",
-    "flag": "\ud83c\udde7\ud83c\uddff",
     "callingCode": "+501"
   },
   {
     "name": "Bermuda",
     "cca2": "BM",
-    "code": "BM",
-    "flag": "\ud83c\udde7\ud83c\uddf2",
     "callingCode": "+1441"
   },
   {
     "name": "Bolivia",
     "cca2": "BO",
-    "code": "BO",
-    "flag": "\ud83c\udde7\ud83c\uddf4",
     "callingCode": "+591"
   },
   {
     "name": "Caribbean Netherlands",
     "cca2": "BQ",
-    "code": "BQ",
-    "flag": "",
     "callingCode": "+599"
   },
   {
     "name": "Brazil",
     "cca2": "BR",
-    "code": "BR",
-    "flag": "\ud83c\udde7\ud83c\uddf7",
     "callingCode": "+55"
   },
   {
     "name": "Barbados",
     "cca2": "BB",
-    "code": "BB",
-    "flag": "\ud83c\udde7\ud83c\udde7",
     "callingCode": "+1246"
   },
   {
     "name": "Brunei",
     "cca2": "BN",
-    "code": "BN",
-    "flag": "\ud83c\udde7\ud83c\uddf3",
     "callingCode": "+673"
   },
   {
     "name": "Bhutan",
     "cca2": "BT",
-    "code": "BT",
-    "flag": "\ud83c\udde7\ud83c\uddf9",
     "callingCode": "+975"
   },
   {
     "name": "Bouvet Island",
     "cca2": "BV",
-    "code": "BV",
-    "flag": "\ud83c\udde7\ud83c\uddfb",
     "callingCode": "+47"
   },
   {
     "name": "Botswana",
     "cca2": "BW",
-    "code": "BW",
-    "flag": "\ud83c\udde7\ud83c\uddfc",
     "callingCode": "+267"
   },
   {
     "name": "Central African Republic",
     "cca2": "CF",
-    "code": "CF",
-    "flag": "\ud83c\udde8\ud83c\uddeb",
     "callingCode": "+236"
   },
   {
     "name": "Canada",
     "cca2": "CA",
-    "code": "CA",
-    "flag": "\ud83c\udde8\ud83c\udde6",
     "callingCode": "+1"
   },
   {
     "name": "Cocos (Keeling) Islands",
     "cca2": "CC",
-    "code": "CC",
-    "flag": "\ud83c\udde8\ud83c\udde8",
     "callingCode": "+61"
   },
   {
     "name": "Switzerland",
     "cca2": "CH",
-    "code": "CH",
-    "flag": "\ud83c\udde8\ud83c\udded",
     "callingCode": "+41"
   },
   {
     "name": "Chile",
     "cca2": "CL",
-    "code": "CL",
-    "flag": "\ud83c\udde8\ud83c\uddf1",
     "callingCode": "+56"
   },
   {
     "name": "China",
     "cca2": "CN",
-    "code": "CN",
-    "flag": "\ud83c\udde8\ud83c\uddf3",
     "callingCode": "+86"
   },
   {
     "name": "Ivory Coast",
     "cca2": "CI",
-    "code": "CI",
-    "flag": "\ud83c\udde8\ud83c\uddee",
     "callingCode": "+225"
   },
   {
     "name": "Cameroon",
     "cca2": "CM",
-    "code": "CM",
-    "flag": "\ud83c\udde8\ud83c\uddf2",
     "callingCode": "+237"
   },
   {
     "name": "DR Congo",
     "cca2": "CD",
-    "code": "CD",
-    "flag": "\ud83c\udde8\ud83c\udde9",
     "callingCode": "+243"
   },
   {
     "name": "Congo",
     "cca2": "CG",
-    "code": "CG",
-    "flag": "\ud83c\udde8\ud83c\uddec",
     "callingCode": "+242"
   },
   {
     "name": "Cook Islands",
     "cca2": "CK",
-    "code": "CK",
-    "flag": "\ud83c\udde8\ud83c\uddf0",
     "callingCode": "+682"
   },
   {
     "name": "Colombia",
     "cca2": "CO",
-    "code": "CO",
-    "flag": "\ud83c\udde8\ud83c\uddf4",
     "callingCode": "+57"
   },
   {
     "name": "Comoros",
     "cca2": "KM",
-    "code": "KM",
-    "flag": "\ud83c\uddf0\ud83c\uddf2",
     "callingCode": "+269"
   },
   {
     "name": "Cape Verde",
     "cca2": "CV",
-    "code": "CV",
-    "flag": "\ud83c\udde8\ud83c\uddfb",
     "callingCode": "+238"
   },
   {
     "name": "Costa Rica",
     "cca2": "CR",
-    "code": "CR",
-    "flag": "\ud83c\udde8\ud83c\uddf7",
     "callingCode": "+506"
   },
   {
     "name": "Cuba",
     "cca2": "CU",
-    "code": "CU",
-    "flag": "\ud83c\udde8\ud83c\uddfa",
     "callingCode": "+53"
   },
   {
     "name": "Cura\u00e7ao",
     "cca2": "CW",
-    "code": "CW",
-    "flag": "\ud83c\udde8\ud83c\uddfc",
     "callingCode": "+599"
   },
   {
     "name": "Christmas Island",
     "cca2": "CX",
-    "code": "CX",
-    "flag": "\ud83c\udde8\ud83c\uddfd",
     "callingCode": "+61"
   },
   {
     "name": "Cayman Islands",
     "cca2": "KY",
-    "code": "KY",
-    "flag": "\ud83c\uddf0\ud83c\uddfe",
     "callingCode": "+1345"
   },
   {
     "name": "Cyprus",
     "cca2": "CY",
-    "code": "CY",
-    "flag": "\ud83c\udde8\ud83c\uddfe",
     "callingCode": "+357"
   },
   {
     "name": "Czechia",
     "cca2": "CZ",
-    "code": "CZ",
-    "flag": "\ud83c\udde8\ud83c\uddff",
     "callingCode": "+420"
   },
   {
     "name": "Germany",
     "cca2": "DE",
-    "code": "DE",
-    "flag": "\ud83c\udde9\ud83c\uddea",
     "callingCode": "+49"
   },
   {
     "name": "Djibouti",
     "cca2": "DJ",
-    "code": "DJ",
-    "flag": "\ud83c\udde9\ud83c\uddef",
     "callingCode": "+253"
   },
   {
     "name": "Dominica",
     "cca2": "DM",
-    "code": "DM",
-    "flag": "\ud83c\udde9\ud83c\uddf2",
     "callingCode": "+1767"
   },
   {
     "name": "Denmark",
     "cca2": "DK",
-    "code": "DK",
-    "flag": "\ud83c\udde9\ud83c\uddf0",
     "callingCode": "+45"
   },
   {
     "name": "Dominican Republic",
     "cca2": "DO",
-    "code": "DO",
-    "flag": "\ud83c\udde9\ud83c\uddf4",
     "callingCode": "+1"
   },
   {
     "name": "Algeria",
     "cca2": "DZ",
-    "code": "DZ",
-    "flag": "\ud83c\udde9\ud83c\uddff",
     "callingCode": "+213"
   },
   {
     "name": "Ecuador",
     "cca2": "EC",
-    "code": "EC",
-    "flag": "\ud83c\uddea\ud83c\udde8",
     "callingCode": "+593"
   },
   {
     "name": "Egypt",
     "cca2": "EG",
-    "code": "EG",
-    "flag": "\ud83c\uddea\ud83c\uddec",
     "callingCode": "+20"
   },
   {
     "name": "Eritrea",
     "cca2": "ER",
-    "code": "ER",
-    "flag": "\ud83c\uddea\ud83c\uddf7",
     "callingCode": "+291"
   },
   {
     "name": "Western Sahara",
     "cca2": "EH",
-    "code": "EH",
-    "flag": "\ud83c\uddea\ud83c\udded",
     "callingCode": "+212"
   },
   {
     "name": "Spain",
     "cca2": "ES",
-    "code": "ES",
-    "flag": "\ud83c\uddea\ud83c\uddf8",
     "callingCode": "+34"
   },
   {
     "name": "Estonia",
     "cca2": "EE",
-    "code": "EE",
-    "flag": "\ud83c\uddea\ud83c\uddea",
     "callingCode": "+372"
   },
   {
     "name": "Ethiopia",
     "cca2": "ET",
-    "code": "ET",
-    "flag": "\ud83c\uddea\ud83c\uddf9",
     "callingCode": "+251"
   },
   {
     "name": "Finland",
     "cca2": "FI",
-    "code": "FI",
-    "flag": "\ud83c\uddeb\ud83c\uddee",
     "callingCode": "+358"
   },
   {
     "name": "Fiji",
     "cca2": "FJ",
-    "code": "FJ",
-    "flag": "\ud83c\uddeb\ud83c\uddef",
     "callingCode": "+679"
   },
   {
     "name": "Falkland Islands",
     "cca2": "FK",
-    "code": "FK",
-    "flag": "\ud83c\uddeb\ud83c\uddf0",
     "callingCode": "+500"
   },
   {
     "name": "France",
     "cca2": "FR",
-    "code": "FR",
-    "flag": "\ud83c\uddeb\ud83c\uddf7",
     "callingCode": "+33"
   },
   {
     "name": "Faroe Islands",
     "cca2": "FO",
-    "code": "FO",
-    "flag": "\ud83c\uddeb\ud83c\uddf4",
     "callingCode": "+298"
   },
   {
     "name": "Micronesia",
     "cca2": "FM",
-    "code": "FM",
-    "flag": "\ud83c\uddeb\ud83c\uddf2",
     "callingCode": "+691"
   },
   {
     "name": "Gabon",
     "cca2": "GA",
-    "code": "GA",
-    "flag": "\ud83c\uddec\ud83c\udde6",
     "callingCode": "+241"
   },
   {
     "name": "United Kingdom",
     "cca2": "GB",
-    "code": "GB",
-    "flag": "\ud83c\uddec\ud83c\udde7",
     "callingCode": "+44"
   },
   {
     "name": "Georgia",
     "cca2": "GE",
-    "code": "GE",
-    "flag": "\ud83c\uddec\ud83c\uddea",
     "callingCode": "+995"
   },
   {
     "name": "Guernsey",
     "cca2": "GG",
-    "code": "GG",
-    "flag": "\ud83c\uddec\ud83c\uddec",
     "callingCode": "+44"
   },
   {
     "name": "Ghana",
     "cca2": "GH",
-    "code": "GH",
-    "flag": "\ud83c\uddec\ud83c\udded",
     "callingCode": "+233"
   },
   {
     "name": "Gibraltar",
     "cca2": "GI",
-    "code": "GI",
-    "flag": "\ud83c\uddec\ud83c\uddee",
     "callingCode": "+350"
   },
   {
     "name": "Guinea",
     "cca2": "GN",
-    "code": "GN",
-    "flag": "\ud83c\uddec\ud83c\uddf3",
     "callingCode": "+224"
   },
   {
     "name": "Guadeloupe",
     "cca2": "GP",
-    "code": "GP",
-    "flag": "\ud83c\uddec\ud83c\uddf5",
     "callingCode": "+590"
   },
   {
     "name": "Gambia",
     "cca2": "GM",
-    "code": "GM",
-    "flag": "\ud83c\uddec\ud83c\uddf2",
     "callingCode": "+220"
   },
   {
     "name": "Guinea-Bissau",
     "cca2": "GW",
-    "code": "GW",
-    "flag": "\ud83c\uddec\ud83c\uddfc",
     "callingCode": "+245"
   },
   {
     "name": "Equatorial Guinea",
     "cca2": "GQ",
-    "code": "GQ",
-    "flag": "\ud83c\uddec\ud83c\uddf6",
     "callingCode": "+240"
   },
   {
     "name": "Greece",
     "cca2": "GR",
-    "code": "GR",
-    "flag": "\ud83c\uddec\ud83c\uddf7",
     "callingCode": "+30"
   },
   {
     "name": "Grenada",
     "cca2": "GD",
-    "code": "GD",
-    "flag": "\ud83c\uddec\ud83c\udde9",
     "callingCode": "+1473"
   },
   {
     "name": "Greenland",
     "cca2": "GL",
-    "code": "GL",
-    "flag": "\ud83c\uddec\ud83c\uddf1",
     "callingCode": "+299"
   },
   {
     "name": "Guatemala",
     "cca2": "GT",
-    "code": "GT",
-    "flag": "\ud83c\uddec\ud83c\uddf9",
     "callingCode": "+502"
   },
   {
     "name": "French Guiana",
     "cca2": "GF",
-    "code": "GF",
-    "flag": "\ud83c\uddec\ud83c\uddeb",
     "callingCode": "+594"
   },
   {
     "name": "Guam",
     "cca2": "GU",
-    "code": "GU",
-    "flag": "\ud83c\uddec\ud83c\uddfa",
     "callingCode": "+1671"
   },
   {
     "name": "Guyana",
     "cca2": "GY",
-    "code": "GY",
-    "flag": "\ud83c\uddec\ud83c\uddfe",
     "callingCode": "+592"
   },
   {
     "name": "Hong Kong",
     "cca2": "HK",
-    "code": "HK",
-    "flag": "\ud83c\udded\ud83c\uddf0",
     "callingCode": "+852"
   },
   {
     "name": "Heard Island and McDonald Islands",
     "cca2": "HM",
-    "code": "HM",
-    "flag": "\ud83c\udded\ud83c\uddf2",
     "callingCode": "+672"
   },
   {
     "name": "Honduras",
     "cca2": "HN",
-    "code": "HN",
-    "flag": "\ud83c\udded\ud83c\uddf3",
     "callingCode": "+504"
   },
   {
     "name": "Croatia",
     "cca2": "HR",
-    "code": "HR",
-    "flag": "\ud83c\udded\ud83c\uddf7",
     "callingCode": "+385"
   },
   {
     "name": "Haiti",
     "cca2": "HT",
-    "code": "HT",
-    "flag": "\ud83c\udded\ud83c\uddf9",
     "callingCode": "+509"
   },
   {
     "name": "Hungary",
     "cca2": "HU",
-    "code": "HU",
-    "flag": "\ud83c\udded\ud83c\uddfa",
     "callingCode": "+36"
   },
   {
     "name": "Indonesia",
     "cca2": "ID",
-    "code": "ID",
-    "flag": "\ud83c\uddee\ud83c\udde9",
     "callingCode": "+62"
   },
   {
     "name": "Isle of Man",
     "cca2": "IM",
-    "code": "IM",
-    "flag": "\ud83c\uddee\ud83c\uddf2",
     "callingCode": "+44"
   },
   {
     "name": "India",
     "cca2": "IN",
-    "code": "IN",
-    "flag": "\ud83c\uddee\ud83c\uddf3",
     "callingCode": "+91"
   },
   {
     "name": "British Indian Ocean Territory",
     "cca2": "IO",
-    "code": "IO",
-    "flag": "\ud83c\uddee\ud83c\uddf4",
     "callingCode": "+246"
   },
   {
     "name": "Ireland",
     "cca2": "IE",
-    "code": "IE",
-    "flag": "\ud83c\uddee\ud83c\uddea",
     "callingCode": "+353"
   },
   {
     "name": "Iran",
     "cca2": "IR",
-    "code": "IR",
-    "flag": "\ud83c\uddee\ud83c\uddf7",
     "callingCode": "+98"
   },
   {
     "name": "Iraq",
     "cca2": "IQ",
-    "code": "IQ",
-    "flag": "\ud83c\uddee\ud83c\uddf6",
     "callingCode": "+964"
   },
   {
     "name": "Iceland",
     "cca2": "IS",
-    "code": "IS",
-    "flag": "\ud83c\uddee\ud83c\uddf8",
     "callingCode": "+354"
   },
   {
     "name": "Israel",
     "cca2": "IL",
-    "code": "IL",
-    "flag": "\ud83c\uddee\ud83c\uddf1",
     "callingCode": "+972"
   },
   {
     "name": "Italy",
     "cca2": "IT",
-    "code": "IT",
-    "flag": "\ud83c\uddee\ud83c\uddf9",
     "callingCode": "+39"
   },
   {
     "name": "Jamaica",
     "cca2": "JM",
-    "code": "JM",
-    "flag": "\ud83c\uddef\ud83c\uddf2",
     "callingCode": "+1876"
   },
   {
     "name": "Jersey",
     "cca2": "JE",
-    "code": "JE",
-    "flag": "\ud83c\uddef\ud83c\uddea",
     "callingCode": "+44"
   },
   {
     "name": "Jordan",
     "cca2": "JO",
-    "code": "JO",
-    "flag": "\ud83c\uddef\ud83c\uddf4",
     "callingCode": "+962"
   },
   {
     "name": "Japan",
     "cca2": "JP",
-    "code": "JP",
-    "flag": "\ud83c\uddef\ud83c\uddf5",
     "callingCode": "+81"
   },
   {
     "name": "Kazakhstan",
     "cca2": "KZ",
-    "code": "KZ",
-    "flag": "\ud83c\uddf0\ud83c\uddff",
     "callingCode": "+7"
   },
   {
     "name": "Kenya",
     "cca2": "KE",
-    "code": "KE",
-    "flag": "\ud83c\uddf0\ud83c\uddea",
     "callingCode": "+254"
   },
   {
     "name": "Kyrgyzstan",
     "cca2": "KG",
-    "code": "KG",
-    "flag": "\ud83c\uddf0\ud83c\uddec",
     "callingCode": "+996"
   },
   {
     "name": "Cambodia",
     "cca2": "KH",
-    "code": "KH",
-    "flag": "\ud83c\uddf0\ud83c\udded",
     "callingCode": "+855"
   },
   {
     "name": "Kiribati",
     "cca2": "KI",
-    "code": "KI",
-    "flag": "\ud83c\uddf0\ud83c\uddee",
     "callingCode": "+686"
   },
   {
     "name": "Saint Kitts and Nevis",
     "cca2": "KN",
-    "code": "KN",
-    "flag": "\ud83c\uddf0\ud83c\uddf3",
     "callingCode": "+1869"
   },
   {
     "name": "South Korea",
     "cca2": "KR",
-    "code": "KR",
-    "flag": "\ud83c\uddf0\ud83c\uddf7",
     "callingCode": "+82"
   },
   {
     "name": "Kosovo",
     "cca2": "XK",
-    "code": "XK",
-    "flag": "\ud83c\uddfd\ud83c\uddf0",
     "callingCode": "+383"
   },
   {
     "name": "Kuwait",
     "cca2": "KW",
-    "code": "KW",
-    "flag": "\ud83c\uddf0\ud83c\uddfc",
     "callingCode": "+965"
   },
   {
     "name": "Laos",
     "cca2": "LA",
-    "code": "LA",
-    "flag": "\ud83c\uddf1\ud83c\udde6",
     "callingCode": "+856"
   },
   {
     "name": "Lebanon",
     "cca2": "LB",
-    "code": "LB",
-    "flag": "\ud83c\uddf1\ud83c\udde7",
     "callingCode": "+961"
   },
   {
     "name": "Liberia",
     "cca2": "LR",
-    "code": "LR",
-    "flag": "\ud83c\uddf1\ud83c\uddf7",
     "callingCode": "+231"
   },
   {
     "name": "Libya",
     "cca2": "LY",
-    "code": "LY",
-    "flag": "\ud83c\uddf1\ud83c\uddfe",
     "callingCode": "+218"
   },
   {
     "name": "Saint Lucia",
     "cca2": "LC",
-    "code": "LC",
-    "flag": "\ud83c\uddf1\ud83c\udde8",
     "callingCode": "+1758"
   },
   {
     "name": "Liechtenstein",
     "cca2": "LI",
-    "code": "LI",
-    "flag": "\ud83c\uddf1\ud83c\uddee",
     "callingCode": "+423"
   },
   {
     "name": "Sri Lanka",
     "cca2": "LK",
-    "code": "LK",
-    "flag": "\ud83c\uddf1\ud83c\uddf0",
     "callingCode": "+94"
   },
   {
     "name": "Lesotho",
     "cca2": "LS",
-    "code": "LS",
-    "flag": "\ud83c\uddf1\ud83c\uddf8",
     "callingCode": "+266"
   },
   {
     "name": "Lithuania",
     "cca2": "LT",
-    "code": "LT",
-    "flag": "\ud83c\uddf1\ud83c\uddf9",
     "callingCode": "+370"
   },
   {
     "name": "Luxembourg",
     "cca2": "LU",
-    "code": "LU",
-    "flag": "\ud83c\uddf1\ud83c\uddfa",
     "callingCode": "+352"
   },
   {
     "name": "Latvia",
     "cca2": "LV",
-    "code": "LV",
-    "flag": "\ud83c\uddf1\ud83c\uddfb",
     "callingCode": "+371"
   },
   {
     "name": "Macau",
     "cca2": "MO",
-    "code": "MO",
-    "flag": "\ud83c\uddf2\ud83c\uddf4",
     "callingCode": "+853"
   },
   {
     "name": "Saint Martin",
     "cca2": "MF",
-    "code": "MF",
-    "flag": "\ud83c\uddf2\ud83c\uddeb",
     "callingCode": "+590"
   },
   {
     "name": "Morocco",
     "cca2": "MA",
-    "code": "MA",
-    "flag": "\ud83c\uddf2\ud83c\udde6",
     "callingCode": "+212"
   },
   {
     "name": "Monaco",
     "cca2": "MC",
-    "code": "MC",
-    "flag": "\ud83c\uddf2\ud83c\udde8",
     "callingCode": "+377"
   },
   {
     "name": "Moldova",
     "cca2": "MD",
-    "code": "MD",
-    "flag": "\ud83c\uddf2\ud83c\udde9",
     "callingCode": "+373"
   },
   {
     "name": "Madagascar",
     "cca2": "MG",
-    "code": "MG",
-    "flag": "\ud83c\uddf2\ud83c\uddec",
     "callingCode": "+261"
   },
   {
     "name": "Maldives",
     "cca2": "MV",
-    "code": "MV",
-    "flag": "\ud83c\uddf2\ud83c\uddfb",
     "callingCode": "+960"
   },
   {
     "name": "Mexico",
     "cca2": "MX",
-    "code": "MX",
-    "flag": "\ud83c\uddf2\ud83c\uddfd",
     "callingCode": "+52"
   },
   {
     "name": "Marshall Islands",
     "cca2": "MH",
-    "code": "MH",
-    "flag": "\ud83c\uddf2\ud83c\udded",
     "callingCode": "+692"
   },
   {
     "name": "North Macedonia",
     "cca2": "MK",
-    "code": "MK",
-    "flag": "\ud83c\uddf2\ud83c\uddf0",
     "callingCode": "+389"
   },
   {
     "name": "Mali",
     "cca2": "ML",
-    "code": "ML",
-    "flag": "\ud83c\uddf2\ud83c\uddf1",
     "callingCode": "+223"
   },
   {
     "name": "Malta",
     "cca2": "MT",
-    "code": "MT",
-    "flag": "\ud83c\uddf2\ud83c\uddf9",
     "callingCode": "+356"
   },
   {
     "name": "Myanmar",
     "cca2": "MM",
-    "code": "MM",
-    "flag": "\ud83c\uddf2\ud83c\uddf2",
     "callingCode": "+95"
   },
   {
     "name": "Montenegro",
     "cca2": "ME",
-    "code": "ME",
-    "flag": "\ud83c\uddf2\ud83c\uddea",
     "callingCode": "+382"
   },
   {
     "name": "Mongolia",
     "cca2": "MN",
-    "code": "MN",
-    "flag": "\ud83c\uddf2\ud83c\uddf3",
     "callingCode": "+976"
   },
   {
     "name": "Northern Mariana Islands",
     "cca2": "MP",
-    "code": "MP",
-    "flag": "\ud83c\uddf2\ud83c\uddf5",
     "callingCode": "+1670"
   },
   {
     "name": "Mozambique",
     "cca2": "MZ",
-    "code": "MZ",
-    "flag": "\ud83c\uddf2\ud83c\uddff",
     "callingCode": "+258"
   },
   {
     "name": "Mauritania",
     "cca2": "MR",
-    "code": "MR",
-    "flag": "\ud83c\uddf2\ud83c\uddf7",
     "callingCode": "+222"
   },
   {
     "name": "Montserrat",
     "cca2": "MS",
-    "code": "MS",
-    "flag": "\ud83c\uddf2\ud83c\uddf8",
     "callingCode": "+1664"
   },
   {
     "name": "Martinique",
     "cca2": "MQ",
-    "code": "MQ",
-    "flag": "\ud83c\uddf2\ud83c\uddf6",
     "callingCode": "+596"
   },
   {
     "name": "Mauritius",
     "cca2": "MU",
-    "code": "MU",
-    "flag": "\ud83c\uddf2\ud83c\uddfa",
     "callingCode": "+230"
   },
   {
     "name": "Malawi",
     "cca2": "MW",
-    "code": "MW",
-    "flag": "\ud83c\uddf2\ud83c\uddfc",
     "callingCode": "+265"
   },
   {
     "name": "Malaysia",
     "cca2": "MY",
-    "code": "MY",
-    "flag": "\ud83c\uddf2\ud83c\uddfe",
     "callingCode": "+60"
   },
   {
     "name": "Mayotte",
     "cca2": "YT",
-    "code": "YT",
-    "flag": "\ud83c\uddfe\ud83c\uddf9",
     "callingCode": "+262"
   },
   {
     "name": "Namibia",
     "cca2": "NA",
-    "code": "NA",
-    "flag": "\ud83c\uddf3\ud83c\udde6",
     "callingCode": "+264"
   },
   {
     "name": "New Caledonia",
     "cca2": "NC",
-    "code": "NC",
-    "flag": "\ud83c\uddf3\ud83c\udde8",
     "callingCode": "+687"
   },
   {
     "name": "Niger",
     "cca2": "NE",
-    "code": "NE",
-    "flag": "\ud83c\uddf3\ud83c\uddea",
     "callingCode": "+227"
   },
   {
     "name": "Norfolk Island",
     "cca2": "NF",
-    "code": "NF",
-    "flag": "\ud83c\uddf3\ud83c\uddeb",
     "callingCode": "+672"
   },
   {
     "name": "Nigeria",
     "cca2": "NG",
-    "code": "NG",
-    "flag": "\ud83c\uddf3\ud83c\uddec",
     "callingCode": "+234"
   },
   {
     "name": "Nicaragua",
     "cca2": "NI",
-    "code": "NI",
-    "flag": "\ud83c\uddf3\ud83c\uddee",
     "callingCode": "+505"
   },
   {
     "name": "Niue",
     "cca2": "NU",
-    "code": "NU",
-    "flag": "\ud83c\uddf3\ud83c\uddfa",
     "callingCode": "+683"
   },
   {
     "name": "Netherlands",
     "cca2": "NL",
-    "code": "NL",
-    "flag": "\ud83c\uddf3\ud83c\uddf1",
     "callingCode": "+31"
   },
   {
     "name": "Norway",
     "cca2": "NO",
-    "code": "NO",
-    "flag": "\ud83c\uddf3\ud83c\uddf4",
     "callingCode": "+47"
   },
   {
     "name": "Nepal",
     "cca2": "NP",
-    "code": "NP",
-    "flag": "\ud83c\uddf3\ud83c\uddf5",
     "callingCode": "+977"
   },
   {
     "name": "Nauru",
     "cca2": "NR",
-    "code": "NR",
-    "flag": "\ud83c\uddf3\ud83c\uddf7",
     "callingCode": "+674"
   },
   {
     "name": "New Zealand",
     "cca2": "NZ",
-    "code": "NZ",
-    "flag": "\ud83c\uddf3\ud83c\uddff",
     "callingCode": "+64"
   },
   {
     "name": "Oman",
     "cca2": "OM",
-    "code": "OM",
-    "flag": "\ud83c\uddf4\ud83c\uddf2",
     "callingCode": "+968"
   },
   {
     "name": "Pakistan",
     "cca2": "PK",
-    "code": "PK",
-    "flag": "\ud83c\uddf5\ud83c\uddf0",
     "callingCode": "+92"
   },
   {
     "name": "Panama",
     "cca2": "PA",
-    "code": "PA",
-    "flag": "\ud83c\uddf5\ud83c\udde6",
     "callingCode": "+507"
   },
   {
     "name": "Pitcairn Islands",
     "cca2": "PN",
-    "code": "PN",
-    "flag": "\ud83c\uddf5\ud83c\uddf3",
     "callingCode": "+64"
   },
   {
     "name": "Peru",
     "cca2": "PE",
-    "code": "PE",
-    "flag": "\ud83c\uddf5\ud83c\uddea",
     "callingCode": "+51"
   },
   {
     "name": "Philippines",
     "cca2": "PH",
-    "code": "PH",
-    "flag": "\ud83c\uddf5\ud83c\udded",
     "callingCode": "+63"
   },
   {
     "name": "Palau",
     "cca2": "PW",
-    "code": "PW",
-    "flag": "\ud83c\uddf5\ud83c\uddfc",
     "callingCode": "+680"
   },
   {
     "name": "Papua New Guinea",
     "cca2": "PG",
-    "code": "PG",
-    "flag": "\ud83c\uddf5\ud83c\uddec",
     "callingCode": "+675"
   },
   {
     "name": "Poland",
     "cca2": "PL",
-    "code": "PL",
-    "flag": "\ud83c\uddf5\ud83c\uddf1",
     "callingCode": "+48"
   },
   {
     "name": "Puerto Rico",
     "cca2": "PR",
-    "code": "PR",
-    "flag": "\ud83c\uddf5\ud83c\uddf7",
     "callingCode": "+1"
   },
   {
     "name": "North Korea",
     "cca2": "KP",
-    "code": "KP",
-    "flag": "\ud83c\uddf0\ud83c\uddf5",
     "callingCode": "+850"
   },
   {
     "name": "Portugal",
     "cca2": "PT",
-    "code": "PT",
-    "flag": "\ud83c\uddf5\ud83c\uddf9",
     "callingCode": "+351"
   },
   {
     "name": "Paraguay",
     "cca2": "PY",
-    "code": "PY",
-    "flag": "\ud83c\uddf5\ud83c\uddfe",
     "callingCode": "+595"
   },
   {
     "name": "Palestine",
     "cca2": "PS",
-    "code": "PS",
-    "flag": "\ud83c\uddf5\ud83c\uddf8",
     "callingCode": "+970"
   },
   {
     "name": "French Polynesia",
     "cca2": "PF",
-    "code": "PF",
-    "flag": "\ud83c\uddf5\ud83c\uddeb",
     "callingCode": "+689"
   },
   {
     "name": "Qatar",
     "cca2": "QA",
-    "code": "QA",
-    "flag": "\ud83c\uddf6\ud83c\udde6",
     "callingCode": "+974"
   },
   {
     "name": "R\u00e9union",
     "cca2": "RE",
-    "code": "RE",
-    "flag": "\ud83c\uddf7\ud83c\uddea",
     "callingCode": "+262"
   },
   {
     "name": "Romania",
     "cca2": "RO",
-    "code": "RO",
-    "flag": "\ud83c\uddf7\ud83c\uddf4",
     "callingCode": "+40"
   },
   {
     "name": "Russia",
     "cca2": "RU",
-    "code": "RU",
-    "flag": "\ud83c\uddf7\ud83c\uddfa",
     "callingCode": "+7"
   },
   {
     "name": "Rwanda",
     "cca2": "RW",
-    "code": "RW",
-    "flag": "\ud83c\uddf7\ud83c\uddfc",
     "callingCode": "+250"
   },
   {
     "name": "Saudi Arabia",
     "cca2": "SA",
-    "code": "SA",
-    "flag": "\ud83c\uddf8\ud83c\udde6",
     "callingCode": "+966"
   },
   {
     "name": "Sudan",
     "cca2": "SD",
-    "code": "SD",
-    "flag": "\ud83c\uddf8\ud83c\udde9",
     "callingCode": "+249"
   },
   {
     "name": "Senegal",
     "cca2": "SN",
-    "code": "SN",
-    "flag": "\ud83c\uddf8\ud83c\uddf3",
     "callingCode": "+221"
   },
   {
     "name": "Singapore",
     "cca2": "SG",
-    "code": "SG",
-    "flag": "\ud83c\uddf8\ud83c\uddec",
     "callingCode": "+65"
   },
   {
     "name": "South Georgia",
     "cca2": "GS",
-    "code": "GS",
-    "flag": "\ud83c\uddec\ud83c\uddf8",
     "callingCode": "+500"
   },
   {
     "name": "Svalbard and Jan Mayen",
     "cca2": "SJ",
-    "code": "SJ",
-    "flag": "\ud83c\uddf8\ud83c\uddef",
     "callingCode": "+4779"
   },
   {
     "name": "Solomon Islands",
     "cca2": "SB",
-    "code": "SB",
-    "flag": "\ud83c\uddf8\ud83c\udde7",
     "callingCode": "+677"
   },
   {
     "name": "Sierra Leone",
     "cca2": "SL",
-    "code": "SL",
-    "flag": "\ud83c\uddf8\ud83c\uddf1",
     "callingCode": "+232"
   },
   {
     "name": "El Salvador",
     "cca2": "SV",
-    "code": "SV",
-    "flag": "\ud83c\uddf8\ud83c\uddfb",
     "callingCode": "+503"
   },
   {
     "name": "San Marino",
     "cca2": "SM",
-    "code": "SM",
-    "flag": "\ud83c\uddf8\ud83c\uddf2",
     "callingCode": "+378"
   },
   {
     "name": "Somalia",
     "cca2": "SO",
-    "code": "SO",
-    "flag": "\ud83c\uddf8\ud83c\uddf4",
     "callingCode": "+252"
   },
   {
     "name": "Saint Pierre and Miquelon",
     "cca2": "PM",
-    "code": "PM",
-    "flag": "\ud83c\uddf5\ud83c\uddf2",
     "callingCode": "+508"
   },
   {
     "name": "Serbia",
     "cca2": "RS",
-    "code": "RS",
-    "flag": "\ud83c\uddf7\ud83c\uddf8",
     "callingCode": "+381"
   },
   {
     "name": "South Sudan",
     "cca2": "SS",
-    "code": "SS",
-    "flag": "\ud83c\uddf8\ud83c\uddf8",
     "callingCode": "+211"
   },
   {
     "name": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
     "cca2": "ST",
-    "code": "ST",
-    "flag": "\ud83c\uddf8\ud83c\uddf9",
     "callingCode": "+239"
   },
   {
     "name": "Suriname",
     "cca2": "SR",
-    "code": "SR",
-    "flag": "\ud83c\uddf8\ud83c\uddf7",
     "callingCode": "+597"
   },
   {
     "name": "Slovakia",
     "cca2": "SK",
-    "code": "SK",
-    "flag": "\ud83c\uddf8\ud83c\uddf0",
     "callingCode": "+421"
   },
   {
     "name": "Slovenia",
     "cca2": "SI",
-    "code": "SI",
-    "flag": "\ud83c\uddf8\ud83c\uddee",
     "callingCode": "+386"
   },
   {
     "name": "Sweden",
     "cca2": "SE",
-    "code": "SE",
-    "flag": "\ud83c\uddf8\ud83c\uddea",
     "callingCode": "+46"
   },
   {
     "name": "Eswatini",
     "cca2": "SZ",
-    "code": "SZ",
-    "flag": "\ud83c\uddf8\ud83c\uddff",
     "callingCode": "+268"
   },
   {
     "name": "Sint Maarten",
     "cca2": "SX",
-    "code": "SX",
-    "flag": "\ud83c\uddf8\ud83c\uddfd",
     "callingCode": "+1721"
   },
   {
     "name": "Seychelles",
     "cca2": "SC",
-    "code": "SC",
-    "flag": "\ud83c\uddf8\ud83c\udde8",
     "callingCode": "+248"
   },
   {
     "name": "Syria",
     "cca2": "SY",
-    "code": "SY",
-    "flag": "\ud83c\uddf8\ud83c\uddfe",
     "callingCode": "+963"
   },
   {
     "name": "Turks and Caicos Islands",
     "cca2": "TC",
-    "code": "TC",
-    "flag": "\ud83c\uddf9\ud83c\udde8",
     "callingCode": "+1649"
   },
   {
     "name": "Chad",
     "cca2": "TD",
-    "code": "TD",
-    "flag": "\ud83c\uddf9\ud83c\udde9",
     "callingCode": "+235"
   },
   {
     "name": "Togo",
     "cca2": "TG",
-    "code": "TG",
-    "flag": "\ud83c\uddf9\ud83c\uddec",
     "callingCode": "+228"
   },
   {
     "name": "Thailand",
     "cca2": "TH",
-    "code": "TH",
-    "flag": "\ud83c\uddf9\ud83c\udded",
     "callingCode": "+66"
   },
   {
     "name": "Tajikistan",
     "cca2": "TJ",
-    "code": "TJ",
-    "flag": "\ud83c\uddf9\ud83c\uddef",
     "callingCode": "+992"
   },
   {
     "name": "Tokelau",
     "cca2": "TK",
-    "code": "TK",
-    "flag": "\ud83c\uddf9\ud83c\uddf0",
     "callingCode": "+690"
   },
   {
     "name": "Turkmenistan",
     "cca2": "TM",
-    "code": "TM",
-    "flag": "\ud83c\uddf9\ud83c\uddf2",
     "callingCode": "+993"
   },
   {
     "name": "Timor-Leste",
     "cca2": "TL",
-    "code": "TL",
-    "flag": "\ud83c\uddf9\ud83c\uddf1",
     "callingCode": "+670"
   },
   {
     "name": "Tonga",
     "cca2": "TO",
-    "code": "TO",
-    "flag": "\ud83c\uddf9\ud83c\uddf4",
     "callingCode": "+676"
   },
   {
     "name": "Trinidad and Tobago",
     "cca2": "TT",
-    "code": "TT",
-    "flag": "\ud83c\uddf9\ud83c\uddf9",
     "callingCode": "+1868"
   },
   {
     "name": "Tunisia",
     "cca2": "TN",
-    "code": "TN",
-    "flag": "\ud83c\uddf9\ud83c\uddf3",
     "callingCode": "+216"
   },
   {
     "name": "T\u00fcrkiye",
     "cca2": "TR",
-    "code": "TR",
-    "flag": "\ud83c\uddf9\ud83c\uddf7",
     "callingCode": "+90"
   },
   {
     "name": "Tuvalu",
     "cca2": "TV",
-    "code": "TV",
-    "flag": "\ud83c\uddf9\ud83c\uddfb",
     "callingCode": "+688"
   },
   {
     "name": "Taiwan",
     "cca2": "TW",
-    "code": "TW",
-    "flag": "\ud83c\uddf9\ud83c\uddfc",
     "callingCode": "+886"
   },
   {
     "name": "Tanzania",
     "cca2": "TZ",
-    "code": "TZ",
-    "flag": "\ud83c\uddf9\ud83c\uddff",
     "callingCode": "+255"
   },
   {
     "name": "Uganda",
     "cca2": "UG",
-    "code": "UG",
-    "flag": "\ud83c\uddfa\ud83c\uddec",
     "callingCode": "+256"
   },
   {
     "name": "Ukraine",
     "cca2": "UA",
-    "code": "UA",
-    "flag": "\ud83c\uddfa\ud83c\udde6",
     "callingCode": "+380"
   },
   {
     "name": "United States Minor Outlying Islands",
     "cca2": "UM",
-    "code": "UM",
-    "flag": "\ud83c\uddfa\ud83c\uddf2",
     "callingCode": "+268"
   },
   {
     "name": "Uruguay",
     "cca2": "UY",
-    "code": "UY",
-    "flag": "\ud83c\uddfa\ud83c\uddfe",
     "callingCode": "+598"
   },
   {
     "name": "United States",
     "cca2": "US",
-    "code": "US",
-    "flag": "\ud83c\uddfa\ud83c\uddf8",
     "callingCode": "+1"
   },
   {
     "name": "Uzbekistan",
     "cca2": "UZ",
-    "code": "UZ",
-    "flag": "\ud83c\uddfa\ud83c\uddff",
     "callingCode": "+998"
   },
   {
     "name": "Vatican City",
     "cca2": "VA",
-    "code": "VA",
-    "flag": "\ud83c\uddfb\ud83c\udde6",
     "callingCode": "+379"
   },
   {
     "name": "Saint Vincent and the Grenadines",
     "cca2": "VC",
-    "code": "VC",
-    "flag": "\ud83c\uddfb\ud83c\udde8",
     "callingCode": "+1784"
   },
   {
     "name": "Venezuela",
     "cca2": "VE",
-    "code": "VE",
-    "flag": "\ud83c\uddfb\ud83c\uddea",
     "callingCode": "+58"
   },
   {
     "name": "British Virgin Islands",
     "cca2": "VG",
-    "code": "VG",
-    "flag": "\ud83c\uddfb\ud83c\uddec",
     "callingCode": "+1284"
   },
   {
     "name": "United States Virgin Islands",
     "cca2": "VI",
-    "code": "VI",
-    "flag": "\ud83c\uddfb\ud83c\uddee",
     "callingCode": "+1340"
   },
   {
     "name": "Vietnam",
     "cca2": "VN",
-    "code": "VN",
-    "flag": "\ud83c\uddfb\ud83c\uddf3",
     "callingCode": "+84"
   },
   {
     "name": "Vanuatu",
     "cca2": "VU",
-    "code": "VU",
-    "flag": "\ud83c\uddfb\ud83c\uddfa",
     "callingCode": "+678"
   },
   {
     "name": "Wallis and Futuna",
     "cca2": "WF",
-    "code": "WF",
-    "flag": "\ud83c\uddfc\ud83c\uddeb",
     "callingCode": "+681"
   },
   {
     "name": "Samoa",
     "cca2": "WS",
-    "code": "WS",
-    "flag": "\ud83c\uddfc\ud83c\uddf8",
     "callingCode": "+685"
   },
   {
     "name": "Yemen",
     "cca2": "YE",
-    "code": "YE",
-    "flag": "\ud83c\uddfe\ud83c\uddea",
     "callingCode": "+967"
   },
   {
     "name": "South Africa",
     "cca2": "ZA",
-    "code": "ZA",
-    "flag": "\ud83c\uddff\ud83c\udde6",
     "callingCode": "+27"
   },
   {
     "name": "Zambia",
     "cca2": "ZM",
-    "code": "ZM",
-    "flag": "\ud83c\uddff\ud83c\uddf2",
     "callingCode": "+260"
   },
   {
     "name": "Zimbabwe",
     "cca2": "ZW",
-    "code": "ZW",
-    "flag": "\ud83c\uddff\ud83c\uddfc",
     "callingCode": "+263"
   }
 ]

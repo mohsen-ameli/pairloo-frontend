@@ -3,23 +3,16 @@ import { newUserAtom, authErrorsAtom } from "@/src/store/auth-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useAtom, useAtomValue } from "jotai"
 import React, { useEffect, useState } from "react"
-import { Appearance, Modal, Pressable, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Modal, Pressable, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { flowAtom } from "@/src/store/pager-store"
 import { isBlockedAtom } from "@/src/store/device-store"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { FlashList } from "@shopify/flash-list"
 import { commonStyles } from "@/src/styles/common.styles"
 import allCountries from "@/assets/countries.json"
+import CountryFlag from "react-native-country-flag"
 
-type Country = {
-  name: string
-  cca2: string
-  code: string
-  flag: string
-  callingCode: string
-}
-
-const colorScheme = Appearance.getColorScheme()
+type Country = (typeof allCountries)[0]
 
 export default function PhoneNumberNative() {
   const [country, setCountry] = useState<Country>(allCountries[40])
@@ -75,16 +68,22 @@ export default function PhoneNumberNative() {
           paddingVertical: 16,
           paddingHorizontal: 10,
           borderRadius: 5,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 5,
         }}
         onPress={() => setVisible(true)}
         disabled={isBlocked}
       >
+        <CountryFlag isoCode={country.cca2} size={20} />
         <Text
           style={{
             fontSize: 16,
             color: colors.dark,
           }}
-        >{`${country?.flag}  (${country?.callingCode})`}</Text>
+        >
+          ({country?.callingCode})
+        </Text>
       </Pressable>
 
       <Modal
@@ -115,7 +114,7 @@ export default function PhoneNumberNative() {
           </View>
 
           <FlashList
-            data={countries as Country[]}
+            data={countries}
             keyExtractor={item => item.cca2}
             keyboardShouldPersistTaps="always"
             renderItem={({ item }) => (
@@ -135,7 +134,9 @@ export default function PhoneNumberNative() {
                   setVisible(false)
                 }}
               >
-                <Text style={{ fontSize: 18, marginRight: 10 }}>{item.flag}</Text>
+                <Text style={{ fontSize: 18, marginRight: 10 }}>
+                  <CountryFlag isoCode={item.cca2} size={20} />
+                </Text>
                 <Text style={{ fontSize: 18, color: colors.dark }}>
                   {item.name} ({item.callingCode})
                 </Text>
