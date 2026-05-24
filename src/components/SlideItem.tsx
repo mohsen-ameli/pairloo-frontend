@@ -11,11 +11,11 @@ import Animated from "react-native-reanimated"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useAtomValue, useSetAtom } from "jotai"
-import { settingsAtom } from "../store/create-post-store"
-import { imgIndexAtom } from "../store/chat-store"
+import { settingsAtom } from "@/src/store/create-post-store"
+import { imgIndexAtom } from "@/src/store/chat-store"
 import { useRouter } from "expo-router"
-import { commonStyles } from "../styles/common.styles"
-import { isDraggingAtom } from "./ImageCarousel"
+import { commonStyles } from "@/src/styles/common.styles"
+import { isDraggingAtom } from "@/src/store/general-store"
 
 const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
 

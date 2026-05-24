@@ -9,6 +9,9 @@ export const queryClientAtom = atom(new QueryClient())
 
 export const pathStore = atom("")
 
+// For image carousel to indicate if we are currently dragging or not
+export const isDraggingAtom = atom(false)
+
 export const notificationSoundAtom = atom<AudioPlayer | null>(null)
 
 // Returns an array of selected attachments with their uri, mimeType, and file blob

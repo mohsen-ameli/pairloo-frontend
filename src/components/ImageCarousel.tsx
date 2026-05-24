@@ -4,14 +4,13 @@ import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated
 import { SlideItem } from "./SlideItem"
 import { useEffect, useRef } from "react"
 import { colors } from "@/src/utils/colors"
-import { atom, useSetAtom } from "jotai"
-import { bigImageViewAtom } from "../store/chat-store"
+import { useSetAtom } from "jotai"
+import { bigImageViewAtom } from "@/src/store/chat-store"
+import { isDraggingAtom } from "@/src/store/general-store"
 
 const w = Dimensions.get("window").width
 const isWeb = Platform.OS === "web" && w > 700
 let width = isWeb ? w * 0.3 : w
-
-export const isDraggingAtom = atom(false)
 
 export default function ImageCarousel({
   images,

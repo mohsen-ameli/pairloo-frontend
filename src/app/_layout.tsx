@@ -91,6 +91,35 @@ export default function RootLayout() {
   )
   const initialHrefHandledRef = useRef(false)
 
+  // Purely for testing purposes to test if we can talk to the backend
+  useEffect(() => {
+    function showError(message: string) {
+      console.error(message)
+      Toast.show({
+        type: "error",
+        text1: message,
+        visibilityTime: Infinity,
+      })
+    }
+
+    async function testBackend() {
+      if (process.env.NODE_ENV === "production") return
+      try {
+        await fetch(`${process.env.EXPO_PUBLIC_SERVER_URL}/`)
+        Toast.show({
+          type: "success",
+          text1: "Successfully contacted backend",
+          visibilityTime: 2000,
+        })
+      } catch (e) {
+        console.error(`Backend could not be contacted, ${process.env.EXPO_PUBLIC_SERVER_URL}`, e)
+        showError(`Fetch request to backend failed ${process.env.EXPO_PUBLIC_SERVER_URL}`)
+      }
+    }
+
+    testBackend()
+  }, [])
+
   // Notifications
   useEffect(() => {
     async function setupNotifications() {
