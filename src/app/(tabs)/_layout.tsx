@@ -59,9 +59,15 @@ export default function ProtectedLayout() {
         tabBarInactiveTintColor: colors.dark,
         tabBarInactiveBackgroundColor: colors.light,
         headerShown: false,
-        tabBarBackground() {
-          return <View style={{ backgroundColor: colors.light, flex: 1 }} />
-        },
+        tabBarStyle:
+          Platform.OS === "web"
+            ? {
+                backgroundColor: colors.light,
+                height: 60,
+              }
+            : {
+                backgroundColor: colors.light,
+              },
       }}
       safeAreaInsets={{
         bottom: Platform.OS === "android" ? insets.bottom + 10 : insets.bottom,

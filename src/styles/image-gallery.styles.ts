@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
-import { colors } from "../utils/colors"
+import { boxShadow, colors } from "../utils/colors"
 
 export const styles = StyleSheet.create({
   container: {
@@ -40,10 +40,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    shadowColor: colors.light,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    boxShadow,
     elevation: 3,
   },
   pageIndicatorText: {
@@ -69,10 +66,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
     minWidth: 150,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    boxShadow,
     elevation: 5,
   },
   menuItem: {

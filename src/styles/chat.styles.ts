@@ -1,12 +1,7 @@
-import { StyleSheet } from "react-native"
+import { Platform, StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
 export const chatStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light,
-    paddingHorizontal: 5,
-  },
   notFoundContainer: {
     flex: 1,
     justifyContent: "center",
@@ -273,9 +268,9 @@ export const chatStyles = StyleSheet.create({
     padding: 2,
   },
   modalContainer: {
+    flex: Platform.OS === "web" ? 1 : undefined,
     backgroundColor: colors.light,
-    paddingTop: 20,
-    paddingHorizontal: 25,
+    padding: 20,
     alignItems: "center",
   },
   attachmentContainer: {
@@ -288,11 +283,11 @@ export const chatStyles = StyleSheet.create({
   },
   dismissButton: {
     position: "absolute",
-    top: 20,
-    right: 20,
+    top: 15,
+    right: 15,
     padding: 4,
     backgroundColor: colors.lightGray,
-    borderRadius: 20,
+    borderRadius: 24,
   },
   modalTitle: {
     fontSize: 20,

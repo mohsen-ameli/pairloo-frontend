@@ -1,4 +1,3 @@
-import { CountryCode } from "react-native-country-picker-modal"
 import { GeneralPostType } from "./post.type"
 
 export type ProfileSocialUserType = {
@@ -67,8 +66,8 @@ export type ReviewsType = {
 // JWT tokens stored in secure storage
 export type UserSecureType = null | {
   _id: string
-  accessToken: string
-  refreshToken: string
+  accessToken?: string
+  refreshToken?: string
   expoPushToken?: string
 }
 
@@ -83,6 +82,15 @@ export type AuthErrorType = {
   phoneNumber?: string
   phoneVerify?: string
   general?: string
+}
+
+export type AuthResponseType = {
+  _id: string
+  accessToken?: string
+  refreshToken?: string
+  issuedAt: number
+  expiresAt: number
+  errors?: AuthErrorType
 }
 
 // Response type from backend after successful authentication
@@ -105,8 +113,8 @@ export type RegisteredUserType = {
   email: string
   createdAt: Date
   updatedAt: Date
-  accessToken: string
-  refreshToken: string
+  accessToken?: string
+  refreshToken?: string
 }
 
 // Type of a new user being registered
@@ -132,6 +140,6 @@ export type NewUserType = {
   }
   timezone: string
   locationId: number
-  cca2: CountryCode
+  cca2: string
   callingCode: string
 }

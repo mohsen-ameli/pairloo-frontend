@@ -18,7 +18,7 @@ import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { RatingStars, RatingStarSingle } from "@/src/components/RatingStar"
 import { formatDate, formatDateDayMonthYear } from "@/src/utils/format-date"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/get-color"
@@ -28,6 +28,7 @@ import { MyPostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
 import { getStatusColor } from "@/src/utils/get-color"
+import { commonStyles } from "@/src/styles/common.styles"
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -120,7 +121,7 @@ export default function ProfileScreen() {
 
   if (isPostsPending || isReviewsPending || isMyUserPending) {
     return (
-      <View style={profileStyles.generalContainer}>
+      <View style={commonStyles.generalContainer}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -128,29 +129,33 @@ export default function ProfileScreen() {
 
   if (isPostsError || isReviewsError || isMyUserError || !myUser || !reviews) {
     return (
-      <View style={errorStyles.container}>
-        <Text style={errorStyles.errorText}>Error loading profile. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>Error loading profile. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     )
   }
 
   return (
-    <View style={profileStyles.generalContainer}>
-      <ScrollView contentContainerStyle={profileStyles.container}>
-        <Image
-          source={user.picture ? { uri: user.picture } : require("@/assets/images/default_pfp.png")}
-          style={profileStyles.profileImage}
-        />
-        <Text style={profileStyles.name}>
-          {user.firstName} {user.lastName}
-        </Text>
-        <Text style={profileStyles.text}>@{user.username}</Text>
-        <Text style={profileStyles.textMd}>
-          Joined {new Date(user.createdAt).toLocaleDateString()}
-        </Text>
+    <View style={commonStyles.generalContainer}>
+      <ScrollView contentContainerStyle={commonStyles.container}>
+        <View style={profileStyles.headerContainer}>
+          <Image
+            source={
+              user.picture ? { uri: user.picture } : require("@/assets/images/default_pfp.png")
+            }
+            style={profileStyles.profileImage}
+          />
+          <Text style={profileStyles.name}>
+            {user.firstName} {user.lastName}
+          </Text>
+          <Text style={profileStyles.text}>@{user.username}</Text>
+          <Text style={profileStyles.textMd}>
+            Joined {new Date(user.createdAt).toLocaleDateString()}
+          </Text>
+        </View>
 
         {/* show following, followers, current rating */}
         <View style={profileStyles.socialContainer}>
@@ -240,7 +245,7 @@ export default function ProfileScreen() {
                     <TouchableHighlight
                       underlayColor={colors.lightGray}
                       key={index}
-                      style={profileStyles.postCard}
+                      style={commonStyles.card}
                       onPress={() => {
                         if (post.status === "draft") {
                           router.push({
@@ -256,10 +261,10 @@ export default function ProfileScreen() {
                     >
                       <View>
                         {post.images && post.images.length > 0 && (
-                          <View style={profileStyles.postCardImage}>
+                          <View style={commonStyles.cardImageContainer}>
                             <Image
                               source={{ uri: post.images[0] }}
-                              style={profileStyles.postCardImageFill}
+                              style={commonStyles.cardImage}
                               contentFit="cover"
                             />
                           </View>
@@ -327,7 +332,7 @@ export default function ProfileScreen() {
                   <View
                     key={r.reviewer._id}
                     style={[
-                      profileStyles.postCard,
+                      commonStyles.card,
                       {
                         paddingHorizontal: 12,
                         paddingVertical: 14,
@@ -387,7 +392,7 @@ export default function ProfileScreen() {
                   <View key={post._id}>
                     <TouchableHighlight
                       underlayColor={colors.lightGray}
-                      style={profileStyles.postCard}
+                      style={commonStyles.card}
                       onPress={() => {
                         router.push({
                           pathname: "(details)/feed-post",
@@ -397,10 +402,10 @@ export default function ProfileScreen() {
                     >
                       <View>
                         {post.images && post.images.length > 0 && (
-                          <View style={profileStyles.postCardImage}>
+                          <View style={commonStyles.cardImageContainer}>
                             <Image
                               source={{ uri: post.images[0] }}
-                              style={profileStyles.postCardImageFill}
+                              style={commonStyles.cardImage}
                               contentFit="cover"
                             />
                           </View>

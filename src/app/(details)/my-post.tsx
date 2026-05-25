@@ -1,7 +1,6 @@
 import { useRouter, useLocalSearchParams, Stack } from "expo-router"
 import { View, Text, ScrollView, Pressable, Animated, Platform } from "react-native"
 import { useState, useEffect, useRef } from "react"
-import { MenuView, type MenuComponentRef } from "@react-native-menu/menu"
 import Feather from "@expo/vector-icons/Feather"
 import styles from "@/src/styles/post-detail.styles"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -11,7 +10,7 @@ import { getScoreColor } from "@/src/utils/get-color"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { Image } from "expo-image"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import useCustomHeader from "@/src/utils/useCustomHeader"
 import CustomLabel from "@/src/components/CustomLabel"
 import { colors } from "@/src/utils/colors"
@@ -22,6 +21,9 @@ import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { sinceNow } from "@/src/utils/format-date"
 import { getStatusColor } from "@/src/utils/get-color"
+import { commonStyles } from "@/src/styles/common.styles"
+import WebGoogleMap from "@/src/components/WebGoogleMap"
+import DropdownMenu from "@/src/components/DropdownMenu"
 
 export default function PostDetails() {
   const router = useRouter()
@@ -38,9 +40,9 @@ export default function PostDetails() {
     isError,
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
-  const statusMenuRef = useRef<MenuComponentRef>(null)
 
   useEffect(() => {
     Animated.timing(animatedHeight, {
@@ -86,7 +88,7 @@ export default function PostDetails() {
     return (
       <>
         <Stack.Screen options={detailOptions} />
-        <View style={styles.container}>
+        <View style={commonStyles.generalContainer}>
           <LoadingIndicator loading={true} />
         </View>
       </>
@@ -97,10 +99,10 @@ export default function PostDetails() {
     return (
       <>
         <Stack.Screen options={detailOptions} />
-        <View style={errorStyles.container}>
-          <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
-          <Pressable style={errorStyles.retryButton} onPress={refresh}>
-            <Text style={errorStyles.retryButtonText}>Retry</Text>
+        <View style={commonStyles.generalContainer}>
+          <Text style={commonStyles.errorText}>Error loading posts. Please try again.</Text>
+          <Pressable style={commonStyles.retryButton} onPress={refresh}>
+            <Text style={commonStyles.retryButtonText}>Retry</Text>
           </Pressable>
         </View>
       </>
@@ -110,16 +112,17 @@ export default function PostDetails() {
   return (
     <>
       <Stack.Screen options={detailOptions} />
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.content}>
+      <View style={commonStyles.generalContainer}>
+        <ScrollView contentContainerStyle={commonStyles.container}>
           <View style={styles.postContainer}>
             {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
             <Text style={styles.title}>{post.title}</Text>
             <View style={styles.statusMenuContainer}>
-              <MenuView
-                ref={statusMenuRef}
-                onPressAction={({ nativeEvent }) => {
-                  updatePostStatus(nativeEvent.event as StatusType)
+              <DropdownMenu
+                anchor="bottom"
+                disabled={isCooldown}
+                onPressAction={action => {
+                  updatePostStatus(action as StatusType)
                 }}
                 actions={[
                   {
@@ -139,7 +142,7 @@ export default function PostDetails() {
                   },
                 ]}
               >
-                <Pressable style={styles.statusMenuButton} disabled={isCooldown}>
+                <View style={styles.statusMenuButton}>
                   <Text
                     style={{
                       color: getStatusColor(post.status),
@@ -151,8 +154,8 @@ export default function PostDetails() {
                     {post.status}
                   </Text>
                   <Feather name="chevron-down" size={16} color={getStatusColor(post.status)} />
-                </Pressable>
-              </MenuView>
+                </View>
+              </DropdownMenu>
             </View>
             <Text style={styles.description}>{post.description}</Text>
           </View>
@@ -160,16 +163,18 @@ export default function PostDetails() {
           {/* Location Map */}
           {post.location && (
             <View style={styles.mapContainer}>
-              <View style={styles.mapFlexContainer} pointerEvents="none">
+              <View style={styles.mapFlexContainer}>
                 {isLoading ? (
                   <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                     <LoadingIndicator loading={true} />
                   </View>
-                ) : isExpoGo || !maps ? (
-                  <MapUnavailable
-                    title="Map preview unavailable in Expo Go"
-                    description="This post still shows the location details, but native map rendering requires a development build."
-                  />
+                ) : isExpoGo ? (
+                  <View style={{ flex: 1, paddingTop: 80 }}>
+                    <MapUnavailable
+                      title="Maps are unavailable in Expo Go"
+                      description="Search for a city above to set your approximate location. The map picker requires a development build."
+                    />
+                  </View>
                 ) : Platform.OS === "android" && GoogleMapView ? (
                   <GoogleMapView
                     style={styles.mapFlexContainer}
@@ -202,14 +207,29 @@ export default function PostDetails() {
                       myLocationButtonEnabled: false,
                     }}
                   />
-                ) : (
-                  <MapUnavailable
-                    title="Map preview unavailable"
-                    description="The native map view failed to load."
+                ) : Platform.OS === "web" ? (
+                  <WebGoogleMap
+                    cameraPosition={{
+                      coordinates: {
+                        lat: post.location.latitude,
+                        lng: post.location.longitude,
+                      },
+                      zoom: post.distance
+                        ? radiusMetersToZoom(post.distance, post.location.latitude)
+                        : 12,
+                    }}
+                    zoomControl={false}
                   />
+                ) : (
+                  !maps && (
+                    <MapUnavailable
+                      title="Map preview unavailable"
+                      description="The native map view failed to load."
+                    />
+                  )
                 )}
               </View>
-              <View pointerEvents="none" style={styles.mapOverlayContainer}>
+              <View style={styles.mapOverlayContainer}>
                 <View style={styles.radiusCircle} />
               </View>
             </View>
@@ -282,7 +302,7 @@ export default function PostDetails() {
               {post.closestPosts.map(post => (
                 <Pressable
                   key={post.postId}
-                  style={styles.closestPost}
+                  style={[commonStyles.card, { padding: 12 }]}
                   onPress={() => {
                     router.push({
                       pathname: "/feed-post",

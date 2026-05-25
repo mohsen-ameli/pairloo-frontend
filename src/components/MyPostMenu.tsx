@@ -1,26 +1,28 @@
 import * as React from "react"
-import { Platform, StyleSheet } from "react-native"
-import { MenuView, type MenuComponentRef } from "@react-native-menu/menu"
-import { useRef } from "react"
+import { StyleSheet, View } from "react-native"
 import Feather from "@expo/vector-icons/Feather"
 import { colors } from "../utils/colors"
 import { deletePostAtom, editPostAtom } from "../store/post-detail-store"
 import { useSetAtom } from "jotai"
+import DropdownMenu from "./DropdownMenu"
+import Clipboard from "@react-native-clipboard/clipboard"
+import { BASE_URL } from "../utils/constants"
 
 export const MyPostMenu = ({ id }: { id: string }) => {
-  const menuRef = useRef<MenuComponentRef>(null)
   const deletePost = useSetAtom(deletePostAtom)
   const editPost = useSetAtom(editPostAtom)
 
   return (
-    <MenuView
-      ref={menuRef}
+    <DropdownMenu
       style={styles.button}
-      onPressAction={({ nativeEvent }) => {
-        if (nativeEvent.event === "edit") {
+      onPressAction={action => {
+        if (action === "edit") {
           editPost()
-        } else if (nativeEvent.event === "share") {
-        } else if (nativeEvent.event === "destructive") {
+        } else if (action === "share") {
+          // copy link to clipboard
+          const postUrl = `${BASE_URL}/feed-post?feedPostId=${id}`
+          Clipboard.setString(postUrl)
+        } else if (action === "destructive") {
           deletePost(id)
         }
       }}
@@ -29,38 +31,26 @@ export const MyPostMenu = ({ id }: { id: string }) => {
           id: "edit",
           title: "Edit",
           titleColor: colors.dark,
-          image: Platform.select({
-            ios: "plus",
-            android: "",
-          }),
-          imageColor: colors.dark,
+          icon: <Feather name="edit" size={20} color={colors.dark} />,
         },
         {
           id: "share",
           title: "Share",
           titleColor: colors.dark,
-          image: Platform.select({
-            ios: "square.and.arrow.up",
-            android: "",
-          }),
-          imageColor: colors.dark,
+          icon: <Feather name="share-2" size={20} color={colors.dark} />,
         },
         {
           id: "destructive",
           title: "Delete",
-          attributes: {
-            destructive: true,
-          },
-          image: Platform.select({
-            ios: "trash",
-            android: "",
-          }),
+          titleColor: colors.errorRed,
+          icon: <Feather name="trash-2" size={20} color={colors.errorRed} />,
         },
       ]}
-      testID="menuView"
     >
-      <Feather name="more-vertical" size={24} color={colors.dark} />
-    </MenuView>
+      <View style={{ padding: 8 }}>
+        <Feather name="more-vertical" size={24} color={colors.dark} />
+      </View>
+    </DropdownMenu>
   )
 }
 

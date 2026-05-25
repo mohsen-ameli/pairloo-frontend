@@ -2,6 +2,7 @@ import { atom } from "jotai"
 import { authFetchAtom, userAtom, userSecureAtom } from "./auth-store"
 import { Alert } from "react-native"
 import { getAttachmentAtom } from "./general-store"
+import Toast from "react-native-toast-message"
 
 export const editFieldsAtom = atom({
   firstName: "",
@@ -58,7 +59,11 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
 
     const data = await response.json()
     if (response.status !== 200) {
-      Alert.alert("Update Failed", data.error)
+      Toast.show({
+        type: "error",
+        text1: "Update Failed",
+        text2: "An unexpected error occurred. Please try again later.",
+      })
       set(loadingAtom, false)
       return
     }
@@ -66,11 +71,19 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
     set(userAtom, { ...user, ...data })
     set(editModeAtom, false)
     set(loadingAtom, false)
-    Alert.alert("Profile Updated", "Your changes have been saved.")
+    Toast.show({
+      type: "success",
+      text1: "Profile Updated",
+      text2: "Your changes have been saved.",
+    })
   } catch (err: any) {
     console.error("Error updating profile:", err)
     set(loadingAtom, false)
-    Alert.alert("Update Failed", err?.message || "An unexpected error occurred.")
+    Toast.show({
+      type: "error",
+      text1: "Update Failed",
+      text2: "An unexpected error occurred. Please try again later.",
+    })
   }
 })
 

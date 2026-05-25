@@ -1,39 +1,52 @@
-import { useEffect, useRef, useState } from "react"
-import { Animated as A, Keyboard, Pressable, Text, View } from "react-native"
-import PagerView, { usePagerView } from "react-native-pager-view"
+import { Children, ReactNode, useEffect, useRef, useState } from "react"
+import {
+  Animated as A,
+  Dimensions,
+  Easing,
+  Keyboard,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native"
 import { colors } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
-import Animated, { useAnimatedStyle } from "react-native-reanimated"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import { userAtom } from "@/src/store/auth-store"
+import { commonStyles } from "@/src/styles/common.styles"
+import Animated, { useAnimatedStyle } from "react-native-reanimated"
 
-/**
- * Allows for creating a pager with multiple pages, navigation dots, and next/back buttons.
- * You can also set the page count dynamically.
- */
-export default function CustomPager({ children }: { children: React.ReactNode }) {
+export default function CustomPager({ children }: { children: ReactNode }) {
   const pageCount = useAtomValue(pageCountAtom)
+  const pages = Children.toArray(children)
   const scrollOffset = useRef(new A.Value(0)).current
-  const { setPage, ref } = usePagerView({ pagesAmount: pageCount })
-  const [scrollEnabled, setScrollEnabled] = useState(true)
+  const translateX = useRef(new A.Value(0)).current
+  const [containerWidth, setContainerWidth] = useState(0)
+  const [xPos, setXPos] = useState(0)
   const currPage = useAtomValue(currPageAtom)
   const flow = useAtomValue(flowAtom)
   const isAuthenticated = useAtomValue(userAtom) !== null
   const { height } = useGradualAnimation({ includeTabHeight: isAuthenticated })
 
-  // Animate scrollOffset when currPage changes (for dots)
   useEffect(() => {
-    setPage(currPage)
+    if (!containerWidth) return
+    const toValue = Math.min(-currPage * containerWidth - 10, -10)
+
+    A.timing(translateX, {
+      toValue: toValue,
+      duration: 300,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: false,
+    }).start()
 
     A.timing(scrollOffset, {
       toValue: currPage,
       duration: 100,
       useNativeDriver: true,
     }).start()
-  }, [currPage])
+  }, [containerWidth, currPage])
 
-  // Animate next/back (flow) buttons position
   const flowButtons = useAnimatedStyle(() => {
     return {
       bottom: height.value + 10,
@@ -41,7 +54,7 @@ export default function CustomPager({ children }: { children: React.ReactNode })
   }, [isAuthenticated])
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.light }}>
+    <View style={commonStyles.generalContainer}>
       {/* Dots */}
       <View
         style={{
@@ -49,7 +62,7 @@ export default function CustomPager({ children }: { children: React.ReactNode })
           top: 30,
           alignSelf: "center",
           zIndex: 1,
-          backgroundColor: colors.light,
+          backgroundColor: "transparent",
         }}
       >
         <View
@@ -90,27 +103,54 @@ export default function CustomPager({ children }: { children: React.ReactNode })
       </View>
 
       {/* Pages */}
-      <PagerView
-        ref={ref}
-        style={{ flex: 1, backgroundColor: colors.light }}
-        initialPage={currPage}
-        scrollEnabled={scrollEnabled}
-        onLayout={() => setScrollEnabled(false)} // needed for ios
+      <View
+        style={[commonStyles.container, { flex: 1, overflow: "hidden" }]}
+        onLayout={event => {
+          const width = event.nativeEvent.layout.width
+          setContainerWidth(width)
+          const x = event.nativeEvent.layout.x
+          setXPos(x)
+        }}
       >
-        {children}
-      </PagerView>
+        <A.View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            width: containerWidth ? containerWidth * pages.length : "100%",
+            transform: [{ translateX }],
+          }}
+        >
+          {pages.map((page, index) => (
+            <View key={index} style={{ flex: 1 }}>
+              {page}
+            </View>
+          ))}
+        </A.View>
+      </View>
 
-      {/* Next Button */}
+      {/* Next button */}
       <Animated.View
-        style={[
-          flowButtons,
-          {
-            position: "absolute",
-            right: 20,
-            borderRadius: "50%",
-            zIndex: 1,
-          },
-        ]}
+        style={
+          Platform.OS === "web" && Dimensions.get("window").width > 700
+            ? [
+                {
+                  position: "absolute",
+                  right: xPos - 100,
+                  top: "50%",
+                  borderRadius: "50%",
+                  userSelect: "none",
+                },
+              ]
+            : [
+                flowButtons,
+                {
+                  position: "absolute",
+                  right: 20,
+                  borderRadius: "50%",
+                  zIndex: 1,
+                },
+              ]
+        }
       >
         <Pressable
           style={{
@@ -144,15 +184,27 @@ export default function CustomPager({ children }: { children: React.ReactNode })
       {/* Back Button */}
       {currPage > 0 && (
         <Animated.View
-          style={[
-            flowButtons,
-            {
-              position: "absolute",
-              left: 20,
-              borderRadius: "50%",
-              zIndex: 1,
-            },
-          ]}
+          style={
+            Platform.OS === "web"
+              ? [
+                  {
+                    position: "absolute",
+                    left: xPos - 100,
+                    top: "50%",
+                    borderRadius: "50%",
+                    userSelect: "none",
+                  },
+                ]
+              : [
+                  flowButtons,
+                  {
+                    position: "absolute",
+                    left: 20,
+                    borderRadius: "50%",
+                    zIndex: 1,
+                  },
+                ]
+          }
         >
           <Pressable
             style={{

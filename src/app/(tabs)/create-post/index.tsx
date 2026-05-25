@@ -7,12 +7,11 @@ import {
   Switch,
   ScrollView,
   Pressable,
-  Alert,
+  Platform,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
-import CustomPager from "@/src/components/CustomPager"
 import { colors } from "@/src/utils/colors"
 import CustomInput from "@/src/components/CustomInput"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -33,9 +32,13 @@ import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import { inputStyles } from "@/src/styles/input.styles"
-import { useRouter } from "expo-router"
+import { useFocusEffect, useRouter } from "expo-router"
+// @ts-ignore: Multi-platform file import
+import CustomPager from "@/src/components/CustomPager"
+import { commonStyles } from "@/src/styles/common.styles"
+import Toast from "react-native-toast-message"
 
 export default function CreatePost() {
   const router = useRouter()
@@ -53,9 +56,10 @@ export default function CreatePost() {
   const pageCount = useAtomValue(pageCountAtom)
 
   useEffect(() => {
-    if (!socket) return
+    if (!socket || !QNAs) return
 
     let nextEnabled = false
+    const currentQna = QNAs[currPage]
 
     // The flow is: initial question -> 0 or more questions -> extra info page -> final page
     if (currPage === 0) {
@@ -64,21 +68,24 @@ export default function CreatePost() {
     } else if (currPage === pageCount - 1) {
       // last page
       nextEnabled = settings.title.trim().length > 0 && settings.description.trim().length > 0
+    } else if (!currentQna) {
+      // The page index can briefly get ahead of the Q&A array while socket events are syncing.
+      nextEnabled = false
     } else {
       // question pages
-      if (QNAs[currPage].question.optional) {
+      if (currentQna.question.optional) {
         nextEnabled = true
-      } else if (QNAs[currPage].question.type === "short_answer") {
+      } else if (currentQna.question.type === "short_answer") {
         if (
-          QNAs[currPage].answer.length === 0 ||
-          QNAs[currPage].answer[0].trim().length < MINIMUM_SHORT_ANSWER_LENGTH
+          currentQna.answer.length === 0 ||
+          currentQna.answer[0].trim().length < MINIMUM_SHORT_ANSWER_LENGTH
         ) {
           nextEnabled = false
         } else {
           nextEnabled = true
         }
       } else {
-        if (QNAs[currPage].answer.length === 0) {
+        if (currentQna.answer.length === 0) {
           nextEnabled = false
         } else {
           nextEnabled = true
@@ -97,7 +104,7 @@ export default function CreatePost() {
         forward()
       },
     }))
-  }, [currPage, socket, settings.title, settings.description, pageCount])
+  }, [currPage, socket, settings.title, settings.description, pageCount, QNAs])
 
   /**
    * @param questionIdx: the index of the question being answered
@@ -116,6 +123,7 @@ export default function CreatePost() {
 
     // Save the answer
     setQNAs(prev => {
+      if (!prev) return prev
       const updated = [...prev]
       if (question.type === "multiple_choice" || question.type === "short_answer") {
         updated[questionIdx].answer = [option]
@@ -133,6 +141,12 @@ export default function CreatePost() {
     setEdited(true)
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [])
+  )
+
   async function refresh() {
     await initCreatePost()
   }
@@ -145,12 +159,12 @@ export default function CreatePost() {
     }
   }
 
-  if (!socket || socket.connected === false) {
+  if (!socket || !socket.connected) {
     return (
-      <View style={errorStyles.container}>
-        <Text style={errorStyles.errorText}>An error occurred. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>An error occurred. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     )
@@ -162,7 +176,7 @@ export default function CreatePost() {
 
       <CustomPager>
         {/* Questionnaire */}
-        {QNAs.map((qna, i) => {
+        {QNAs?.map((qna, i) => {
           const question = qna.question
           const answer = qna.answer
           const type = question.type
@@ -170,7 +184,7 @@ export default function CreatePost() {
           const options = question.options
 
           return (
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} key={i}>
+            <Dismissable key={i}>
               <View style={createPostStyles.container}>
                 <Text style={createPostStyles.questionText}>{questionText}</Text>
                 {type === "multiple_choice" && options && options.length > 0 ? (
@@ -241,8 +255,7 @@ export default function CreatePost() {
                   <TextInput
                     style={createPostStyles.textInput}
                     placeholderTextColor={colors.gray}
-                    defaultValue={qna.answer[0]}
-                    value={qna.answer[0]}
+                    value={qna.answer[0] ?? ""}
                     onChangeText={text => handleChange(i, text, question)}
                     placeholder="Write as little or as much details as you want"
                     editable={!loading}
@@ -253,13 +266,13 @@ export default function CreatePost() {
                   />
                 )}
               </View>
-            </TouchableWithoutFeedback>
+            </Dismissable>
           )
         })}
 
         {/* The last page */}
         <ScrollView
-          key={QNAs.length}
+          key={QNAs?.length}
           style={createPostStyles.scrollView}
           keyboardShouldPersistTaps="handled"
         >
@@ -361,18 +374,18 @@ export default function CreatePost() {
                   <Text style={createPostStyles.lastPageQuestion}>Public Post</Text>
                   <Pressable
                     onPress={() =>
-                      Alert.alert(
-                        "Public Post",
-                        "Toggle this option to make your post visible to other users.\n\nYou can change this setting anytime."
-                      )
+                      Toast.show({
+                        type: "info",
+                        text1: "Public Post",
+                        text2:
+                          "Toggle this option to make your post visible to other users.\n\nYou can change this setting anytime.",
+                      })
                     }
                   >
                     <Feather name="info" size={20} color={colors.gray} />
                   </Pressable>
                 </View>
                 <Switch
-                  trackColor={{ true: colors.purple }}
-                  thumbColor={colors.light}
                   onValueChange={value =>
                     setSettings(async curr => ({ ...(await curr), publicPost: value }))
                   }
@@ -387,4 +400,12 @@ export default function CreatePost() {
       </CustomPager>
     </>
   )
+}
+
+function Dismissable({ children }: { children: React.ReactNode }) {
+  if (Platform.OS === "web") {
+    return <>{children}</>
+  }
+
+  return <TouchableWithoutFeedback onPress={Keyboard.dismiss}>{children}</TouchableWithoutFeedback>
 }

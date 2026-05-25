@@ -9,7 +9,7 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { GeneralPostType } from "@/src/types/post.type"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { sinceNow } from "@/src/utils/format-date"
@@ -18,16 +18,19 @@ import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { getStatusColor } from "@/src/utils/get-color"
 import { prepareChatAtom } from "@/src/store/chat-store"
+import { commonStyles } from "@/src/styles/common.styles"
+import WebGoogleMap from "@/src/components/WebGoogleMap"
 
 export default function PostDetails() {
   const router = useRouter()
-  const { feedPostId } = useLocalSearchParams<{ feedPostId: string }>()
+  const { feedPostId } = useLocalSearchParams<{ feedPostId?: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userSecureAtom)
   const prepareChat = useSetAtom(prepareChatAtom)
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
+
   const {
     data: post,
     isError,
@@ -72,7 +75,7 @@ export default function PostDetails() {
     if (!post) return
 
     router.push({
-      pathname: "(details)/profile",
+      pathname: "(details)/general-profile",
       params: { id: post.userId },
     })
 
@@ -88,7 +91,7 @@ export default function PostDetails() {
 
   if (isPending) {
     return (
-      <View style={errorStyles.container}>
+      <View style={commonStyles.generalContainer}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -96,20 +99,30 @@ export default function PostDetails() {
 
   if (isError) {
     return (
-      <View style={errorStyles.container}>
-        <Text style={errorStyles.errorText}>Error loading posts. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>Error loading posts. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    )
+  }
+
+  if (!feedPostId || !post) {
+    return (
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>Post not found.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={() => router.back()}>
+          <Text style={commonStyles.retryButtonText}>Go Back</Text>
         </Pressable>
       </View>
     )
   }
 
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.generalContainer}>
       <ScrollView
-        style={styles.scrollViewContainer}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={commonStyles.container}
         scrollEnabled={true}
         keyboardShouldPersistTaps="handled"
       >
@@ -145,16 +158,18 @@ export default function PostDetails() {
         {/* Location Map */}
         {post.location && (
           <View style={styles.mapContainer}>
-            <View style={styles.mapFlexContainer} pointerEvents="none">
+            <View style={styles.mapFlexContainer}>
               {isLoading ? (
                 <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                   <LoadingIndicator loading={true} />
                 </View>
-              ) : isExpoGo || !maps ? (
-                <MapUnavailable
-                  title="Map preview unavailable in Expo Go"
-                  description="This screen still works, but native map rendering requires a development build."
-                />
+              ) : isExpoGo ? (
+                <View style={{ flex: 1, paddingTop: 80 }}>
+                  <MapUnavailable
+                    title="Maps are unavailable in Expo Go"
+                    description="Search for a city above to set your approximate location. The map picker requires a development build."
+                  />
+                </View>
               ) : Platform.OS === "android" && GoogleMapView ? (
                 <GoogleMapView
                   style={styles.mapFlexContainer}
@@ -171,7 +186,7 @@ export default function PostDetails() {
                     zoomControlsEnabled: false,
                   }}
                 />
-              ) : AppleMapView ? (
+              ) : Platform.OS === "ios" && AppleMapView ? (
                 <AppleMapView
                   style={styles.mapFlexContainer}
                   cameraPosition={{
@@ -187,14 +202,29 @@ export default function PostDetails() {
                     myLocationButtonEnabled: false,
                   }}
                 />
-              ) : (
-                <MapUnavailable
-                  title="Map preview unavailable"
-                  description="The native map view failed to load."
+              ) : Platform.OS === "web" ? (
+                <WebGoogleMap
+                  cameraPosition={{
+                    coordinates: {
+                      lat: post.location.latitude,
+                      lng: post.location.longitude,
+                    },
+                    zoom: post.distance
+                      ? radiusMetersToZoom(post.distance, post.location.latitude)
+                      : 12,
+                  }}
+                  zoomControl={false}
                 />
+              ) : (
+                !maps && (
+                  <MapUnavailable
+                    title="Map preview unavailable"
+                    description="The native map view failed to load."
+                  />
+                )
               )}
             </View>
-            <View pointerEvents="none" style={styles.mapOverlayContainer}>
+            <View style={styles.mapOverlayContainer}>
               <View style={styles.radiusCircle} />
             </View>
           </View>
@@ -203,7 +233,7 @@ export default function PostDetails() {
         <Text style={styles.timestampText}>Post Created {sinceNow(post.createdAt)} Ago</Text>
       </ScrollView>
 
-      <View style={styles.contactButtonContainer}>
+      <View style={commonStyles.floatingButton}>
         <CustomButton onPress={contactPoster}>Contact Poster</CustomButton>
       </View>
     </View>

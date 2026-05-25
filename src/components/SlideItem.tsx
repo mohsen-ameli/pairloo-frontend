@@ -1,72 +1,66 @@
-import {
-  ImageSourcePropType,
-  type ImageStyle,
-  Pressable,
-  type StyleProp,
-  StyleSheet,
-  View,
-  type ViewProps,
-} from "react-native"
-import type { AnimatedProps } from "react-native-reanimated"
+import { Pressable, StyleSheet, View } from "react-native"
 import Animated from "react-native-reanimated"
-import { colors } from "@/src/utils/colors"
+import { colors, isWeb } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
-import { useSetAtom } from "jotai"
-import { settingsAtom } from "../store/create-post-store"
-import { imgIndexAtom } from "../store/chat-store"
+import { useAtomValue, useSetAtom } from "jotai"
+import { settingsAtom } from "@/src/store/create-post-store"
+import { imgIndexAtom } from "@/src/store/chat-store"
 import { useRouter } from "expo-router"
+import { commonStyles } from "@/src/styles/common.styles"
+import { isDraggingAtom } from "@/src/store/general-store"
 
-interface Props extends AnimatedProps<ViewProps> {
-  style?: StyleProp<ImageStyle>
+export function SlideItem({
+  index,
+  src,
+  editable = false,
+}: {
   index: number
   editable?: boolean
-  source: ImageSourcePropType
-}
-
-export function SlideItem({ style, index, source, editable = false, ...animatedViewProps }: Props) {
+  src: string
+}) {
   const setSettings = useSetAtom(settingsAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
   const router = useRouter()
+  const isDragging = useAtomValue(isDraggingAtom)
 
   return (
     <Pressable
+      style={{
+        width: isWeb ? 600 : "100%",
+        height: isWeb ? 500 : 300,
+        borderRadius: 8,
+      }}
       onPress={() => {
+        if (isDragging) return
         setImgIdx(index)
         router.push("/image-gallery")
       }}
     >
-      <Animated.View {...animatedViewProps}>
-        <Animated.Image style={[style, styles.container]} source={source} />
-        {editable && (
-          <View style={styles.removeOverlay}>
-            <Pressable
-              style={styles.removeOverlayButton}
-              onPress={() => {
-                setSettings(async curr => {
-                  const currSettings = await curr
-                  return {
-                    ...currSettings,
-                    images: currSettings.images.filter((_, i) => i !== index),
-                  }
-                })
-              }}
-            >
-              <Feather name="x" size={24} color={colors.dark} />
-            </Pressable>
-          </View>
-        )}
-      </Animated.View>
+      <Animated.Image style={commonStyles.cardImage} source={{ uri: src }} />
+
+      {editable && (
+        <View style={styles.removeOverlay}>
+          <Pressable
+            style={styles.removeOverlayButton}
+            onPress={() => {
+              setSettings(async curr => {
+                const currSettings = await curr
+                return {
+                  ...currSettings,
+                  images: currSettings.images.filter((_, i) => i !== index),
+                }
+              })
+            }}
+          >
+            <Feather name="x" size={24} color={colors.dark} />
+          </Pressable>
+        </View>
+      )}
     </Pressable>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    height: 250,
-    borderRadius: 15,
-    backgroundColor: colors.lightGray,
-  },
   removeOverlay: {
     position: "absolute",
     top: 10,
@@ -78,13 +72,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light,
     borderRadius: 20,
     padding: 5,
-  },
-  colorFill: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.gray,
   },
 })

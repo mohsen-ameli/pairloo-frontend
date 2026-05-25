@@ -16,7 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Toast from "react-native-toast-message"
 import { router } from "expo-router"
 import { Attachment } from "../types/attachment.type"
-import { Alert } from "react-native"
+import { Alert, Platform } from "react-native"
 
 const unreadMsgStorage = createJSONStorage<{
   [conversationId: string]: number
@@ -47,25 +47,29 @@ export const replyingToAtom = atom<ReplyTo | null>(null)
 
 export const highlightedMessageIdAtom = atom<string | null>(null)
 
-export const currentLongPressedMessageAtom = atom<MessageType | null>(null)
+export const currentLongPressedMessageAtom = atom<ReplyTo | null>(null)
 
-export const editingMessageAtom = atom<MessageType | null>(null)
+export const editingMessageAtom = atom<ReplyTo | null>(null)
 
 export const initChatAtom = atom(null, async (get, set) => {
   const user = await get(userAtom)
   const userJwt = await get(userSecureAtom)
   if (!user || !userJwt) return
   const currSocket = get(chatSocketAtom)
-  if (currSocket && (currSocket.connected || get(loadingAtom))) return
+  const currConversations = get(conversationsAtom)
+  if (currSocket && (currSocket.connected || get(loadingAtom)) && currConversations.length > 0) {
+    return
+  }
 
   set(loadingAtom, true)
 
   const socket: ChatClientSocket = io(WS_BASE_URL + "/chat", {
     auth: {
-      token: userJwt.accessToken,
+      token: userJwt.accessToken || "",
     },
     transports: ["websocket", "polling"],
     reconnectionAttempts: 5,
+    reconnectionDelay: 2000,
   })
 
   set(chatSocketAtom, socket)
@@ -95,14 +99,24 @@ export const initChatAtom = atom(null, async (get, set) => {
   })
 
   socket.on("connect_error", async () => {
-    const accessToken = await refreshAccessToken(userJwt.refreshToken)
-    if (accessToken === null) {
-      set(logOutAtom)
-      return
+    try {
+      const token = await refreshAccessToken()
+      if (!token) {
+        cleanup()
+        set(logOutAtom)
+        return
+      }
+      if (Platform.OS === "web") {
+        socket.connect()
+      } else {
+        await set(userSecureAtom, { ...userJwt, ...token })
+        socket.io.opts.auth = { token: token.accessToken! }
+        socket.connect()
+      }
+    } catch (err) {
+      console.error("chat socket reconnect failed:", err)
+      cleanup()
     }
-    await set(userAtom, { ...user, accessToken })
-    socket.io.opts.auth = { token: accessToken }
-    socket.connect()
   })
 
   // Update the conversations list to include the new conversation
@@ -325,26 +339,8 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
 
     // If message is empty, show delete confirmation alert
     if (!content.trim()) {
-      Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
-        {
-          text: "Cancel",
-          onPress: () => {},
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          onPress: async () => {
-            try {
-              await set(deleteMessageAtom, editingMessage._id, editingMessage.conversationId)
-              set(editingMessageAtom, null)
-            } catch (error) {
-              console.error("Delete error:", error)
-              Alert.alert("Error", "Failed to delete message")
-            }
-          },
-          style: "destructive",
-        },
-      ])
+      await set(deleteMessageAtom, editingMessage._id, editingMessage.conversationId)
+      set(editingMessageAtom, null)
       return
     }
 
@@ -427,15 +423,42 @@ export const sendAttachmentAtom = atom(null, async (get, set, option: "library" 
 export const deleteMessageAtom = atom(
   null,
   async (get, set, messageId: string, conversationId: string) => {
-    const socket = get(chatSocketAtom)
-    if (!socket) return
+    async function handleDelete() {
+      try {
+        set(messagesAtom, prev => prev.filter(msg => msg._id !== messageId))
 
-    set(messagesAtom, prev => prev.filter(msg => msg._id !== messageId))
+        get(chatSocketAtom)?.emit("deleteMessage", {
+          messageId,
+          conversationId,
+        })
+      } catch (error) {
+        console.error("Delete error:", error)
+        Toast.show({
+          type: "error",
+          text1: "Failed to delete message. Please try again.",
+        })
+      }
+    }
 
-    socket.emit("deleteMessage", {
-      messageId,
-      conversationId,
-    })
+    if (Platform.OS === "web") {
+      if (confirm("Are you sure you want to delete this message?")) {
+        handleDelete()
+      }
+      return
+    }
+
+    Alert.alert("Delete Message", "Are you sure you want to delete this message?", [
+      {
+        text: "Cancel",
+        onPress: () => {},
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        onPress: handleDelete,
+        style: "destructive",
+      },
+    ])
   }
 )
 

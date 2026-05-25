@@ -131,7 +131,7 @@ export default function SearchPage() {
             <Pressable
               onPress={() =>
                 router.push({
-                  pathname: "(details)/profile",
+                  pathname: "(details)/general-profile",
                   params: { id: item._id },
                 })
               }

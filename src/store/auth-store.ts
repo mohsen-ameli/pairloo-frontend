@@ -5,6 +5,7 @@ import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
 import {
   AuthErrorType,
+  AuthResponseType,
   NewUserType,
   RegisteredUserType,
   UserSecureType,
@@ -13,7 +14,7 @@ import {
 import { chatSocketAtom, createPostSocketAtom } from "./socket-store"
 import z from "zod"
 import { currPageAtom, flowAtom, resetPagerAtom } from "./pager-store"
-import { Alert } from "react-native"
+import { Alert, Platform } from "react-native"
 import { router } from "expo-router"
 import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
@@ -70,13 +71,25 @@ export const phoneAttemptsAtom = atom(null as [string, number] | null) // [phone
 // user atom
 const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
   getItem: async (key: string) => {
+    if (Platform.OS === "web") {
+      return AsyncStorage.getItem(key)
+    }
+
     return await SecureStore.getItemAsync(key)
   },
   setItem: async (key: string, value: string) => {
-    await SecureStore.setItemAsync(key, value)
+    if (Platform.OS === "web") {
+      AsyncStorage.setItem(key, value)
+    } else {
+      await SecureStore.setItemAsync(key, value)
+    }
   },
   removeItem: async (key: string) => {
-    await SecureStore.deleteItemAsync(key)
+    if (Platform.OS === "web") {
+      AsyncStorage.removeItem(key)
+    } else {
+      await SecureStore.deleteItemAsync(key)
+    }
   },
 }))
 export const userSecureAtom = atomWithStorage("user-secure", null, userSecureStorage)
@@ -180,6 +193,13 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
 
   if (!showAlert) {
     await logout()
+    return
+  }
+
+  if (Platform.OS === "web") {
+    if (window.confirm("Are you sure you want to log out?")) {
+      await logout()
+    }
     return
   }
 
@@ -326,9 +346,10 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, code, isSignUp }),
+      body: JSON.stringify({ email, code, isSignUp, platform: Platform.OS }),
+      credentials: Platform.OS === "web" ? "include" : "same-origin",
     })
-    const data: RegisteredUserType = await res.json()
+    const data: AuthResponseType = await res.json()
 
     if (res.ok) {
       if (isSignUp) {
@@ -542,7 +563,7 @@ export const setUserPictureAtom = atom(null, async (get, set, option: "library" 
 export const authFetchAtom = atom(
   null,
   async (get, set, url: string, options: FetchRequestInit = {}) => {
-    // Attach access token
+    // Native flow: rely on secure storage
     function fetchWithToken(token: string) {
       return fetch(`${BASE_URL}${url}`, {
         ...options,
@@ -554,26 +575,56 @@ export const authFetchAtom = atom(
       })
     }
 
-    const user = await get(userSecureAtom)
-
-    if (!user) {
-      throw new Error("User is not authenticated")
+    // Web flow: rely on cookies
+    function fetchWithCookies() {
+      return fetch(`${BASE_URL}${url}`, {
+        ...options,
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...options.headers,
+        },
+      })
     }
 
     try {
-      const res = await fetchWithToken(user.accessToken)
+      const user = await get(userSecureAtom)
 
-      if (res.status === 401 || res.status === 403) {
-        const accessToken = await refreshAccessToken(user.refreshToken)
+      if (!user || !user.accessToken || !user.refreshToken) {
+        throw new Error("User is not authenticated")
+      }
 
-        if (accessToken !== null) {
-          set(userSecureAtom, { ...user, accessToken })
-          const newRes = await fetchWithToken(accessToken)
-          return newRes
-        } else {
+      if (Platform.OS === "web") {
+        let res = await fetchWithCookies()
+
+        if (res.status === 401 || res.status === 403) {
+          const token = await refreshAccessToken()
+          if (token) {
+            res = await fetchWithCookies()
+            set(userSecureAtom, { ...user, _id: token._id })
+            return res
+          }
+
           set(logOutAtom)
           throw new Error("Session expired. Please log in again.")
         }
+
+        return res
+      }
+
+      let res = await fetchWithToken(user.accessToken)
+
+      if (res.status === 401 || res.status === 403) {
+        const token = await refreshAccessToken(user.refreshToken)
+
+        if (token) {
+          set(userSecureAtom, { ...user, ...token })
+          res = await fetchWithToken(token.accessToken!)
+          return res
+        }
+
+        set(logOutAtom)
+        throw new Error("Session expired. Please log in again.")
       }
 
       return res

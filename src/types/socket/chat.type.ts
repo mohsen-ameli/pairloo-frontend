@@ -16,6 +16,7 @@ export type ReplyTo =
       content?: string
       attachmentsCount: number
       sender: SenderType
+      conversationId: string
       createdAt?: Date
       updatedAt?: Date
     }

@@ -29,7 +29,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       },
       config: {
         googleMaps: {
-          apiKey: process.env.GOOGLE_API_KEY,
+          apiKey: process.env.EXPO_PUBLIC_GOOGLE_API_KEY,
         },
       },
       edgeToEdgeEnabled: true,
@@ -43,6 +43,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       favicon: "./assets/images/favicon.png",
     },
     plugins: [
+      "expo-web-browser",
       "expo-router",
       "expo-secure-store",
       "expo-audio",

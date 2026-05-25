@@ -17,6 +17,17 @@ export const channelsAtom = atom<Notifications.NotificationChannel[]>([])
 export const notificationAtom = atom<Notifications.Notification | undefined>(undefined)
 
 export const registerForPushNotificationsAsyncAtom = atom(null, async (get, set) => {
+  // Ensure we only warn once per app runtime when running in non-device environments
+  // (e.g. emulators) to avoid spamming logs on repeated registration attempts.
+  // This is module-scoped and persists until app reload.
+  let warnedPhysicalDevice = (global as any).__warnedPhysicalDeviceForPush ?? false
+  const setWarned = (v: boolean) => {
+    try {
+      ;(global as any).__warnedPhysicalDeviceForPush = v
+    } catch (_) {}
+    warnedPhysicalDevice = v
+  }
+
   let token
   const user = await set(fetchUserInfoAtom)
   if (!user) return
@@ -75,7 +86,10 @@ export const registerForPushNotificationsAsyncAtom = atom(null, async (get, set)
       token = `${e}`
     }
   } else {
-    console.warn("Must use physical device for push notifications")
+    if (!warnedPhysicalDevice) {
+      console.warn("Must use physical device for push notifications")
+      setWarned(true)
+    }
   }
 
   return token

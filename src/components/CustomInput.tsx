@@ -27,10 +27,14 @@ export default function CustomInput({
       </Text>
       <TextInput
         ref={inputRef}
-        style={[inputStyles.input, rest.multiline && { height: 150, textAlignVertical: "top" }]}
         placeholderTextColor={colors.gray}
         selectionColor={colors.purple}
         {...rest}
+        style={[
+          inputStyles.input,
+          rest.multiline && { height: 150, textAlignVertical: "top" },
+          rest.style,
+        ]}
       />
       {errors && <Text style={inputStyles.errors}>{errors}</Text>}
     </View>

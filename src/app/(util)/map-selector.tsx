@@ -27,6 +27,7 @@ import Feather from "@expo/vector-icons/Feather"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import CustomButton from "@/src/components/CustomButton"
 import { debounce } from "lodash"
+import WebGoogleMap from "@/src/components/WebGoogleMap"
 
 type CameraEvent = {
   coordinates: {
@@ -38,13 +39,20 @@ type CameraEvent = {
   bearing: number
 }
 
+export type MapRegion = {
+  latitude: number
+  longitude: number
+  zoom: number
+  distance: number
+}
+
 const DEFAULT_ZOOM = 12
 
 export default function MapSelector() {
   const router = useRouter()
   const user = useAtomValue(userAtom)!
   const { maps, isExpoGo, isLoading } = useExpoMaps()
-  const region = useRef({
+  const region = useRef<MapRegion>({
     latitude: user.latitude,
     longitude: user.longitude,
     zoom: DEFAULT_ZOOM,
@@ -313,7 +321,7 @@ export default function MapSelector() {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ color: colors.gray }}>Loading map...</Text>
         </View>
-      ) : isExpoGo || !maps ? (
+      ) : isExpoGo ? (
         <View style={{ flex: 1, paddingTop: 80 }}>
           <MapUnavailable
             title="Maps are unavailable in Expo Go"
@@ -334,7 +342,7 @@ export default function MapSelector() {
           ref={androidMapRef}
           onMapClick={() => Keyboard.dismiss()}
         />
-      ) : AppleMapView ? (
+      ) : Platform.OS === "ios" && AppleMapView ? (
         <>
           <AppleMapView
             style={{ flex: 1 }}
@@ -404,19 +412,32 @@ export default function MapSelector() {
             </TouchableOpacity>
           </View>
         </>
-      ) : (
-        <MapUnavailable
-          title="Map could not be loaded"
-          description="Try restarting the app or use a development build if the native map module is unavailable."
+      ) : Platform.OS === "web" ? (
+        <WebGoogleMap
+          cameraPosition={{
+            coordinates: {
+              lat: region.current.latitude,
+              lng: region.current.longitude,
+            },
+            zoom: region.current.zoom,
+          }}
+          region={region}
         />
+      ) : (
+        !maps && (
+          <MapUnavailable
+            title="Map could not be loaded"
+            description="Try restarting the app or use a development build if the native map module is unavailable."
+          />
+        )
       )}
 
       <View
-        pointerEvents="none"
         style={{
           ...StyleSheet.absoluteFillObject,
           justifyContent: "center",
           alignItems: "center",
+          pointerEvents: "none",
         }}
       >
         <View

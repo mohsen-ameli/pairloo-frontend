@@ -1,11 +1,7 @@
 import { StyleSheet } from "react-native"
-import { colors } from "@/src/utils/colors"
+import { boxShadow, colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light,
-  },
   content: {
     paddingHorizontal: 12,
     paddingBottom: 15,
@@ -90,10 +86,7 @@ export const styles = StyleSheet.create({
     padding: 14,
     borderTopWidth: 3,
     borderColor: colors.borderGray,
-    shadowColor: colors.dark,
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: 1 },
+    boxShadow,
   },
   qnaCardHeader: {
     marginBottom: 12,
@@ -129,16 +122,6 @@ export const styles = StyleSheet.create({
   closestPostsContainer: {
     marginTop: 28,
     borderRadius: 10,
-  },
-  closestPost: {
-    backgroundColor: colors.lightGray,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    shadowColor: colors.dark,
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
   },
   closestPostsTitle: {
     fontSize: 25,
@@ -257,9 +240,6 @@ export const styles = StyleSheet.create({
     zIndex: 101,
     padding: 8,
   },
-  scrollViewContainer: {
-    flex: 1,
-  },
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -275,11 +255,13 @@ export const styles = StyleSheet.create({
   },
   mapFlexContainer: {
     flex: 1,
+    pointerEvents: "none",
   },
   mapOverlayContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
+    pointerEvents: "none",
   },
   radiusCircle: {
     width: 250,
@@ -294,10 +276,6 @@ export const styles = StyleSheet.create({
     color: colors.darkGray,
     marginLeft: 5,
     marginBottom: 16,
-  },
-  contactButtonContainer: {
-    paddingHorizontal: 16,
-    padding: 16,
   },
   statusLabel: {
     marginLeft: -5,

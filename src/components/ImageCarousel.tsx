@@ -2,11 +2,14 @@ import { Dimensions, Platform, View } from "react-native"
 import { useSharedValue } from "react-native-reanimated"
 import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated-carousel"
 import { SlideItem } from "./SlideItem"
-import { useEffect, useRef, useState } from "react"
-import { colors } from "@/src/utils/colors"
+import { useEffect, useRef } from "react"
+import { colors, isWeb } from "@/src/utils/colors"
 import { useSetAtom } from "jotai"
-import { bigImageViewAtom } from "../store/chat-store"
-import ImageGallery from "../app/image-gallery"
+import { bigImageViewAtom } from "@/src/store/chat-store"
+import { isDraggingAtom } from "@/src/store/general-store"
+
+const w = Dimensions.get("window").width
+let width = isWeb ? 600 : w
 
 export default function ImageCarousel({
   images,
@@ -18,9 +21,11 @@ export default function ImageCarousel({
   editable?: boolean
 }) {
   const ref = useRef<ICarouselInstance>(null)
-  const progress = useSharedValue<number>(0)
-  const [width, setWidth] = useState(Dimensions.get("window").width - widthOffset)
+  const progress = useSharedValue(0)
   const setImages = useSetAtom(bigImageViewAtom)
+  const setIsDragging = useSetAtom(isDraggingAtom)
+
+  width -= widthOffset
 
   useEffect(() => {
     setImages(
@@ -31,10 +36,6 @@ export default function ImageCarousel({
     )
   }, [images])
 
-  useEffect(() => {
-    setWidth(Dimensions.get("window").width - widthOffset)
-  }, [widthOffset])
-
   const onPressPagination = (index: number) => {
     ref.current?.scrollTo({
       count: index - progress.value,
@@ -43,15 +44,18 @@ export default function ImageCarousel({
   }
 
   if (images.length === 1) {
-    return (
-      <View style={{ width: "auto", height: 250, borderRadius: 15, overflow: "hidden" }}>
-        <SlideItem index={0} source={{ uri: images[0] }} editable={editable} />
-      </View>
-    )
+    return <SlideItem index={0} src={images[0]} editable={editable} />
   }
 
   return (
-    <View style={{ alignItems: "center", paddingBottom: 20, height: 280 }}>
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        paddingBottom: 20,
+        height: isWeb ? 550 : 350,
+      }}
+    >
       <Carousel
         autoPlayInterval={2000}
         data={images}
@@ -59,22 +63,19 @@ export default function ImageCarousel({
         pagingEnabled={true}
         snapEnabled={true}
         width={width}
-        style={{
-          width,
-          height: 250,
-        }}
+        style={{ width, height: isWeb ? 500 : 300 }}
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,
-          parallaxScrollingOffset: Platform.OS === "ios" ? 60 : 65,
+          parallaxScrollingOffset: Platform.OS === "android" ? 65 : isWeb ? 90 : 60,
           parallaxAdjacentItemScale: 0.75,
         }}
         onProgressChange={(offsetProgress, absoluteProgress) => {
           progress.value = absoluteProgress
         }}
-        renderItem={({ index, item }) => (
-          <SlideItem index={index} source={{ uri: item }} editable={editable} />
-        )}
+        onScrollStart={() => setIsDragging(true)}
+        onScrollEnd={() => setIsDragging(false)}
+        renderItem={({ index, item }) => <SlideItem index={index} src={item} editable={editable} />}
         ref={ref}
       />
 

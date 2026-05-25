@@ -7,8 +7,6 @@ export const styles = StyleSheet.create({
     gap: 10,
     padding: 20,
     paddingTop: 70,
-    borderColor: colors.borderGray,
-    borderRightWidth: 1,
   },
   title: {
     color: colors.dark,

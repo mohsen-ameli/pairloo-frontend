@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, Pressable, Alert } from "react-native"
+import { View, Text, TouchableOpacity, Pressable, Dimensions } from "react-native"
 import React, { useCallback, useState } from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
-import { colors } from "@/src/utils/colors"
+import { colors, isWeb } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import {
@@ -26,9 +26,10 @@ import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { MyPostMenu } from "../components/MyPostMenu"
-import { MenuView } from "@react-native-menu/menu"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
 import { chatSocketAtom } from "../store/socket-store"
+import DropdownMenu from "../components/DropdownMenu"
+import Toast from "react-native-toast-message"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -40,6 +41,7 @@ export default function useCustomHeader({
   isPostDetails = false,
   isMyPostDetails = false,
   isProfile = false,
+  includeBottomPadding = false,
 }: {
   title: string
   postId?: string
@@ -48,6 +50,7 @@ export default function useCustomHeader({
   isPostDetails?: boolean
   isMyPostDetails?: boolean
   isProfile?: boolean
+  includeBottomPadding?: boolean
 }): ExtendedStackNavigationOptions {
   const insets = useSafeAreaInsets()
 
@@ -59,6 +62,12 @@ export default function useCustomHeader({
     headerStyle: styles.header,
     headerBackButtonDisplayMode: "minimal",
     headerTitleStyle: styles.headerTitle,
+    contentStyle: includeBottomPadding
+      ? {
+          paddingBottom: insets.bottom,
+          backgroundColor: colors.light,
+        }
+      : {},
   }
 
   if (inChat) {
@@ -139,7 +148,7 @@ function ChatHeader() {
   function goToUserProfile() {
     cleanupChat()
     router.push({
-      pathname: "(details)/profile",
+      pathname: "(details)/general-profile",
       params: { id: otherUser?._id },
     })
   }
@@ -156,15 +165,15 @@ function ChatHeader() {
   return (
     <View
       style={{
-        gap: 5,
         paddingBottom: 12,
         paddingLeft: 6,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
         backgroundColor: colors.light,
         borderBottomColor: colors.lightGray,
         borderBottomWidth: 1,
-        paddingTop: insets.top,
+        paddingTop: insets.top + 6,
       }}
     >
       <Pressable
@@ -181,76 +190,91 @@ function ChatHeader() {
         <Feather name="arrow-left" size={26} color={colors.dark} />
       </Pressable>
 
-      <TouchableOpacity onPress={goToUserProfile}>
-        <Image
-          source={
-            otherUser?.picture && otherUser?.picture
-              ? { uri: otherUser?.picture }
-              : defaultProfilePicture
-          }
-          style={
-            currentConversation.contactedPosts.length > 0
-              ? styles.profileImageContacted
-              : styles.profileImageNotContacted
-          }
-        />
-      </TouchableOpacity>
-
-      <View style={{ gap: 2 }}>
-        <TouchableOpacity onPress={goToUserProfile} style={styles.otherProfileUsername}>
-          <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          justifyContent: isWeb ? "center" : "flex-start",
+        }}
+      >
+        {/* profile picture */}
+        <TouchableOpacity onPress={goToUserProfile}>
+          <Image
+            source={
+              otherUser?.picture && otherUser?.picture
+                ? { uri: otherUser?.picture }
+                : defaultProfilePicture
+            }
+            style={
+              currentConversation.contactedPosts.length > 0
+                ? styles.profileImageContacted
+                : styles.profileImageNotContacted
+            }
+          />
         </TouchableOpacity>
 
-        {currentConversation.contactedPosts.length > 0 && (
-          <MenuView
-            onPressAction={({ nativeEvent }) => {
-              if (nativeEvent.event === "general") {
-                setActivePostId(null)
-              } else {
-                setActivePostId(nativeEvent.event)
-              }
-              setLoading(true)
-              setEntireChatLoaded(false)
-              setMessages([])
-            }}
-            actions={[
-              {
-                id: "general",
-                title: DEFAULT_CHAT_TITLE,
-              },
-              ...currentConversation.contactedPosts.map(post => ({
-                id: post.postId,
-                title: post.title,
-                titleColor: colors.dark,
-              })),
-            ]}
-            testID="menuView"
-            style={{ width: "90%" }}
-          >
-            <View
-              style={{
-                minWidth: "90%",
-                maxWidth: "90%",
-                paddingVertical: 8,
-                paddingLeft: 6,
-                paddingRight: 20,
-                marginTop: 4,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-                borderRadius: 6,
-                borderColor: colors.darkPurple,
-                borderWidth: 1.5,
+        {/* username and dropdown menu */}
+        <View style={{ gap: 2 }}>
+          <TouchableOpacity onPress={goToUserProfile} style={styles.otherProfileUsername}>
+            <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+          </TouchableOpacity>
+
+          {currentConversation.contactedPosts.length > 0 && (
+            <DropdownMenu
+              anchor="bottom"
+              dropdownWidth={isWeb ? 400 : Dimensions.get("window").width - 120}
+              onPressAction={action => {
+                if (action === "general") {
+                  setActivePostId(null)
+                } else {
+                  setActivePostId(action)
+                }
+                setLoading(true)
+                setEntireChatLoaded(false)
+                setMessages([])
               }}
+              actions={[
+                {
+                  id: "general",
+                  title: DEFAULT_CHAT_TITLE,
+                  titleColor: colors.dark,
+                },
+                ...currentConversation.contactedPosts.map(post => ({
+                  id: post.postId,
+                  title: post.title,
+                  titleColor: colors.dark,
+                })),
+              ]}
             >
-              <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
-              <Text style={{ color: colors.dark, fontSize: 14 }} numberOfLines={1}>
-                {activeChat}
-              </Text>
-            </View>
-          </MenuView>
-        )}
+              <View
+                style={{
+                  minWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
+                  maxWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
+                  paddingVertical: 8,
+                  paddingLeft: 6,
+                  paddingRight: 20,
+                  marginTop: 4,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  borderRadius: 6,
+                  borderColor: colors.darkPurple,
+                  borderWidth: 1.5,
+                }}
+              >
+                <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
+                <Text style={{ color: colors.dark, fontSize: 14 }} numberOfLines={1}>
+                  {activeChat}
+                </Text>
+              </View>
+            </DropdownMenu>
+          )}
+        </View>
       </View>
+
+      {isWeb && <View style={{ width: 40, height: 40 }} />}
     </View>
   )
 }
@@ -289,7 +313,10 @@ function PostDetailsHeader() {
       style={{ padding: 6 }}
       onPress={async () => {
         if (!feedPostId) {
-          Alert.alert("Error", "Something went wrong. Post was not saved.")
+          Toast.show({
+            type: "error",
+            text1: "Could not save post. Please try again later.",
+          })
           return
         }
 

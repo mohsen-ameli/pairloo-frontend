@@ -16,9 +16,10 @@ import { Pressable, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 import { LastMessageType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
-import { errorStyles } from "@/src/styles/error.styles"
+
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { useCallback } from "react"
+import { commonStyles } from "@/src/styles/common.styles"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -57,7 +58,7 @@ export default function index() {
 
   if (loading) {
     return (
-      <View style={errorStyles.container}>
+      <View style={commonStyles.generalContainer}>
         <LoadingIndicator loading={true} />
       </View>
     )
@@ -65,18 +66,18 @@ export default function index() {
 
   if (!socket || socket.connected === false) {
     return (
-      <View style={errorStyles.container}>
-        <Text style={errorStyles.errorText}>An error occured. Please try again.</Text>
-        <Pressable style={errorStyles.retryButton} onPress={refresh}>
-          <Text style={errorStyles.retryButtonText}>Retry</Text>
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>An error occured. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     )
   }
 
   return (
-    <>
-      <View style={conversationStyles.container}>
+    <View style={commonStyles.generalContainer}>
+      <View style={commonStyles.container}>
         {conversations.length === 0 ? (
           <View style={conversationStyles.emptyStateContainer}>
             <Text style={conversationStyles.emptyStateText}>No chats yet.</Text>
@@ -98,7 +99,7 @@ export default function index() {
             return (
               <Pressable
                 key={conversation._id}
-                style={conversationStyles.item}
+                style={[commonStyles.card, conversationStyles.item]}
                 onPress={() => {
                   prepareChat(conversation.lastMessage?.postId)
                   router.push({
@@ -148,6 +149,6 @@ export default function index() {
           })
         )}
       </View>
-    </>
+    </View>
   )
 }
