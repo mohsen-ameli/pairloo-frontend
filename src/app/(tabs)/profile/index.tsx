@@ -97,6 +97,7 @@ export default function ProfileScreen() {
   }
 
   async function refresh() {
+    queryClient.invalidateQueries({ queryKey: ["my-user"] })
     queryClient.invalidateQueries({ queryKey: ["my-posts"] })
     queryClient.invalidateQueries({ queryKey: ["reviews", userSecure?._id] })
     queryClient.invalidateQueries({ queryKey: ["my-saved-posts"] })

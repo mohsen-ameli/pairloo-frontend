@@ -1,14 +1,13 @@
 import { atom } from "jotai"
-import { logOutAtom, userSecureAtom } from "./auth-store"
+import { refreshTokensAtom, userSecureAtom } from "./auth-store"
 import { MINIMUM_SHORT_ANSWER_LENGTH, WS_BASE_URL } from "@/src/utils/constants"
 import { createPostSocketAtom } from "./socket-store"
-import { refreshAccessToken } from "@/src/utils/refresh-access-token"
 import io from "socket.io-client"
 import { currPageAtom, pageCountAtom } from "./pager-store"
 import { router } from "expo-router"
 import { Alert, Platform } from "react-native"
 import * as ImagePicker from "expo-image-picker"
-import { QnaType, Question } from "@/src/types/question.types"
+import { QnaType } from "@/src/types/question.types"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { ImageObject } from "@/src/types/image-object.type"
@@ -112,10 +111,9 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
 
   socket.on("connect_error", async () => {
     try {
-      const token = await refreshAccessToken()
+      const token = await set(refreshTokensAtom)
       if (!token) {
         cleanup()
-        set(logOutAtom)
         return
       }
       if (Platform.OS === "web") {

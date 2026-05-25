@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { logOutAtom, userAtom, userSecureAtom } from "./auth-store"
+import { refreshTokensAtom, userAtom, userSecureAtom } from "./auth-store"
 import io from "socket.io-client"
 import {
   ChatClientSocket,
@@ -8,7 +8,6 @@ import {
   ReplyTo,
 } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "./socket-store"
-import { refreshAccessToken } from "@/src/utils/refresh-access-token"
 import { NUM_MESSAGES_TO_LOAD, WS_BASE_URL } from "@/src/utils/constants"
 import { getAttachmentAtom, notificationSoundAtom } from "./general-store"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
@@ -100,10 +99,9 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   socket.on("connect_error", async () => {
     try {
-      const token = await refreshAccessToken()
+      const token = await set(refreshTokensAtom)
       if (!token) {
         cleanup()
-        set(logOutAtom)
         return
       }
       if (Platform.OS === "web") {

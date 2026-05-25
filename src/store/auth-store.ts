@@ -18,7 +18,6 @@ import { Alert, Platform } from "react-native"
 import { router } from "expo-router"
 import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
-import { refreshAccessToken } from "../utils/refresh-access-token"
 import { FetchRequestInit } from "expo/fetch"
 import { incrementAttemptsAtom, resetDeviceInfoAtom } from "./device-store"
 
@@ -590,7 +589,8 @@ export const authFetchAtom = atom(
     try {
       const user = await get(userSecureAtom)
 
-      if (!user || !user.accessToken || !user.refreshToken) {
+      if (!user) {
+        set(logOutAtom)
         throw new Error("User is not authenticated")
       }
 
@@ -598,42 +598,72 @@ export const authFetchAtom = atom(
         let res = await fetchWithCookies()
 
         if (res.status === 401 || res.status === 403) {
-          const token = await refreshAccessToken()
+          const token = await set(refreshTokensAtom)
+
           if (token) {
             res = await fetchWithCookies()
             set(userSecureAtom, { ...user, _id: token._id })
             return res
           }
-
-          set(logOutAtom)
-          throw new Error("Session expired. Please log in again.")
         }
 
         return res
       }
 
+      if (!user.accessToken || !user.refreshToken) {
+        set(logOutAtom)
+        throw new Error("User is not authenticated")
+      }
+
       let res = await fetchWithToken(user.accessToken)
 
       if (res.status === 401 || res.status === 403) {
-        const token = await refreshAccessToken(user.refreshToken)
+        const token = await set(refreshTokensAtom, user.refreshToken)
 
         if (token) {
           set(userSecureAtom, { ...user, ...token })
           res = await fetchWithToken(token.accessToken!)
           return res
         }
-
-        set(logOutAtom)
-        throw new Error("Session expired. Please log in again.")
       }
 
       return res
-    } catch (error: any) {
-      console.error("Auth fetch error: ", error)
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Cannot connect to server. Please check your internet connection and try again.",
+      })
+      console.error("Auth fetch error:", error)
       throw new Error("Network error")
     }
   }
 )
+
+// Refresh the access token. If `refreshToken` is provided, send it in the body
+// (used by native). If omitted, call the endpoint with cookies (used by web).
+export const refreshTokensAtom = atom(null, async (get, set, refreshToken?: string) => {
+  const opts: RequestInit = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  }
+
+  if (refreshToken) {
+    opts.body = JSON.stringify({ refreshToken })
+  } else {
+    // Ensure cookies are sent for web flows
+    opts.credentials = "include"
+  }
+
+  const res = await fetch(`${BASE_URL}/api/auth/refresh-token`, opts)
+
+  if (res.status === 401 || res.status === 403) {
+    set(logOutAtom)
+    throw new Error("Session expired. Please log in again.")
+  }
+
+  const data: AuthResponseType = await res.json()
+  return data
+})
 
 export const fetchUserInfoAtom = atom(null, async (get, set) => {
   const res = await set(authFetchAtom, "/api/users/my-user")

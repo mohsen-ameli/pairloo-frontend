@@ -295,9 +295,11 @@ function CreatePostHeader() {
           <Feather name="rotate-ccw" size={24} color={colors.dark} />
         </Pressable>
       )}
-      <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
-        <Feather name="trash-2" size={24} color={colors.dark} />
-      </Pressable>
+      {qna && (
+        <Pressable onPress={discardDraft} disabled={loading} style={{ padding: 6 }}>
+          <Feather name="trash-2" size={24} color={colors.dark} />
+        </Pressable>
+      )}
     </View>
   )
 }

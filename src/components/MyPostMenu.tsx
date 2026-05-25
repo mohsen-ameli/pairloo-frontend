@@ -7,6 +7,7 @@ import { useSetAtom } from "jotai"
 import DropdownMenu from "./DropdownMenu"
 import Clipboard from "@react-native-clipboard/clipboard"
 import { BASE_URL } from "../utils/constants"
+import Toast from "react-native-toast-message"
 
 export const MyPostMenu = ({ id }: { id: string }) => {
   const deletePost = useSetAtom(deletePostAtom)
@@ -19,9 +20,9 @@ export const MyPostMenu = ({ id }: { id: string }) => {
         if (action === "edit") {
           editPost()
         } else if (action === "share") {
-          // copy link to clipboard
           const postUrl = `${BASE_URL}/feed-post?feedPostId=${id}`
           Clipboard.setString(postUrl)
+          Toast.show({ type: "success", text1: "Post link copied to clipboard!" })
         } else if (action === "destructive") {
           deletePost(id)
         }

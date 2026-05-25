@@ -40,6 +40,7 @@ export default function PostDetails() {
     isError,
     isPending,
   } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+  const detailOptions = useCustomHeader({ title: "Details", isMyPostDetails: true, postId: id })
 
   const GoogleMapView = maps?.GoogleMaps.View
   const AppleMapView = maps?.AppleMaps.View
@@ -71,8 +72,6 @@ export default function PostDetails() {
       setIsCooldown(false)
     }
   }
-
-  const detailOptions = useCustomHeader({ title: "Details", isMyPostDetails: true, postId: id })
 
   async function fetchPost() {
     const res = await authFetch(`/api/posts/my-posts/${id}`)
