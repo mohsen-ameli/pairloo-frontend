@@ -105,7 +105,7 @@ export default function PhoneNumberNative() {
             </TouchableOpacity>
             <TextInput
               style={commonStyles.searchInput}
-              placeholder="Search for a city"
+              placeholder="Search for a country"
               placeholderTextColor={colors.gray}
               value={searchInput}
               onChangeText={handleSearch}

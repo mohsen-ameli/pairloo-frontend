@@ -12,6 +12,7 @@ import {
 import { styles } from "@/src/styles/feed.styles"
 import { ANDROID_ADS_UNIT_ID, IOS_ADS_UNIT_ID } from "@/src/utils/constants"
 import { RatingStarSingle } from "@/src/components/RatingStar"
+import { commonStyles } from "@/src/styles/common.styles"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -33,7 +34,7 @@ export default function FeedAdView() {
   }
 
   return (
-    <View style={styles.postCard}>
+    <View style={commonStyles.card}>
       <NativeAdView nativeAd={nativeAd}>
         <View style={styles.postHeader}>
           <NativeAsset assetType={NativeAssetType.ICON}>

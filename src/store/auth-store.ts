@@ -588,6 +588,12 @@ export const authFetchAtom = atom(
     }
 
     try {
+      const user = await get(userSecureAtom)
+
+      if (!user || !user.accessToken || !user.refreshToken) {
+        throw new Error("User is not authenticated")
+      }
+
       if (Platform.OS === "web") {
         let res = await fetchWithCookies()
 
@@ -595,7 +601,7 @@ export const authFetchAtom = atom(
           const token = await refreshAccessToken()
           if (token) {
             res = await fetchWithCookies()
-            set(userSecureAtom, { ...get(userSecureAtom), _id: token._id })
+            set(userSecureAtom, { ...user, _id: token._id })
             return res
           }
 
@@ -604,12 +610,6 @@ export const authFetchAtom = atom(
         }
 
         return res
-      }
-
-      const user = await get(userSecureAtom)
-
-      if (!user || !user.accessToken || !user.refreshToken) {
-        throw new Error("User is not authenticated")
       }
 
       let res = await fetchWithToken(user.accessToken)

@@ -1,5 +1,5 @@
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
-import { memo, useCallback, useEffect, useRef } from "react"
+import { memo, RefObject, useCallback, useEffect, useRef } from "react"
 import { MapRegion } from "../app/(util)/map-selector"
 
 function WebGoogleMap({
@@ -9,7 +9,7 @@ function WebGoogleMap({
 }: {
   cameraPosition: { coordinates: { lat: number; lng: number }; zoom: number }
   zoomControl?: boolean
-  region?: React.RefObject<MapRegion>
+  region?: RefObject<MapRegion>
 }) {
   const mapRef = useRef<google.maps.Map | null>(null)
   const { isLoaded } = useJsApiLoader({ googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_API_KEY! })
