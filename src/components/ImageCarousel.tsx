@@ -21,7 +21,7 @@ export default function ImageCarousel({
   editable?: boolean
 }) {
   const ref = useRef<ICarouselInstance>(null)
-  const progress = useSharedValue<number>(0)
+  const progress = useSharedValue(0)
   const setImages = useSetAtom(bigImageViewAtom)
   const setIsDragging = useSetAtom(isDraggingAtom)
 

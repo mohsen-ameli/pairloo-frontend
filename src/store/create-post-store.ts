@@ -82,6 +82,7 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   function cleanup() {
     get(createPostSocketAtom)?.disconnect()
     set(createPostSocketAtom, null)
+    set(loadingAtom, false)
   }
 
   socket.io.on("reconnect_failed", () => {
@@ -95,7 +96,9 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(currPageAtom, 0)
   })
 
-  socket.on("disconnect", () => {})
+  socket.on("disconnect", () => {
+    cleanup()
+  })
 
   socket.on("error", (err: any) => {
     console.error("WebSocket error event:", err)

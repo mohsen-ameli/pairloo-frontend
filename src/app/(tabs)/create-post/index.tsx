@@ -101,7 +101,7 @@ export default function CreatePost() {
         forward()
       },
     }))
-  }, [currPage, socket, settings.title, settings.description, pageCount])
+  }, [currPage, socket, settings.title, settings.description, pageCount, QNAs])
 
   /**
    * @param questionIdx: the index of the question being answered
