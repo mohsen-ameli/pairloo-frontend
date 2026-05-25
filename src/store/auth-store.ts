@@ -108,7 +108,8 @@ export const signUpAtom = atom(null, async (get, set) => {
       country: userData.country,
       city: userData.city,
       state: userData.state,
-      location: userData.location,
+      longitude: userData.location.coordinates[0],
+      latitude: userData.location.coordinates[1],
       timezone: userData.timezone,
       locationId: userData.locationId,
     }
