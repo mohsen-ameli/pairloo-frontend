@@ -7,11 +7,10 @@ import {
   Switch,
   ScrollView,
   Pressable,
-  Alert,
   Platform,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import { colors } from "@/src/utils/colors"
 import CustomInput from "@/src/components/CustomInput"
@@ -35,7 +34,7 @@ import Octicons from "@expo/vector-icons/Octicons"
 import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 
 import { inputStyles } from "@/src/styles/input.styles"
-import { useRouter } from "expo-router"
+import { useFocusEffect, useRouter } from "expo-router"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
 import { commonStyles } from "@/src/styles/common.styles"
@@ -57,7 +56,7 @@ export default function CreatePost() {
   const pageCount = useAtomValue(pageCountAtom)
 
   useEffect(() => {
-    if (!socket) return
+    if (!socket || !QNAs) return
 
     let nextEnabled = false
     const currentQna = QNAs[currPage]
@@ -124,6 +123,7 @@ export default function CreatePost() {
 
     // Save the answer
     setQNAs(prev => {
+      if (!prev) return prev
       const updated = [...prev]
       if (question.type === "multiple_choice" || question.type === "short_answer") {
         updated[questionIdx].answer = [option]
@@ -140,6 +140,12 @@ export default function CreatePost() {
 
     setEdited(true)
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [])
+  )
 
   async function refresh() {
     await initCreatePost()
@@ -170,7 +176,7 @@ export default function CreatePost() {
 
       <CustomPager>
         {/* Questionnaire */}
-        {QNAs.map((qna, i) => {
+        {QNAs?.map((qna, i) => {
           const question = qna.question
           const answer = qna.answer
           const type = question.type
@@ -266,7 +272,7 @@ export default function CreatePost() {
 
         {/* The last page */}
         <ScrollView
-          key={QNAs.length}
+          key={QNAs?.length}
           style={createPostStyles.scrollView}
           keyboardShouldPersistTaps="handled"
         >

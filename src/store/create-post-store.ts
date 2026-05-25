@@ -30,13 +30,8 @@ import Toast from "react-native-toast-message"
  * We ask for the title, description, optional images, and some other settings about the post.
  */
 
-export const INITIAL_PAGE_COUNT = 2 // Starting page + last page
+export const INITIAL_PAGE_COUNT = 1 // last page
 const DEFAULT_PUBLIC_POST = true
-
-const DEFAULT_QUESTION: Question = {
-  type: "short_answer",
-  question: "Start by describing what you are looking for.",
-}
 
 const settings = {
   title: "",
@@ -54,7 +49,7 @@ export const settingsAtom = atomWithStorage(
   createJSONStorage(() => AsyncStorage)
 )
 
-export const qnaAtom = atom<QnaType>([{ question: DEFAULT_QUESTION, answer: [] }])
+export const qnaAtom = atom<QnaType | null>(null)
 export const loadingAtom = atom(false)
 export const publicPostAtom = atom(DEFAULT_PUBLIC_POST)
 export const imagesAtom = atom<ImageObject[]>([])
@@ -64,7 +59,10 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   const userJwt = await get(userSecureAtom)
   if (!userJwt) return
   const currSocket = get(createPostSocketAtom)
-  if (currSocket && (currSocket.connected || get(loadingAtom))) return
+  const currQna = get(qnaAtom)
+  if (currSocket && (currSocket.connected || get(loadingAtom)) && currQna) {
+    return
+  }
 
   set(loadingAtom, true)
 
@@ -83,22 +81,24 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     get(createPostSocketAtom)?.disconnect()
     set(createPostSocketAtom, null)
     set(loadingAtom, false)
+    set(qnaAtom, null)
+    set(currPageAtom, 0)
+    set(pageCountAtom, INITIAL_PAGE_COUNT)
   }
 
   socket.io.on("reconnect_failed", () => {
-    set(loadingAtom, false)
+    cleanup()
   })
 
   socket.on("connect", () => {
     set(loadingAtom, false)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
-    set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
+    set(qnaAtom, null)
     set(currPageAtom, 0)
+    socket.emit("getInitialQuestion")
   })
 
-  socket.on("disconnect", () => {
-    cleanup()
-  })
+  socket.on("disconnect", () => cleanup())
 
   socket.on("error", (err: any) => {
     console.error("WebSocket error event:", err)
@@ -148,12 +148,12 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(qnaAtom, qna)
     set(loadingAtom, false)
     set(currPageAtom, curr => curr + 1)
-    set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT - 1) // -1 because the first question is already counted in INITIAL_PAGE_COUNT
+    set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT)
   })
 
   socket.on("draftRestored", qna => {
     set(qnaAtom, qna)
-    set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT - 1) // -1 because the first question is already counted in INITIAL_PAGE_COUNT
+    set(pageCountAtom, qna.length + INITIAL_PAGE_COUNT)
 
     // Navigate to the first unanswered question, or to the last page if all answered
     const firstUnansweredIdx = qna.findIndex(item => item.answer.length === 0)
@@ -166,13 +166,19 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
     set(loadingAtom, false)
   })
 
+  socket.on("initialQuestion", defaultQuestion => {
+    set(qnaAtom, [{ question: defaultQuestion, answer: [] }])
+    set(pageCountAtom, INITIAL_PAGE_COUNT + 1)
+    set(loadingAtom, false)
+  })
+
   socket.on("chatFinished", () => {
     set(currPageAtom, curr => curr + 1)
     set(loadingAtom, false)
   })
 
   socket.on("success", async postId => {
-    set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
+    set(qnaAtom, null)
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     await set(settingsAtom, settings)
@@ -186,9 +192,10 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   })
 
   socket.on("draftDiscarded", async () => {
-    set(qnaAtom, [{ question: DEFAULT_QUESTION, answer: [] }])
+    set(qnaAtom, null)
     set(currPageAtom, 0)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
+    socket.emit("getInitialQuestion")
     await set(settingsAtom, settings)
     set(editedAtom, false)
     set(loadingAtom, false)
@@ -204,7 +211,7 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
   const edited = get(editedAtom)
   const { title, description, images, publicPost, location, distance } = await get(settingsAtom)
 
-  if (!socket) {
+  if (!socket || (!socket.connected && !get(loadingAtom)) || !qna) {
     console.warn("[forward] Socket is not initialized!")
     return
   }
@@ -334,9 +341,11 @@ export const getNewQuestionAtom = atom(null, async (get, set) => {
   const socket = get(createPostSocketAtom)
   const qna = get(qnaAtom)
   const currPage = get(currPageAtom)
-  if (currPage >= qna.length) return
+  if (!qna || currPage >= qna.length) return
 
   function getNew() {
+    if (!qna) return
+
     if (currPage === 0) {
       // If on the first page, just restart
       set(loadingAtom, true)

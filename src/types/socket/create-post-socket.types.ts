@@ -1,6 +1,6 @@
 import { Socket } from "socket.io-client"
 import { LocationType } from "../location.type"
-import { QnaType } from "../question.types"
+import { QnaType, Question } from "../question.types"
 import { Attachment } from "../attachment.type"
 
 // THIS FILE SHOULD BE KEPT IN SYNC WITH THE BACKEND
@@ -14,6 +14,7 @@ interface ServerToClientEvents {
   aiTitleGenerated: (title: string) => void
   success: (message: string) => void
   draftDiscarded: () => void
+  initialQuestion: (defaultQuestion: Question) => void
 }
 
 interface ClientToServerEvents {
@@ -34,6 +35,7 @@ interface ClientToServerEvents {
     images: Attachment[],
     publicPost: boolean
   ) => void
+  getInitialQuestion: () => void
 }
 
 export type CreatePostClientSocket = Socket<ServerToClientEvents, ClientToServerEvents>

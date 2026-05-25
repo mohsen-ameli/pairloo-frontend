@@ -56,7 +56,10 @@ export const initChatAtom = atom(null, async (get, set) => {
   const userJwt = await get(userSecureAtom)
   if (!user || !userJwt) return
   const currSocket = get(chatSocketAtom)
-  if (currSocket && (currSocket.connected || get(loadingAtom))) return
+  const currConversations = get(conversationsAtom)
+  if (currSocket && (currSocket.connected || get(loadingAtom)) && currConversations.length > 0) {
+    return
+  }
 
   set(loadingAtom, true)
 
