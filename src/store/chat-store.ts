@@ -97,16 +97,15 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   socket.on("connect_error", async () => {
     try {
+      const token = await refreshAccessToken()
+      if (!token) {
+        cleanup()
+        set(logOutAtom)
+        return
+      }
       if (Platform.OS === "web") {
-        await refreshAccessToken()
-        socket.disconnect()
         socket.connect()
       } else {
-        const token = await refreshAccessToken(userJwt.refreshToken)
-        if (!token) {
-          set(logOutAtom)
-          return
-        }
         await set(userSecureAtom, { ...userJwt, ...token })
         socket.io.opts.auth = { token: token.accessToken! }
         socket.connect()

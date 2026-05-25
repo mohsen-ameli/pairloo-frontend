@@ -99,11 +99,7 @@ export default function DropdownMenu({
       </TouchableOpacity>
 
       <Modal visible={menuVisible} transparent animationType="fade" style={style}>
-        <Pressable
-          // @ts-ignore
-          style={styles.modalOverlay}
-          onPress={() => setMenuVisible(false)}
-        >
+        <Pressable style={styles.modalOverlay} onPress={() => setMenuVisible(false)}>
           <View
             style={[
               styles.menuContainer,
@@ -140,7 +136,7 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.25)",
-    cursor: "default",
+    cursor: "auto",
   },
   menuContainer: {
     position: "absolute",

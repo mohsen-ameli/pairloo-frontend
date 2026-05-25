@@ -60,6 +60,7 @@ export default function CreatePost() {
     if (!socket) return
 
     let nextEnabled = false
+    const currentQna = QNAs[currPage]
 
     // The flow is: initial question -> 0 or more questions -> extra info page -> final page
     if (currPage === 0) {
@@ -68,21 +69,24 @@ export default function CreatePost() {
     } else if (currPage === pageCount - 1) {
       // last page
       nextEnabled = settings.title.trim().length > 0 && settings.description.trim().length > 0
+    } else if (!currentQna) {
+      // The page index can briefly get ahead of the Q&A array while socket events are syncing.
+      nextEnabled = false
     } else {
       // question pages
-      if (QNAs[currPage].question.optional) {
+      if (currentQna.question.optional) {
         nextEnabled = true
-      } else if (QNAs[currPage].question.type === "short_answer") {
+      } else if (currentQna.question.type === "short_answer") {
         if (
-          QNAs[currPage].answer.length === 0 ||
-          QNAs[currPage].answer[0].trim().length < MINIMUM_SHORT_ANSWER_LENGTH
+          currentQna.answer.length === 0 ||
+          currentQna.answer[0].trim().length < MINIMUM_SHORT_ANSWER_LENGTH
         ) {
           nextEnabled = false
         } else {
           nextEnabled = true
         }
       } else {
-        if (QNAs[currPage].answer.length === 0) {
+        if (currentQna.answer.length === 0) {
           nextEnabled = false
         } else {
           nextEnabled = true

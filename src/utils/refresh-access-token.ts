@@ -16,12 +16,14 @@ export async function refreshAccessToken(refreshToken?: string) {
     opts.credentials = "include"
   }
 
-  const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh-token`, opts)
-
-  if (!refreshRes.ok) {
+  try {
+    const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh-token`, opts)
+    if (!refreshRes.ok) {
+      return null
+    }
+    const data: AuthResponseType = await refreshRes.json()
+    return data
+  } catch (e) {
     return null
   }
-
-  const data: AuthResponseType = await refreshRes.json()
-  return data
 }
