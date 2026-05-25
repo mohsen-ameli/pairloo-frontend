@@ -109,7 +109,7 @@ export default function RootLayout() {
         Toast.show({
           type: "success",
           text1: "Successfully contacted backend",
-          visibilityTime: 2000,
+          visibilityTime: 5000,
         })
       } catch (e) {
         console.error(`Backend could not be contacted, ${process.env.EXPO_PUBLIC_SERVER_URL}`, e)

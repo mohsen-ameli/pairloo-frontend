@@ -3,14 +3,13 @@ import { useSharedValue } from "react-native-reanimated"
 import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated-carousel"
 import { SlideItem } from "./SlideItem"
 import { useEffect, useRef } from "react"
-import { colors } from "@/src/utils/colors"
+import { colors, isWeb } from "@/src/utils/colors"
 import { useSetAtom } from "jotai"
 import { bigImageViewAtom } from "@/src/store/chat-store"
 import { isDraggingAtom } from "@/src/store/general-store"
 
 const w = Dimensions.get("window").width
-const isWeb = Platform.OS === "web" && w > 700
-let width = isWeb ? w * 0.3 : w
+let width = isWeb ? 600 : w
 
 export default function ImageCarousel({
   images,
@@ -68,7 +67,7 @@ export default function ImageCarousel({
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,
-          parallaxScrollingOffset: Platform.OS === "ios" ? 60 : 65,
+          parallaxScrollingOffset: Platform.OS === "android" ? 65 : isWeb ? 90 : 60,
           parallaxAdjacentItemScale: 0.75,
         }}
         onProgressChange={(offsetProgress, absoluteProgress) => {

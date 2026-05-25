@@ -1,8 +1,5 @@
-import { Dimensions, Platform, StyleSheet } from "react-native"
-import { boxShadow, colors } from "@/src/utils/colors"
-
-const windowWidth = Dimensions.get("screen").width
-const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
+import { StyleSheet } from "react-native"
+import { boxShadow, colors, isWeb } from "@/src/utils/colors"
 
 export const commonStyles = StyleSheet.create({
   // Containers
@@ -14,7 +11,7 @@ export const commonStyles = StyleSheet.create({
   container: {
     backgroundColor: colors.light,
     padding: 10,
-    width: isWeb && windowWidth > 600 ? 600 : "100%",
+    width: isWeb ? 600 : "100%",
     alignSelf: "center",
   },
 

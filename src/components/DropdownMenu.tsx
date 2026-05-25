@@ -22,7 +22,7 @@ export type DropdownMenuAction = {
 
 export default function DropdownMenu({
   style,
-  width = 150,
+  dropdownWidth = 150,
   anchor = "auto",
   disabled = false,
   actions,
@@ -30,7 +30,7 @@ export default function DropdownMenu({
   children,
 }: {
   style?: StyleProp<ViewStyle>
-  width?: number
+  dropdownWidth?: number
   anchor?:
     | "auto"
     | "top"
@@ -64,47 +64,27 @@ export default function DropdownMenu({
           top: openAbove
             ? Math.max(insets.top + 8, y - menuHeight - 8)
             : y + height + insets.top + 8,
-          left: x - 150 + width,
+          left: x - dropdownWidth + width,
         })
       } else if (anchor === "top") {
         setMenuPosition({
           top: Math.max(insets.top + 8, y - menuHeight - 8),
-          left: x - 75 + width / 2,
+          left: x - dropdownWidth + width,
         })
       } else if (anchor === "bottom") {
         setMenuPosition({
           top: y + height + insets.top + 8,
-          left: x - 75 + width / 2,
+          left: x - dropdownWidth + width,
         })
       } else if (anchor === "left") {
         setMenuPosition({
           top: y - menuHeight / 2 + height / 2,
-          left: Math.max(insets.left + 8, x - 150 - 8),
+          left: Math.max(insets.left + 8, x - dropdownWidth - 8),
         })
       } else if (anchor === "right") {
         setMenuPosition({
           top: y - menuHeight / 2 + height / 2,
           left: x + width + 8,
-        })
-      } else if (anchor === "bottom-left") {
-        setMenuPosition({
-          top: y + height + insets.top + 8,
-          left: x,
-        })
-      } else if (anchor === "bottom-right") {
-        setMenuPosition({
-          top: y + height + insets.top + 8,
-          left: x - 150 + width,
-        })
-      } else if (anchor === "top-left") {
-        setMenuPosition({
-          top: Math.max(insets.top + 8, y - menuHeight - 8),
-          left: Math.max(insets.left + 8, x - 150 + width),
-        })
-      } else if (anchor === "top-right") {
-        setMenuPosition({
-          top: Math.max(insets.top + 8, y - menuHeight - 8),
-          left: x - 150 + width,
         })
       }
 
@@ -130,7 +110,7 @@ export default function DropdownMenu({
               {
                 top: menuPosition.top,
                 left: menuPosition.left,
-                width: width,
+                width: dropdownWidth,
               },
             ]}
           >

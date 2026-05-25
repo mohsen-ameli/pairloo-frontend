@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, Pressable, Alert, Platform, Dimensions } from "react-native"
+import { View, Text, TouchableOpacity, Pressable, Dimensions } from "react-native"
 import React, { useCallback, useState } from "react"
 import { styles } from "@/src/styles/header.styles"
 import { Image } from "expo-image"
-import { colors } from "@/src/utils/colors"
+import { colors, isWeb } from "@/src/utils/colors"
 import { ExtendedStackNavigationOptions } from "expo-router/build/layouts/StackClient"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import {
@@ -32,7 +32,6 @@ import DropdownMenu from "../components/DropdownMenu"
 import Toast from "react-native-toast-message"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
-const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
 
 export default function useCustomHeader({
   title,
@@ -224,8 +223,8 @@ function ChatHeader() {
 
           {currentConversation.contactedPosts.length > 0 && (
             <DropdownMenu
-              anchor="bottom-left"
-              width={isWeb ? 400 : Dimensions.get("window").width - 120}
+              anchor="bottom"
+              dropdownWidth={isWeb ? 400 : Dimensions.get("window").width - 120}
               onPressAction={action => {
                 if (action === "general") {
                   setActivePostId(null)

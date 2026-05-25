@@ -1,14 +1,6 @@
-import {
-  Dimensions,
-  type ImageStyle,
-  Platform,
-  Pressable,
-  type StyleProp,
-  StyleSheet,
-  View,
-} from "react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 import Animated from "react-native-reanimated"
-import { colors } from "@/src/utils/colors"
+import { colors, isWeb } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useAtomValue, useSetAtom } from "jotai"
 import { settingsAtom } from "@/src/store/create-post-store"
@@ -17,15 +9,11 @@ import { useRouter } from "expo-router"
 import { commonStyles } from "@/src/styles/common.styles"
 import { isDraggingAtom } from "@/src/store/general-store"
 
-const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
-
 export function SlideItem({
-  style,
   index,
   src,
   editable = false,
 }: {
-  style?: StyleProp<ImageStyle>
   index: number
   editable?: boolean
   src: string
@@ -38,7 +26,7 @@ export function SlideItem({
   return (
     <Pressable
       style={{
-        width: "100%",
+        width: isWeb ? 600 : "100%",
         height: isWeb ? 500 : 300,
         borderRadius: 8,
       }}
@@ -48,7 +36,7 @@ export function SlideItem({
         router.push("/image-gallery")
       }}
     >
-      <Animated.Image style={[style, commonStyles.cardImage]} source={{ uri: src }} />
+      <Animated.Image style={commonStyles.cardImage} source={{ uri: src }} />
 
       {editable && (
         <View style={styles.removeOverlay}>
@@ -73,12 +61,6 @@ export function SlideItem({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: 600,
-    height: 300,
-    borderRadius: 15,
-    backgroundColor: colors.lightGray,
-  },
   removeOverlay: {
     position: "absolute",
     top: 10,
@@ -90,13 +72,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light,
     borderRadius: 20,
     padding: 5,
-  },
-  colorFill: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.gray,
   },
 })
