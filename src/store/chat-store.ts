@@ -144,7 +144,7 @@ export const initChatAtom = atom(null, async (get, set) => {
       return
     }
 
-    set(messagesAtom, [...get(messagesAtom), ...messages])
+    set(messagesAtom, messages)
 
     const unreadMsgs = await get(unreadMessagesAtom)
     await set(unreadMessagesAtom, () => {

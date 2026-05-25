@@ -8,7 +8,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import {
   discardDraftAtom,
   getNewQuestionAtom,
-  loadingAtom,
+  loadingAtom as createPostLoadingAtom,
   qnaAtom,
 } from "@/src/store/create-post-store"
 import Feather from "@expo/vector-icons/Feather"
@@ -19,6 +19,7 @@ import {
   cleanupChatAtom,
   entireChatLoadedAtom,
   messagesAtom,
+  loadingAtom as chatLoadingAtom,
 } from "@/src/store/chat-store"
 import { userSecureAtom } from "@/src/store/auth-store"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
@@ -125,7 +126,7 @@ function ChatHeader() {
   const router = useRouter()
   const [activeChat, setActiveChat] = useState<string>()
   const cleanupChat = useSetAtom(cleanupChatAtom)
-  const setLoading = useSetAtom(loadingAtom)
+  const setLoading = useSetAtom(chatLoadingAtom)
   const setEntireChatLoaded = useSetAtom(entireChatLoadedAtom)
   const setMessages = useSetAtom(messagesAtom)
   const insets = useSafeAreaInsets()
@@ -282,14 +283,14 @@ function ChatHeader() {
 function CreatePostHeader() {
   const discardDraft = useSetAtom(discardDraftAtom)
   const getNewQuestion = useSetAtom(getNewQuestionAtom)
-  const loading = useAtomValue(loadingAtom)
+  const loading = useAtomValue(createPostLoadingAtom)
   const currPage = useAtomValue(currPageAtom)
   const pageCount = useAtomValue(pageCountAtom)
   const qna = useAtomValue(qnaAtom)
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      {0 < currPage && currPage <= pageCount - 3 && qna[currPage].question.intention && (
+      {0 < currPage && currPage <= pageCount - 3 && qna && qna[currPage].question.intention && (
         <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
           <Feather name="rotate-ccw" size={24} color={colors.dark} />
         </Pressable>
