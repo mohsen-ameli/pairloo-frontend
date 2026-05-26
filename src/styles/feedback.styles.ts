@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
-import { boxShadow, colors } from "@/src/utils/colors"
+import { colors } from "@/src/utils/colors"
 
 export const SIDE_OFFSET = 12
 export const styles = StyleSheet.create({
