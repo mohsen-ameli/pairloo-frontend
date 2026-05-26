@@ -594,17 +594,25 @@ export const authFetchAtom = atom(
         throw new Error("User is not authenticated")
       }
 
-      const token = await set(refreshTokensAtom)
-
-      let res: Response
-
       if (Platform.OS === "web") {
-        res = await fetchWithCookies()
-      } else {
-        res = await fetchWithToken(token.accessToken!)
-      }
+        let res = await fetchWithCookies()
+        if (res.status === 401 || res.status === 403) {
+          await set(refreshTokensAtom)
 
-      return res
+          res = await fetchWithCookies()
+          return res
+        }
+        return res
+      } else {
+        let res = await fetchWithToken(user.accessToken!)
+        if (res.status === 401 || res.status === 403) {
+          const token = await set(refreshTokensAtom)
+
+          res = await fetchWithToken(token.accessToken!)
+          return res
+        }
+        return res
+      }
     } catch (error) {
       Toast.show({
         type: "error",
