@@ -370,7 +370,7 @@ function SettingsHeader() {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
       <TouchableOpacity onPress={() => router.push("/profile/feedback")} style={{ padding: 6 }}>
-        <MaterialCommunityIcons name="message-alert-outline" size={24} color="black" />
+        <MaterialCommunityIcons name="message-alert-outline" size={24} color={colors.dark} />
       </TouchableOpacity>
     </View>
   )
