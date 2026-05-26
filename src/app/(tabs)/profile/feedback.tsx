@@ -4,7 +4,8 @@ import CustomInput from "@/src/components/CustomInput"
 import CustomButton from "@/src/components/CustomButton"
 import { colors } from "@/src/utils/colors"
 import Toast from "react-native-toast-message"
-import { BASE_URL } from "@/src/utils/constants"
+import { authFetchAtom } from "@/src/store/auth-store"
+import { useSetAtom } from "jotai"
 import { useRouter } from "expo-router"
 import { styles } from "@/src/styles/feedback.styles"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -15,6 +16,7 @@ export default function Feedback() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
+  const authFetch = useSetAtom(authFetchAtom)
 
   async function submit() {
     if (!title.trim()) {
@@ -28,20 +30,19 @@ export default function Feedback() {
 
     setLoading(true)
     try {
-      const res = await fetch(`${BASE_URL}/api/feedback`, {
+      const res = await authFetch("/api/users/feedback", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: title.trim(), description: description.trim() }),
       })
 
-      if (res.ok) {
-        Toast.show({ type: "success", text1: "Feedback submitted. Thank you!" })
-        router.back()
-      } else {
-        const data = await res.json().catch(() => null)
-        const err = data?.error || data?.message || "Failed to submit feedback"
-        Toast.show({ type: "error", text1: err })
+      if (!res.ok) {
+        Toast.show({ type: "error", text1: "Failed to submit feedback" })
+        setLoading(false)
+        return
       }
+
+      Toast.show({ type: "success", text1: "Feedback submitted. Thank you!" })
+      router.back()
     } catch (e: any) {
       Toast.show({ type: "error", text1: e?.message || "Network error" })
     } finally {
