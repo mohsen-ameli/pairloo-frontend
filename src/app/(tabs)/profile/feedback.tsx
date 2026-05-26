@@ -1,13 +1,14 @@
 import React, { useState } from "react"
-import { View, ScrollView } from "react-native"
+import { View, ScrollView, Text, TouchableOpacity } from "react-native"
 import CustomInput from "@/src/components/CustomInput"
 import CustomButton from "@/src/components/CustomButton"
-import { commonStyles } from "@/src/styles/common.styles"
 import { colors } from "@/src/utils/colors"
 import Toast from "react-native-toast-message"
 import { BASE_URL } from "@/src/utils/constants"
 import { useRouter } from "expo-router"
-import { styles, SIDE_OFFSET } from "@/src/styles/feedback.styles"
+import { styles } from "@/src/styles/feedback.styles"
+import { SafeAreaView } from "react-native-safe-area-context"
+import Feather from "@expo/vector-icons/Feather"
 
 export default function Feedback() {
   const router = useRouter()
@@ -49,41 +50,77 @@ export default function Feedback() {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={[commonStyles.generalContainer, { flexGrow: 1 }]}
-      keyboardShouldPersistTaps="handled"
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.light,
+        paddingTop: 20,
+        paddingBottom: 20,
+        paddingHorizontal: 16,
+      }}
     >
-      <View style={commonStyles.container}>
-        <CustomInput
-          headerStyles={styles.sectionTitle}
-          title="Title"
-          value={title}
-          onChangeText={setTitle}
-          editable={!loading}
-          mandatory
-        />
-
-        <CustomInput
-          headerStyles={styles.sectionTitle}
-          title="Description"
-          value={description}
-          onChangeText={setDescription}
-          editable={!loading}
-          multiline
-          numberOfLines={8}
-          mandatory
-        />
-
-        <CustomButton
-          onPress={submit}
-          disabled={loading}
-          color={loading ? colors.lightGray : colors.purple}
-          fontSize={16}
-          style={{ marginTop: 20 }}
+      <View
+        style={{
+          width: "100%",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={styles.headerTitle}>Feedback</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            padding: 4,
+            backgroundColor: colors.lightGray,
+            borderRadius: 20,
+          }}
         >
-          {loading ? "Sending..." : "Send Feedback"}
-        </CustomButton>
+          <Feather name="x" size={24} color={colors.darkGray} />
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+        keyboardShouldPersistTaps="handled"
+        style={{ width: "100%", marginTop: 20 }}
+      >
+        <View>
+          <CustomInput
+            headerStyles={styles.sectionTitle}
+            title="Title"
+            value={title}
+            onChangeText={setTitle}
+            editable={!loading}
+            mandatory
+          />
+
+          <CustomInput
+            headerStyles={styles.sectionTitle}
+            title="Description"
+            value={description}
+            onChangeText={setDescription}
+            editable={!loading}
+            multiline
+            numberOfLines={8}
+            mandatory
+          />
+
+          <Text style={styles.note}>Tell us how we can improve!</Text>
+
+          <CustomButton
+            onPress={submit}
+            disabled={loading}
+            color={loading ? colors.lightGray : colors.purple}
+            fontSize={16}
+            style={{ marginTop: 20 }}
+          >
+            {loading ? "Sending..." : "Send Feedback"}
+          </CustomButton>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   )
 }

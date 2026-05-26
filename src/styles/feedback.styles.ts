@@ -3,16 +3,16 @@ import { boxShadow, colors } from "@/src/utils/colors"
 
 export const SIDE_OFFSET = 12
 export const styles = StyleSheet.create({
-  header: {
-    marginBottom: 12,
-  },
   headerTitle: {
     fontSize: 28,
     fontWeight: "700",
     color: colors.dark,
   },
-  section: {
-    marginTop: 16,
+  note: {
+    marginTop: 8,
+    color: colors.darkGray,
+    fontStyle: "italic",
+    textAlign: "center",
   },
   sectionTitle: {
     fontSize: 16,
@@ -20,13 +20,5 @@ export const styles = StyleSheet.create({
     color: colors.dark,
     marginBottom: 8,
     marginTop: 8,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  actionsRow: {
-    flexDirection: "row",
-    marginTop: 12,
   },
 })
