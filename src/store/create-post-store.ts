@@ -112,17 +112,11 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   socket.on("connect_error", async () => {
     try {
       const token = await set(refreshTokensAtom)
-      if (!token) {
-        cleanup()
-        return
+      if (token.accessToken) {
+        // @ts-ignore
+        socket.auth.token = token.accessToken
       }
-      if (Platform.OS === "web") {
-        socket.connect()
-      } else {
-        await set(userSecureAtom, { ...userJwt, ...token })
-        socket.io.opts.auth = { token: token.accessToken! }
-        socket.connect()
-      }
+      socket.connect()
     } catch (err) {
       console.error("create post socket reconnect failed:", err)
       cleanup()

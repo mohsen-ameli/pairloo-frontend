@@ -589,7 +589,6 @@ export const authFetchAtom = atom(
 
     try {
       const user = await get(userSecureAtom)
-
       if (!user) {
         set(logOutAtom)
         throw new Error("User is not authenticated")
@@ -597,38 +596,23 @@ export const authFetchAtom = atom(
 
       if (Platform.OS === "web") {
         let res = await fetchWithCookies()
+        if (res.status === 401 || res.status === 403) {
+          await set(refreshTokensAtom)
 
+          res = await fetchWithCookies()
+          return res
+        }
+        return res
+      } else {
+        let res = await fetchWithToken(user.accessToken!)
         if (res.status === 401 || res.status === 403) {
           const token = await set(refreshTokensAtom)
 
-          if (token) {
-            res = await fetchWithCookies()
-            set(userSecureAtom, { ...user, _id: token._id })
-            return res
-          }
-        }
-
-        return res
-      }
-
-      if (!user.accessToken || !user.refreshToken) {
-        set(logOutAtom)
-        throw new Error("User is not authenticated")
-      }
-
-      let res = await fetchWithToken(user.accessToken)
-
-      if (res.status === 401 || res.status === 403) {
-        const token = await set(refreshTokensAtom, user.refreshToken)
-
-        if (token) {
-          set(userSecureAtom, { ...user, ...token })
           res = await fetchWithToken(token.accessToken!)
           return res
         }
+        return res
       }
-
-      return res
     } catch (error) {
       Toast.show({
         type: "error",
@@ -640,16 +624,24 @@ export const authFetchAtom = atom(
   }
 )
 
-// Refresh the access token. If `refreshToken` is provided, send it in the body
-// (used by native). If omitted, call the endpoint with cookies (used by web).
-export const refreshTokensAtom = atom(null, async (get, set, refreshToken?: string) => {
+// Refresh the access token using the current auth state from `userSecureAtom`.
+// If `user.refreshToken` exists, send it in the request body; otherwise rely on
+// cookies for web-based flows.
+export const refreshTokensAtom = atom(null, async (get, set) => {
   const opts: RequestInit = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   }
 
-  if (refreshToken) {
-    opts.body = JSON.stringify({ refreshToken })
+  const user = await get(userSecureAtom)
+
+  if (!user) {
+    set(logOutAtom)
+    throw new Error("User is not authenticated")
+  }
+
+  if (user.refreshToken) {
+    opts.body = JSON.stringify({ refreshToken: user.refreshToken })
   } else {
     // Ensure cookies are sent for web flows
     opts.credentials = "include"
@@ -662,8 +654,11 @@ export const refreshTokensAtom = atom(null, async (get, set, refreshToken?: stri
     throw new Error("Session expired. Please log in again.")
   }
 
-  const data: AuthResponseType = await res.json()
-  return data
+  const token: AuthResponseType = await res.json()
+
+  await set(userSecureAtom, { ...user, ...token })
+
+  return token
 })
 
 export const fetchUserInfoAtom = atom(null, async (get, set) => {

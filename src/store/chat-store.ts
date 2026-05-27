@@ -82,6 +82,10 @@ export const initChatAtom = atom(null, async (get, set) => {
     set(loadingAtom, false)
   }
 
+  socket.io.on("reconnect", () => {
+    socket.emit("getConversations")
+  })
+
   socket.io.on("reconnect_failed", () => {
     cleanup()
   })
@@ -100,17 +104,11 @@ export const initChatAtom = atom(null, async (get, set) => {
   socket.on("connect_error", async () => {
     try {
       const token = await set(refreshTokensAtom)
-      if (!token) {
-        cleanup()
-        return
+      if (token.accessToken) {
+        // @ts-ignore
+        socket.auth.token = token.accessToken
       }
-      if (Platform.OS === "web") {
-        socket.connect()
-      } else {
-        await set(userSecureAtom, { ...userJwt, ...token })
-        socket.io.opts.auth = { token: token.accessToken! }
-        socket.connect()
-      }
+      socket.connect()
     } catch (err) {
       console.error("chat socket reconnect failed:", err)
       cleanup()
@@ -161,17 +159,17 @@ export const initChatAtom = atom(null, async (get, set) => {
   socket.on("message", async message => {
     // Update last message
     set(conversationsAtom, prev =>
-      prev.map(conv => {
-        if (conv._id === message.conversationId) {
+      prev.map(conversation => {
+        if (conversation._id === message.conversationId) {
           return {
-            ...conv,
+            ...conversation,
             lastMessage: {
               ...message,
               attachmentsCount: message.attachments ? message.attachments.length : 0,
             },
           }
         }
-        return conv
+        return conversation
       })
     )
 
@@ -267,19 +265,19 @@ export const initChatAtom = atom(null, async (get, set) => {
 
     // Update lastMessage if this is the last message
     set(conversationsAtom, prev =>
-      prev.map(conv => {
-        if (conv._id === conversationId && conv.lastMessage?._id === messageId) {
+      prev.map(conversation => {
+        if (conversation._id === conversationId && conversation.lastMessage?._id === messageId) {
           return {
-            ...conv,
+            ...conversation,
             lastMessage: {
-              ...conv.lastMessage!,
+              ...conversation.lastMessage!,
               content,
               updatedAt: new Date(updatedAt),
               isEdited: true,
             },
           }
         }
-        return conv
+        return conversation
       })
     )
   })
@@ -303,11 +301,14 @@ export const initChatAtom = atom(null, async (get, set) => {
     // Update lastMessage if this was the last message
     const currentConversation = get(currentConversationAtom)
     set(conversationsAtom, prev =>
-      prev.map(conv => {
-        if (conv._id === currentConversation?._id && conv.lastMessage?._id === messageId) {
-          return { ...conv, lastMessage: newLastMessage }
+      prev.map(conversation => {
+        if (
+          conversation._id === currentConversation?._id &&
+          conversation.lastMessage?._id === messageId
+        ) {
+          return { ...conversation, lastMessage: newLastMessage }
         }
-        return conv
+        return conversation
       })
     )
   })
