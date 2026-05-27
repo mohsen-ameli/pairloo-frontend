@@ -624,8 +624,9 @@ export const authFetchAtom = atom(
   }
 )
 
-// Refresh the access token. If `refreshToken` is provided, send it in the body
-// (used by native). If omitted, call the endpoint with cookies (used by web).
+// Refresh the access token using the current auth state from `userSecureAtom`.
+// If `user.refreshToken` exists, send it in the request body; otherwise rely on
+// cookies for web-based flows.
 export const refreshTokensAtom = atom(null, async (get, set) => {
   const opts: RequestInit = {
     method: "POST",
