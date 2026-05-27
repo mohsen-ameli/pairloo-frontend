@@ -24,7 +24,7 @@ import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/get-color"
 import Feather from "@expo/vector-icons/Feather"
 import { MyUserType, ReviewsType } from "@/src/types/user.type"
-import { MyPostType, GeneralPostType } from "@/src/types/post.type"
+import { MyProfilePostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
 import { getStatusColor } from "@/src/utils/get-color"
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
 
   async function fetchMyPosts() {
     const res = await authFetch("/api/users/my-posts")
-    const data: MyPostType[] = await res.json()
+    const data: MyProfilePostType[] = await res.json()
     return data
   }
 
@@ -299,11 +299,11 @@ export default function ProfileScreen() {
                                       <Text style={profileStyles.privatePostText}>Private</Text>
                                     </CustomLabel>
                                   )}
-                                  {post.closestPosts && post.closestPosts.length > 0 ? (
+                                  {post.topMatchingPostScore != null ? (
                                     <CustomLabel
-                                      backgroundColor={getScoreColor(post.closestPosts[0].score)}
+                                      backgroundColor={getScoreColor(post.topMatchingPostScore)}
                                     >
-                                      {Math.round(post.closestPosts[0].score * 100)}% match
+                                      {Math.round(post.topMatchingPostScore * 100)}% match
                                     </CustomLabel>
                                   ) : (
                                     <CustomLabel backgroundColor={getScoreColor(0)}>
