@@ -7,6 +7,7 @@ import { colors, isWeb } from "@/src/utils/colors"
 import { useSetAtom } from "jotai"
 import { bigImageViewAtom } from "@/src/store/chat-store"
 import { isDraggingAtom } from "@/src/store/general-store"
+import { PageType } from "./SlideItem"
 
 const w = Dimensions.get("window").width
 let width = isWeb ? 600 : w
@@ -15,12 +16,12 @@ export default function ImageCarousel({
   images,
   widthOffset = 0,
   editable = false,
-  onRemove,
+  pageType,
 }: {
   images: string[]
   widthOffset?: number
   editable?: boolean
-  onRemove?: (index: number) => void
+  pageType: PageType
 }) {
   const ref = useRef<ICarouselInstance>(null)
   const progress = useSharedValue(0)
@@ -47,7 +48,7 @@ export default function ImageCarousel({
 
   if (images.length === 1) {
     // TODO: onRemove refactor
-    return <SlideItem index={0} src={images[0]} editable={editable} />
+    return <SlideItem index={0} src={images[0]} editable={editable} pageType={pageType} />
   }
 
   return (
@@ -78,7 +79,9 @@ export default function ImageCarousel({
         }}
         onScrollStart={() => setIsDragging(true)}
         onScrollEnd={() => setIsDragging(false)}
-        renderItem={({ index, item }) => <SlideItem index={index} src={item} editable={editable} />}
+        renderItem={({ index, item }) => (
+          <SlideItem index={index} src={item} editable={editable} pageType={pageType} />
+        )}
         ref={ref}
       />
 

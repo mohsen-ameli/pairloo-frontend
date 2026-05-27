@@ -8,32 +8,40 @@ import { imgIndexAtom } from "@/src/store/chat-store"
 import { useRouter } from "expo-router"
 import { commonStyles } from "@/src/styles/common.styles"
 import { isDraggingAtom } from "@/src/store/general-store"
+import { editPostRemoveImageAtom } from "../store/edit-post-store"
+
+export type PageType = "create" | "edit"
 
 export function SlideItem({
   index,
   src,
   editable = false,
+  pageType,
 }: {
   index: number
   editable?: boolean
   src: string
+  pageType: PageType
 }) {
   const setSettings = useSetAtom(settingsAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
   const router = useRouter()
   const isDragging = useAtomValue(isDraggingAtom)
+  const handleRemoveEdit = useSetAtom(editPostRemoveImageAtom)
+  const handleRemoveCreate = () =>
+    setSettings(async curr => {
+      const currSettings = await curr
+      return {
+        ...currSettings,
+        images: currSettings.images.filter((_, i) => i !== index),
+      }
+    })
 
   const handleRemove = () => {
-    if (onRemove) {
-      onRemove()
+    if (pageType === "edit") {
+      handleRemoveEdit(index)
     } else {
-      setSettings(async curr => {
-        const currSettings = await curr
-        return {
-          ...currSettings,
-          images: currSettings.images.filter((_, i) => i !== index),
-        }
-      })
+      handleRemoveCreate()
     }
   }
 
@@ -54,18 +62,7 @@ export function SlideItem({
 
       {editable && (
         <View style={styles.removeOverlay}>
-          <Pressable
-            style={styles.removeOverlayButton}
-            onPress={() => {
-              setSettings(async curr => {
-                const currSettings = await curr
-                return {
-                  ...currSettings,
-                  images: currSettings.images.filter((_, i) => i !== index),
-                }
-              })
-            }}
-          >
+          <Pressable style={styles.removeOverlayButton} onPress={handleRemove}>
             <Feather name="x" size={24} color={colors.dark} />
           </Pressable>
         </View>

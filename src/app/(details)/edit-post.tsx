@@ -1,7 +1,7 @@
 import { useRouter, useLocalSearchParams, Stack, useFocusEffect } from "expo-router"
 import { useNavigation } from "@react-navigation/native"
 import { View, Text, ScrollView, Pressable, Alert, Switch } from "react-native"
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useCallback } from "react"
 import Feather from "@expo/vector-icons/Feather"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -15,8 +15,13 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import { settingsAtom } from "@/src/store/create-post-store"
 import { getAttachmentAtom } from "@/src/store/general-store"
-import { Attachment } from "@/src/types/attachment.type"
 import React from "react"
+import {
+  editPostFormAtom,
+  editPostHasChangesAtom,
+  editPostLoadingAtom,
+  resetEditPostAtom,
+} from "@/src/store/edit-post-store"
 
 export default function EditPost() {
   const router = useRouter()
@@ -25,20 +30,13 @@ export default function EditPost() {
   const queryClient = useQueryClient()
   const getAttachment = useSetAtom(getAttachmentAtom)
   const settings = useAtomValue(settingsAtom)
-  const [loading, setLoading] = useState(false)
-  const [hasChanges, setHasChanges] = useState(false)
-
-  const [formState, setFormState] = useState({
-    title: "",
-    description: "",
-    publicPost: false,
-    location: null as { latitude: number; longitude: number } | null,
-    closeCity: "",
-    distance: 5000,
-    newImages: [] as Attachment[],
-    existingImages: [] as string[],
-    removedImages: [] as string[],
-  })
+  const formState = useAtomValue(editPostFormAtom)
+  const setFormState = useSetAtom(editPostFormAtom)
+  const loading = useAtomValue(editPostLoadingAtom)
+  const setLoading = useSetAtom(editPostLoadingAtom)
+  const hasChanges = useAtomValue(editPostHasChangesAtom)
+  const setHasChanges = useSetAtom(editPostHasChangesAtom)
+  const resetEditPost = useSetAtom(resetEditPostAtom)
 
   const { data: post } = useQuery({
     queryKey: [`post-${id}`],
@@ -52,6 +50,14 @@ export default function EditPost() {
   }
 
   useEffect(() => {
+    resetEditPost()
+
+    return () => {
+      resetEditPost()
+    }
+  }, [resetEditPost])
+
+  useEffect(() => {
     if (!post) return
 
     setFormState(prev => ({
@@ -63,7 +69,8 @@ export default function EditPost() {
       existingImages: post.images || [],
       distance: post.distance || 5000,
     }))
-  }, [post])
+    setHasChanges(false)
+  }, [post, setFormState, setHasChanges])
 
   useFocusEffect(
     useCallback(() => {
@@ -87,28 +94,6 @@ export default function EditPost() {
       }))
       setHasChanges(true)
     }
-  }
-
-  function handleImageCarouselRemove(index: number) {
-    const totalExisting = formState.existingImages.length
-
-    if (index < totalExisting) {
-      // Removing an existing image
-      const removedImage = formState.existingImages[index]
-      setFormState(prev => ({
-        ...prev,
-        existingImages: prev.existingImages.filter((_, i) => i !== index),
-        removedImages: [...prev.removedImages, removedImage],
-      }))
-    } else {
-      // Removing a new image
-      const newImageIndex = index - totalExisting
-      setFormState(prev => ({
-        ...prev,
-        newImages: prev.newImages.filter((_, i) => i !== newImageIndex),
-      }))
-    }
-    setHasChanges(true)
   }
 
   async function handleSave() {
@@ -159,7 +144,7 @@ export default function EditPost() {
       await queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
       await queryClient.invalidateQueries({ queryKey: ["my-posts"] })
 
-      setHasChanges(false)
+      resetEditPost()
       router.back()
     } catch (error) {
       console.error("Error saving post:", error)
@@ -186,7 +171,7 @@ export default function EditPost() {
               {
                 text: "Discard",
                 onPress: () => {
-                  setHasChanges(false)
+                  resetEditPost()
                   navigation.goBack()
                 },
                 style: "destructive",
@@ -280,8 +265,8 @@ export default function EditPost() {
               <>
                 <ImageCarousel
                   images={[...formState.existingImages, ...formState.newImages.map(img => img.uri)]}
+                  pageType={"edit"}
                   editable
-                  onRemove={handleImageCarouselRemove}
                 />
                 <Pressable
                   onPress={pickImages}
