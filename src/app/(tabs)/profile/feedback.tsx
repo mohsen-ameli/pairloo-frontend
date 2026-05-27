@@ -15,18 +15,29 @@ export default function Feedback() {
   const router = useRouter()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
+  const [titleError, setTitleError] = useState("")
+  const [descriptionError, setDescriptionError] = useState("")
   const [loading, setLoading] = useState(false)
   const authFetch = useSetAtom(authFetchAtom)
 
   async function submit() {
+    let hasErrors = false
+
     if (!title.trim()) {
-      Toast.show({ type: "error", text1: "Title is required" })
-      return
+      setTitleError("Title is required")
+      hasErrors = true
+    } else {
+      setTitleError("")
     }
+
     if (!description.trim()) {
-      Toast.show({ type: "error", text1: "Description is required" })
-      return
+      setDescriptionError("Description is required")
+      hasErrors = true
+    } else {
+      setDescriptionError("")
     }
+
+    if (hasErrors) return
 
     setLoading(true)
     try {
@@ -44,69 +55,54 @@ export default function Feedback() {
       Toast.show({ type: "success", text1: "Feedback submitted. Thank you!" })
       router.back()
     } catch (e: any) {
-      Toast.show({ type: "error", text1: e?.message || "Network error" })
+      setTitleError("")
+      setDescriptionError("")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.light,
-        paddingTop: 20,
-        paddingBottom: 20,
-        paddingHorizontal: 16,
-      }}
-    >
-      <View
-        style={{
-          width: "100%",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
         <Text style={styles.headerTitle}>Feedback</Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            padding: 4,
-            backgroundColor: colors.lightGray,
-            borderRadius: 20,
-          }}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
           <Feather name="x" size={24} color={colors.darkGray} />
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
-        style={{ width: "100%", marginTop: 20 }}
+        style={styles.scrollView}
       >
-        <View>
+        <View style={styles.form}>
           <CustomInput
             headerStyles={styles.sectionTitle}
             title="Title"
             value={title}
-            onChangeText={setTitle}
+            onChangeText={text => {
+              setTitle(text)
+              if (titleError) setTitleError("")
+            }}
             editable={!loading}
             mandatory
+            errors={titleError}
           />
 
           <CustomInput
             headerStyles={styles.sectionTitle}
             title="Description"
             value={description}
-            onChangeText={setDescription}
+            onChangeText={text => {
+              setDescription(text)
+              if (descriptionError) setDescriptionError("")
+            }}
             editable={!loading}
             multiline
             numberOfLines={8}
             mandatory
+            errors={descriptionError}
           />
 
           <Text style={styles.note}>Tell us how we can improve!</Text>
@@ -116,7 +112,7 @@ export default function Feedback() {
             disabled={loading}
             color={loading ? colors.lightGray : colors.purple}
             fontSize={16}
-            style={{ marginTop: 20 }}
+            style={styles.submitButton}
           >
             {loading ? "Sending..." : "Send Feedback"}
           </CustomButton>
