@@ -25,6 +25,7 @@ import { userSecureAtom } from "@/src/store/auth-store"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
 import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post-detail-store"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { MyPostMenu } from "../components/MyPostMenu"
 import FontAwesome from "@expo/vector-icons/FontAwesome"
@@ -42,6 +43,7 @@ export default function useCustomHeader({
   isPostDetails = false,
   isMyPostDetails = false,
   isProfile = false,
+  isSettings = false,
   includeBottomPadding = false,
 }: {
   title: string
@@ -51,6 +53,7 @@ export default function useCustomHeader({
   isPostDetails?: boolean
   isMyPostDetails?: boolean
   isProfile?: boolean
+  isSettings?: boolean
   includeBottomPadding?: boolean
 }): ExtendedStackNavigationOptions {
   const insets = useSafeAreaInsets()
@@ -111,6 +114,13 @@ export default function useCustomHeader({
     return {
       ...options,
       headerRight: () => <ProfileHeader />,
+    }
+  }
+
+  if (isSettings) {
+    return {
+      ...options,
+      headerRight: () => <SettingsHeader />,
     }
   }
 
@@ -350,6 +360,18 @@ function ProfileHeader() {
       <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
         <Feather name="settings" size={24} color={colors.dark} />
       </Pressable>
+    </View>
+  )
+}
+
+function SettingsHeader() {
+  const router = useRouter()
+
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <TouchableOpacity onPress={() => router.push("/profile/feedback")} style={{ padding: 6 }}>
+        <MaterialCommunityIcons name="message-alert-outline" size={24} color={colors.dark} />
+      </TouchableOpacity>
     </View>
   )
 }
