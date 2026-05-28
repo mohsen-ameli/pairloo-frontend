@@ -16,6 +16,7 @@
     "**/*": "prettier --write --ignore-unknown"
   },
   "dependencies": {
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
     "@babel/plugin-transform-private-methods": "^7.28.6",
     "@expo/vector-icons": "^15.0.3",
     "@react-google-maps/api": "^2.20.8",
@@ -52,6 +53,7 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-tracking-transparency": "~6.0.8",
+    "expo-video": "~3.0.16",
     "expo-web-browser": "~15.0.11",
     "grapheme-splitter": "^1.0.4",
     "jose": "^6.1.2",

@@ -9,7 +9,7 @@ export const baseColors = {
   lightPurple: "#9880f5",
   darkPurple: "#3a1d8bff",
   dark: "#1d1d25",
-  light: "#ffffff",
+  light: "#fcfbff",
   gray: "#8e8e93",
   darkGray: "#525252",
   lightGray: "#e6e6e6",

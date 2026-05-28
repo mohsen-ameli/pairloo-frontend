@@ -1,4 +1,4 @@
-import { colors } from "@/src/utils/colors"
+import { boxShadow, colors } from "@/src/utils/colors"
 import { Link, LinkProps } from "expo-router"
 import React from "react"
 import { Appearance, Pressable, Text } from "react-native"
@@ -20,6 +20,7 @@ export default function CustomLink({ children, color, ...rest }: CustomProps) {
           backgroundColor: color ? color : colors.purple,
           borderRadius: 10,
           alignItems: "center",
+          boxShadow: color ? undefined : boxShadow,
         }}
       >
         <Text

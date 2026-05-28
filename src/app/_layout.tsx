@@ -2,7 +2,7 @@ import { Stack } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useAtomValue, useSetAtom } from "jotai"
 import { userSecureAtom } from "@/src/store/auth-store"
-import { LogBox, Platform } from "react-native"
+import { Appearance, LogBox, Platform } from "react-native"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { colors } from "@/src/utils/colors"
@@ -28,6 +28,8 @@ import { setupAds } from "@/src/store/ad-store"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
+
+const colorScheme = Appearance.getColorScheme()
 
 const BetterBaseToast = (props: ToastProps, color: string) => (
   <BaseToast
@@ -114,6 +116,8 @@ export default function RootLayout() {
   // Notifications
   useEffect(() => {
     async function setupNotifications() {
+      if (Platform.OS === "web") return
+
       // Guard to make sure only authenticated users can register for push notifications
       if (!userJwt) {
         hasRegisteredPushRef.current = false
@@ -263,7 +267,7 @@ export default function RootLayout() {
                 options={{
                   headerShown: false,
                   contentStyle: {
-                    backgroundColor: colors.light,
+                    backgroundColor: colorScheme === "dark" ? "black" : "#A8AAB1",
                     paddingBottom: insets.bottom,
                   },
                 }}
@@ -278,7 +282,10 @@ export default function RootLayout() {
                 presentation: "formSheet",
                 gestureDirection: "vertical",
                 animation: "slide_from_bottom",
-                contentStyle: { backgroundColor: colors.light, paddingBottom: insets.bottom + 20 },
+                contentStyle: {
+                  backgroundColor: colors.light,
+                  paddingBottom: insets.bottom + 20,
+                },
                 headerShown: false,
                 sheetGrabberVisible: false,
                 sheetAllowedDetents: "fitToContents",

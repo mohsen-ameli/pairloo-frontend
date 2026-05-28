@@ -63,7 +63,9 @@ export default function useCustomHeader({
     headerShown: true,
     headerTitleAlign: "center",
     headerTintColor: colors.dark,
-    headerStyle: styles.header,
+    headerStyle: {
+      backgroundColor: colors.light,
+    },
     headerBackButtonDisplayMode: "minimal",
     headerTitleStyle: styles.headerTitle,
     contentStyle: includeBottomPadding
