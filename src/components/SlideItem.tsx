@@ -10,7 +10,7 @@ import { commonStyles } from "@/src/styles/common.styles"
 import { isDraggingAtom } from "@/src/store/general-store"
 import { editPostRemoveImageAtom } from "../store/edit-post-store"
 
-export type PageType = "create" | "edit"
+export type PageType = "create" | "edit" | "view"
 
 export function SlideItem({
   index,

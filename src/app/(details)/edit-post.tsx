@@ -263,7 +263,7 @@ export default function EditPost() {
               <>
                 <ImageCarousel
                   images={[...formState.existingImages, ...formState.newImages.map(img => img.uri)]}
-                  pageType={"edit"}
+                  pageType="edit"
                   editable
                 />
                 <Pressable

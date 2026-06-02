@@ -151,7 +151,9 @@ export default function PostDetails() {
         )}
         <Text style={styles.description}>{post.description}</Text>
 
-        {post.images && post.images.length !== 0 && <ImageCarousel images={post.images} />}
+        {post.images && post.images.length !== 0 && (
+          <ImageCarousel pageType="view" images={post.images} />
+        )}
 
         {post.location && <Text style={styles.locationText}>Approximate Location</Text>}
 
