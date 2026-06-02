@@ -9,7 +9,7 @@ import ContinueWithGoogle from "./(auth)/continue-with-google"
 import { commonStyles } from "../styles/common.styles"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 
-const ANIMATION_DELAY = 1000
+const ANIMATION_DELAY = 3000
 
 const colorScheme = Appearance.getColorScheme()
 
@@ -52,10 +52,14 @@ export default function Landing() {
 
   useFocusEffect(
     useCallback(() => {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         slideAnim.value = 0
         fadeAnim.value = withSpring(1, { stiffness: 80, damping: 10, mass: 1 })
       }, ANIMATION_DELAY)
+
+      return () => {
+        clearTimeout(timeout)
+      }
     }, [])
   )
 

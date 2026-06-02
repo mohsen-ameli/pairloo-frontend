@@ -11,6 +11,7 @@ import { useEffect, useState } from "react"
 import { useAudioPlayer } from "expo-audio"
 import { notificationSoundAtom } from "@/src/store/general-store"
 import { Platform } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const audioSource = require("@/assets/audio/new-notification.mp3")
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
@@ -26,6 +27,7 @@ export default function ProtectedLayout() {
   const player = useAudioPlayer(audioSource)
   const setNotificationSound = useSetAtom(notificationSoundAtom)
   const fetchUserInfo = useSetAtom(fetchUserInfoAtom)
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     fetchUserInfo()
@@ -66,6 +68,9 @@ export default function ProtectedLayout() {
             : {
                 backgroundColor: colors.light,
               },
+      }}
+      safeAreaInsets={{
+        bottom: insets.bottom + Platform.select({ android: 10, default: 0 }),
       }}
     >
       <Tabs.Screen
