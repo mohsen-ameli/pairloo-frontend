@@ -1,7 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { Platform, Pressable, ScrollView, Text, View } from "react-native"
+import { Pressable, ScrollView, Text, View } from "react-native"
 import CustomInput from "@/src/components/CustomInput"
-import LocationSelector from "@/src/components/LocationSelector"
 import { colors } from "@/src/utils/colors"
 import {
   newUserAtom,
@@ -15,7 +14,7 @@ import {
   verifyUserInfoAtom,
 } from "@/src/store/auth-store"
 import { styles } from "@/src/styles/register.styles"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { TextInput } from "react-native"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
 import { currPageAtom, flowAtom, pageCountAtom, resetPagerAtom } from "@/src/store/pager-store"
@@ -24,9 +23,10 @@ import { Image } from "expo-image"
 import Feather from "@expo/vector-icons/Feather"
 import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
 import BlockedAttempts from "@/src/components/BlockedAttempts"
-import PhoneNumber from "@/src/components/PhoneNumber"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
+import LocationSelector from "@/src/components/LocationSelector"
+import PhoneNumber from "@/src/components/PhoneNumber"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 const INITIAL_PAGE_COUNT = 6
@@ -39,7 +39,7 @@ export default function Register() {
   const [errors, setErrors] = useAtom(authErrorsAtom)
   const timeRemaining = useAtomValue(resendTimerAtom)
   const [flow, setFlow] = useAtom(flowAtom)
-  const usernameTimeout = useRef<number>(null)
+  const usernameTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const requestPhoneNumberVerification = useSetAtom(requestPhoneNumberVerificationAtom)
   const verifyPhoneNumberVerification = useSetAtom(verifyPhoneNumberVerificationAtom)
@@ -47,7 +47,6 @@ export default function Register() {
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
   const verifyUserInfo = useSetAtom(verifyUserInfoAtom)
   const resetPager = useSetAtom(resetPagerAtom)
-  const [avatar, setAvatar] = useState<string | null>(null)
   const skipResetOnNextBlur = useRef(false)
   const checkIfBlocked = useSetAtom(checkIfBlockedAtom)
   const isBlocked = useAtomValue(isBlockedAtom)
@@ -160,14 +159,6 @@ export default function Register() {
         }
       }
     }, REGISTER_USERNAME_CHECK_INTERVAL)
-  }
-
-  async function generateAvatar() {
-    const res = await fetch(`${BASE_URL}/api/test`, {
-      method: "GET",
-    })
-    const data = await res.json()
-    setAvatar(data.svg.toString())
   }
 
   return (
@@ -295,7 +286,8 @@ export default function Register() {
             Let's get to know you
           </Text>
           <CustomInput
-            title="Username*"
+            title="Username"
+            mandatory
             errors={errors?.username}
             onChangeText={handleUsername}
             defaultValue={newUser.username}
@@ -303,7 +295,8 @@ export default function Register() {
             maxLength={20}
           />
           <CustomInput
-            title="First Name*"
+            title="First Name"
+            mandatory
             errors={errors?.firstName}
             onChangeText={text => {
               setNewUser({ ...newUser, firstName: text })
@@ -312,7 +305,8 @@ export default function Register() {
             defaultValue={newUser.firstName}
           />
           <CustomInput
-            title="Last Name*"
+            title="Last Name"
+            mandatory
             errors={errors?.lastName}
             onChangeText={text => {
               setNewUser({ ...newUser, lastName: text })
@@ -336,6 +330,7 @@ export default function Register() {
               setErrors({ ...errors, location: "" })
             }}
           />
+          <View style={{ height: 200 }} />
         </View>
       </ScrollView>
 

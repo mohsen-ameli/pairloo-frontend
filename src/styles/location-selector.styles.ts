@@ -19,4 +19,9 @@ export const locSelectStyles = StyleSheet.create({
   },
   cityText: { color: colors.dark, fontSize: 16 },
   stateCountryText: { color: colors.gray, fontSize: 14 },
+  informationText: {
+    color: colors.dark,
+    fontSize: 16,
+    padding: 15,
+  },
 })

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { View, TextInput, TouchableOpacity, Text, Keyboard, Modal, Pressable } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { colors } from "@/src/utils/colors"
@@ -9,9 +9,10 @@ import { useAtomValue } from "jotai"
 import { locSelectStyles } from "@/src/styles/location-selector.styles"
 import CustomInput from "./CustomInput"
 import { City } from "@/src/types/city.types"
-import { inputStyles } from "../styles/input.styles"
+import { inputStyles } from "@/src/styles/input.styles"
 import { FlashList } from "@shopify/flash-list"
-import { commonStyles } from "../styles/common.styles"
+import { commonStyles } from "@/src/styles/common.styles"
+import { useFocusEffect } from "expo-router"
 
 export default function LocationSelector({
   onLocationChange,
@@ -23,10 +24,27 @@ export default function LocationSelector({
   errors?: string
 }) {
   const user = useAtomValue(userAtom)
-  const [locationInput, setLocationInput] = useState("Select Your Location")
+
+  const [locationInput, setLocationInput] = useState("Click to select city")
   const [cities, setCities] = useState<City[]>([])
   const [showModal, setShowModal] = useState(false)
   const [citySearchInput, setCitySearchInput] = useState("")
+  const [justLoaded, setJustLoaded] = useState(true)
+
+  function cleanup() {
+    setJustLoaded(true)
+    setCities([])
+    setShowModal(false)
+    setCitySearchInput("")
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      setJustLoaded(true)
+
+      return () => cleanup()
+    }, [])
+  )
 
   useEffect(() => {
     if (!user) return
@@ -39,11 +57,13 @@ export default function LocationSelector({
       setCities([])
       return
     }
+
     try {
       const url = `${BASE_URL}/api/locations/search?q=${encodeURIComponent(text)}`
       const res = await fetch(url)
       const data = await res.json()
       setCities(data)
+      setJustLoaded(false)
     } catch (error) {
       setCities([])
     }
@@ -67,7 +87,8 @@ export default function LocationSelector({
       style={{ width: "100%" }}
     >
       <CustomInput
-        title={"Location" + (mandatory ? "*" : "")}
+        title="Location"
+        mandatory={mandatory}
         value={locationInput}
         editable={false}
         selectTextOnFocus={false}
@@ -85,8 +106,7 @@ export default function LocationSelector({
           <View style={commonStyles.searchContainer}>
             <TouchableOpacity
               onPress={() => {
-                setShowModal(false)
-                setCitySearchInput("")
+                cleanup()
               }}
               style={commonStyles.dismissButton}
             >
@@ -102,22 +122,29 @@ export default function LocationSelector({
             />
           </View>
 
-          <FlashList
-            data={cities}
-            keyExtractor={item => item._id.toString()}
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="on-drag"
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handleSelect(item)} style={locSelectStyles.cityItem}>
-                <Text style={locSelectStyles.cityText}>
-                  {item.name}{" "}
-                  <Text style={locSelectStyles.stateCountryText}>
-                    ({item.state_name}, {item.country_name})
+          {cities.length === 0 && !justLoaded ? (
+            <Text style={locSelectStyles.informationText}>No cities found</Text>
+          ) : (
+            <FlashList
+              data={cities}
+              keyExtractor={item => item._id.toString()}
+              keyboardShouldPersistTaps="always"
+              keyboardDismissMode="on-drag"
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => handleSelect(item)}
+                  style={locSelectStyles.cityItem}
+                >
+                  <Text style={locSelectStyles.cityText}>
+                    {item.name}{" "}
+                    <Text style={locSelectStyles.stateCountryText}>
+                      ({item.state_name}, {item.country_name})
+                    </Text>
                   </Text>
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
+                </TouchableOpacity>
+              )}
+            />
+          )}
         </SafeAreaView>
       </Modal>
     </Pressable>
