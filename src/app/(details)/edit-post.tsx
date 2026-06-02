@@ -128,9 +128,7 @@ export default function EditPost() {
       const response = await authFetch(`/api/posts/${id}`, {
         method: "PATCH",
         body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        // TODO: investigate multipart/form-data compatability with URIs from object keys
       })
 
       if (!response.ok) {

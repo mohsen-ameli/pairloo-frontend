@@ -18,7 +18,7 @@ export const MyPostMenu = ({ id }: { id: string }) => {
       style={styles.button}
       onPressAction={action => {
         if (action === "edit") {
-          editPost()
+          editPost(id)
         } else if (action === "share") {
           const postUrl = `${BASE_URL}/feed-post?feedPostId=${id}`
           Clipboard.setString(postUrl)
