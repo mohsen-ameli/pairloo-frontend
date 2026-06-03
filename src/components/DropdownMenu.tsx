@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import {
   Dimensions,
   Modal,
+  Platform,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -55,25 +56,25 @@ export default function DropdownMenu({
 
   function openMenu() {
     actionButtonRef.current?.measureInWindow((x, y, width, height) => {
+      const margin = Platform.OS === "android" ? 24 : 0
+
       if (anchor === "auto") {
         const spaceBelow = windowDimensions.height - (y + height) - insets.bottom
         const spaceAbove = y - insets.top
         const openAbove = spaceBelow < menuHeight && spaceAbove > spaceBelow
 
         setMenuPosition({
-          top: openAbove
-            ? Math.max(insets.top + 8, y - menuHeight - 8)
-            : y + height + insets.top + 8,
+          top: openAbove ? Math.max(margin, y - menuHeight - 8) : y + height + margin,
           left: x - dropdownWidth + width,
         })
       } else if (anchor === "top") {
         setMenuPosition({
-          top: Math.max(insets.top + 8, y - menuHeight - 8),
+          top: Math.max(margin, y - menuHeight - 8),
           left: x - dropdownWidth + width,
         })
       } else if (anchor === "bottom") {
         setMenuPosition({
-          top: y + height + insets.top + 8,
+          top: y + height + margin,
           left: x - dropdownWidth + width,
         })
       } else if (anchor === "left") {

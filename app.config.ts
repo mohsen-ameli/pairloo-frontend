@@ -47,6 +47,9 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       "expo-router",
       "expo-secure-store",
       "expo-audio",
+      "expo-asset",
+      "expo-font",
+      "expo-video",
       [
         "expo-splash-screen",
         {

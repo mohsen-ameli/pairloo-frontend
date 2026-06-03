@@ -9,7 +9,7 @@ export const baseColors = {
   lightPurple: "#9880f5",
   darkPurple: "#3a1d8bff",
   dark: "#1d1d25",
-  light: "#ffffff",
+  light: "#fcfbff",
   gray: "#8e8e93",
   darkGray: "#525252",
   lightGray: "#e6e6e6",
@@ -52,8 +52,8 @@ if (colorScheme === "dark") {
   colors.purple = baseColors.lightPurple
   colors.darkPurple = baseColors.lightPurple
   colors.lightPurple = baseColors.purple
-  colors.shadowA = "rgba(255, 255, 255, 0.16)"
-  colors.shadowB = "rgba(255, 255, 255, 0.23)"
+  colors.shadowA = "rgba(0, 0, 0, 0.36)"
+  colors.shadowB = "rgba(0, 0, 0, 0.43)"
 }
 
 // https://getcssscan.com/css-box-shadow-examples

@@ -97,8 +97,11 @@ export const initChatAtom = atom(null, async (get, set) => {
   socket.on("disconnect", () => cleanup())
 
   socket.on("error", err => {
-    console.error("WebSocket error event:", err)
-    cleanup()
+    set(loadingAtom, false)
+    Toast.show({
+      type: "error",
+      text1: err,
+    })
   })
 
   socket.on("connect_error", async () => {

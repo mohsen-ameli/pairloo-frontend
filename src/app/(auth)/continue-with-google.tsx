@@ -100,9 +100,5 @@ export default function ContinueWithGoogle({
     }
   }
 
-  return (
-    <View>
-      <CustomButton onPress={continueWithGoogle}>Continue With Google</CustomButton>
-    </View>
-  )
+  return <CustomButton onPress={continueWithGoogle}>Continue With Google</CustomButton>
 }

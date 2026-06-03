@@ -10,7 +10,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useState } from "react"
 import { useAudioPlayer } from "expo-audio"
 import { notificationSoundAtom } from "@/src/store/general-store"
-import { Platform, View } from "react-native"
+import { Platform } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const audioSource = require("@/assets/audio/new-notification.mp3")
@@ -70,7 +70,7 @@ export default function ProtectedLayout() {
               },
       }}
       safeAreaInsets={{
-        bottom: Platform.OS === "android" ? insets.bottom + 10 : insets.bottom,
+        bottom: insets.bottom + Platform.select({ android: 10, default: 0 }),
       }}
     >
       <Tabs.Screen
