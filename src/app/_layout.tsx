@@ -24,6 +24,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 // @ts-ignore: Multi-platform file import
 import { setupAds } from "@/src/store/ad-store"
+import { KeyboardProvider } from "react-native-keyboard-controller"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -217,97 +218,99 @@ export default function RootLayout() {
     >
       <StatusBar style="auto" />
 
-      <QueryClientProvider client={queryClient}>
-        <Stack
-          screenOptions={{
-            headerBackButtonDisplayMode: "minimal",
-            headerTitleStyle: { color: colors.dark },
-            headerStyle: { backgroundColor: colors.light },
-            headerTintColor: colors.dark,
-          }}
-        >
-          <Stack.Protected guard={userJwt !== null}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(details)/chat-details" options={chatOptions} />
-            <Stack.Screen name="(details)/my-post" options={myPostOptions} />
-            <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
-            <Stack.Screen name="(details)/general-profile" options={generalProfileOptions} />
+      <KeyboardProvider>
+        <QueryClientProvider client={queryClient}>
+          <Stack
+            screenOptions={{
+              headerBackButtonDisplayMode: "minimal",
+              headerTitleStyle: { color: colors.dark },
+              headerStyle: { backgroundColor: colors.light },
+              headerTintColor: colors.dark,
+            }}
+          >
+            <Stack.Protected guard={userJwt !== null}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(details)/chat-details" options={chatOptions} />
+              <Stack.Screen name="(details)/my-post" options={myPostOptions} />
+              <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
+              <Stack.Screen name="(details)/general-profile" options={generalProfileOptions} />
+              <Stack.Screen
+                name="(details)/review-user"
+                options={{
+                  presentation: "modal",
+                  gestureDirection: "vertical",
+                  animation: "default",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="(util)/map-selector"
+                options={{
+                  headerShown: false,
+                  animation: "fade",
+                  contentStyle: { backgroundColor: colors.light },
+                }}
+              />
+              <Stack.Screen
+                name="(util)/image-gallery"
+                options={{
+                  animation: "fade",
+                  contentStyle: { backgroundColor: colors.dark },
+                  headerShown: false,
+                }}
+              />
+            </Stack.Protected>
+            <Stack.Protected guard={userJwt === null}>
+              <Stack.Screen
+                name="index"
+                options={{
+                  headerShown: false,
+                  contentStyle: {
+                    backgroundColor: colorScheme === "dark" ? "black" : "#A8AAB1",
+                    paddingBottom: insets.bottom,
+                  },
+                }}
+              />
+              <Stack.Screen name="(auth)/register" options={registerOptions} />
+              <Stack.Screen name="(auth)/login" options={loginOptions} />
+              <Stack.Screen name="(auth)/forgot-email" options={forgotEmailOptions} />
+            </Stack.Protected>
             <Stack.Screen
-              name="(details)/review-user"
+              name="(util)/attachment-picker"
               options={{
-                presentation: "modal",
+                presentation: "formSheet",
                 gestureDirection: "vertical",
-                animation: "default",
-                contentStyle: { backgroundColor: colors.light },
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="(util)/map-selector"
-              options={{
-                headerShown: false,
-                animation: "fade",
-                contentStyle: { backgroundColor: colors.light },
-              }}
-            />
-            <Stack.Screen
-              name="(util)/image-gallery"
-              options={{
-                animation: "fade",
-                contentStyle: { backgroundColor: colors.dark },
-                headerShown: false,
-              }}
-            />
-          </Stack.Protected>
-          <Stack.Protected guard={userJwt === null}>
-            <Stack.Screen
-              name="index"
-              options={{
-                headerShown: false,
+                animation: "slide_from_bottom",
                 contentStyle: {
-                  backgroundColor: colorScheme === "dark" ? "black" : "#A8AAB1",
-                  paddingBottom: insets.bottom,
+                  backgroundColor: colors.light,
+                  paddingBottom: insets.bottom + 20,
                 },
+                headerShown: false,
+                sheetGrabberVisible: false,
+                sheetAllowedDetents: "fitToContents",
+                sheetExpandsWhenScrolledToEdge: false,
+                sheetElevation: 24,
               }}
             />
-            <Stack.Screen name="(auth)/register" options={registerOptions} />
-            <Stack.Screen name="(auth)/login" options={loginOptions} />
-            <Stack.Screen name="(auth)/forgot-email" options={forgotEmailOptions} />
-          </Stack.Protected>
-          <Stack.Screen
-            name="(util)/attachment-picker"
-            options={{
-              presentation: "formSheet",
-              gestureDirection: "vertical",
-              animation: "slide_from_bottom",
-              contentStyle: {
-                backgroundColor: colors.light,
-                paddingBottom: insets.bottom + 20,
-              },
-              headerShown: false,
-              sheetGrabberVisible: false,
-              sheetAllowedDetents: "fitToContents",
-              sheetExpandsWhenScrolledToEdge: false,
-              sheetElevation: 24,
-            }}
-          />
-          <Stack.Screen
-            name="(util)/message-action-modal"
-            options={{
-              presentation: "formSheet",
-              gestureDirection: "vertical",
-              animation: "slide_from_bottom",
-              contentStyle: { backgroundColor: colors.light },
-              headerShown: false,
-              sheetGrabberVisible: false,
-              sheetInitialDetentIndex: 0,
-              sheetAllowedDetents: "fitToContents",
-              sheetExpandsWhenScrolledToEdge: false,
-              sheetElevation: 24,
-            }}
-          />
-        </Stack>
-      </QueryClientProvider>
+            <Stack.Screen
+              name="(util)/message-action-modal"
+              options={{
+                presentation: "formSheet",
+                gestureDirection: "vertical",
+                animation: "slide_from_bottom",
+                contentStyle: { backgroundColor: colors.light },
+                headerShown: false,
+                sheetGrabberVisible: false,
+                sheetInitialDetentIndex: 0,
+                sheetAllowedDetents: "fitToContents",
+                sheetExpandsWhenScrolledToEdge: false,
+                sheetElevation: 24,
+              }}
+            />
+          </Stack>
+        </QueryClientProvider>
+      </KeyboardProvider>
 
       <Toast config={toastConfig} />
     </GestureHandlerRootView>
