@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 // @ts-ignore: Multi-platform file import
 import { setupAds } from "@/src/store/ad-store"
 import { KeyboardProvider } from "react-native-keyboard-controller"
+import { BASE_URL } from "@/src/utils/constants"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -98,9 +99,9 @@ export default function RootLayout() {
     async function testBackend() {
       if (process.env.NODE_ENV === "production") return
       try {
-        await fetch(`${process.env.EXPO_PUBLIC_SERVER_URL}/`)
+        await fetch(`${BASE_URL}/`)
       } catch (e) {
-        const message = `Fetch request to backend failed ${process.env.EXPO_PUBLIC_SERVER_URL}`
+        const message = `Fetch request to backend failed ${BASE_URL}`
         console.error(message)
         Toast.show({
           type: "error",
