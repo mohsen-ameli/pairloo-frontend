@@ -2,6 +2,9 @@
 
 0. Amazing docs on how to set up an emulator/device: https://docs.expo.dev/get-started/set-up-your-environment/
 
+IMPORTANT: make sure to use android version 9 (pie) and API version 28, for the video
+playback in the front page to work properly. Other versions might crash the emulator.
+
 1. After setting up an emulator, if you're using android emulator, make sure you are port forwarding port 8000 from the emulator to your machine.
    You can do so by running the following command (note: you need to do this every time you start the emulator)
 
