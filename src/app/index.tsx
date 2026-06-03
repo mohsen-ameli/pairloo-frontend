@@ -1,8 +1,8 @@
 import { VideoView, useVideoPlayer } from "expo-video"
 import CustomLink from "@/src/components/CustomLink"
-import { colors, isWeb } from "@/src/utils/colors"
+import { colors } from "@/src/utils/colors"
 import { Link, useFocusEffect } from "expo-router"
-import { Appearance, Platform, Text, View } from "react-native"
+import { Appearance, Text, View } from "react-native"
 import { useEffect, useState, useCallback } from "react"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import ContinueWithGoogle from "./(auth)/continue-with-google"
@@ -13,19 +13,10 @@ const ANIMATION_DELAY = 3000
 
 const colorScheme = Appearance.getColorScheme()
 
-const videoSource = Platform.select({
-  native:
-    colorScheme === "dark"
-      ? require("@/assets/videos/animation-portrait-dark.mp4")
-      : require("@/assets/videos/animation-portrait-light.mp4"),
-  web: isWeb
-    ? colorScheme === "dark"
-      ? require("@/assets/videos/animation-landscape-dark.mp4")
-      : require("@/assets/videos/animation-landscape-light.mp4")
-    : colorScheme === "dark"
-      ? require("@/assets/videos/animation-portrait-dark.mp4")
-      : require("@/assets/videos/animation-portrait-light.mp4"),
-})
+const videoSource =
+  colorScheme === "dark"
+    ? require("@/assets/videos/animation-dark.mp4")
+    : require("@/assets/videos/animation-light.mp4")
 
 export default function Landing() {
   const [loading, setLoading] = useState(false)
@@ -76,7 +67,6 @@ export default function Landing() {
           top: 0,
           zIndex: -1,
         }}
-        contentFit={isWeb ? "cover" : "contain"}
         player={player}
         nativeControls={false}
         fullscreenOptions={{ enable: false }}

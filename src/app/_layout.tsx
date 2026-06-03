@@ -36,11 +36,11 @@ const BetterBaseToast = (props: ToastProps, color: string) => (
     {...props}
     text1Style={{ fontSize: 16, fontWeight: "600" }}
     text2Style={{ fontSize: 14, flexWrap: "wrap" }}
-    text1NumberOfLines={2}
+    text1NumberOfLines={3}
     text2NumberOfLines={10}
     style={{
       borderLeftColor: color,
-      minHeight: props.type === "info" ? 100 : undefined,
+      height: props.type === "info" ? 100 : undefined,
       paddingVertical: 6,
     }}
   />

@@ -1,27 +1,26 @@
-import { Children, ReactNode, useEffect, useRef, useState } from "react"
-import {
-  Animated as A,
-  Dimensions,
-  Easing,
-  Keyboard,
-  Platform,
-  Pressable,
-  Text,
-  View,
-} from "react-native"
+import { Children, ReactNode, useEffect, useState } from "react"
+import { Dimensions, Keyboard, Platform, Pressable, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
 import { userAtom } from "@/src/store/auth-store"
 import { commonStyles } from "@/src/styles/common.styles"
-import Animated, { useAnimatedStyle } from "react-native-reanimated"
+import Animated, {
+  Extrapolation,
+  Easing,
+  interpolate,
+  SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated"
 
 export default function CustomPager({ children }: { children: ReactNode }) {
   const pageCount = useAtomValue(pageCountAtom)
   const pages = Children.toArray(children)
-  const scrollOffset = useRef(new A.Value(0)).current
-  const translateX = useRef(new A.Value(0)).current
+  const scrollOffset = useSharedValue(0)
+  const translateX = useSharedValue(0)
   const [containerWidth, setContainerWidth] = useState(0)
   const [xPos, setXPos] = useState(0)
   const currPage = useAtomValue(currPageAtom)
@@ -33,19 +32,21 @@ export default function CustomPager({ children }: { children: ReactNode }) {
     if (!containerWidth) return
     const toValue = Math.min(-currPage * containerWidth - 10, -10)
 
-    A.timing(translateX, {
-      toValue: toValue,
+    translateX.value = withTiming(toValue, {
       duration: 300,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: false,
-    }).start()
+    })
 
-    A.timing(scrollOffset, {
-      toValue: currPage,
+    scrollOffset.value = withTiming(currPage, {
       duration: 100,
-      useNativeDriver: true,
-    }).start()
+    })
   }, [containerWidth, currPage])
+
+  const pagesAnimation = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+    }
+  })
 
   const flowButtons = useAnimatedStyle(() => {
     return {
@@ -72,39 +73,15 @@ export default function CustomPager({ children }: { children: ReactNode }) {
             gap: 10,
           }}
         >
-          {[...Array(pageCount)].map((_, i) => {
-            const inputRange = [i - 1, i, i + 1]
-            const scale = scrollOffset.interpolate({
-              inputRange,
-              outputRange: [1, 1.75, 1],
-              extrapolate: "clamp",
-            })
-            const opacity = scrollOffset.interpolate({
-              inputRange,
-              outputRange: [0.5, 1, 0.5],
-              extrapolate: "clamp",
-            })
-            return (
-              <A.View
-                key={i}
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
-                  backgroundColor: colors.purple,
-                  marginHorizontal: 2,
-                  transform: [{ scale }],
-                  opacity,
-                }}
-              />
-            )
-          })}
+          {[...Array(pageCount)].map((_, i) => (
+            <PagerDot key={i} index={i} scrollOffset={scrollOffset} />
+          ))}
         </View>
       </View>
 
       {/* Pages */}
       <View
-        style={[commonStyles.container, { flex: 1, overflow: "hidden" }]}
+        style={[commonStyles.container, { flex: 1, overflow: "hidden", paddingVertical: 0 }]}
         onLayout={event => {
           const width = event.nativeEvent.layout.width
           setContainerWidth(width)
@@ -112,20 +89,22 @@ export default function CustomPager({ children }: { children: ReactNode }) {
           setXPos(x)
         }}
       >
-        <A.View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            width: containerWidth ? containerWidth * pages.length : "100%",
-            transform: [{ translateX }],
-          }}
+        <Animated.View
+          style={[
+            {
+              flex: 1,
+              flexDirection: "row",
+              width: containerWidth ? containerWidth * pages.length : "100%",
+            },
+            pagesAnimation,
+          ]}
         >
           {pages.map((page, index) => (
             <View key={index} style={{ flex: 1 }}>
               {page}
             </View>
           ))}
-        </A.View>
+        </Animated.View>
       </View>
 
       {/* Next button */}
@@ -229,10 +208,39 @@ export default function CustomPager({ children }: { children: ReactNode }) {
             >
               Back
             </Text>
-            {/* <Feather name="arrow-left" size={30} color={colors.light} /> */}
           </Pressable>
         </Animated.View>
       )}
     </View>
+  )
+}
+
+function PagerDot({ index, scrollOffset }: { index: number; scrollOffset: SharedValue<number> }) {
+  const dotStyle = useAnimatedStyle(() => {
+    const inputRange = [index - 1, index, index + 1]
+
+    return {
+      transform: [
+        {
+          scale: interpolate(scrollOffset.value, inputRange, [1, 1.75, 1], Extrapolation.CLAMP),
+        },
+      ],
+      opacity: interpolate(scrollOffset.value, inputRange, [0.5, 1, 0.5], Extrapolation.CLAMP),
+    }
+  })
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          backgroundColor: colors.purple,
+          marginHorizontal: 2,
+        },
+        dotStyle,
+      ]}
+    />
   )
 }
