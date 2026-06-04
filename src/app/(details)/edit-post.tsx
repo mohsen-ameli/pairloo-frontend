@@ -1,7 +1,7 @@
 import { useRouter, useLocalSearchParams, Stack, useFocusEffect } from "expo-router"
 import { useNavigation } from "@react-navigation/native"
 import { View, Text, ScrollView, Pressable, Alert, Switch } from "react-native"
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useRef } from "react"
 import Feather from "@expo/vector-icons/Feather"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -25,6 +25,9 @@ import {
 
 export default function EditPost() {
   const router = useRouter()
+  const allowNavigationRef = useRef(false)
+  const isSelectingLocationRef = useRef(false)
+
   const { id } = useLocalSearchParams<{ id: string }>()
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
@@ -74,15 +77,20 @@ export default function EditPost() {
 
   useFocusEffect(
     useCallback(() => {
+      if (!isSelectingLocationRef.current) return
+
       if (settings.location && settings.closeCity) {
         setFormState(prev => ({
           ...prev,
           location: settings.location,
           closeCity: settings.closeCity,
+          distance: settings.distance,
         }))
         setHasChanges(true)
       }
-    }, [settings.location, settings.closeCity])
+
+      isSelectingLocationRef.current = false
+    }, [settings.location, settings.closeCity, settings.distance, setFormState, setHasChanges])
   )
 
   async function pickImages() {
@@ -142,6 +150,7 @@ export default function EditPost() {
       await queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
       await queryClient.invalidateQueries({ queryKey: ["my-posts"] })
 
+      allowNavigationRef.current = true
       resetEditPost()
       router.back()
     } catch (error) {
@@ -158,6 +167,9 @@ export default function EditPost() {
   const navigation = useNavigation()
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", e => {
+      // Allow programmatic navigation (e.g. after a successful save) without showing the discard dialog.
+      if (allowNavigationRef.current) return
+
       if (e.data.action.type === "POP" || e.data.action.type === "GO_BACK") {
         if (hasChanges) {
           e.preventDefault()
@@ -169,6 +181,7 @@ export default function EditPost() {
               {
                 text: "Discard",
                 onPress: () => {
+                  allowNavigationRef.current = true
                   resetEditPost()
                   navigation.goBack()
                 },
