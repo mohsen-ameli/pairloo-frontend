@@ -10,7 +10,6 @@ import { isDraggingAtom } from "@/src/store/general-store"
 import { PageType } from "./SlideItem"
 
 const w = Dimensions.get("window").width
-let width = isWeb ? 600 : w
 
 export default function ImageCarousel({
   images,
@@ -28,7 +27,7 @@ export default function ImageCarousel({
   const setImages = useSetAtom(bigImageViewAtom)
   const setIsDragging = useSetAtom(isDraggingAtom)
 
-  width -= widthOffset
+  const carouselWidth = (isWeb ? 600 : w) - widthOffset
 
   useEffect(() => {
     setImages(
@@ -66,8 +65,8 @@ export default function ImageCarousel({
         loop={true}
         pagingEnabled={true}
         snapEnabled={true}
-        width={width}
-        style={{ width, height: isWeb ? 500 : 300 }}
+        width={carouselWidth}
+        style={{ width: carouselWidth, height: isWeb ? 500 : 300 }}
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,

@@ -46,8 +46,6 @@ export default function useCustomHeader({
   isSettings = false,
   includeBottomPadding = false,
   isEditMode = false,
-  onSave,
-  canSave = true,
   onBackPress,
 }: {
   title: string
@@ -60,8 +58,6 @@ export default function useCustomHeader({
   isSettings?: boolean
   includeBottomPadding?: boolean
   isEditMode?: boolean
-  onSave?: () => void
-  canSave?: boolean
   onBackPress?: () => boolean
 }): ExtendedStackNavigationOptions {
   const insets = useSafeAreaInsets()
@@ -136,11 +132,10 @@ export default function useCustomHeader({
     return {
       ...options,
       headerLeft: () => (
-        <Pressable onPress={onBackPress} style={{ padding: 6 }}>
+        <TouchableOpacity onPress={onBackPress} style={{ padding: 6 }}>
           <Feather name="chevron-left" size={24} color={colors.dark} />
-        </Pressable>
+        </TouchableOpacity>
       ),
-      headerRight: () => <EditPostHeader onSave={onSave} canSave={canSave} />,
     }
   }
 
@@ -393,17 +388,5 @@ function SettingsHeader() {
         <MaterialCommunityIcons name="message-alert-outline" size={24} color={colors.dark} />
       </TouchableOpacity>
     </View>
-  )
-}
-
-function EditPostHeader({ onSave, canSave }: { onSave?: () => void; canSave?: boolean }) {
-  return (
-    <Pressable
-      style={{ padding: 6, opacity: canSave ? 1 : 0.5 }}
-      onPress={onSave}
-      disabled={!canSave}
-    >
-      <Feather name="check" size={24} color={canSave ? colors.purple : colors.muted} />
-    </Pressable>
   )
 }

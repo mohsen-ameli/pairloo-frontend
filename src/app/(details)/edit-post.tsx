@@ -11,11 +11,15 @@ import { inputStyles } from "@/src/styles/input.styles"
 import { editPostStyles } from "@/src/styles/edit-post.styles"
 import CustomInput from "@/src/components/CustomInput"
 import { colors } from "@/src/utils/colors"
-import useCustomHeader from "@/src/utils/useCustomHeader"
+import CustomButton from "@/src/components/CustomButton"
 import ImageCarousel from "@/src/components/ImageCarousel"
+import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { settingsAtom } from "@/src/store/create-post-store"
 import { getAttachmentAtom } from "@/src/store/general-store"
+import { commonStyles } from "@/src/styles/common.styles"
+import useCustomHeader from "@/src/utils/useCustomHeader"
 import React from "react"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import {
   editPostFormAtom,
   editPostHasChangesAtom,
@@ -27,6 +31,7 @@ export default function EditPost() {
   const router = useRouter()
   const allowNavigationRef = useRef(false)
   const isSelectingLocationRef = useRef(false)
+  const insets = useSafeAreaInsets()
 
   const { id } = useLocalSearchParams<{ id: string }>()
   const authFetch = useSetAtom(authFetchAtom)
@@ -41,10 +46,11 @@ export default function EditPost() {
   const setHasChanges = useSetAtom(editPostHasChangesAtom)
   const resetEditPost = useSetAtom(resetEditPostAtom)
 
-  const { data: post } = useQuery({
-    queryKey: [`post-${id}`],
-    queryFn: fetchPost,
-  })
+  const {
+    data: post,
+    isError,
+    isPending,
+  } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
 
   async function fetchPost() {
     const res = await authFetch(`/api/posts/my-posts/${id}`)
@@ -161,6 +167,7 @@ export default function EditPost() {
   }
 
   async function handleLocationPress() {
+    isSelectingLocationRef.current = true
     router.push("/map-selector")
   }
 
@@ -199,23 +206,49 @@ export default function EditPost() {
   const detailOptions = useCustomHeader({
     title: "Edit Post",
     isEditMode: true,
-    onSave: handleSave,
     onBackPress: () => {
       router.back()
       return true
     },
-    canSave: hasChanges && !loading,
   })
 
   const hasImages = formState.existingImages.length > 0 || formState.newImages.length > 0
 
+  async function refresh() {
+    queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
+  }
+
+  if (isPending) {
+    return (
+      <>
+        <Stack.Screen options={detailOptions} />
+        <View style={commonStyles.generalContainer}>
+          <LoadingIndicator loading={true} />
+        </View>
+      </>
+    )
+  }
+
+  if (isError) {
+    return (
+      <View style={commonStyles.generalContainer}>
+        <Text style={commonStyles.errorText}>Error loading posts. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+          <Text style={commonStyles.retryButtonText}>Retry</Text>
+        </Pressable>
+      </View>
+    )
+  }
+
   return (
     <>
       <Stack.Screen options={detailOptions} />
-      <View style={{ flex: 1, backgroundColor: colors.light }}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: colors.light, paddingBottom: insets.bottom + 16 }}
+      >
         <ScrollView
           style={editPostStyles.scrollView}
-          contentContainerStyle={editPostStyles.gaptainer}
+          contentContainerStyle={[editPostStyles.gaptainer, { paddingBottom: insets.bottom + 24 }]}
           keyboardShouldPersistTaps="handled"
         >
           <CustomInput
@@ -331,8 +364,16 @@ export default function EditPost() {
               />
             </View>
           </View>
+          <CustomButton
+            onPress={handleSave}
+            disabled={loading || !hasChanges}
+            color={loading ? colors.lightGray : colors.purple}
+            fontSize={16}
+          >
+            {loading ? "Sending..." : "Save Changes"}
+          </CustomButton>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     </>
   )
 }
