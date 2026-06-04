@@ -282,11 +282,12 @@ export default function EditPost() {
               <View style={{ flex: 1 }}>
                 <Pressable onPress={handleLocationPress} disabled={loading}>
                   <Text style={inputStyles.input}>
-                    {formState.closeCity || "Tap to select location"}
+                    {formState.closeCity ||
+                      (formState.location ? "Location selected" : "Tap to select location")}
                   </Text>
                 </Pressable>
               </View>
-              {formState.location && formState.closeCity && (
+              {formState.location && (
                 <Pressable
                   style={editPostStyles.locationClearButton}
                   onPress={() => {
