@@ -39,7 +39,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       permissions: ["android.permission.RECORD_AUDIO", "android.permission.MODIFY_AUDIO_SETTINGS"],
     },
     web: {
-      output: "single",
+      output: "static",
       favicon: "./assets/images/icon.png",
     },
     plugins: [

@@ -134,6 +134,7 @@ export const signUpAtom = atom(null, async (get, set) => {
     const res = await fetch(`${BASE_URL}/api/auth/signup`, {
       method: "POST",
       body: formData,
+      credentials: "include",
       headers: {
         "Content-Type": "multipart/form-data",
       },

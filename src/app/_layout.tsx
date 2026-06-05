@@ -25,7 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 // @ts-ignore: Multi-platform file import
 import { setupAds } from "@/src/store/ad-store"
 import { KeyboardProvider } from "react-native-keyboard-controller"
-import { BASE_URL } from "@/src/utils/constants"
+import { BASE_URL, NODE_ENV } from "@/src/utils/constants"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -97,7 +97,7 @@ export default function RootLayout() {
   // Purely for testing purposes to test if we can talk to the backend
   useEffect(() => {
     async function testBackend() {
-      if (process.env.NODE_ENV === "production") return
+      if (NODE_ENV === "production") return
       try {
         await fetch(`${BASE_URL}/`)
       } catch (e) {

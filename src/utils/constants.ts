@@ -1,6 +1,10 @@
+export const NODE_ENV = process.env.NODE_ENV!
+
 // Environment Constants
 export const BASE_URL = process.env.EXPO_PUBLIC_SERVER_URL!
 export const WS_BASE_URL = process.env.EXPO_PUBLIC_WS_SERVER_URL!
+
+export const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY!
 
 export const VERIFICATION_RESEND_TIME = 5 // seconds
 export const BLOCK_TIME = 5 * 60 * 1000 // 5 minutes
