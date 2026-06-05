@@ -1,6 +1,5 @@
 import * as SecureStore from "expo-secure-store"
 import { atom } from "jotai"
-import * as Crypto from "expo-crypto"
 import { currPageAtom, flowAtom } from "./pager-store"
 import { BLOCK_TIME, MAX_ATTEMPTS } from "../utils/constants"
 import { Platform } from "react-native"
@@ -116,7 +115,6 @@ export const checkIfBlockedAtom = atom(null, async (get, set) => {
 
 export const resetDeviceInfoAtom = atom(null, async (get, set) => {
   const deviceInfo = {
-    uuid: Crypto.randomUUID(),
     blockedUntil: 0,
     attempts: 0,
   }
