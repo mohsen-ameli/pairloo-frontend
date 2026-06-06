@@ -174,10 +174,17 @@ export default function RootLayout() {
               }
             }, 300)
           } else {
-            router.push({
-              pathname: path,
-              params: queryParams,
-            })
+            if (path === "chat" || path === "create-post" || path === "profile") {
+              router.replace({
+                pathname: path,
+                params: queryParams,
+              })
+            } else {
+              router.push({
+                pathname: path,
+                params: queryParams,
+              })
+            }
           }
         }
       }, 500)
