@@ -66,6 +66,7 @@ export type ReviewsType = {
 // JWT tokens stored in secure storage
 export type UserSecureType = null | {
   _id: string
+  isAuthenticated: boolean
   accessToken?: string
   refreshToken?: string
   expoPushToken?: string

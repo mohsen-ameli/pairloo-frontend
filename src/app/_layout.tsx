@@ -1,4 +1,4 @@
-import { Stack } from "expo-router"
+import { Stack, useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { useAtomValue, useSetAtom } from "jotai"
 import { userSecureAtom } from "@/src/store/auth-store"
@@ -12,9 +12,8 @@ import useCustomHeader from "@/src/utils/useCustomHeader"
 import { queryClientAtom } from "@/src/store/general-store"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { useEffect, useRef } from "react"
-import * as Linking from "expo-linking"
-import { usePathname, useRouter } from "expo-router"
 import { getDeviceInfoAtom } from "@/src/store/device-store"
+import * as Linking from "expo-linking"
 import * as Notifications from "expo-notifications"
 import {
   channelsAtom,
@@ -25,7 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 // @ts-ignore: Multi-platform file import
 import { setupAds } from "@/src/store/ad-store"
 import { KeyboardProvider } from "react-native-keyboard-controller"
-import { BASE_URL } from "@/src/utils/constants"
+import { BASE_URL, NODE_ENV } from "@/src/utils/constants"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
@@ -72,12 +71,10 @@ export default function RootLayout() {
   const loginOptions = useCustomHeader({ title: "Log In", includeBottomPadding: true })
   const registerOptions = useCustomHeader({ title: "Create Account", includeBottomPadding: true })
   const forgotEmailOptions = useCustomHeader({ title: "Forgot Email", includeBottomPadding: true })
-  const chatOptions = useCustomHeader({ title: "Chat" })
+  const chatOptions = useCustomHeader({ title: "Chat", inChat: true })
   const myPostOptions = useCustomHeader({ title: "My Post" })
   const postDetailsOptions = useCustomHeader({ title: "Post Details", isPostDetails: true })
   const generalProfileOptions = useCustomHeader({ title: "" })
-  const router = useRouter()
-  const pathname = usePathname()
   const insets = useSafeAreaInsets()
 
   const userJwt = useAtomValue(userSecureAtom)
@@ -89,30 +86,9 @@ export default function RootLayout() {
   const hasRegisteredPushRef = useRef(false)
   const notificationListener = useRef<Notifications.EventSubscription>(null)
   const responseListener = useRef<Notifications.EventSubscription>(null)
-  const initialHrefRef = useRef<string | null>(
-    Platform.OS === "web" ? `${window.location.pathname}${window.location.search}` : null
-  )
-  const initialHrefHandledRef = useRef(false)
 
-  // Purely for testing purposes to test if we can talk to the backend
-  useEffect(() => {
-    async function testBackend() {
-      if (process.env.NODE_ENV === "production") return
-      try {
-        await fetch(`${BASE_URL}/`)
-      } catch (e) {
-        const message = `Fetch request to backend failed ${BASE_URL}`
-        console.error(message)
-        Toast.show({
-          type: "error",
-          text1: message,
-          visibilityTime: Infinity,
-        })
-      }
-    }
-
-    testBackend()
-  }, [])
+  const initialUrlHandled = useRef(false)
+  const router = useRouter()
 
   // Notifications
   useEffect(() => {
@@ -152,63 +128,73 @@ export default function RootLayout() {
     }
   }, [userJwt])
 
+  // Setup deep linking and test backend connection on app load
   useEffect(() => {
+    async function handleDeepLinks() {
+      if (initialUrlHandled.current) return
+      const initialUrl = await Linking.getInitialURL()
+      if (!initialUrl) return
+
+      // Reset to the root before handling the deep link
+      router.replace("/")
+      setTimeout(() => {
+        const { path, queryParams } = Linking.parse(initialUrl)
+        if (path && queryParams) {
+          const paths = path.split("/")
+          if (paths.length > 1) {
+            let currentPath = `/${paths[0]}`
+            // Replace the URL with the first route, then loop over the rest, pushing them to the stack
+            router.replace(currentPath)
+            setTimeout(() => {
+              for (let i = 1; i < paths.length; i++) {
+                currentPath += `/${paths[i]}`
+                router.push({
+                  pathname: currentPath,
+                  params: queryParams,
+                })
+              }
+            }, 300)
+          } else {
+            if (path === "chat" || path === "create-post" || path === "profile") {
+              router.replace({
+                pathname: path,
+                params: queryParams,
+              })
+            } else {
+              router.push({
+                pathname: path,
+                params: queryParams,
+              })
+            }
+          }
+        }
+      }, 500)
+      initialUrlHandled.current = true
+    }
+
+    // Purely for testing purposes to test if we can talk to the backend
+    async function testBackend() {
+      if (NODE_ENV === "production") return
+      try {
+        await fetch(`${BASE_URL}/`)
+      } catch (e) {
+        const message = `Fetch request to backend failed ${BASE_URL}`
+        console.error(message)
+        Toast.show({
+          type: "error",
+          text1: message,
+          visibilityTime: Infinity,
+        })
+      }
+    }
+
+    testBackend()
+    handleDeepLinks()
     getDeviceInfo()
     setupAds()
   }, [])
 
-  // Deep linking
-  useEffect(() => {
-    if (Platform.OS === "web") return
-
-    let isMounted = true
-
-    Linking.getInitialURL().then(url => {
-      if (!isMounted || !url) return
-
-      const parsed = Linking.parse(url)
-      const path = parsed.path ? `/${parsed.path.replace(/^\/+/, "")}` : "/"
-      const query = new URLSearchParams()
-
-      Object.entries(parsed.queryParams ?? {}).forEach(([key, value]) => {
-        if (value === undefined || value === null) return
-        query.append(key, String(value))
-      })
-
-      initialHrefRef.current = query.size ? `${path}?${query.toString()}` : path
-    })
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  // Reroute to initial href
-  useEffect(() => {
-    if (initialHrefHandledRef.current) return
-    if (!userJwt) return
-
-    const initialHref = initialHrefRef.current
-    if (!initialHref || initialHref === "/") {
-      initialHrefHandledRef.current = true
-      return
-    }
-
-    if (pathname === "/") {
-      initialHrefHandledRef.current = true
-      // If we're going to a top level route, just navigate there, otherwise we push to have the "go back" button
-      if (initialHref === "/create-post" || initialHref === "/chat" || initialHref === "/profile") {
-        router.navigate(initialHref)
-      } else {
-        router.push(initialHref)
-      }
-      return
-    }
-
-    if (pathname !== "/") {
-      initialHrefHandledRef.current = true
-    }
-  }, [pathname, router, userJwt])
+  if (!userJwt) return null
 
   return (
     <GestureHandlerRootView
@@ -229,7 +215,7 @@ export default function RootLayout() {
               headerTintColor: colors.dark,
             }}
           >
-            <Stack.Protected guard={userJwt !== null}>
+            <Stack.Protected guard={userJwt.isAuthenticated}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)/chat-details" options={chatOptions} />
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
@@ -262,7 +248,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack.Protected>
-            <Stack.Protected guard={userJwt === null}>
+            <Stack.Protected guard={!userJwt.isAuthenticated}>
               <Stack.Screen
                 name="index"
                 options={{

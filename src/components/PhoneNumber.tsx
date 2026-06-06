@@ -153,7 +153,7 @@ export default function PhoneNumber() {
           borderColor: colors.borderGray,
           padding: 15,
           borderRadius: 5,
-          fontSize: 18,
+          fontSize: 16,
         }}
         value={newUser.phoneNumber}
         editable={!isBlocked}

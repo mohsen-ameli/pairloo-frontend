@@ -91,7 +91,11 @@ const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
     }
   },
 }))
-export const userSecureAtom = atomWithStorage("user-secure", null, userSecureStorage)
+const userSecureDefault: UserSecureType = {
+  _id: "",
+  isAuthenticated: false,
+}
+export const userSecureAtom = atomWithStorage("user-secure", userSecureDefault, userSecureStorage)
 
 const userAsyncStorage = createJSONStorage<UserType>(() => AsyncStorage)
 export const userAtom = atomWithStorage("user-profile", null, userAsyncStorage)
@@ -134,6 +138,7 @@ export const signUpAtom = atom(null, async (get, set) => {
     const res = await fetch(`${BASE_URL}/api/auth/signup`, {
       method: "POST",
       body: formData,
+      credentials: "include",
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -146,6 +151,7 @@ export const signUpAtom = atom(null, async (get, set) => {
     } else {
       set(userSecureAtom, {
         _id: data._id,
+        isAuthenticated: true,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       })
@@ -173,7 +179,7 @@ export const signUpAtom = atom(null, async (get, set) => {
 export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false) => {
   async function logout() {
     await set(userAtom, null)
-    await set(userSecureAtom, null)
+    await set(userSecureAtom, userSecureDefault)
     await set(newUserAtom, newUser)
     set(returningUserAtom, returningUser)
     set(authErrorsAtom, null)
@@ -189,6 +195,14 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
     const createPostSocket = get(createPostSocketAtom)
     createPostSocket?.disconnect()
     set(createPostSocketAtom, null)
+
+    // Clear cookies on web
+    if (Platform.OS === "web") {
+      await fetch(`${BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      })
+    }
   }
 
   if (!showAlert) {
@@ -358,6 +372,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
       } else {
         set(userSecureAtom, {
           _id: data._id,
+          isAuthenticated: true,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         })

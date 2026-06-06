@@ -1,22 +1,46 @@
 import { VideoView, useVideoPlayer } from "expo-video"
 import CustomLink from "@/src/components/CustomLink"
-import { colors } from "@/src/utils/colors"
+import { colors, isDesktop } from "@/src/utils/colors"
 import { Link, useFocusEffect } from "expo-router"
-import { Appearance, Text, View } from "react-native"
+import { Appearance, AppState, Platform, Text, View } from "react-native"
 import { useEffect, useState, useCallback } from "react"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import ContinueWithGoogle from "./(auth)/continue-with-google"
-import { commonStyles } from "../styles/common.styles"
+import { commonStyles } from "@/src/styles/common.styles"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 
-const ANIMATION_DELAY = 3000
+const ANIMATION_DELAY = 1500
 
 const colorScheme = Appearance.getColorScheme()
 
-const videoSource =
-  colorScheme === "dark"
-    ? require("@/assets/videos/animation-dark.mp4")
-    : require("@/assets/videos/animation-light.mp4")
+let videoSource: any = null
+let contentFit: "cover" | "contain" = "contain"
+let mobile = false
+
+if (Platform.OS === "web") {
+  if (isDesktop) {
+    if (colorScheme === "dark") {
+      videoSource = require("@/assets/videos/animation-landscape-dark.mp4")
+    } else {
+      videoSource = require("@/assets/videos/animation-landscape-light.mp4")
+    }
+  } else {
+    contentFit = "cover"
+    mobile = true
+    if (colorScheme === "dark") {
+      videoSource = require("@/assets/videos/animation-portrait-dark.mp4")
+    } else {
+      videoSource = require("@/assets/videos/animation-portrait-light.mp4")
+    }
+  }
+} else {
+  mobile = true
+  if (colorScheme === "dark") {
+    videoSource = require("@/assets/videos/animation-portrait-dark.mp4")
+  } else {
+    videoSource = require("@/assets/videos/animation-portrait-light.mp4")
+  }
+}
 
 export default function Landing() {
   const [loading, setLoading] = useState(false)
@@ -35,6 +59,19 @@ export default function Landing() {
       player.play()
     }
   }, [player])
+
+  useEffect(
+    AppState.addEventListener("change", nextAppState => {
+      switch (nextAppState) {
+        case "active":
+          player.play()
+          break
+        default:
+          break
+      }
+    }).remove,
+    []
+  )
 
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [{ translateY: withSpring(slideAnim.value) }],
@@ -60,7 +97,7 @@ export default function Landing() {
 
       <VideoView
         style={{
-          width: "100%",
+          width: mobile ? "100%" : "auto",
           height: "100%",
           position: "absolute",
           alignSelf: "center",
@@ -68,9 +105,11 @@ export default function Landing() {
           zIndex: -1,
         }}
         player={player}
+        playsInline
         nativeControls={false}
         fullscreenOptions={{ enable: false }}
         allowsPictureInPicture={false}
+        contentFit={contentFit}
       />
 
       <Animated.View

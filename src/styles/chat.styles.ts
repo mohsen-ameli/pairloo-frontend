@@ -28,6 +28,7 @@ export const chatStyles = StyleSheet.create({
   input: {
     flex: 1,
     color: colors.dark,
+    fontSize: 16,
     borderWidth: 1,
     borderColor: colors.gray,
     borderRadius: 5,

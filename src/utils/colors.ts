@@ -2,7 +2,8 @@ import { Appearance, Dimensions, Platform } from "react-native"
 
 const colorScheme = Appearance.getColorScheme()
 
-export const isWeb = Platform.OS === "web" && Dimensions.get("window").width > 700
+export const isDesktop = Dimensions.get("window").width > 700
+export const isWeb = Platform.OS === "web" && isDesktop
 
 export const baseColors = {
   purple: "#6B46C1",

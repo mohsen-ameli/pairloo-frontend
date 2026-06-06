@@ -42,8 +42,7 @@ import useGradualAnimation from "@/src/utils/gradual-animation"
 import { userSecureAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
-import useCustomHeader from "@/src/utils/useCustomHeader"
-import { Stack, useFocusEffect } from "expo-router"
+import { useFocusEffect } from "expo-router"
 import { FlashList } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
@@ -73,7 +72,6 @@ export default function ChatDetails() {
   const chatRef = useRef<FlatList>(null)
   const inputRef = useRef<TextInput>(null!)
   const { height } = useGradualAnimation({ includeTabHeight: false })
-  const detailOptions = useCustomHeader({ title: "", inChat: true })
   const [loading, setLoading] = useAtom(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
   const otherUser = useRef<{
@@ -220,6 +218,14 @@ export default function ChatDetails() {
     })
   }
 
+  if (loading) {
+    return (
+      <View style={commonStyles.generalContainer}>
+        <LoadingIndicator loading={true} />
+      </View>
+    )
+  }
+
   if (!currentConversation) {
     return (
       <View style={commonStyles.generalContainer}>
@@ -233,9 +239,6 @@ export default function ChatDetails() {
 
   return (
     <>
-      <Stack.Screen options={detailOptions} />
-      <LoadingIndicator loading={loading} opacity={0.5} />
-
       <View style={commonStyles.generalContainer}>
         <FlatList
           inverted

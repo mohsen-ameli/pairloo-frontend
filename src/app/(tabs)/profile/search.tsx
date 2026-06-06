@@ -100,14 +100,14 @@ export default function SearchPage() {
                 <Pressable
                   style={{
                     position: "absolute",
-                    right: 10,
+                    right: 14,
                     backgroundColor: colors.lightGray,
-                    padding: 5,
+                    padding: 3,
                     borderRadius: 5,
                   }}
                   onPress={handleClear}
                 >
-                  <Feather name="x" size={24} color={colors.darkGray} />
+                  <Feather name="x" size={22} color={colors.darkGray} />
                 </Pressable>
               )}
             </View>
