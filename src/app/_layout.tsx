@@ -90,26 +90,6 @@ export default function RootLayout() {
   const initialUrlHandled = useRef(false)
   const router = useRouter()
 
-  // Purely for testing purposes to test if we can talk to the backend
-  useEffect(() => {
-    async function testBackend() {
-      if (NODE_ENV === "production") return
-      try {
-        await fetch(`${BASE_URL}/`)
-      } catch (e) {
-        const message = `Fetch request to backend failed ${BASE_URL}`
-        console.error(message)
-        Toast.show({
-          type: "error",
-          text1: message,
-          visibilityTime: Infinity,
-        })
-      }
-    }
-
-    testBackend()
-  }, [])
-
   // Notifications
   useEffect(() => {
     async function setupNotifications() {
@@ -148,6 +128,7 @@ export default function RootLayout() {
     }
   }, [userJwt])
 
+  // Setup deep linking and test backend connection on app load
   useEffect(() => {
     async function handleDeepLinks() {
       if (initialUrlHandled.current) return
@@ -191,6 +172,23 @@ export default function RootLayout() {
       initialUrlHandled.current = true
     }
 
+    // Purely for testing purposes to test if we can talk to the backend
+    async function testBackend() {
+      if (NODE_ENV === "production") return
+      try {
+        await fetch(`${BASE_URL}/`)
+      } catch (e) {
+        const message = `Fetch request to backend failed ${BASE_URL}`
+        console.error(message)
+        Toast.show({
+          type: "error",
+          text1: message,
+          visibilityTime: Infinity,
+        })
+      }
+    }
+
+    testBackend()
     handleDeepLinks()
     getDeviceInfo()
     setupAds()

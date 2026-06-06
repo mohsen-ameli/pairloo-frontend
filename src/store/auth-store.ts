@@ -95,7 +95,7 @@ const userSecureDefault: UserSecureType = {
   _id: "",
   isAuthenticated: false,
 }
-export const userSecureAtom = atomWithStorage("user-secure", null, userSecureStorage)
+export const userSecureAtom = atomWithStorage("user-secure", userSecureDefault, userSecureStorage)
 
 const userAsyncStorage = createJSONStorage<UserType>(() => AsyncStorage)
 export const userAtom = atomWithStorage("user-profile", null, userAsyncStorage)
@@ -195,6 +195,14 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
     const createPostSocket = get(createPostSocketAtom)
     createPostSocket?.disconnect()
     set(createPostSocketAtom, null)
+
+    // Clear cookies on web
+    if (Platform.OS === "web") {
+      await fetch(`${BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      })
+    }
   }
 
   if (!showAlert) {

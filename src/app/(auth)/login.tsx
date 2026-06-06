@@ -107,6 +107,9 @@ export default function LoginPage() {
         <Link push href="/forgot-email" style={styles.forgotLink}>
           Forgot email?
         </Link>
+        <Link push href="/register" style={styles.forgotLink}>
+          Don't have an account? Click to sign up.
+        </Link>
       </View>
 
       <View style={styles.pageContainer} key="1">
