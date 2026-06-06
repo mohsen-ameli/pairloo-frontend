@@ -1,7 +1,7 @@
 import { atom } from "jotai"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as SecureStore from "expo-secure-store"
-import { atomWithStorage, createJSONStorage, RESET } from "jotai/utils"
+import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
 import {
   AuthErrorType,
