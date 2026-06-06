@@ -206,6 +206,7 @@ export default function MapSelector() {
             placeholder="Search for a city"
             style={{
               color: colors.dark,
+              fontSize: 16,
               height: 40,
               paddingLeft: 10,
               paddingRight: 50,

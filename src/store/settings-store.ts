@@ -1,6 +1,5 @@
 import { atom } from "jotai"
 import { authFetchAtom, userAtom, userSecureAtom } from "./auth-store"
-import { Alert } from "react-native"
 import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
 

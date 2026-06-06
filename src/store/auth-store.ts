@@ -1,7 +1,7 @@
 import { atom } from "jotai"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as SecureStore from "expo-secure-store"
-import { atomWithStorage, createJSONStorage } from "jotai/utils"
+import { atomWithStorage, createJSONStorage, RESET } from "jotai/utils"
 import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
 import {
   AuthErrorType,
@@ -91,6 +91,10 @@ const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
     }
   },
 }))
+const userSecureDefault: UserSecureType = {
+  _id: "",
+  isAuthenticated: false,
+}
 export const userSecureAtom = atomWithStorage("user-secure", null, userSecureStorage)
 
 const userAsyncStorage = createJSONStorage<UserType>(() => AsyncStorage)
@@ -147,6 +151,7 @@ export const signUpAtom = atom(null, async (get, set) => {
     } else {
       set(userSecureAtom, {
         _id: data._id,
+        isAuthenticated: true,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
       })
@@ -174,7 +179,7 @@ export const signUpAtom = atom(null, async (get, set) => {
 export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false) => {
   async function logout() {
     await set(userAtom, null)
-    await set(userSecureAtom, null)
+    await set(userSecureAtom, userSecureDefault)
     await set(newUserAtom, newUser)
     set(returningUserAtom, returningUser)
     set(authErrorsAtom, null)
@@ -359,6 +364,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
       } else {
         set(userSecureAtom, {
           _id: data._id,
+          isAuthenticated: true,
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
         })

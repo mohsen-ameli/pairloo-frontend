@@ -1,6 +1,6 @@
 import { Children, ReactNode, useEffect, useState } from "react"
-import { Dimensions, Keyboard, Platform, Pressable, Text, View } from "react-native"
-import { colors } from "@/src/utils/colors"
+import { Keyboard, Pressable, Text, View } from "react-native"
+import { colors, isWeb } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
@@ -52,7 +52,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
     return {
       bottom: height.value + 10,
     }
-  }, [isAuthenticated])
+  }, [])
 
   return (
     <View style={commonStyles.generalContainer}>
@@ -110,7 +110,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
       {/* Next button */}
       <Animated.View
         style={
-          Platform.OS === "web" && Dimensions.get("window").width > 700
+          isWeb
             ? [
                 {
                   position: "absolute",
@@ -164,7 +164,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
       {currPage > 0 && (
         <Animated.View
           style={
-            Platform.OS === "web"
+            isWeb
               ? [
                   {
                     position: "absolute",

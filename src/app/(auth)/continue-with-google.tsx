@@ -67,6 +67,7 @@ export default function ContinueWithGoogle({
 
     setUserJwt({
       _id: userData._id,
+      isAuthenticated: true,
       accessToken: userData.accessToken,
       refreshToken: userData.refreshToken,
     })
