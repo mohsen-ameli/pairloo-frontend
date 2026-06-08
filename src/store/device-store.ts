@@ -16,6 +16,14 @@ export const blockedTimerAtom = atom(0)
 export const blockedIntervalAtom = atom(0)
 export const isBlockedAtom = atom(false)
 
+export const getBlockedAttemptsAtom = atom(get => {
+  const blockedTimer = get(blockedTimerAtom)
+
+  if (!blockedTimer) return ""
+
+  return `Too many attempts. Try again in ${Math.floor(blockedTimer / 60)}:${blockedTimer % 60 < 10 ? "0" : ""}${blockedTimer % 60} ${blockedTimer > 60 ? "minutes" : "seconds"}.`
+})
+
 // Store a singleton device info object in secure storage, which can be used for rate limiting login attempts.
 export const getDeviceInfoAtom = atom(null, async (get, set) => {
   let item: string | null

@@ -163,7 +163,6 @@ export default function PhoneNumber() {
         autoComplete="off"
         keyboardType="number-pad"
         maxLength={14}
-        defaultValue={newUser.phoneNumber}
         onChangeText={text => {
           setNewUser({
             ...newUser,

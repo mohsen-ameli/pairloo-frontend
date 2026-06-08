@@ -338,7 +338,7 @@ export default function ChatDetails() {
       )}
 
       {/* Input Area */}
-      <View style={chatStyles.inputContainer}>
+      <View style={[chatStyles.inputContainer, commonStyles.container]}>
         <Pressable
           onPress={() => {
             Keyboard.dismiss()

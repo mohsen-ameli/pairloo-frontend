@@ -25,13 +25,10 @@ export type UserType = null | {
   email: string
   expoPushToken?: string
   savedPosts?: string[]
-  createdAt: Date
-  updatedAt: Date
-}
-
-export type MyUserType = UserType & {
   followersCount: number
   followingCount: number
+  createdAt: Date
+  updatedAt: Date
 }
 
 export type GeneralUserProfileType = UserType & {
@@ -89,58 +86,5 @@ export type AuthResponseType = {
   _id: string
   accessToken?: string
   refreshToken?: string
-  issuedAt: number
-  expiresAt: number
   errors?: AuthErrorType
-}
-
-// Response type from backend after successful authentication
-// Will be broken up into the jwt portion and the user profile
-export type RegisteredUserType = {
-  errors?: AuthErrorType
-  _id: string
-  username: string
-  firstName: string
-  lastName: string
-  picture: string
-  phoneNumber: string
-  country: string
-  city: string
-  state: string
-  latitude: number
-  longitude: number
-  timezone: string
-  locationId: number
-  email: string
-  createdAt: Date
-  updatedAt: Date
-  accessToken?: string
-  refreshToken?: string
-}
-
-// Type of a new user being registered
-export type NewUserType = {
-  username: string
-  firstName: string
-  lastName: string
-  picture: string
-  pictureBlob: Blob | null
-  pictureMimeType: string
-  email: string
-  emailCode: string
-  emailVerified: boolean
-  phoneNumber: string
-  phoneCode: string
-  phoneVerified: boolean
-  country: string
-  city: string
-  state: string
-  location: {
-    type: string
-    coordinates: [number, number] // [longitude, latitude]
-  }
-  timezone: string
-  locationId: number
-  cca2: string
-  callingCode: string
 }

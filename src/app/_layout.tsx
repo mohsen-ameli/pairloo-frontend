@@ -69,7 +69,11 @@ const toastConfig = {
 
 export default function RootLayout() {
   const loginOptions = useCustomHeader({ title: "Log In", includeBottomPadding: true })
-  const registerOptions = useCustomHeader({ title: "Create Account", includeBottomPadding: true })
+  const registerOptions = useCustomHeader({
+    title: "Create Account",
+    includeBottomPadding: true,
+    isRegister: true,
+  })
   const forgotEmailOptions = useCustomHeader({ title: "Forgot Email", includeBottomPadding: true })
   const chatOptions = useCustomHeader({ title: "Chat", inChat: true })
   const myPostOptions = useCustomHeader({ title: "My Post" })

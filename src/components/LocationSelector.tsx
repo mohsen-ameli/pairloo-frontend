@@ -17,15 +17,17 @@ import { useFocusEffect } from "expo-router"
 export default function LocationSelector({
   onLocationChange,
   mandatory = false,
+  defaultValue = "Click to select city",
   errors,
 }: {
   onLocationChange: (locationObj: City) => void
+  defaultValue?: string
   mandatory?: boolean
   errors?: string
 }) {
   const user = useAtomValue(userAtom)
 
-  const [locationInput, setLocationInput] = useState("Click to select city")
+  const [locationInput, setLocationInput] = useState(defaultValue)
   const [cities, setCities] = useState<City[]>([])
   const [showModal, setShowModal] = useState(false)
   const [citySearchInput, setCitySearchInput] = useState("")

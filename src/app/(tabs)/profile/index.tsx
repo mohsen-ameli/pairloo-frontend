@@ -23,7 +23,7 @@ import CustomLabel from "@/src/components/CustomLabel"
 import { MyPostMenu } from "@/src/components/MyPostMenu"
 import { getScoreColor } from "@/src/utils/get-color"
 import Feather from "@expo/vector-icons/Feather"
-import { MyUserType, ReviewsType } from "@/src/types/user.type"
+import { ReviewsType } from "@/src/types/user.type"
 import { MyProfilePostType, GeneralPostType } from "@/src/types/post.type"
 import { profileStyles } from "@/src/styles/profile.styles"
 import { savedPostIdsAtom, unsavePostAtom } from "@/src/store/post-detail-store"
@@ -42,18 +42,6 @@ export default function ProfileScreen() {
   const [activeView, setActiveView] = useState<"posts" | "reviews" | "savedPosts">("posts")
   const [containerWidth, setContainerWidth] = useState(0)
   const slideAnim = useRef(new Animated.Value(0)).current
-
-  const {
-    data: myUser,
-    isError: isMyUserError,
-    isPending: isMyUserPending,
-  } = useQuery({ queryKey: ["my-user"], queryFn: fetchMyUser })
-
-  async function fetchMyUser() {
-    const res = await authFetch("/api/users/my-user/")
-    const data: MyUserType = await res.json()
-    return data
-  }
 
   const {
     data: reviews,
@@ -120,7 +108,7 @@ export default function ProfileScreen() {
 
   if (!user) return null
 
-  if (isPostsPending || isReviewsPending || isMyUserPending) {
+  if (isPostsPending || isReviewsPending) {
     return (
       <View style={commonStyles.generalContainer}>
         <LoadingIndicator loading={true} />
@@ -128,7 +116,7 @@ export default function ProfileScreen() {
     )
   }
 
-  if (isPostsError || isReviewsError || isMyUserError || !myUser || !reviews) {
+  if (isPostsError || isReviewsError || !reviews) {
     return (
       <View style={commonStyles.generalContainer}>
         <Text style={commonStyles.errorText}>Error loading profile. Please try again.</Text>
@@ -169,7 +157,7 @@ export default function ProfileScreen() {
               })
             }
           >
-            <Text style={profileStyles.socialPressableCount}>{myUser.followersCount}</Text>
+            <Text style={profileStyles.socialPressableCount}>{user.followersCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Followers</Text>
           </Pressable>
           <Pressable
@@ -181,7 +169,7 @@ export default function ProfileScreen() {
               })
             }
           >
-            <Text style={profileStyles.socialPressableCount}>{myUser.followingCount}</Text>
+            <Text style={profileStyles.socialPressableCount}>{user.followingCount}</Text>
             <Text style={profileStyles.socialPressableLabel}>Following</Text>
           </Pressable>
           {reviews.ratingCount > 0 && (

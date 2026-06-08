@@ -72,6 +72,9 @@ Call the following snippet to erase old data from AsyncStorage in a dummy useEff
 AsyncStorage.multiRemove(["name-of-storage"])
 ```
 
+If any JWT token is involved with the web version of the app, you MUST have credentials: "include" set in the fetch. This should already
+be the case wherever we use fetch, but it's a very important detail.
+
 ## Libraries and Assets used
 
 New chat message notification sound:

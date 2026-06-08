@@ -11,7 +11,7 @@ export const BLOCK_TIME = NODE_ENV === "development" ? 10 * 1000 : 5 * 60 * 1000
 export const MAX_ATTEMPTS = 12 // attempts before blocking
 
 export const TAB_HEIGHT = 83
-export const REGISTER_USERNAME_CHECK_INTERVAL = 500 // milliseconds
+export const REGISTER_USERNAME_CHECK_INTERVAL = 1000 // milliseconds
 
 export const MINIMUM_SHORT_ANSWER_LENGTH = 1
 

@@ -1,4 +1,4 @@
-import { fetchUserInfoAtom, userAtom } from "@/src/store/auth-store"
+import { userAtom } from "@/src/store/auth-store"
 import { initChatAtom, unreadMessagesAtom } from "@/src/store/chat-store"
 import { initCreatePostAtom } from "@/src/store/create-post-store"
 import { pathStore } from "@/src/store/general-store"
@@ -19,18 +19,15 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function ProtectedLayout() {
   const initChatConnection = useSetAtom(initChatAtom)
   const initCreatePost = useSetAtom(initCreatePostAtom)
-  const user = useAtomValue(userAtom)
   const pathname = usePathname()
   const setPath = useSetAtom(pathStore)
   const unreadMessages = useAtomValue(unreadMessagesAtom)
   const [numUnreadMessages, setNumUnreadMessages] = useState(0)
   const player = useAudioPlayer(audioSource)
   const setNotificationSound = useSetAtom(notificationSoundAtom)
-  const fetchUserInfo = useSetAtom(fetchUserInfoAtom)
   const insets = useSafeAreaInsets()
 
   useEffect(() => {
-    fetchUserInfo()
     setNotificationSound(player)
     initChatConnection()
     initCreatePost()
@@ -48,8 +45,6 @@ export default function ProtectedLayout() {
   useEffect(() => {
     setPath(pathname)
   }, [pathname])
-
-  if (!user) return null
 
   return (
     <Tabs
@@ -121,19 +116,25 @@ export default function ProtectedLayout() {
           tabBarLabelStyle: {
             marginTop: 2,
           },
-          tabBarIcon: ({ color, size }) => (
-            <Image
-              source={user.picture ? { uri: user.picture } : defaultProfilePicture}
-              style={{
-                width: size + 3,
-                height: size + 3,
-                borderRadius: 25,
-              }}
-              contentFit="contain"
-            />
-          ),
+          tabBarIcon: ({ color, size }) => <ProfileTab size={size} />,
         }}
       />
     </Tabs>
+  )
+}
+
+function ProfileTab({ size }: { size: number }) {
+  const user = useAtomValue(userAtom)
+
+  return (
+    <Image
+      source={user?.picture ? { uri: user?.picture } : defaultProfilePicture}
+      style={{
+        width: size + 3,
+        height: size + 3,
+        borderRadius: 25,
+      }}
+      contentFit="contain"
+    />
   )
 }

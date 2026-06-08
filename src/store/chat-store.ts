@@ -51,7 +51,7 @@ export const currentLongPressedMessageAtom = atom<ReplyTo | null>(null)
 export const editingMessageAtom = atom<ReplyTo | null>(null)
 
 export const initChatAtom = atom(null, async (get, set) => {
-  const user = await get(userAtom)
+  const user = get(userAtom)
   const userJwt = await get(userSecureAtom)
   if (!user || !userJwt) return
   const currSocket = get(chatSocketAtom)
@@ -322,7 +322,7 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
   const editingMessage = get(editingMessageAtom)
   const attachments = get(chatAttachmentsAtom)
   const socket = get(chatSocketAtom)
-  const user = await get(userAtom)
+  const user = get(userAtom)
   const userSecure = await get(userSecureAtom)
   const currentConversation = get(currentConversationAtom)
 
@@ -404,7 +404,7 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
 
 export const sendAttachmentAtom = atom(null, async (get, set, option: "library" | "camera") => {
   const socket = get(chatSocketAtom)
-  const user = await get(userAtom)
+  const user = get(userAtom)
   if (!socket || !user) return
 
   // get the attachments

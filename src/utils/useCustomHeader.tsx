@@ -21,7 +21,7 @@ import {
   messagesAtom,
   loadingAtom as chatLoadingAtom,
 } from "@/src/store/chat-store"
-import { userSecureAtom } from "@/src/store/auth-store"
+import { resetRegistrationAtom, userSecureAtom } from "@/src/store/auth-store"
 import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
 import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post-detail-store"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
@@ -39,6 +39,7 @@ export default function useCustomHeader({
   title,
   postId,
   inChat = false,
+  isRegister = false,
   createPost = false,
   isPostDetails = false,
   isMyPostDetails = false,
@@ -49,6 +50,7 @@ export default function useCustomHeader({
   title: string
   postId?: string
   inChat?: boolean
+  isRegister?: boolean
   createPost?: boolean
   isPostDetails?: boolean
   isMyPostDetails?: boolean
@@ -84,6 +86,13 @@ export default function useCustomHeader({
         backgroundColor: colors.lightGray,
       },
       header: () => <ChatHeader />,
+    }
+  }
+
+  if (isRegister) {
+    return {
+      ...options,
+      headerRight: () => <RegisterHeader />,
     }
   }
 
@@ -289,6 +298,16 @@ function ChatHeader() {
 
       {isWeb && <View style={{ width: 40, height: 40 }} />}
     </View>
+  )
+}
+
+function RegisterHeader() {
+  const discardRegistration = useSetAtom(resetRegistrationAtom)
+
+  return (
+    <Pressable onPress={discardRegistration} style={{ padding: 6 }}>
+      <Feather name="trash-2" size={24} color={colors.dark} />
+    </Pressable>
   )
 }
 

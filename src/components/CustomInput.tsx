@@ -7,6 +7,8 @@ interface Props extends TextInputProps {
   title?: string
   mandatory?: boolean
   errors?: React.ReactNode
+  information?: React.ReactNode
+  success?: React.ReactNode
   inputRef?: React.RefObject<TextInput>
   headerStyles?: TextInputProps["style"]
 }
@@ -15,6 +17,8 @@ export default function CustomInput({
   title,
   mandatory,
   errors,
+  information,
+  success,
   inputRef,
   headerStyles,
   ...rest
@@ -45,6 +49,8 @@ export default function CustomInput({
         ]}
       />
       {errors && <Text style={inputStyles.errors}>{errors}</Text>}
+      {information && <Text style={inputStyles.information}>{information}</Text>}
+      {success && <Text style={inputStyles.success}>{success}</Text>}
     </View>
   )
 }

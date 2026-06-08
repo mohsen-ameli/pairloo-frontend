@@ -7,12 +7,12 @@ import {
 import { useRouter } from "expo-router"
 import { useAtom, useSetAtom } from "jotai"
 import { useEffect } from "react"
-import { Platform, View } from "react-native"
+import { Platform } from "react-native"
 import CustomButton from "@/src/components/CustomButton"
-import { fetchUserInfoAtom, newUserAtom, userSecureAtom } from "@/src/store/auth-store"
+import { newUserAtom, NewUserType, userSecureAtom } from "@/src/store/auth-store"
 import { BASE_URL } from "@/src/utils/constants"
-import { AuthResponseType, NewUserType } from "@/src/types/user.type"
-import Toast from "react-native-toast-message"
+import { AuthResponseType } from "@/src/types/user.type"
+import { greetAtom } from "@/src/store/general-store"
 
 const config: AuthRequestConfig = {
   clientId: "google",
@@ -30,11 +30,11 @@ export default function ContinueWithGoogle({
 }: {
   setLoading: (loading: boolean) => void
 }) {
+  const router = useRouter()
   const setUserJwt = useSetAtom(userSecureAtom)
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [request, response, promptAsync] = useAuthRequest(config, discovery)
-  const router = useRouter()
-  const fetchUserInfo = useSetAtom(fetchUserInfoAtom)
+  const setGreet = useSetAtom(greetAtom)
 
   async function handleResponse() {
     if (!response || response.type !== "success") {
@@ -65,24 +65,17 @@ export default function ContinueWithGoogle({
 
     const userData: AuthResponseType = await res.json()
 
-    setUserJwt({
+    await setUserJwt({
       _id: userData._id,
       isAuthenticated: true,
       accessToken: userData.accessToken,
       refreshToken: userData.refreshToken,
     })
 
-    const user = await fetchUserInfo()
-
+    setGreet(curr => !curr)
     router.replace("/")
 
-    Toast.show({
-      type: "success",
-      text1: "Welcome back, " + user?.username + "!",
-      text1Style: { fontSize: 16, fontWeight: "bold" },
-      position: "top",
-      visibilityTime: 3000,
-    })
+    return
   }
 
   useEffect(() => {

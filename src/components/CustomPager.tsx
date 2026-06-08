@@ -30,9 +30,8 @@ export default function CustomPager({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!containerWidth) return
-    const toValue = Math.min(-currPage * containerWidth - 10, -10)
 
-    translateX.value = withTiming(toValue, {
+    translateX.value = withTiming(-currPage * containerWidth - 10, {
       duration: 300,
       easing: Easing.out(Easing.quad),
     })

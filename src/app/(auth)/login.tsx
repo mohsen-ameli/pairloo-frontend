@@ -13,8 +13,7 @@ import {
   verifyEmailCodeAtom,
   returningUserAtom,
 } from "@/src/store/auth-store"
-import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
-import BlockedAttempts from "@/src/components/BlockedAttempts"
+import { checkIfBlockedAtom, getBlockedAttemptsAtom, isBlockedAtom } from "@/src/store/device-store"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
 
@@ -26,6 +25,7 @@ export default function LoginPage() {
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const [flow, setFlow] = useAtom(flowAtom)
   const timeRemaining = useAtomValue(resendTimerAtom)
+  const getBlockedAttempts = useAtomValue(getBlockedAttemptsAtom)
   const [returningUser, setReturningUser] = useAtom(returningUserAtom)
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
@@ -90,7 +90,7 @@ export default function LoginPage() {
         <Text style={styles.title}>Welcome Back!</Text>
         <CustomInput
           title="Email Address"
-          errors={errors?.email || (isBlocked ? <BlockedAttempts /> : null)}
+          errors={errors?.email || (isBlocked ? getBlockedAttempts : null)}
           editable={!isBlocked}
           value={returningUser.email}
           autoFocus
