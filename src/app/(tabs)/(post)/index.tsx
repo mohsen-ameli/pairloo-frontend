@@ -1,4 +1,4 @@
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { useRouter } from "expo-router"
 import { Text, View, RefreshControl, Pressable, ActivityIndicator } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -27,7 +27,7 @@ export default function Index() {
   const { data: posts, isError, isPending } = useQuery({ queryKey: ["feed"], queryFn: fetchPosts })
   const { data: user } = useQuery({ queryKey: ["my-user"], queryFn: fetchMyUser })
   const setUser = useSetAtom(userAtom)
-  const greet = useAtomValue(greetAtom)
+  const [greet, setGreet] = useAtom(greetAtom)
 
   async function fetchMyUser() {
     const res = await authFetch("/api/users/my-user/")
@@ -38,7 +38,7 @@ export default function Index() {
 
   // Greet the user
   useEffect(() => {
-    if (!user) return
+    if (!user || !greet) return
 
     Toast.show({
       type: "success",
@@ -47,6 +47,7 @@ export default function Index() {
       position: "top",
       visibilityTime: 3000,
     })
+    setGreet(false)
   }, [greet, user])
 
   async function fetchPosts() {
