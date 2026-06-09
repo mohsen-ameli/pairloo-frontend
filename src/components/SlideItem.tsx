@@ -26,7 +26,6 @@ export function SlideItem({
   return (
     <Pressable
       style={{
-        width: isWeb ? 600 : "100%",
         height: isWeb ? 500 : 300,
         borderRadius: 8,
       }}
