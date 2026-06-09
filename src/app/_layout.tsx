@@ -75,9 +75,13 @@ export default function RootLayout() {
     isRegister: true,
   })
   const forgotEmailOptions = useCustomHeader({ title: "Forgot Email", includeBottomPadding: true })
-  const chatOptions = useCustomHeader({ title: "Chat", inChat: true })
+  const chatOptions = useCustomHeader({ title: "Chat", inChat: true, includeBottomPadding: true })
   const myPostOptions = useCustomHeader({ title: "My Post" })
-  const postDetailsOptions = useCustomHeader({ title: "Post Details", isPostDetails: true })
+  const postDetailsOptions = useCustomHeader({
+    title: "Post Details",
+    isPostDetails: true,
+    includeBottomPadding: true,
+  })
   const generalProfileOptions = useCustomHeader({ title: "" })
   const insets = useSafeAreaInsets()
 

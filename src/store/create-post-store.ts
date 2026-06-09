@@ -70,7 +70,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
       token: userJwt.accessToken || "",
     },
     transports: ["websocket", "polling"],
-    reconnectionAttempts: 5,
     reconnectionDelay: 2000,
   })
 
@@ -90,7 +89,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   })
 
   socket.on("connect", () => {
-    set(loadingAtom, false)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     set(qnaAtom, null)
     set(currPageAtom, 0)

@@ -75,16 +75,14 @@ export default function useCustomHeader({
           paddingBottom: insets.bottom,
           backgroundColor: colors.light,
         }
-      : {},
+      : {
+          backgroundColor: colors.light,
+        },
   }
 
   if (inChat) {
     return {
       ...options,
-      contentStyle: {
-        paddingBottom: insets.bottom,
-        backgroundColor: colors.lightGray,
-      },
       header: () => <ChatHeader />,
     }
   }
@@ -106,10 +104,6 @@ export default function useCustomHeader({
   if (isPostDetails) {
     return {
       ...options,
-      contentStyle: {
-        paddingBottom: insets.bottom,
-        backgroundColor: colors.light,
-      },
       headerRight: () => <PostDetailsHeader />,
     }
   }

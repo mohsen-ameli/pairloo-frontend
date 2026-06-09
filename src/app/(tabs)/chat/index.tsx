@@ -64,7 +64,7 @@ export default function index() {
     )
   }
 
-  if (!socket || socket.connected === false) {
+  if (!socket || !socket.connected) {
     return (
       <View style={commonStyles.generalContainer}>
         <Text style={commonStyles.errorText}>An error occured. Please try again.</Text>
