@@ -272,7 +272,7 @@ export const requestEmailVerificationAtom = atom(
       set(currPageAtom, curr => curr + 1)
     }
     set(incrementAttemptsAtom)
-    clearInterval(currentAttempt?.[1] || undefined)
+    clearInterval(currentAttempt?.[1])
 
     const intervalId = setInterval(() => {
       set(resendTimerAtom, prev => {
@@ -304,6 +304,9 @@ export const requestEmailVerificationAtom = atom(
           email: data.error,
         })
         set(resendTimerAtom, 0)
+        setTimeout(() => {
+          set(currPageAtom, isSignUp ? 2 : 0)
+        }, 500)
         return
       }
 
@@ -324,6 +327,9 @@ export const requestEmailVerificationAtom = atom(
         ...errors,
         email: "Failed to send verification code",
       })
+      setTimeout(() => {
+        set(currPageAtom, isSignUp ? 2 : 0)
+      }, 500)
     }
   }
 )

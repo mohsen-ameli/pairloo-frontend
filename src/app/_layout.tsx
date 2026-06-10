@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { setupAds } from "@/src/store/ad-store"
 import { KeyboardProvider } from "react-native-keyboard-controller"
 import { BASE_URL, NODE_ENV } from "@/src/utils/constants"
+import "./global.css"
 
 LogBox.ignoreAllLogs()
 maybeCompleteAuthSession()
