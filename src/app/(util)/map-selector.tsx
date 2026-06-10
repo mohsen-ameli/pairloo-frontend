@@ -165,7 +165,7 @@ export default function MapSelector() {
   }, [settings.location])
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, paddingBottom: Platform.OS === "android" ? insets.bottom : "auto" }}>
       <View
         style={{
           position: "absolute",
@@ -206,6 +206,7 @@ export default function MapSelector() {
             placeholder="Search for a city"
             style={{
               color: colors.dark,
+              fontSize: 16,
               height: 40,
               paddingLeft: 10,
               paddingRight: 50,
@@ -302,7 +303,7 @@ export default function MapSelector() {
       <View
         style={{
           position: "absolute",
-          bottom: insets.bottom + (Platform.OS === "ios" ? 30 : 10),
+          bottom: insets.bottom + (Platform.OS === "ios" ? 40 : 35),
           left: 10,
           right: 10,
           zIndex: 1,
@@ -432,25 +433,27 @@ export default function MapSelector() {
         )
       )}
 
-      <View
-        style={{
-          ...StyleSheet.absoluteFillObject,
-          justifyContent: "center",
-          alignItems: "center",
-          pointerEvents: "none",
-        }}
-      >
+      {!isLoading && (
         <View
           style={{
-            width: 300,
-            height: 300,
-            borderRadius: 150,
-            backgroundColor: "rgba(128, 0, 128, 0.2)",
-            borderColor: colors.purple,
-            borderWidth: 2,
+            ...StyleSheet.absoluteFillObject,
+            justifyContent: "center",
+            alignItems: "center",
+            pointerEvents: "none",
           }}
-        ></View>
-      </View>
+        >
+          <View
+            style={{
+              width: 300,
+              height: 300,
+              borderRadius: 150,
+              backgroundColor: "rgba(128, 0, 128, 0.2)",
+              borderColor: colors.purple,
+              borderWidth: 2,
+            }}
+          ></View>
+        </View>
+      )}
     </View>
   )
 }

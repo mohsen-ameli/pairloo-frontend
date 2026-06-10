@@ -30,6 +30,17 @@ export type GeneralPostType = {
   status: StatusType
 }
 
+export interface MyProfilePostType {
+  _id: string
+  images: string[]
+  title: string
+  description: string
+  publicPost: boolean
+  status: StatusType
+  topMatchingPostScore?: number | null
+  createdAt: Date
+}
+
 export interface MyPostType {
   _id: string
   images: string[]

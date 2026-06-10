@@ -9,11 +9,11 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
     "app.config.ts",
     "babel.config.js",
-    "metro.config.cjs"
+    "metro.config.cjs",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ],
   "exclude": ["**/node_modules", "**/.*/"]
 }

@@ -3,37 +3,26 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as SecureStore from "expo-secure-store"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
 import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
-import {
-  AuthErrorType,
-  AuthResponseType,
-  NewUserType,
-  RegisteredUserType,
-  UserSecureType,
-  UserType,
-} from "@/src/types/user.type"
+import { AuthErrorType, AuthResponseType, UserSecureType, UserType } from "@/src/types/user.type"
 import { chatSocketAtom, createPostSocketAtom } from "./socket-store"
 import z from "zod"
 import { currPageAtom, flowAtom, resetPagerAtom } from "./pager-store"
 import { Alert, Platform } from "react-native"
 import { router } from "expo-router"
-import { getAttachmentAtom } from "./general-store"
+import { getAttachmentAtom, greetAtom } from "./general-store"
 import Toast from "react-native-toast-message"
 import { FetchRequestInit } from "expo/fetch"
 import { incrementAttemptsAtom, resetDeviceInfoAtom } from "./device-store"
 
+// For the login process
 const returningUser = {
   email: "",
   emailCode: "",
 }
-const returningUserStorage = createJSONStorage<typeof returningUser>(() => AsyncStorage)
-export const returningUserAtom = atomWithStorage(
-  "returning-user",
-  returningUser,
-  returningUserStorage
-)
+export const returningUserAtom = atom(returningUser)
 
 // For the sign up process
-const newUser: NewUserType = {
+const newUser = {
   username: "",
   firstName: "",
   lastName: "",
@@ -58,8 +47,8 @@ const newUser: NewUserType = {
   cca2: "CA",
   callingCode: "1",
 }
-const newUserStorage = createJSONStorage<NewUserType>(() => AsyncStorage)
-export const newUserAtom = atomWithStorage("new-user", newUser, newUserStorage)
+export type NewUserType = typeof newUser
+export const newUserAtom = atom(newUser)
 
 export const authErrorsAtom = atom<AuthErrorType | null>(null)
 
@@ -67,7 +56,6 @@ export const resendTimerAtom = atom(0) // remaining seconds before verification 
 export const emailAttemptsAtom = atom(null as [string, number] | null) // [email, intervalId] singular
 export const phoneAttemptsAtom = atom(null as [string, number] | null) // [phone, intervalId] singular
 
-// user atom
 const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
   getItem: async (key: string) => {
     if (Platform.OS === "web") {
@@ -91,14 +79,47 @@ const userSecureStorage = createJSONStorage<UserSecureType>(() => ({
     }
   },
 }))
-export const userSecureAtom = atomWithStorage("user-secure", null, userSecureStorage)
+const userSecureDefault: UserSecureType = {
+  _id: "",
+  isAuthenticated: false,
+}
+// User secure atom that contains _id, and JWT tokens (if on native)
+export const userSecureAtom = atomWithStorage("user-secure", userSecureDefault, userSecureStorage)
 
-const userAsyncStorage = createJSONStorage<UserType>(() => AsyncStorage)
-export const userAtom = atomWithStorage("user-profile", null, userAsyncStorage)
+// User atom with storage that contains user info
+export const userAtom = atom<UserType>(null)
+
+export const resetRegistrationAtom = atom(null, async (get, set) => {
+  async function discard() {
+    set(newUserAtom, newUser)
+    set(returningUserAtom, returningUser)
+    set(authErrorsAtom, null)
+    set(resetPagerAtom)
+  }
+
+  if (Platform.OS === "web") {
+    if (window.confirm("Are you sure you want to discard the registration?")) {
+      discard()
+    }
+    return
+  }
+
+  Alert.alert("Discard Registration", "Are you sure you want to discard the registration?", [
+    {
+      text: "Cancel",
+      style: "cancel",
+    },
+    {
+      text: "Discard",
+      style: "destructive",
+      onPress: discard,
+    },
+  ])
+})
 
 export const signUpAtom = atom(null, async (get, set) => {
   try {
-    const userData = await get(newUserAtom)
+    const userData = get(newUserAtom)
     const payload = {
       username: userData.username,
       firstName: userData.firstName,
@@ -112,6 +133,7 @@ export const signUpAtom = atom(null, async (get, set) => {
       latitude: userData.location.coordinates[1],
       timezone: userData.timezone,
       locationId: userData.locationId,
+      platform: Platform.OS,
     }
 
     const formData = new FormData()
@@ -120,61 +142,46 @@ export const signUpAtom = atom(null, async (get, set) => {
       if (value) formData.append(key, value.toString())
     })
 
-    if (userData.picture) {
-      const extension = (userData.pictureMimeType || "image/jpeg").split("/")[1] || "jpg"
-      formData.append("picture", {
-        uri: userData.picture,
-        name: `profile.${extension}`,
-        type: userData.pictureMimeType || "image/jpeg",
-      } as any)
-    } else if (userData.pictureBlob) {
-      formData.append("picture", userData.pictureBlob, "profile.jpg")
+    if (userData.pictureBlob) {
+      formData.append("picture", userData.pictureBlob)
+    } else if (userData.picture) {
+      formData.append("picture", userData.picture)
     }
 
     const res = await fetch(`${BASE_URL}/api/auth/signup`, {
       method: "POST",
       body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      credentials: Platform.OS === "web" ? "include" : "same-origin",
     })
-    const data: RegisteredUserType = await res.json()
+    const data: AuthResponseType = await res.json()
 
     if (!res.ok && data.errors) {
       set(authErrorsAtom, data.errors)
-      return false
+      return
     } else {
-      set(userSecureAtom, {
-        _id: data._id,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-      })
-      set(fetchUserInfoAtom)
-      set(authErrorsAtom, null)
+      await set(userSecureAtom, { ...data, isAuthenticated: true })
+      set(returningUserAtom, returningUser)
       set(newUserAtom, newUser)
+      await set(resetDeviceInfoAtom)
+      set(authErrorsAtom, null)
       set(resetPagerAtom)
-      set(resetDeviceInfoAtom)
-      Toast.show({
-        type: "success",
-        text1: "Welcome, " + userData.username + "!",
-        text1Style: { fontSize: 16, fontWeight: "bold" },
-        position: "top",
-        visibilityTime: 3000,
-      })
+
+      set(greetAtom, curr => !curr)
       router.replace("/")
-      return true
+
+      return
     }
   } catch (error: any) {
     set(authErrorsAtom, { ...get(authErrorsAtom), general: error.message })
-    return false
+    return
   }
 })
 
 export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false) => {
   async function logout() {
-    await set(userAtom, null)
-    await set(userSecureAtom, null)
-    await set(newUserAtom, newUser)
+    set(userAtom, null)
+    await set(userSecureAtom, userSecureDefault)
+    set(newUserAtom, newUser)
     set(returningUserAtom, returningUser)
     set(authErrorsAtom, null)
     set(resetPagerAtom)
@@ -189,6 +196,14 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
     const createPostSocket = get(createPostSocketAtom)
     createPostSocket?.disconnect()
     set(createPostSocketAtom, null)
+
+    // Clear cookies on web
+    if (Platform.OS === "web") {
+      await fetch(`${BASE_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      })
+    }
   }
 
   if (!showAlert) {
@@ -218,12 +233,12 @@ export const requestEmailVerificationAtom = atom(
   async (get, set, isSignUp: boolean, resending: boolean) => {
     const errors = get(authErrorsAtom)
     const flow = get(flowAtom)
-    const returningUser = await get(returningUserAtom)
+    const returningUser = get(returningUserAtom)
 
     let email: string
 
     if (isSignUp) {
-      const newUser = await get(newUserAtom)
+      const newUser = get(newUserAtom)
       email = newUser.email
     } else {
       email = returningUser.email
@@ -253,6 +268,25 @@ export const requestEmailVerificationAtom = atom(
     }
 
     set(resendTimerAtom, VERIFICATION_RESEND_TIME) // to immediately disable the resend button
+    if (!resending) {
+      set(currPageAtom, curr => curr + 1)
+    }
+    set(incrementAttemptsAtom)
+    clearInterval(currentAttempt?.[1])
+
+    const intervalId = setInterval(() => {
+      set(resendTimerAtom, prev => {
+        if (prev <= 1) {
+          if (intervalId) {
+            clearInterval(intervalId)
+            set(emailAttemptsAtom, null)
+          }
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    set(emailAttemptsAtom, [email, intervalId])
 
     try {
       const res = await fetch(`${BASE_URL}/api/auth/request-email-verification`, {
@@ -270,30 +304,13 @@ export const requestEmailVerificationAtom = atom(
           email: data.error,
         })
         set(resendTimerAtom, 0)
+        setTimeout(() => {
+          set(currPageAtom, isSignUp ? 2 : 0)
+        }, 500)
         return
       }
 
-      if (!resending) {
-        set(currPageAtom, curr => curr + 1)
-      }
       set(authErrorsAtom, { ...errors, email: undefined, emailVerify: undefined })
-      set(returningUserAtom, { ...returningUser, email, emailCode: "" })
-      set(incrementAttemptsAtom)
-      clearInterval(currentAttempt?.[1] || undefined)
-
-      const intervalId = setInterval(() => {
-        set(resendTimerAtom, prev => {
-          if (prev <= 1) {
-            if (intervalId) {
-              clearInterval(intervalId)
-              set(emailAttemptsAtom, null)
-            }
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-      set(emailAttemptsAtom, [email, intervalId])
 
       if (res.ok && resending) {
         Toast.show({
@@ -310,6 +327,9 @@ export const requestEmailVerificationAtom = atom(
         ...errors,
         email: "Failed to send verification code",
       })
+      setTimeout(() => {
+        set(currPageAtom, isSignUp ? 2 : 0)
+      }, 500)
     }
   }
 )
@@ -317,8 +337,8 @@ export const requestEmailVerificationAtom = atom(
 export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean) => {
   const errors = get(authErrorsAtom)
   const flow = get(flowAtom)
-  const returningUser = await get(returningUserAtom)
-  const newUser = await get(newUserAtom)
+  const returningUser = get(returningUserAtom)
+  const newUser = get(newUserAtom)
 
   let email: string, code: string
 
@@ -356,26 +376,15 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
         set(currPageAtom, curr => curr + 1)
         set(newUserAtom, { ...newUser, emailVerified: true })
       } else {
-        set(userSecureAtom, {
-          _id: data._id,
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-        })
-        const user = await set(fetchUserInfoAtom)
+        await set(userSecureAtom, { ...data, isAuthenticated: true })
         set(authErrorsAtom, null)
         set(returningUserAtom, returningUser)
         set(resetPagerAtom)
         set(resetDeviceInfoAtom)
 
+        set(greetAtom, curr => !curr)
         router.replace("/")
 
-        Toast.show({
-          type: "success",
-          text1: "Welcome back, " + user?.username + "!",
-          text1Style: { fontSize: 16, fontWeight: "bold" },
-          position: "top",
-          visibilityTime: 3000,
-        })
         return
       }
     } else if (data.errors && data.errors.general) {
@@ -396,7 +405,7 @@ export const verifyEmailCodeAtom = atom(null, async (get, set, isSignUp: boolean
 export const requestPhoneNumberVerificationAtom = atom(
   null,
   async (get, set, resending: boolean) => {
-    const newUser = await get(newUserAtom)
+    const newUser = get(newUserAtom)
     const errors = get(authErrorsAtom)
     const flow = get(flowAtom)
     const callingCode = newUser.callingCode
@@ -484,7 +493,7 @@ export const requestPhoneNumberVerificationAtom = atom(
 )
 
 export const verifyPhoneNumberVerificationAtom = atom(null, async (get, set) => {
-  const newUser = await get(newUserAtom)
+  const newUser = get(newUserAtom)
   const errors = get(authErrorsAtom)
   const code = newUser.phoneCode
   const callingCode = newUser.callingCode
@@ -529,7 +538,7 @@ export const verifyPhoneNumberVerificationAtom = atom(null, async (get, set) => 
 
 export const verifyUserInfoAtom = atom(null, async (get, set) => {
   const errors = get(authErrorsAtom)
-  const newUser = await get(newUserAtom)
+  const newUser = get(newUserAtom)
   if (!newUser.username) {
     set(authErrorsAtom, { ...errors, username: "Username is required" })
     return
@@ -548,7 +557,7 @@ export const verifyUserInfoAtom = atom(null, async (get, set) => {
 
 export const setUserPictureAtom = atom(null, async (get, set, option: "library" | "camera") => {
   const attachments = await set(getAttachmentAtom, true, option, false)
-  const newUser = await get(newUserAtom)
+  const newUser = get(newUserAtom)
 
   if (!attachments) return
 
@@ -562,7 +571,7 @@ export const setUserPictureAtom = atom(null, async (get, set, option: "library" 
 
 export const authFetchAtom = atom(
   null,
-  async (get, set, url: string, options: FetchRequestInit = {}) => {
+  async (get, set, url: string, options: FetchRequestInit = {}, noContentType: boolean = false) => {
     // Native flow: rely on secure storage
     function fetchWithToken(token: string) {
       const isFormDataBody = options.body
@@ -570,7 +579,7 @@ export const authFetchAtom = atom(
       return fetch(`${BASE_URL}${url}`, {
         ...options,
         headers: {
-          ...(isFormDataBody ? {} : { "Content-Type": "application/json" }),
+          ...(noContentType ? {} : { "Content-Type": "application/json" }),
           ...options.headers,
           Authorization: `Bearer ${token}`,
         },
@@ -583,7 +592,7 @@ export const authFetchAtom = atom(
         ...options,
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
+          ...(noContentType ? {} : { "Content-Type": "application/json" }),
           ...options.headers,
         },
       })
@@ -661,16 +670,4 @@ export const refreshTokensAtom = atom(null, async (get, set) => {
   await set(userSecureAtom, { ...user, ...token })
 
   return token
-})
-
-export const fetchUserInfoAtom = atom(null, async (get, set) => {
-  const res = await set(authFetchAtom, "/api/users/my-user")
-  const data: UserType = await res.json()
-  if (res.ok) {
-    set(userAtom, data)
-    return data
-  } else {
-    console.error("Failed to fetch user info:", data)
-    return null
-  }
 })

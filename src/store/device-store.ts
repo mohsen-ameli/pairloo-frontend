@@ -1,6 +1,5 @@
 import * as SecureStore from "expo-secure-store"
 import { atom } from "jotai"
-import * as Crypto from "expo-crypto"
 import { currPageAtom, flowAtom } from "./pager-store"
 import { BLOCK_TIME, MAX_ATTEMPTS } from "../utils/constants"
 import { Platform } from "react-native"
@@ -16,6 +15,14 @@ const DEVICE_INFO_KEY = "device-info"
 export const blockedTimerAtom = atom(0)
 export const blockedIntervalAtom = atom(0)
 export const isBlockedAtom = atom(false)
+
+export const getBlockedAttemptsAtom = atom(get => {
+  const blockedTimer = get(blockedTimerAtom)
+
+  if (!blockedTimer) return ""
+
+  return `Too many attempts. Try again in ${Math.floor(blockedTimer / 60)}:${blockedTimer % 60 < 10 ? "0" : ""}${blockedTimer % 60} ${blockedTimer > 60 ? "minutes" : "seconds"}.`
+})
 
 // Store a singleton device info object in secure storage, which can be used for rate limiting login attempts.
 export const getDeviceInfoAtom = atom(null, async (get, set) => {
@@ -116,7 +123,6 @@ export const checkIfBlockedAtom = atom(null, async (get, set) => {
 
 export const resetDeviceInfoAtom = atom(null, async (get, set) => {
   const deviceInfo = {
-    uuid: Crypto.randomUUID(),
     blockedUntil: 0,
     attempts: 0,
   }

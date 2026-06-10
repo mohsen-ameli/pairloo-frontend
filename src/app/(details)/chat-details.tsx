@@ -42,8 +42,7 @@ import useGradualAnimation from "@/src/utils/gradual-animation"
 import { userSecureAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
-import useCustomHeader from "@/src/utils/useCustomHeader"
-import { Stack, useFocusEffect } from "expo-router"
+import { useFocusEffect } from "expo-router"
 import { FlashList } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
@@ -73,7 +72,6 @@ export default function ChatDetails() {
   const chatRef = useRef<FlatList>(null)
   const inputRef = useRef<TextInput>(null!)
   const { height } = useGradualAnimation({ includeTabHeight: false })
-  const detailOptions = useCustomHeader({ title: "", inChat: true })
   const [loading, setLoading] = useAtom(loadingAtom)
   const attachments = useAtomValue(chatAttachmentsAtom)
   const otherUser = useRef<{
@@ -186,6 +184,7 @@ export default function ChatDetails() {
     message.current = ""
     setInputEmpty(true)
     inputRef.current.clear()
+    inputRef.current.focus()
   }
 
   // Animate fake view height
@@ -220,6 +219,14 @@ export default function ChatDetails() {
     })
   }
 
+  if (loading) {
+    return (
+      <View style={commonStyles.generalContainer}>
+        <LoadingIndicator loading={true} />
+      </View>
+    )
+  }
+
   if (!currentConversation) {
     return (
       <View style={commonStyles.generalContainer}>
@@ -233,15 +240,12 @@ export default function ChatDetails() {
 
   return (
     <>
-      <Stack.Screen options={detailOptions} />
-      <LoadingIndicator loading={loading} opacity={0.5} />
-
       <View style={commonStyles.generalContainer}>
         <FlatList
           inverted
           data={messages}
           ref={chatRef}
-          keyboardDismissMode="on-drag"
+          keyboardDismissMode="interactive"
           style={commonStyles.container}
           keyExtractor={item => item._id}
           onEndReached={loadMoreMessages}
@@ -335,59 +339,61 @@ export default function ChatDetails() {
       )}
 
       {/* Input Area */}
-      <View style={chatStyles.inputContainer}>
-        <Pressable
-          onPress={() => {
-            Keyboard.dismiss()
-            router.push({
-              pathname: "/attachment-picker",
-              params: { intent: "chat" },
-            })
-          }}
-          style={chatStyles.actionButton}
-        >
-          <Feather name="plus" size={24} color={colors.light} />
-        </Pressable>
-        {message.current.trim() === "" && canReview && !editingMessage && (
+      <View style={chatStyles.inputOuterContainer}>
+        <View style={[commonStyles.container, chatStyles.inputContainer]}>
           <Pressable
-            onPress={() =>
-              router.push({ pathname: "review-user", params: { id: otherUser.current?._id } })
-            }
+            onPress={() => {
+              Keyboard.dismiss()
+              router.push({
+                pathname: "/attachment-picker",
+                params: { intent: "chat" },
+              })
+            }}
             style={chatStyles.actionButton}
           >
-            <MaterialIcons name="rate-review" size={20} color={colors.light} />
+            <Feather name="plus" size={24} color={colors.light} />
           </Pressable>
-        )}
-        <TextInput
-          style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
-          placeholder="Type a message..."
-          placeholderTextColor={colors.muted}
-          onChangeText={text => {
-            message.current = text
-            setInputEmpty(text.trim() === "")
-          }}
-          onContentSizeChange={event => {
-            setInputHeight(event.nativeEvent.contentSize.height)
-          }}
-          multiline
-          maxLength={500}
-          ref={inputRef}
-        />
-        {editingMessage ? (
-          <Pressable onPress={handleSendMessage} style={chatStyles.actionButton}>
-            <Feather name="send" size={22} color={colors.lightGray} />
-          </Pressable>
-        ) : (
-          <Pressable
-            style={[
-              chatStyles.actionButton,
-              { display: !inputEmpty || attachments.length > 0 ? "flex" : "none" },
-            ]}
-            onPress={handleSendMessage}
-          >
-            <Feather name="send" size={22} color={colors.lightGray} />
-          </Pressable>
-        )}
+          {message.current.trim() === "" && canReview && !editingMessage && (
+            <Pressable
+              onPress={() =>
+                router.push({ pathname: "review-user", params: { id: otherUser.current?._id } })
+              }
+              style={chatStyles.actionButton}
+            >
+              <MaterialIcons name="rate-review" size={20} color={colors.light} />
+            </Pressable>
+          )}
+          <TextInput
+            style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
+            placeholder="Type a message..."
+            placeholderTextColor={colors.muted}
+            onChangeText={text => {
+              message.current = text
+              setInputEmpty(text.trim() === "")
+            }}
+            onContentSizeChange={event => {
+              setInputHeight(event.nativeEvent.contentSize.height)
+            }}
+            multiline
+            maxLength={500}
+            ref={inputRef}
+          />
+          {editingMessage ? (
+            <Pressable onPress={handleSendMessage} style={chatStyles.actionButton}>
+              <Feather name="send" size={22} color={colors.lightGray} />
+            </Pressable>
+          ) : (
+            <Pressable
+              style={[
+                chatStyles.actionButton,
+                { display: !inputEmpty || attachments.length > 0 ? "flex" : "none" },
+              ]}
+              onPress={handleSendMessage}
+            >
+              <Feather name="send" size={22} color={colors.lightGray} />
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {/* Push the content up after keyboard appears */}

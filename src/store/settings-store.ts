@@ -1,6 +1,5 @@
 import { atom } from "jotai"
 import { authFetchAtom, userAtom, userSecureAtom } from "./auth-store"
-import { Alert } from "react-native"
 import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
 
@@ -24,7 +23,7 @@ export const editModeAtom = atom(false)
 export const loadingAtom = atom(false)
 
 export const handleSaveEditAtom = atom(null, async (get, set) => {
-  const user = await get(userAtom)
+  const user = get(userAtom)
   const userJwt = await get(userSecureAtom)
   const editFields = get(editFieldsAtom)
   if (!user || !userJwt) return
@@ -38,24 +37,19 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
       if (value) formData.append(key, value.toString())
     })
 
-    if (editFields.picture) {
-      const extension = (editFields.pictureMimeType || "image/jpeg").split("/")[1] || "jpg"
-      formData.append("picture", {
-        uri: editFields.picture,
-        name: `${userJwt._id}.${extension}`,
-        type: editFields.pictureMimeType || "image/jpeg",
-      } as any)
-    } else if (editFields.pictureBlob) {
-      formData.append("picture", editFields.pictureBlob, `${userJwt._id}.jpg`)
+    if (editFields.pictureBlob) {
+      formData.append("picture", editFields.pictureBlob)
     }
 
-    const response = await set(authFetchAtom, "/api/settings/update-profile", {
-      method: "POST",
-      body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
+    const response = await set(
+      authFetchAtom,
+      "/api/settings/update-profile",
+      {
+        method: "POST",
+        body: formData,
       },
-    })
+      true
+    )
 
     const data = await response.json()
     if (response.status !== 200) {
@@ -88,7 +82,7 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
 })
 
 export const resetEditAtom = atom(null, async (get, set) => {
-  const user = await get(userAtom)
+  const user = get(userAtom)
   if (!user) return
 
   set(editFieldsAtom, curr => ({
@@ -108,7 +102,7 @@ export const resetEditAtom = atom(null, async (get, set) => {
 })
 
 export const setUserPfpAtom = atom(null, async (get, set, option: "library" | "camera") => {
-  const user = await get(userAtom)
+  const user = get(userAtom)
   if (!user) return
 
   // get the attachments

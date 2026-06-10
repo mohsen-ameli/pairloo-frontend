@@ -2,7 +2,7 @@ import { colors } from "@/src/utils/colors"
 import { newUserAtom, authErrorsAtom } from "@/src/store/auth-store"
 import Feather from "@expo/vector-icons/Feather"
 import { useAtom, useAtomValue } from "jotai"
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Modal, Pressable, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { flowAtom } from "@/src/store/pager-store"
 import { isBlockedAtom } from "@/src/store/device-store"
@@ -14,7 +14,7 @@ import CountryFlag from "react-native-country-flag"
 
 type Country = (typeof allCountries)[0]
 
-export default function PhoneNumberNative() {
+export default function PhoneNumber() {
   const [country, setCountry] = useState<Country>(allCountries[40])
   const [visible, setVisible] = useState<boolean>(false)
   const [newUser, setNewUser] = useAtom(newUserAtom)
@@ -153,7 +153,7 @@ export default function PhoneNumberNative() {
           borderColor: colors.borderGray,
           padding: 15,
           borderRadius: 5,
-          fontSize: 18,
+          fontSize: 16,
         }}
         value={newUser.phoneNumber}
         editable={!isBlocked}
@@ -163,7 +163,6 @@ export default function PhoneNumberNative() {
         autoComplete="off"
         keyboardType="number-pad"
         maxLength={14}
-        defaultValue={newUser.phoneNumber}
         onChangeText={text => {
           setNewUser({
             ...newUser,

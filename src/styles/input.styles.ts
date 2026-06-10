@@ -14,4 +14,6 @@ export const inputStyles = StyleSheet.create({
   header: { fontSize: 14, marginBottom: 5, color: colors.dark },
   mandatory: { color: colors.errorRed },
   errors: { color: colors.errorRed, marginTop: 5 },
+  information: { color: colors.blue, marginTop: 5 },
+  success: { color: colors.green, marginTop: 5 },
 })

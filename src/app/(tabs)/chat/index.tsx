@@ -12,7 +12,7 @@ import { userSecureAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
 import { useFocusEffect, useRouter } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
-import { Pressable, Text, View } from "react-native"
+import { Pressable, ScrollView, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 import { LastMessageType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
@@ -64,7 +64,7 @@ export default function index() {
     )
   }
 
-  if (!socket || socket.connected === false) {
+  if (!socket || !socket.connected) {
     return (
       <View style={commonStyles.generalContainer}>
         <Text style={commonStyles.errorText}>An error occured. Please try again.</Text>
@@ -77,7 +77,7 @@ export default function index() {
 
   return (
     <View style={commonStyles.generalContainer}>
-      <View style={commonStyles.container}>
+      <ScrollView style={commonStyles.container}>
         {conversations.length === 0 ? (
           <View style={conversationStyles.emptyStateContainer}>
             <Text style={conversationStyles.emptyStateText}>No chats yet.</Text>
@@ -148,7 +148,7 @@ export default function index() {
             )
           })
         )}
-      </View>
+      </ScrollView>
     </View>
   )
 }

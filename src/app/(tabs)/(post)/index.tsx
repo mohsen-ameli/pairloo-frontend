@@ -1,11 +1,11 @@
-import { useSetAtom } from "jotai"
+import { useAtom, useSetAtom } from "jotai"
 import { useRouter } from "expo-router"
 import { Text, View, RefreshControl, Pressable, ActivityIndicator } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { styles } from "@/src/styles/feed.styles"
 import { GeneralPostType } from "@/src/types/post.type"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { authFetchAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
 import { colors } from "@/src/utils/colors"
 import { FlashList } from "@shopify/flash-list"
@@ -13,6 +13,10 @@ import { sinceNow } from "@/src/utils/format-date"
 // @ts-ignore: Multi-platform file import
 import FeedAdView from "@/src/components/FeedAdView"
 import { commonStyles } from "@/src/styles/common.styles"
+import { useEffect } from "react"
+import Toast from "react-native-toast-message"
+import { UserType } from "@/src/types/user.type"
+import { greetAtom } from "@/src/store/general-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -21,6 +25,30 @@ export default function Index() {
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const { data: posts, isError, isPending } = useQuery({ queryKey: ["feed"], queryFn: fetchPosts })
+  const { data: user } = useQuery({ queryKey: ["my-user"], queryFn: fetchMyUser })
+  const setUser = useSetAtom(userAtom)
+  const [greet, setGreet] = useAtom(greetAtom)
+
+  async function fetchMyUser() {
+    const res = await authFetch("/api/users/my-user/")
+    const data: UserType = await res.json()
+    setUser(data)
+    return data
+  }
+
+  // Greet the user
+  useEffect(() => {
+    if (!user || !greet) return
+
+    Toast.show({
+      type: "success",
+      text1: "Welcome back, " + user.username + "!",
+      text1Style: { fontSize: 16, fontWeight: "bold" },
+      position: "top",
+      visibilityTime: 3000,
+    })
+    setGreet(false)
+  }, [greet, user])
 
   async function fetchPosts() {
     const res = await authFetch("/api/posts/my-feed")

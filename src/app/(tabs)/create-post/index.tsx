@@ -44,8 +44,7 @@ export default function CreatePost() {
   const router = useRouter()
   const [QNAs, setQNAs] = useAtom(qnaAtom)
   const socket = useAtomValue(createPostSocketAtom)
-  const loading = useAtomValue(loadingAtom)
-  const setLoading = useSetAtom(loadingAtom)
+  const [loading, setLoading] = useAtom(loadingAtom)
   const [settings, setSettings] = useAtom(settingsAtom)
   const setFlow = useSetAtom(flowAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
@@ -212,6 +211,13 @@ export default function CreatePost() {
                         </TouchableWithoutFeedback>
                       )
                     })}
+                    <CustomInput
+                      placeholder="Something else"
+                      value={answer.find(ans => !options.includes(ans))}
+                      onChangeText={text => handleChange(i, text, question)}
+                      editable={!loading}
+                      style={createPostStyles.mcqOption}
+                    />
                   </ScrollView>
                 ) : type === "multi_select" && options && options.length > 0 ? (
                   <ScrollView showsVerticalScrollIndicator={false}>
@@ -255,7 +261,7 @@ export default function CreatePost() {
                   <TextInput
                     style={createPostStyles.textInput}
                     placeholderTextColor={colors.gray}
-                    value={qna.answer[0] ?? ""}
+                    value={qna.answer[0]}
                     onChangeText={text => handleChange(i, text, question)}
                     placeholder="Write as little or as much details as you want"
                     editable={!loading}
@@ -282,7 +288,6 @@ export default function CreatePost() {
               <View style={{ flex: 1 }}>
                 <CustomInput
                   title="Title"
-                  headerStyles={{ fontSize: 16, fontWeight: "600" }}
                   value={settings.title}
                   onChangeText={text => {
                     setSettings(async curr => ({ ...(await curr), title: text }))
@@ -299,7 +304,6 @@ export default function CreatePost() {
             {/* Description */}
             <CustomInput
               title="Description"
-              headerStyles={{ fontSize: 16, fontWeight: "600" }}
               value={settings.description}
               multiline
               onChangeText={async text => {

@@ -1,7 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { Platform, Pressable, ScrollView, Text, View } from "react-native"
+import { Pressable, ScrollView, Text, View } from "react-native"
 import CustomInput from "@/src/components/CustomInput"
-import LocationSelector from "@/src/components/LocationSelector"
 import { colors } from "@/src/utils/colors"
 import {
   newUserAtom,
@@ -15,18 +14,19 @@ import {
   verifyUserInfoAtom,
 } from "@/src/store/auth-store"
 import { styles } from "@/src/styles/register.styles"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { TextInput } from "react-native"
 import { BASE_URL, REGISTER_USERNAME_CHECK_INTERVAL } from "@/src/utils/constants"
 import { currPageAtom, flowAtom, pageCountAtom, resetPagerAtom } from "@/src/store/pager-store"
 import { useFocusEffect, useRouter } from "expo-router"
 import { Image } from "expo-image"
 import Feather from "@expo/vector-icons/Feather"
-import { checkIfBlockedAtom, isBlockedAtom } from "@/src/store/device-store"
-import BlockedAttempts from "@/src/components/BlockedAttempts"
-import PhoneNumber from "@/src/components/PhoneNumber"
+import { checkIfBlockedAtom, getBlockedAttemptsAtom, isBlockedAtom } from "@/src/store/device-store"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
+import LocationSelector from "@/src/components/LocationSelector"
+import PhoneNumber from "@/src/components/PhoneNumber"
+import { debounce } from "lodash"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 const INITIAL_PAGE_COUNT = 6
@@ -38,8 +38,8 @@ export default function Register() {
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [errors, setErrors] = useAtom(authErrorsAtom)
   const timeRemaining = useAtomValue(resendTimerAtom)
+  const getBlockedAttempts = useAtomValue(getBlockedAttemptsAtom)
   const [flow, setFlow] = useAtom(flowAtom)
-  const usernameTimeout = useRef<number>(null)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
   const requestPhoneNumberVerification = useSetAtom(requestPhoneNumberVerificationAtom)
   const verifyPhoneNumberVerification = useSetAtom(verifyPhoneNumberVerificationAtom)
@@ -47,10 +47,11 @@ export default function Register() {
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
   const verifyUserInfo = useSetAtom(verifyUserInfoAtom)
   const resetPager = useSetAtom(resetPagerAtom)
-  const [avatar, setAvatar] = useState<string | null>(null)
   const skipResetOnNextBlur = useRef(false)
   const checkIfBlocked = useSetAtom(checkIfBlockedAtom)
   const isBlocked = useAtomValue(isBlockedAtom)
+  const [usernameChecking, setUsernameChecking] = useState(false)
+  const [usernameValid, setUsernameValid] = useState(false)
 
   // Refs for manual focus
   const phoneCodeRef = useRef<TextInput>(null!)
@@ -72,31 +73,50 @@ export default function Register() {
 
   useEffect(() => {
     checkIfBlocked()
-
-    // If user already has phone/email verified then skip to the appropriate page
-    if (newUser.phoneVerified) {
-      setCurrPage(2)
-    } else if (newUser.emailVerified) {
-      setCurrPage(4)
-    }
   }, [])
+
+  useEffect(() => {
+    if (!newUser || !newUser.username) return
+    setUsernameChecking(true)
+    setUsernameValid(false)
+    debounceFn(newUser.username)
+  }, [newUser])
 
   // Set next/back functions based on current page
   useEffect(() => {
+    if (!newUser) return
     setPageCount(INITIAL_PAGE_COUNT)
 
     let nextEnabled = false
     if (currPage === 0) {
-      nextEnabled = newUser.phoneNumber.length > 0 && !isBlocked
+      if (newUser.phoneVerified) {
+        setCurrPage(1)
+      } else {
+        nextEnabled = newUser.phoneNumber.length > 0 && !isBlocked
+      }
     } else if (currPage === 1) {
-      nextEnabled = newUser.phoneCode.length === 6 && !isBlocked
+      if (newUser.phoneVerified) {
+        setCurrPage(2)
+      } else {
+        nextEnabled = newUser.phoneCode.length === 6 && !isBlocked
+      }
     } else if (currPage === 2) {
-      nextEnabled = newUser.email.length > 0 && !isBlocked
+      if (newUser.emailVerified) {
+        setCurrPage(3)
+      } else {
+        nextEnabled = newUser.email.length > 0 && !isBlocked
+      }
     } else if (currPage === 3) {
-      nextEnabled = newUser.emailCode.length === 6 && !isBlocked
+      if (newUser.emailVerified) {
+        setCurrPage(4)
+      } else {
+        nextEnabled = newUser.emailCode.length === 6 && !isBlocked
+      }
     } else if (currPage === 4) {
       nextEnabled =
         newUser.username.length > 0 &&
+        usernameValid &&
+        !usernameChecking &&
         newUser.firstName.length > 0 &&
         newUser.lastName.length > 0 &&
         newUser.locationId !== 0
@@ -125,7 +145,7 @@ export default function Register() {
         }
       },
     })
-  }, [currPage, newUser])
+  }, [currPage, newUser, usernameValid, usernameChecking, isBlocked])
 
   // Manual focus logic
   useEffect(() => {
@@ -140,34 +160,40 @@ export default function Register() {
     }
   }, [currPage])
 
-  async function handleUsername(text: string) {
-    setNewUser({ ...newUser, username: text })
-    setErrors({ ...errors, username: "" })
-    if (usernameTimeout.current) {
-      clearTimeout(usernameTimeout.current)
-    }
-    usernameTimeout.current = setTimeout(async () => {
-      if (text.length > 0) {
-        const res = await fetch(`${BASE_URL}/api/auth/username-available?username=${text}`, {
-          method: "GET",
+  async function handleDebounceFn(query: string) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/auth/username-available?username=${query}`, {
+        method: "GET",
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setErrors({
+          ...errors,
+          username: data.errors.username,
         })
-        const data = await res.json()
-        if (!res.ok) {
-          setErrors({
-            ...errors,
-            username: data.errors.username,
-          })
-        }
+      } else {
+        setUsernameValid(true)
       }
-    }, REGISTER_USERNAME_CHECK_INTERVAL)
+      setUsernameChecking(false)
+    } catch (error) {
+      console.error("Search error:", error)
+    }
   }
 
-  async function generateAvatar() {
-    const res = await fetch(`${BASE_URL}/api/test`, {
-      method: "GET",
-    })
-    const data = await res.json()
-    setAvatar(data.svg.toString())
+  const debounceFn = useMemo(() => debounce(handleDebounceFn, REGISTER_USERNAME_CHECK_INTERVAL), [])
+
+  async function handleUsername(text: string) {
+    setUsernameChecking(true)
+    setUsernameValid(false)
+    setNewUser({ ...newUser, username: text.trim() })
+    setErrors({ ...errors, username: "" })
+    if (text.length === 0) {
+      debounceFn.cancel()
+      setUsernameChecking(false)
+      setUsernameValid(false)
+      return
+    }
+    debounceFn(text.trim().toLowerCase())
   }
 
   return (
@@ -176,7 +202,7 @@ export default function Register() {
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
         {(errors?.phoneNumber || isBlocked) && (
-          <Text style={styles.error}>{errors?.phoneNumber || <BlockedAttempts />}</Text>
+          <Text style={styles.error}>{errors?.phoneNumber || getBlockedAttempts}</Text>
         )}
         {!newUser.phoneVerified && (
           <Text style={styles.note}>We will send you a verification code.</Text>
@@ -295,15 +321,19 @@ export default function Register() {
             Let's get to know you
           </Text>
           <CustomInput
-            title="Username*"
+            title="Username"
+            mandatory
             errors={errors?.username}
+            information={usernameChecking ? "Checking availability..." : null}
+            success={usernameValid ? "Username is available!" : null}
             onChangeText={handleUsername}
             defaultValue={newUser.username}
             inputRef={usernameRef}
             maxLength={20}
           />
           <CustomInput
-            title="First Name*"
+            title="First Name"
+            mandatory
             errors={errors?.firstName}
             onChangeText={text => {
               setNewUser({ ...newUser, firstName: text })
@@ -312,7 +342,8 @@ export default function Register() {
             defaultValue={newUser.firstName}
           />
           <CustomInput
-            title="Last Name*"
+            title="Last Name"
+            mandatory
             errors={errors?.lastName}
             onChangeText={text => {
               setNewUser({ ...newUser, lastName: text })
@@ -322,6 +353,9 @@ export default function Register() {
           />
           <LocationSelector
             mandatory
+            defaultValue={
+              newUser.city ? `${newUser.city} (${newUser.state}, ${newUser.country})` : undefined
+            }
             errors={errors?.location}
             onLocationChange={location => {
               setNewUser({
@@ -336,6 +370,7 @@ export default function Register() {
               setErrors({ ...errors, location: "" })
             }}
           />
+          <View style={{ height: 200 }} />
         </View>
       </ScrollView>
 

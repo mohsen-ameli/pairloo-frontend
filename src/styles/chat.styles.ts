@@ -9,13 +9,16 @@ export const chatStyles = StyleSheet.create({
     backgroundColor: colors.light,
   },
   inputContainer: {
-    backgroundColor: colors.lightGray,
-    paddingVertical: 7,
+    paddingVertical: 12,
     paddingHorizontal: 10,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingTop: 12,
+  },
+  inputOuterContainer: {
+    backgroundColor: colors.light,
+    borderTopWidth: 1,
+    borderTopColor: colors.lightGray,
   },
   actionButton: {
     width: 35,
@@ -28,6 +31,7 @@ export const chatStyles = StyleSheet.create({
   input: {
     flex: 1,
     color: colors.dark,
+    fontSize: 16,
     borderWidth: 1,
     borderColor: colors.gray,
     borderRadius: 5,

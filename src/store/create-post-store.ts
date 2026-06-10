@@ -70,7 +70,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
       token: userJwt.accessToken || "",
     },
     transports: ["websocket", "polling"],
-    reconnectionAttempts: 5,
     reconnectionDelay: 2000,
   })
 
@@ -90,7 +89,6 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
   })
 
   socket.on("connect", () => {
-    set(loadingAtom, false)
     set(pageCountAtom, INITIAL_PAGE_COUNT)
     set(qnaAtom, null)
     set(currPageAtom, 0)
@@ -99,13 +97,11 @@ export const initCreatePostAtom = atom(null, async (get, set) => {
 
   socket.on("disconnect", () => cleanup())
 
-  socket.on("error", (err: any) => {
-    console.error("WebSocket error event:", err)
+  socket.on("error", err => {
     set(loadingAtom, false)
     Toast.show({
       type: "error",
-      text1: "Connection error",
-      text2: "An error occurred with the connection. Please try again.",
+      text1: err,
     })
   })
 
@@ -220,7 +216,7 @@ export const forwardCreatePostAtom = atom(null, async (get, set) => {
         text2: "Please enter a title for your post.",
       })
       return
-    } else if (description && description.trim() === "") {
+    } else if (!description || description.trim() === "") {
       Toast.show({
         type: "error",
         text1: "Description required",

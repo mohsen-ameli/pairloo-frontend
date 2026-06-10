@@ -4,9 +4,11 @@ import { colors } from "@/src/utils/colors"
 import { inputStyles } from "@/src/styles/input.styles"
 
 interface Props extends TextInputProps {
-  title: string
+  title?: string
   mandatory?: boolean
   errors?: React.ReactNode
+  information?: React.ReactNode
+  success?: React.ReactNode
   inputRef?: React.RefObject<TextInput>
   headerStyles?: TextInputProps["style"]
 }
@@ -15,16 +17,26 @@ export default function CustomInput({
   title,
   mandatory,
   errors,
+  information,
+  success,
   inputRef,
   headerStyles,
   ...rest
 }: Props) {
   return (
     <View>
-      <Text style={[inputStyles.header, headerStyles]}>
-        {title}
-        {mandatory ? <Text style={inputStyles.mandatory}> *</Text> : null}
-      </Text>
+      {title && (
+        <Text
+          style={[
+            inputStyles.header,
+            headerStyles,
+            mandatory && { fontSize: 16, fontWeight: "600" },
+          ]}
+        >
+          {title}
+          {mandatory ? <Text style={inputStyles.mandatory}> *</Text> : null}
+        </Text>
+      )}
       <TextInput
         ref={inputRef}
         placeholderTextColor={colors.gray}
@@ -37,6 +49,8 @@ export default function CustomInput({
         ]}
       />
       {errors && <Text style={inputStyles.errors}>{errors}</Text>}
+      {information && <Text style={inputStyles.information}>{information}</Text>}
+      {success && <Text style={inputStyles.success}>{success}</Text>}
     </View>
   )
 }

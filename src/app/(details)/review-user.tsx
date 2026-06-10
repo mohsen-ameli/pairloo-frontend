@@ -94,6 +94,7 @@ export default function reviewUser() {
           paddingHorizontal: 10,
           textAlignVertical: "top",
           color: colors.dark,
+          fontSize: 16,
           borderWidth: 1,
           borderColor: colors.gray,
           borderRadius: 5,

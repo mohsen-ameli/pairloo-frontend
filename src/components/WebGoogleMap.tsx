@@ -1,6 +1,7 @@
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
 import { memo, RefObject, useCallback, useEffect, useRef } from "react"
-import { MapRegion } from "../app/(util)/map-selector"
+import { MapRegion } from "@/src/app/(util)/map-selector"
+import { GOOGLE_API_KEY } from "@/src/utils/constants"
 
 function WebGoogleMap({
   cameraPosition,
@@ -12,7 +13,7 @@ function WebGoogleMap({
   region?: RefObject<MapRegion>
 }) {
   const mapRef = useRef<google.maps.Map | null>(null)
-  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_API_KEY! })
+  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: GOOGLE_API_KEY })
 
   useEffect(() => {
     mapRef.current?.setCenter(cameraPosition.coordinates)

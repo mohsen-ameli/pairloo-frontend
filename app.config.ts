@@ -39,14 +39,18 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       permissions: ["android.permission.RECORD_AUDIO", "android.permission.MODIFY_AUDIO_SETTINGS"],
     },
     web: {
-      output: "server",
-      favicon: "./assets/images/favicon.png",
+      bundler: "metro",
+      output: "static",
+      favicon: "./assets/images/icon.png",
     },
     plugins: [
       "expo-web-browser",
       "expo-router",
       "expo-secure-store",
       "expo-audio",
+      "expo-asset",
+      "expo-font",
+      "expo-video",
       [
         "expo-splash-screen",
         {
