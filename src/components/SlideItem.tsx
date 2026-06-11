@@ -15,12 +15,14 @@ export type PageType = "create" | "edit" | "view"
 export function SlideItem({
   index,
   src,
+  imgKey,
   editable = false,
   pageType,
 }: {
   index: number
   editable?: boolean
   src: string
+  imgKey?: string
   pageType: PageType
 }) {
   const setSettings = useSetAtom(settingsAtom)
@@ -39,7 +41,7 @@ export function SlideItem({
 
   const handleRemove = () => {
     if (pageType === "edit") {
-      handleRemoveEdit(index)
+      handleRemoveEdit(imgKey!)
     } else {
       handleRemoveCreate()
     }

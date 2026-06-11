@@ -13,11 +13,13 @@ const w = Dimensions.get("window").width
 
 export default function ImageCarousel({
   images,
+  keys,
   widthOffset = 0,
   editable = false,
   pageType,
 }: {
   images: string[]
+  keys?: string[]
   widthOffset?: number
   editable?: boolean
   pageType: PageType
@@ -46,8 +48,15 @@ export default function ImageCarousel({
   }
 
   if (images.length === 1) {
-    // TODO: onRemove refactor
-    return <SlideItem index={0} src={images[0]} editable={editable} pageType={pageType} />
+    return (
+      <SlideItem
+        index={0}
+        src={images[0]}
+        imgKey={keys?.[0]}
+        editable={editable}
+        pageType={pageType}
+      />
+    )
   }
 
   return (
@@ -79,7 +88,13 @@ export default function ImageCarousel({
         onScrollStart={() => setIsDragging(true)}
         onScrollEnd={() => setIsDragging(false)}
         renderItem={({ index, item }) => (
-          <SlideItem index={index} src={item} editable={editable} pageType={pageType} />
+          <SlideItem
+            index={index}
+            src={item}
+            imgKey={keys?.[index]}
+            editable={editable}
+            pageType={pageType}
+          />
         )}
         ref={ref}
       />

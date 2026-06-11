@@ -1,58 +1,41 @@
 import { atom } from "jotai"
-import { Attachment } from "@/src/types/attachment.type"
 
-export type EditPostFormState = {
-  title: string
-  description: string
-  publicPost: boolean
-  location: { latitude: number; longitude: number } | null
-  closeCity: string
-  distance: number
-  newImages: Attachment[]
-  existingImages: string[]
-  removedImages: string[]
-}
-
-const createInitialEditPostFormState = (): EditPostFormState => ({
+const form = {
   title: "",
   description: "",
   publicPost: false,
-  location: null,
-  closeCity: "",
-  distance: 5000,
-  newImages: [],
-  existingImages: [],
-  removedImages: [],
-})
+  images: [] as {
+    key: string
+    url: string
+    removed: boolean
+    file?: Blob
+    mimeType?: string
+    isExisting: boolean
+  }[],
+}
 
-export const editPostFormAtom = atom<EditPostFormState>(createInitialEditPostFormState())
+export type EditPostType = typeof form
+
+export const editPostFormAtom = atom(form)
 export const editPostLoadingAtom = atom(false)
 export const editPostHasChangesAtom = atom(false)
 
-export const editPostRemoveImageAtom = atom(null, (get, set, index: number) => {
-  const formState = get(editPostFormAtom)
-  const totalExisting = formState.existingImages.length
-
-  if (index < totalExisting) {
-    const removedImage = formState.existingImages[index]
-    set(editPostFormAtom, prev => ({
-      ...prev,
-      existingImages: prev.existingImages.filter((_, imageIndex) => imageIndex !== index),
-      removedImages: [...prev.removedImages, removedImage],
-    }))
-  } else {
-    const newImageIndex = index - totalExisting
-    set(editPostFormAtom, prev => ({
-      ...prev,
-      newImages: prev.newImages.filter((_, imageIndex) => imageIndex !== newImageIndex),
-    }))
-  }
-
+// Function that's called when an image is removed
+export const editPostRemoveImageAtom = atom(null, (get, set, key: string) => {
+  set(editPostFormAtom, prev => ({
+    ...prev,
+    images: prev.images.map(img => {
+      if (img.key === key) {
+        return { ...img, removed: true }
+      }
+      return img
+    }),
+  }))
   set(editPostHasChangesAtom, true)
 })
 
-export const resetEditPostAtom = atom(null, (_get, set) => {
-  set(editPostFormAtom, createInitialEditPostFormState())
+export const resetEditPostAtom = atom(null, (get, set) => {
+  set(editPostFormAtom, form)
   set(editPostLoadingAtom, false)
   set(editPostHasChangesAtom, false)
 })

@@ -1,118 +1,98 @@
-import { useRouter, useLocalSearchParams, Stack, useFocusEffect } from "expo-router"
+import { useRouter, useLocalSearchParams } from "expo-router"
 import { useNavigation } from "@react-navigation/native"
-import { View, Text, ScrollView, Pressable, Alert, Switch } from "react-native"
-import { useEffect, useCallback, useRef } from "react"
+import { View, Text, ScrollView, Pressable, Alert, Switch, Platform } from "react-native"
+import { useEffect, useRef, useMemo } from "react"
 import Feather from "@expo/vector-icons/Feather"
-import { useSetAtom, useAtomValue } from "jotai"
+import { useSetAtom, useAtom } from "jotai"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { MyPostType } from "@/src/types/post.type"
 import { authFetchAtom } from "@/src/store/auth-store"
 import { inputStyles } from "@/src/styles/input.styles"
-import { editPostStyles } from "@/src/styles/edit-post.styles"
 import CustomInput from "@/src/components/CustomInput"
 import { colors } from "@/src/utils/colors"
 import CustomButton from "@/src/components/CustomButton"
 import ImageCarousel from "@/src/components/ImageCarousel"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { settingsAtom } from "@/src/store/create-post-store"
 import { getAttachmentAtom } from "@/src/store/general-store"
 import { commonStyles } from "@/src/styles/common.styles"
-import useCustomHeader from "@/src/utils/useCustomHeader"
 import React from "react"
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import {
   editPostFormAtom,
   editPostHasChangesAtom,
   editPostLoadingAtom,
+  EditPostType,
   resetEditPostAtom,
 } from "@/src/store/edit-post-store"
+import Toast from "react-native-toast-message"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { MAX_POST_IMAGES } from "@/src/utils/constants"
+import { createPostStyles } from "@/src/styles/create-post.styles"
 
 export default function EditPost() {
   const router = useRouter()
   const allowNavigationRef = useRef(false)
-  const isSelectingLocationRef = useRef(false)
   const insets = useSafeAreaInsets()
 
   const { id } = useLocalSearchParams<{ id: string }>()
-  const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
+  const authFetch = useSetAtom(authFetchAtom)
   const getAttachment = useSetAtom(getAttachmentAtom)
-  const settings = useAtomValue(settingsAtom)
-  const formState = useAtomValue(editPostFormAtom)
-  const setFormState = useSetAtom(editPostFormAtom)
-  const loading = useAtomValue(editPostLoadingAtom)
-  const setLoading = useSetAtom(editPostLoadingAtom)
-  const hasChanges = useAtomValue(editPostHasChangesAtom)
-  const setHasChanges = useSetAtom(editPostHasChangesAtom)
   const resetEditPost = useSetAtom(resetEditPostAtom)
+  const [formState, setFormState] = useAtom(editPostFormAtom)
+  const [loading, setLoading] = useAtom(editPostLoadingAtom)
+  const [hasChanges, setHasChanges] = useAtom(editPostHasChangesAtom)
 
-  const {
-    data: post,
-    isError,
-    isPending,
-  } = useQuery({ queryKey: [`post-${id}`], queryFn: fetchPost })
+  const { isError, isPending } = useQuery({ queryKey: [`edit-post-${id}`], queryFn: fetchPost })
 
   async function fetchPost() {
-    const res = await authFetch(`/api/posts/my-posts/${id}`)
-    const data: MyPostType = await res.json()
+    const res = await authFetch(`/api/posts/edit-post/${id}`)
+    const data: EditPostType = await res.json()
+
+    setFormState(prev => ({
+      ...prev,
+      title: data.title,
+      description: data.description,
+      publicPost: data.publicPost,
+      images: data.images,
+    }))
+    setHasChanges(false)
+
     return data
   }
 
   useEffect(() => {
     resetEditPost()
+  }, [id])
 
-    return () => {
-      resetEditPost()
-    }
-  }, [resetEditPost])
-
-  useEffect(() => {
-    if (!post) return
-
-    setFormState(prev => ({
-      ...prev,
-      title: post.title,
-      description: post.description,
-      publicPost: post.publicPost,
-      location: post.location || null,
-      existingImages: post.images || [],
-      distance: post.distance || 5000,
-    }))
-    setHasChanges(false)
-  }, [post, setFormState, setHasChanges])
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!isSelectingLocationRef.current) return
-
-      if (settings.location && settings.closeCity) {
-        setFormState(prev => ({
-          ...prev,
-          location: settings.location,
-          closeCity: settings.closeCity,
-          distance: settings.distance,
-        }))
-        setHasChanges(true)
-      }
-
-      isSelectingLocationRef.current = false
-    }, [settings.location, settings.closeCity, settings.distance, setFormState, setHasChanges])
-  )
+  const images = useMemo(() => {
+    return formState.images.filter(img => !img.removed)
+  }, [formState.images])
 
   async function pickImages() {
-    const attachments = await getAttachment(false, "library", true)
+    setLoading(true)
+    const attachments = await getAttachment(false, "library", true, MAX_POST_IMAGES - images.length)
     if (attachments.length > 0) {
       setFormState(prev => ({
         ...prev,
-        newImages: [...prev.newImages, ...attachments],
+        images: [
+          ...prev.images,
+          ...attachments.map(att => ({
+            key: att.uri,
+            url: att.uri,
+            file: att.file,
+            mimeType: att.mimeType,
+            removed: false,
+            isExisting: false,
+          })),
+        ],
       }))
       setHasChanges(true)
     }
+    setLoading(false)
   }
 
   async function handleSave() {
     if (!formState.title.trim() || !formState.description.trim()) {
-      Alert.alert("Error", "Title and description are required")
+      Toast.show({ type: "error", text1: "Title and description are required" })
       return
     }
     setLoading(true)
@@ -123,52 +103,63 @@ export default function EditPost() {
         title: formState.title,
         description: formState.description,
         publicPost: formState.publicPost,
-        distance: formState.distance,
-        location: formState.location || null,
-        existingImages: formState.existingImages,
-        removedImages: formState.removedImages,
+        images: formState.images.map(img => ({
+          key: img.key,
+          removed: img.removed,
+          isExisting: img.isExisting,
+        })),
       }
       formData.append("metadata", JSON.stringify(metadata))
 
-      for (const newImage of formState.newImages) {
-        const filename = `image-${Date.now()}.${newImage.mimeType?.split("/")[1] || "jpg"}`
-        formData.append("images", {
-          uri: newImage.uri,
-          name: filename,
-          type: newImage.mimeType || "image/jpeg",
-        } as any)
+      for (const img of formState.images) {
+        if (img.file) {
+          const filename = `image-${Date.now()}.${img.mimeType?.split("/")[1] || "jpg"}`
+          formData.append("newImages", {
+            uri: img.url,
+            name: filename,
+            file: img.file,
+            type: img.mimeType || "image/jpeg",
+          } as any)
+        }
       }
-
-      const response = await authFetch(`/api/posts/${id}`, {
-        method: "PATCH",
-        body: formData,
-        // TODO: investigate multipart/form-data compatability with URIs from object keys
-      })
+      const response = await authFetch(
+        `/api/posts/edit-post/${id}`,
+        {
+          method: "POST",
+          body: formData,
+        },
+        true
+      )
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
+        const errorData = await response.json()
         console.error("Failed to update post:", { status: response.status, error: errorData })
-        Alert.alert("Error", "Failed to update post")
-        setLoading(false)
+        Toast.show({
+          type: "error",
+          text1: "Failed to update post",
+          text2: errorData.message || "Please try again",
+        })
+        resetEditPost()
         return
       }
 
       await queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
       await queryClient.invalidateQueries({ queryKey: ["my-posts"] })
 
+      Toast.show({ type: "success", text1: "Post updated successfully" })
+
       allowNavigationRef.current = true
       resetEditPost()
       router.back()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving post:", error)
-      Alert.alert("Error", "An unexpected error occurred")
-      setLoading(false)
+      Toast.show({
+        type: "error",
+        text1: "An unexpected error occurred",
+        text2: error.message || "Please try again",
+      })
+      resetEditPost()
     }
-  }
-
-  async function handleLocationPress() {
-    isSelectingLocationRef.current = true
-    router.push("/map-selector")
   }
 
   const navigation = useNavigation()
@@ -177,9 +168,25 @@ export default function EditPost() {
       // Allow programmatic navigation (e.g. after a successful save) without showing the discard dialog.
       if (allowNavigationRef.current) return
 
+      function discard() {
+        allowNavigationRef.current = true
+        resetEditPost()
+        navigation.goBack()
+      }
+
       if (e.data.action.type === "POP" || e.data.action.type === "GO_BACK") {
         if (hasChanges) {
           e.preventDefault()
+          if (Platform.OS === "web") {
+            if (
+              window.confirm(
+                "Your changes will be lost. Are you sure you want to discard your changes?"
+              )
+            ) {
+              discard()
+            }
+            return
+          }
           Alert.alert(
             "Discard Changes",
             "Your changes will be lost. Are you sure you want to discard your changes?",
@@ -187,11 +194,7 @@ export default function EditPost() {
               { text: "Cancel", style: "cancel" },
               {
                 text: "Discard",
-                onPress: () => {
-                  allowNavigationRef.current = true
-                  resetEditPost()
-                  navigation.goBack()
-                },
+                onPress: discard,
                 style: "destructive",
               },
             ]
@@ -203,17 +206,6 @@ export default function EditPost() {
     return unsubscribe
   }, [hasChanges, navigation])
 
-  const detailOptions = useCustomHeader({
-    title: "Edit Post",
-    isEditMode: true,
-    onBackPress: () => {
-      router.back()
-      return true
-    },
-  })
-
-  const hasImages = formState.existingImages.length > 0 || formState.newImages.length > 0
-
   async function refresh() {
     queryClient.invalidateQueries({ queryKey: [`post-${id}`] })
   }
@@ -221,7 +213,6 @@ export default function EditPost() {
   if (isPending) {
     return (
       <>
-        <Stack.Screen options={detailOptions} />
         <View style={commonStyles.generalContainer}>
           <LoadingIndicator loading={true} />
         </View>
@@ -242,139 +233,114 @@ export default function EditPost() {
 
   return (
     <>
-      <Stack.Screen options={detailOptions} />
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: colors.light, paddingBottom: insets.bottom + 16 }}
+      <LoadingIndicator loading={loading} opacity={0.45} />
+
+      <ScrollView
+        style={commonStyles.generalContainer}
+        contentContainerStyle={[commonStyles.container, { gap: 10 }]}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          style={editPostStyles.scrollView}
-          contentContainerStyle={[editPostStyles.gaptainer, { paddingBottom: insets.bottom + 24 }]}
-          keyboardShouldPersistTaps="handled"
-        >
-          <CustomInput
-            title="Title"
-            headerStyles={{ fontSize: 16, fontWeight: "600" }}
-            value={formState.title}
-            onChangeText={text => {
-              setFormState(prev => ({ ...prev, title: text }))
-              setHasChanges(true)
-            }}
-            editable={!loading}
-            mandatory
-          />
+        <CustomInput
+          title="Title"
+          headerStyles={{ fontSize: 16, fontWeight: "600" }}
+          value={formState.title}
+          onChangeText={text => {
+            setFormState(prev => ({ ...prev, title: text }))
+            setHasChanges(true)
+          }}
+          editable={!loading}
+          mandatory
+        />
 
-          <CustomInput
-            title="Description"
-            headerStyles={{ fontSize: 16, fontWeight: "600" }}
-            value={formState.description}
-            multiline
-            onChangeText={text => {
-              setFormState(prev => ({ ...prev, description: text }))
-              setHasChanges(true)
-            }}
-            editable={!loading}
-            mandatory
-          />
+        <CustomInput
+          title="Description"
+          headerStyles={{ fontSize: 16, fontWeight: "600" }}
+          value={formState.description}
+          multiline
+          onChangeText={text => {
+            setFormState(prev => ({ ...prev, description: text }))
+            setHasChanges(true)
+          }}
+          editable={!loading}
+          mandatory
+        />
 
-          <View>
-            <Text style={inputStyles.header}>Location (Optional)</Text>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flex: 1 }}>
-                <Pressable onPress={handleLocationPress} disabled={loading}>
-                  <Text style={inputStyles.input}>
-                    {formState.closeCity ||
-                      (formState.location ? "Location selected" : "Tap to select location")}
-                  </Text>
-                </Pressable>
-              </View>
-              {formState.location && (
-                <Pressable
-                  style={editPostStyles.locationClearButton}
-                  onPress={() => {
-                    setFormState(prev => ({ ...prev, location: null, closeCity: "" }))
-                    setHasChanges(true)
-                  }}
-                  disabled={loading}
-                >
-                  <Feather name="x" size={24} color={colors.darkGray} />
-                </Pressable>
-              )}
-            </View>
-          </View>
+        {/* Images */}
+        <View>
+          <Text style={inputStyles.header}>
+            Images {images.length > 0 && `(${images.length}/${MAX_POST_IMAGES})`}
+          </Text>
 
-          {/* Images */}
-          <View>
-            <Text style={inputStyles.header}>Images (Optional)</Text>
-
-            {hasImages ? (
-              <>
-                <ImageCarousel
-                  images={[...formState.existingImages, ...formState.newImages.map(img => img.uri)]}
-                  pageType="edit"
-                  editable
-                />
+          {images.length > 0 ? (
+            <>
+              <ImageCarousel
+                images={images.map(img => img.url)}
+                keys={images.map(img => img.key)}
+                pageType="edit"
+                editable
+              />
+              {images.length < MAX_POST_IMAGES && (
                 <Pressable
                   onPress={pickImages}
                   disabled={loading}
-                  style={editPostStyles.addMoreImagesButton}
+                  style={createPostStyles.addMoreImagesButton}
                 >
                   <Feather name="plus" size={24} color={colors.purple} />
                   <Text style={{ color: colors.purple, fontSize: 16, fontWeight: "500" }}>
                     Add More Images
                   </Text>
                 </Pressable>
-              </>
-            ) : (
-              <Pressable
-                onPress={pickImages}
-                disabled={loading}
-                style={editPostStyles.uploadImageButton}
-              >
-                <Feather name="upload" size={40} color={colors.purple} />
-                <Text style={{ marginTop: 10, color: colors.dark, fontSize: 16 }}>
-                  Upload Images
-                </Text>
-              </Pressable>
-            )}
-          </View>
+              )}
+            </>
+          ) : (
+            <Pressable
+              onPress={pickImages}
+              disabled={loading}
+              style={createPostStyles.uploadImageButton}
+            >
+              <Feather name="upload" size={40} color={colors.purple} />
+              <Text style={{ marginTop: 10, color: colors.dark, fontSize: 16 }}>Upload Images</Text>
+            </Pressable>
+          )}
+        </View>
 
-          <View style={editPostStyles.gaptainer}>
-            <View style={editPostStyles.lastPageRowContainer}>
-              <View style={editPostStyles.lastPageRowLabelContainer}>
-                <Text style={editPostStyles.lastPageQuestion}>Public Post</Text>
-                <Pressable
-                  onPress={() =>
-                    Alert.alert(
-                      "Public Post",
-                      "Toggle this option to make your post visible to other users.\n\nYou can change this setting anytime."
-                    )
-                  }
-                >
-                  <Feather name="info" size={20} color={colors.gray} />
-                </Pressable>
-              </View>
-              <Switch
-                trackColor={{ true: colors.purple }}
-                thumbColor={colors.light}
-                onValueChange={value => {
-                  setFormState(prev => ({ ...prev, publicPost: value }))
-                  setHasChanges(true)
-                }}
-                value={formState.publicPost}
-                disabled={loading}
-              />
-            </View>
+        <View style={createPostStyles.lastPageRowContainer}>
+          <View style={createPostStyles.lastPageRowLabelContainer}>
+            <Text style={createPostStyles.lastPageQuestion}>Public Post</Text>
+            <Pressable
+              onPress={() =>
+                Toast.show({
+                  type: "info",
+                  text1: "Public Post",
+                  text2: "Toggle this option to make your post visible to other users.",
+                })
+              }
+            >
+              <Feather name="info" size={20} color={colors.gray} />
+            </Pressable>
           </View>
-          <CustomButton
-            onPress={handleSave}
-            disabled={loading || !hasChanges}
-            color={loading ? colors.lightGray : colors.purple}
-            fontSize={16}
-          >
-            {loading ? "Sending..." : "Save Changes"}
-          </CustomButton>
-        </ScrollView>
-      </SafeAreaView>
+          <Switch
+            trackColor={{ true: colors.purple }}
+            thumbColor={colors.light}
+            onValueChange={value => {
+              setFormState(prev => ({ ...prev, publicPost: value }))
+              setHasChanges(true)
+            }}
+            value={formState.publicPost}
+            disabled={loading}
+          />
+        </View>
+        <CustomButton
+          onPress={handleSave}
+          disabled={loading || !hasChanges}
+          color={loading ? colors.lightGray : colors.purple}
+          fontSize={16}
+        >
+          {loading ? "Sending..." : "Save Changes"}
+        </CustomButton>
+
+        <View style={{ height: insets.bottom }} />
+      </ScrollView>
     </>
   )
 }

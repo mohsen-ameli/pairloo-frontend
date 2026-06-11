@@ -17,5 +17,7 @@ export const MINIMUM_SHORT_ANSWER_LENGTH = 1
 
 export const NUM_MESSAGES_TO_LOAD = 20
 
+export const MAX_POST_IMAGES = 5
+
 export const ANDROID_ADS_UNIT_ID = process.env.EXPO_PUBLIC_ANDROID_ADS_UNIT_ID!
 export const IOS_ADS_UNIT_ID = process.env.EXPO_PUBLIC_IOS_ADS_UNIT_ID!

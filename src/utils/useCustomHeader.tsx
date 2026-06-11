@@ -46,8 +46,6 @@ export default function useCustomHeader({
   isProfile = false,
   isSettings = false,
   includeBottomPadding = false,
-  isEditMode = false,
-  onBackPress,
 }: {
   title: string
   postId?: string
@@ -59,8 +57,7 @@ export default function useCustomHeader({
   isProfile?: boolean
   isSettings?: boolean
   includeBottomPadding?: boolean
-  isEditMode?: boolean
-  onBackPress?: () => boolean
+  isEditPost?: boolean
 }): ExtendedStackNavigationOptions {
   const insets = useSafeAreaInsets()
 
@@ -115,7 +112,7 @@ export default function useCustomHeader({
   if (isMyPostDetails && postId) {
     return {
       ...options,
-      headerRight: () => <MyPostMenu id={postId} />,
+      headerRight: () => <MyPostMenu id={postId} canEdit />,
     }
   }
 
@@ -130,17 +127,6 @@ export default function useCustomHeader({
     return {
       ...options,
       headerRight: () => <SettingsHeader />,
-    }
-  }
-
-  if (isEditMode) {
-    return {
-      ...options,
-      headerLeft: () => (
-        <TouchableOpacity onPress={onBackPress} style={{ padding: 6 }}>
-          <Feather name="chevron-left" size={24} color={colors.dark} />
-        </TouchableOpacity>
-      ),
     }
   }
 

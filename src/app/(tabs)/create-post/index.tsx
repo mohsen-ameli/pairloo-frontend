@@ -31,7 +31,7 @@ import {
 import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
-import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
+import { MAX_POST_IMAGES, MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 
 import { inputStyles } from "@/src/styles/input.styles"
 import { useFocusEffect, useRouter } from "expo-router"
@@ -341,7 +341,12 @@ export default function CreatePost() {
 
             {/* Images */}
             <View>
-              <Text style={inputStyles.header}>Images (Optional)</Text>
+              <Text style={inputStyles.header}>
+                Images{" "}
+                {settings.images.length > 0
+                  ? `(${settings.images.length}/${MAX_POST_IMAGES})`
+                  : "(Optional)"}
+              </Text>
 
               {settings.images.length != 0 ? (
                 <>
@@ -350,16 +355,18 @@ export default function CreatePost() {
                     images={settings.images.map(img => img.localUri)}
                     editable
                   />
-                  <Pressable
-                    onPress={pickImage}
-                    disabled={loading}
-                    style={createPostStyles.addMoreImagesButton}
-                  >
-                    <Feather name="plus" size={24} color={colors.purple} />
-                    <Text style={{ color: colors.purple, fontSize: 16, fontWeight: "500" }}>
-                      Add More Images
-                    </Text>
-                  </Pressable>
+                  {settings.images.length < MAX_POST_IMAGES && (
+                    <Pressable
+                      onPress={pickImage}
+                      disabled={loading}
+                      style={createPostStyles.addMoreImagesButton}
+                    >
+                      <Feather name="plus" size={24} color={colors.purple} />
+                      <Text style={{ color: colors.purple, fontSize: 16, fontWeight: "500" }}>
+                        Add More Images
+                      </Text>
+                    </Pressable>
+                  )}
                 </>
               ) : (
                 <Pressable

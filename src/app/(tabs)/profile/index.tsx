@@ -265,7 +265,7 @@ export default function ProfileScreen() {
                               {post.title?.trim() || "Untitled draft"}
                             </Text>
                             <TouchableHighlight>
-                              <MyPostMenu id={post._id} />
+                              <MyPostMenu id={post._id} canEdit={post.status !== "draft"} />
                             </TouchableHighlight>
                           </View>
 

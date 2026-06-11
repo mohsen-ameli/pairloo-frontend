@@ -41,7 +41,7 @@ const BetterBaseToast = (props: ToastProps, color: string) => (
     text2NumberOfLines={10}
     style={{
       borderLeftColor: color,
-      height: props.type === "info" ? 100 : undefined,
+      height: props.type === "info" ? 100 : 50,
       paddingVertical: 6,
     }}
   />
@@ -78,6 +78,7 @@ export default function RootLayout() {
   const forgotEmailOptions = useCustomHeader({ title: "Forgot Email", includeBottomPadding: true })
   const chatOptions = useCustomHeader({ title: "Chat", inChat: true, includeBottomPadding: true })
   const myPostOptions = useCustomHeader({ title: "My Post" })
+  const editPostOptions = useCustomHeader({ title: "Edit Post" })
   const postDetailsOptions = useCustomHeader({
     title: "Post Details",
     isPostDetails: true,
@@ -228,6 +229,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(details)/chat-details" options={chatOptions} />
               <Stack.Screen name="(details)/my-post" options={myPostOptions} />
+              <Stack.Screen name="(details)/edit-post" options={editPostOptions} />
               <Stack.Screen name="(details)/feed-post" options={postDetailsOptions} />
               <Stack.Screen name="(details)/general-profile" options={generalProfileOptions} />
               <Stack.Screen

@@ -9,7 +9,7 @@ import Clipboard from "@react-native-clipboard/clipboard"
 import { BASE_URL } from "../utils/constants"
 import Toast from "react-native-toast-message"
 
-export const MyPostMenu = ({ id }: { id: string }) => {
+export const MyPostMenu = ({ id, canEdit }: { id: string; canEdit: boolean }) => {
   const deletePost = useSetAtom(deletePostAtom)
   const editPost = useSetAtom(editPostAtom)
 
@@ -17,7 +17,7 @@ export const MyPostMenu = ({ id }: { id: string }) => {
     <DropdownMenu
       style={styles.button}
       onPressAction={action => {
-        if (action === "edit") {
+        if (action === "edit" && canEdit) {
           editPost(id)
         } else if (action === "share") {
           const postUrl = `${BASE_URL}/feed-post?feedPostId=${id}`
@@ -33,12 +33,14 @@ export const MyPostMenu = ({ id }: { id: string }) => {
           title: "Edit",
           titleColor: colors.dark,
           icon: <Feather name="edit" size={20} color={colors.dark} />,
+          visible: canEdit,
         },
         {
           id: "share",
           title: "Share",
           titleColor: colors.dark,
           icon: <Feather name="share-2" size={20} color={colors.dark} />,
+          visible: canEdit,
         },
         {
           id: "destructive",
