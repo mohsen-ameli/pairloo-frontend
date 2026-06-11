@@ -64,8 +64,8 @@ export default function ImageCarousel({
       style={{
         flex: 1,
         alignItems: "center",
-        paddingBottom: 20,
-        height: isWeb ? 550 : 350,
+        paddingBottom: 10,
+        height: isWeb ? 550 : "auto",
       }}
     >
       <Carousel

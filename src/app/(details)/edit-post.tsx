@@ -94,6 +94,9 @@ export default function EditPost() {
     if (!formState.title.trim() || !formState.description.trim()) {
       Toast.show({ type: "error", text1: "Title and description are required" })
       return
+    } else if (images.length > MAX_POST_IMAGES) {
+      Toast.show({ type: "error", text1: `You can only upload up to ${MAX_POST_IMAGES} images` })
+      return
     }
     setLoading(true)
 
@@ -113,15 +116,20 @@ export default function EditPost() {
 
       for (const img of formState.images) {
         if (img.file) {
-          const filename = `image-${Date.now()}.${img.mimeType?.split("/")[1] || "jpg"}`
-          formData.append("newImages", {
-            uri: img.url,
-            name: filename,
-            file: img.file,
-            type: img.mimeType || "image/jpeg",
-          } as any)
+          if (Platform.OS === "web") {
+            formData.append("newImages", img.file)
+          } else {
+            const filename = `image-${Date.now()}.${img.mimeType?.split("/")[1] || "jpg"}`
+            formData.append("newImages", {
+              uri: img.url,
+              name: filename,
+              file: img.file,
+              type: img.mimeType || "image/jpeg",
+            } as any)
+          }
         }
       }
+
       const response = await authFetch(
         `/api/posts/edit-post/${id}`,
         {
@@ -158,7 +166,7 @@ export default function EditPost() {
         text1: "An unexpected error occurred",
         text2: error.message || "Please try again",
       })
-      resetEditPost()
+      setLoading(false)
     }
   }
 
@@ -267,7 +275,14 @@ export default function EditPost() {
 
         {/* Images */}
         <View>
-          <Text style={inputStyles.header}>
+          <Text
+            style={[
+              inputStyles.header,
+              {
+                color: images.length <= MAX_POST_IMAGES ? colors.dark : colors.errorRed,
+              },
+            ]}
+          >
             Images {images.length > 0 && `(${images.length}/${MAX_POST_IMAGES})`}
           </Text>
 
