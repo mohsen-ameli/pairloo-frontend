@@ -69,7 +69,13 @@ export default function EditPost() {
 
   async function pickImages() {
     setLoading(true)
-    const attachments = await getAttachment(false, "library", true, MAX_POST_IMAGES - images.length)
+    const attachments = await getAttachment({
+      pfp: false,
+      option: "library",
+      multi: true,
+      includeFile: false,
+      limit: MAX_POST_IMAGES - images.length,
+    })
     if (attachments.length > 0) {
       setFormState(prev => ({
         ...prev,
@@ -78,7 +84,6 @@ export default function EditPost() {
           ...attachments.map(att => ({
             key: att.uri,
             url: att.uri,
-            file: att.file,
             mimeType: att.mimeType,
             removed: false,
             isExisting: false,
@@ -114,16 +119,21 @@ export default function EditPost() {
       }
       formData.append("metadata", JSON.stringify(metadata))
 
+      // We're appending the image blobs here. These are different from images in the metadata, as those are used
+      // to determine which images are removed/added/kept, while these blobs are the actual files that will be processed by the backend.
       for (const img of formState.images) {
-        if (img.file) {
+        if (!img.removed && !img.isExisting) {
+          const response = await fetch(img.url)
+          const file = await response.blob()
+
           if (Platform.OS === "web") {
-            formData.append("newImages", img.file)
+            formData.append("newImages", file)
           } else {
-            const filename = `image-${Date.now()}.${img.mimeType?.split("/")[1] || "jpg"}`
+            const name = `image-${Date.now()}.${img.mimeType?.split("/")[1] || "jpg"}`
             formData.append("newImages", {
               uri: img.url,
-              name: filename,
-              file: img.file,
+              name,
+              file,
               type: img.mimeType || "image/jpeg",
             } as any)
           }

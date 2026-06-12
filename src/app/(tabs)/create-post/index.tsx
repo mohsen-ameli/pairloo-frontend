@@ -329,7 +329,7 @@ export default function CreatePost() {
                       setSettings(async curr => ({
                         ...(await curr),
                         location: null,
-                        closeCity: "",
+                        closeCity: "Click to select",
                       }))
                     }}
                   >
@@ -341,7 +341,15 @@ export default function CreatePost() {
 
             {/* Images */}
             <View>
-              <Text style={inputStyles.header}>
+              <Text
+                style={[
+                  inputStyles.header,
+                  {
+                    color:
+                      settings.images.length <= MAX_POST_IMAGES ? colors.dark : colors.errorRed,
+                  },
+                ]}
+              >
                 Images{" "}
                 {settings.images.length > 0
                   ? `(${settings.images.length}/${MAX_POST_IMAGES})`
@@ -352,7 +360,7 @@ export default function CreatePost() {
                 <>
                   <ImageCarousel
                     pageType="create"
-                    images={settings.images.map(img => img.localUri)}
+                    images={settings.images.map(img => img.uri)}
                     editable
                   />
                   {settings.images.length < MAX_POST_IMAGES && (

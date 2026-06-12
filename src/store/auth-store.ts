@@ -556,7 +556,12 @@ export const verifyUserInfoAtom = atom(null, async (get, set) => {
 })
 
 export const setUserPictureAtom = atom(null, async (get, set, option: "library" | "camera") => {
-  const attachments = await set(getAttachmentAtom, true, option, false)
+  const attachments = await set(getAttachmentAtom, {
+    pfp: true,
+    option,
+    multi: false,
+    includeFile: true,
+  })
   const newUser = get(newUserAtom)
 
   if (!attachments) return
@@ -564,7 +569,7 @@ export const setUserPictureAtom = atom(null, async (get, set, option: "library" 
   set(newUserAtom, {
     ...newUser,
     picture: attachments[0].uri,
-    pictureBlob: attachments[0].file,
+    pictureBlob: attachments[0].file!,
     pictureMimeType: attachments[0].mimeType,
   })
 })

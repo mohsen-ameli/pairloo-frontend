@@ -406,8 +406,12 @@ export const sendAttachmentAtom = atom(null, async (get, set, option: "library" 
   const user = get(userAtom)
   if (!socket || !user) return
 
-  // get the attachments
-  const attachments = await set(getAttachmentAtom, false, option, true)
+  const attachments = await set(getAttachmentAtom, {
+    pfp: false,
+    option,
+    multi: true,
+    includeFile: true,
+  })
 
   if (!attachments) return
   set(chatAttachmentsAtom, attachments)

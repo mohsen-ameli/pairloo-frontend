@@ -3,7 +3,7 @@ import Animated from "react-native-reanimated"
 import { colors, isWeb } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useAtomValue, useSetAtom } from "jotai"
-import { settingsAtom } from "@/src/store/create-post-store"
+import { createPostRemoveImageAtom } from "@/src/store/create-post-store"
 import { imgIndexAtom } from "@/src/store/chat-store"
 import { useRouter } from "expo-router"
 import { commonStyles } from "@/src/styles/common.styles"
@@ -25,25 +25,17 @@ export function SlideItem({
   imgKey?: string
   pageType: PageType
 }) {
-  const setSettings = useSetAtom(settingsAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
   const router = useRouter()
   const isDragging = useAtomValue(isDraggingAtom)
   const handleRemoveEdit = useSetAtom(editPostRemoveImageAtom)
-  const handleRemoveCreate = () =>
-    setSettings(async curr => {
-      const currSettings = await curr
-      return {
-        ...currSettings,
-        images: currSettings.images.filter((_, i) => i !== index),
-      }
-    })
+  const handleRemoveCreate = useSetAtom(createPostRemoveImageAtom)
 
   const handleRemove = () => {
     if (pageType === "edit") {
       handleRemoveEdit(imgKey!)
     } else {
-      handleRemoveCreate()
+      handleRemoveCreate(index)
     }
   }
 

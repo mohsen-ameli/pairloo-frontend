@@ -1,1 +1,1 @@
-export type Attachment = { uri: string; mimeType: string; file: Blob }
+export type Attachment = { uri: string; mimeType: string; file?: Blob }
