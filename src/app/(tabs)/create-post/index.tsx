@@ -184,7 +184,7 @@ export default function CreatePost() {
 
           return (
             <Dismissable key={i}>
-              <View style={createPostStyles.container}>
+              <View style={[createPostStyles.container, commonStyles.container]}>
                 <Text style={createPostStyles.questionText}>{questionText}</Text>
                 {type === "multiple_choice" && options && options.length > 0 ? (
                   <ScrollView showsVerticalScrollIndicator={false}>
@@ -279,7 +279,8 @@ export default function CreatePost() {
         {/* The last page */}
         <ScrollView
           key={QNAs?.length}
-          style={createPostStyles.scrollView}
+          style={[createPostStyles.scrollView, { paddingHorizontal: 10 }]}
+          contentContainerStyle={[commonStyles.container, { padding: 0 }]}
           keyboardShouldPersistTaps="handled"
         >
           <View style={createPostStyles.gaptainer}>
@@ -361,6 +362,7 @@ export default function CreatePost() {
                   <ImageCarousel
                     pageType="create"
                     images={settings.images.map(img => img.uri)}
+                    widthOffset={30}
                     editable
                   />
                   {settings.images.length < MAX_POST_IMAGES && (
@@ -405,7 +407,7 @@ export default function CreatePost() {
                       })
                     }
                   >
-                    <Feather name="info" size={20} color={colors.gray} />
+                    <Feather name="info" size={18} color={colors.gray} />
                   </Pressable>
                 </View>
                 <Switch

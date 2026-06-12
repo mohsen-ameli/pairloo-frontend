@@ -84,8 +84,8 @@ export const createPostStyles = StyleSheet.create({
   },
   lastPageQuestion: {
     color: colors.dark,
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "500",
   },
   uploadImageButton: {
     height: 250,

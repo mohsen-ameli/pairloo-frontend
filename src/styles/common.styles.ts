@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
-import { boxShadow, colors, isWeb } from "@/src/utils/colors"
+import { boxShadow, colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 
 export const commonStyles = StyleSheet.create({
   // Containers
@@ -11,7 +11,7 @@ export const commonStyles = StyleSheet.create({
   container: {
     backgroundColor: colors.light,
     padding: 10,
-    width: isWeb ? 600 : "100%",
+    width: isWeb ? webContainerWidth : "100%",
     alignSelf: "center",
   },
 
