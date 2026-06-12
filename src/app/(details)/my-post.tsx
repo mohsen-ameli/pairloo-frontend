@@ -114,7 +114,9 @@ export default function PostDetails() {
       <View style={commonStyles.generalContainer}>
         <ScrollView contentContainerStyle={commonStyles.container}>
           <View style={styles.postContainer}>
-            {post.images && post.images.length != 0 && <ImageCarousel images={post.images} />}
+            {post.images && post.images.length != 0 && (
+              <ImageCarousel pageType="view" images={post.images} />
+            )}
             <Text style={styles.title}>{post.title}</Text>
             <View style={styles.statusMenuContainer}>
               <DropdownMenu
@@ -332,7 +334,7 @@ export default function PostDetails() {
                   </View>
                   <View style={styles.closestPostImage}>
                     {post.images && post.images.length != 0 && (
-                      <ImageCarousel images={post.images} widthOffset={23} />
+                      <ImageCarousel pageType="view" images={post.images} widthOffset={23} />
                     )}
                   </View>
                   <View style={styles.closestPostItem}>

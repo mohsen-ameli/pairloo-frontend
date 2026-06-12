@@ -29,6 +29,7 @@ export default function ({ color, children, disabled, fontSize, style, ...rest }
         },
         style,
       ]}
+      disabled={disabled}
       {...rest}
     >
       <Text

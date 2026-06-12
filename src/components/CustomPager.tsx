@@ -1,6 +1,6 @@
 import { Children, ReactNode, useEffect, useState } from "react"
-import { Keyboard, Pressable, Text, View } from "react-native"
-import { colors, isWeb } from "@/src/utils/colors"
+import { Dimensions, Keyboard, Pressable, Text, View } from "react-native"
+import { colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
@@ -22,7 +22,6 @@ export default function CustomPager({ children }: { children: ReactNode }) {
   const scrollOffset = useSharedValue(0)
   const translateX = useSharedValue(0)
   const [containerWidth, setContainerWidth] = useState(0)
-  const [xPos, setXPos] = useState(0)
   const currPage = useAtomValue(currPageAtom)
   const flow = useAtomValue(flowAtom)
   const isAuthenticated = useAtomValue(userAtom) !== null
@@ -31,7 +30,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!containerWidth) return
 
-    translateX.value = withTiming(-currPage * containerWidth - 10, {
+    translateX.value = withTiming(-currPage * containerWidth, {
       duration: 300,
       easing: Easing.out(Easing.quad),
     })
@@ -80,13 +79,8 @@ export default function CustomPager({ children }: { children: ReactNode }) {
 
       {/* Pages */}
       <View
-        style={[commonStyles.container, { flex: 1, overflow: "hidden", paddingVertical: 0 }]}
-        onLayout={event => {
-          const width = event.nativeEvent.layout.width
-          setContainerWidth(width)
-          const x = event.nativeEvent.layout.x
-          setXPos(x)
-        }}
+        style={{ flex: 1, paddingVertical: 0 }}
+        onLayout={event => setContainerWidth(event.nativeEvent.layout.width)}
       >
         <Animated.View
           style={[
@@ -113,10 +107,12 @@ export default function CustomPager({ children }: { children: ReactNode }) {
             ? [
                 {
                   position: "absolute",
-                  right: xPos - 100,
+                  right: (Dimensions.get("window").width - webContainerWidth) / 2 - 100,
                   top: "50%",
                   borderRadius: "50%",
                   userSelect: "none",
+                  alignSelf: "center",
+                  zIndex: 1,
                 },
               ]
             : [
@@ -167,7 +163,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
               ? [
                   {
                     position: "absolute",
-                    left: xPos - 100,
+                    left: (Dimensions.get("window").width - webContainerWidth) / 2 - 100,
                     top: "50%",
                     borderRadius: "50%",
                     userSelect: "none",

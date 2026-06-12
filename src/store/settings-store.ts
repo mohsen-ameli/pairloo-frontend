@@ -23,10 +23,7 @@ export const editModeAtom = atom(false)
 export const loadingAtom = atom(false)
 
 export const handleSaveEditAtom = atom(null, async (get, set) => {
-  const user = get(userAtom)
-  const userJwt = await get(userSecureAtom)
   const editFields = get(editFieldsAtom)
-  if (!user || !userJwt) return
 
   try {
     set(loadingAtom, true)
@@ -62,7 +59,7 @@ export const handleSaveEditAtom = atom(null, async (get, set) => {
       return
     }
 
-    set(userAtom, { ...user, ...data })
+    set(userAtom, curr => ({ ...curr, ...data }))
     set(editModeAtom, false)
     set(loadingAtom, false)
     Toast.show({
@@ -102,17 +99,17 @@ export const resetEditAtom = atom(null, async (get, set) => {
 })
 
 export const setUserPfpAtom = atom(null, async (get, set, option: "library" | "camera") => {
-  const user = get(userAtom)
-  if (!user) return
+  const attachments = await set(getAttachmentAtom, {
+    pfp: true,
+    option,
+    multi: false,
+    includeFile: true,
+  })
 
-  // get the attachments
-  const attachments = await set(getAttachmentAtom, true, option, false)
-
-  if (!attachments) return
   set(editFieldsAtom, f => ({
     ...f,
     picture: attachments[0].uri,
-    pictureBlob: attachments[0].file,
+    pictureBlob: attachments[0].file!,
     pictureMimeType: attachments[0].mimeType,
   }))
 })

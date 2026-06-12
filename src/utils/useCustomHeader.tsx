@@ -57,6 +57,7 @@ export default function useCustomHeader({
   isProfile?: boolean
   isSettings?: boolean
   includeBottomPadding?: boolean
+  isEditPost?: boolean
 }): ExtendedStackNavigationOptions {
   const insets = useSafeAreaInsets()
 
@@ -111,7 +112,7 @@ export default function useCustomHeader({
   if (isMyPostDetails && postId) {
     return {
       ...options,
-      headerRight: () => <MyPostMenu id={postId} />,
+      headerRight: () => <MyPostMenu id={postId} canEdit />,
     }
   }
 

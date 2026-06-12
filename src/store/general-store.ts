@@ -20,7 +20,23 @@ export const notificationSoundAtom = atom<AudioPlayer | null>(null)
 // Returns an array of selected attachments with their uri, mimeType, and file blob
 export const getAttachmentAtom = atom(
   null,
-  async (get, set, pfp: boolean, option: "library" | "camera", multi: boolean) => {
+  async (
+    get,
+    set,
+    {
+      pfp,
+      option,
+      multi,
+      includeFile,
+      limit,
+    }: {
+      pfp: boolean
+      option: "library" | "camera"
+      multi: boolean
+      includeFile: boolean
+      limit?: number
+    }
+  ) => {
     let results: ImagePicker.ImagePickerResult | null = null
     const res: Attachment[] = []
 
@@ -38,6 +54,8 @@ export const getAttachmentAtom = atom(
         allowsEditing: pfp,
         aspect: pfp ? [3, 3] : undefined,
         shape: pfp ? "oval" : undefined,
+        quality: 0.5,
+        selectionLimit: limit,
       })
     } else if (option === "camera") {
       const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
@@ -53,6 +71,7 @@ export const getAttachmentAtom = atom(
         allowsEditing: pfp,
         aspect: pfp ? [3, 3] : undefined,
         shape: pfp ? "oval" : undefined,
+        selectionLimit: limit,
       })
     }
 
@@ -60,9 +79,13 @@ export const getAttachmentAtom = atom(
       for (const asset of results.assets) {
         const uri = asset.uri
         const mimeType = asset.mimeType || "image/jpeg"
-        const response = await fetch(uri)
-        const file = await response.blob()
-        res.push({ uri, mimeType, file })
+        if (includeFile) {
+          const response = await fetch(uri)
+          const file = await response.blob()
+          res.push({ uri, mimeType, file })
+        } else {
+          res.push({ uri, mimeType })
+        }
       }
     }
 

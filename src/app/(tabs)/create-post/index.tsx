@@ -31,7 +31,7 @@ import {
 import { Question } from "@/src/types/question.types"
 import Feather from "@expo/vector-icons/Feather"
 import Octicons from "@expo/vector-icons/Octicons"
-import { MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
+import { MAX_POST_IMAGES, MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 
 import { inputStyles } from "@/src/styles/input.styles"
 import { useFocusEffect, useRouter } from "expo-router"
@@ -184,7 +184,7 @@ export default function CreatePost() {
 
           return (
             <Dismissable key={i}>
-              <View style={createPostStyles.container}>
+              <View style={[createPostStyles.container, commonStyles.container]}>
                 <Text style={createPostStyles.questionText}>{questionText}</Text>
                 {type === "multiple_choice" && options && options.length > 0 ? (
                   <ScrollView showsVerticalScrollIndicator={false}>
@@ -279,7 +279,8 @@ export default function CreatePost() {
         {/* The last page */}
         <ScrollView
           key={QNAs?.length}
-          style={createPostStyles.scrollView}
+          style={[createPostStyles.scrollView, { paddingHorizontal: 10 }]}
+          contentContainerStyle={[commonStyles.container, { padding: 0 }]}
           keyboardShouldPersistTaps="handled"
         >
           <View style={createPostStyles.gaptainer}>
@@ -329,7 +330,7 @@ export default function CreatePost() {
                       setSettings(async curr => ({
                         ...(await curr),
                         location: null,
-                        closeCity: "",
+                        closeCity: "Click to select",
                       }))
                     }}
                   >
@@ -341,21 +342,41 @@ export default function CreatePost() {
 
             {/* Images */}
             <View>
-              <Text style={inputStyles.header}>Images (Optional)</Text>
+              <Text
+                style={[
+                  inputStyles.header,
+                  {
+                    color:
+                      settings.images.length <= MAX_POST_IMAGES ? colors.dark : colors.errorRed,
+                  },
+                ]}
+              >
+                Images{" "}
+                {settings.images.length > 0
+                  ? `(${settings.images.length}/${MAX_POST_IMAGES})`
+                  : "(Optional)"}
+              </Text>
 
               {settings.images.length != 0 ? (
                 <>
-                  <ImageCarousel images={settings.images.map(img => img.localUri)} editable />
-                  <Pressable
-                    onPress={pickImage}
-                    disabled={loading}
-                    style={createPostStyles.addMoreImagesButton}
-                  >
-                    <Feather name="plus" size={24} color={colors.purple} />
-                    <Text style={{ color: colors.purple, fontSize: 16, fontWeight: "500" }}>
-                      Add More Images
-                    </Text>
-                  </Pressable>
+                  <ImageCarousel
+                    pageType="create"
+                    images={settings.images.map(img => img.uri)}
+                    widthOffset={30}
+                    editable
+                  />
+                  {settings.images.length < MAX_POST_IMAGES && (
+                    <Pressable
+                      onPress={pickImage}
+                      disabled={loading}
+                      style={createPostStyles.addMoreImagesButton}
+                    >
+                      <Feather name="plus" size={24} color={colors.purple} />
+                      <Text style={{ color: colors.purple, fontSize: 16, fontWeight: "500" }}>
+                        Add More Images
+                      </Text>
+                    </Pressable>
+                  )}
                 </>
               ) : (
                 <Pressable
@@ -386,7 +407,7 @@ export default function CreatePost() {
                       })
                     }
                   >
-                    <Feather name="info" size={20} color={colors.gray} />
+                    <Feather name="info" size={18} color={colors.gray} />
                   </Pressable>
                 </View>
                 <Switch

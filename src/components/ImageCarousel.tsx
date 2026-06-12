@@ -3,29 +3,33 @@ import { useSharedValue } from "react-native-reanimated"
 import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated-carousel"
 import { SlideItem } from "./SlideItem"
 import { useEffect, useRef } from "react"
-import { colors, isWeb } from "@/src/utils/colors"
+import { colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 import { useSetAtom } from "jotai"
 import { bigImageViewAtom } from "@/src/store/chat-store"
 import { isDraggingAtom } from "@/src/store/general-store"
+import { PageType } from "./SlideItem"
 
 const w = Dimensions.get("window").width
-let width = isWeb ? 600 : w
 
 export default function ImageCarousel({
   images,
+  keys,
   widthOffset = 0,
   editable = false,
+  pageType,
 }: {
   images: string[]
+  keys?: string[]
   widthOffset?: number
   editable?: boolean
+  pageType: PageType
 }) {
   const ref = useRef<ICarouselInstance>(null)
   const progress = useSharedValue(0)
   const setImages = useSetAtom(bigImageViewAtom)
   const setIsDragging = useSetAtom(isDraggingAtom)
 
-  width -= widthOffset
+  const carouselWidth = (isWeb ? webContainerWidth : w) - widthOffset
 
   useEffect(() => {
     setImages(
@@ -44,7 +48,15 @@ export default function ImageCarousel({
   }
 
   if (images.length === 1) {
-    return <SlideItem index={0} src={images[0]} editable={editable} />
+    return (
+      <SlideItem
+        index={0}
+        src={images[0]}
+        imgKey={keys?.[0]}
+        editable={editable}
+        pageType={pageType}
+      />
+    )
   }
 
   return (
@@ -53,7 +65,7 @@ export default function ImageCarousel({
         flex: 1,
         alignItems: "center",
         paddingBottom: 20,
-        height: isWeb ? 550 : 350,
+        height: isWeb ? 550 : 320,
       }}
     >
       <Carousel
@@ -62,12 +74,12 @@ export default function ImageCarousel({
         loop={true}
         pagingEnabled={true}
         snapEnabled={true}
-        width={width}
-        style={{ width, height: isWeb ? 500 : 300 }}
+        width={carouselWidth}
+        style={{ width: carouselWidth, height: isWeb ? 500 : 300 }}
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,
-          parallaxScrollingOffset: Platform.OS === "android" ? 65 : isWeb ? 90 : 60,
+          parallaxScrollingOffset: isWeb ? 90 : 60,
           parallaxAdjacentItemScale: 0.75,
         }}
         onProgressChange={(offsetProgress, absoluteProgress) => {
@@ -75,7 +87,15 @@ export default function ImageCarousel({
         }}
         onScrollStart={() => setIsDragging(true)}
         onScrollEnd={() => setIsDragging(false)}
-        renderItem={({ index, item }) => <SlideItem index={index} src={item} editable={editable} />}
+        renderItem={({ index, item }) => (
+          <SlideItem
+            index={index}
+            src={item}
+            imgKey={keys?.[index]}
+            editable={editable}
+            pageType={pageType}
+          />
+        )}
         ref={ref}
       />
 

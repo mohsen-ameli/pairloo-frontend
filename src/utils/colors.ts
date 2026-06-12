@@ -4,6 +4,7 @@ const colorScheme = Appearance.getColorScheme()
 
 export const isDesktop = Dimensions.get("window").width > 700
 export const isWeb = Platform.OS === "web" && isDesktop
+export const webContainerWidth = 600
 
 export const baseColors = {
   purple: "#6B46C1",

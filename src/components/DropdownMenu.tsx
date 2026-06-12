@@ -19,6 +19,7 @@ export type DropdownMenuAction = {
   title: string
   titleColor: string
   icon?: React.ReactNode
+  visible?: boolean
 }
 
 export default function DropdownMenu({
@@ -111,21 +112,24 @@ export default function DropdownMenu({
               },
             ]}
           >
-            {actions.map(action => (
-              <Pressable
-                key={action.id}
-                style={styles.menuItem}
-                onPress={() => {
-                  onPressAction(action.id)
-                  setMenuVisible(false)
-                }}
-              >
-                {action.icon}
-                <Text style={[styles.menuItemText, { color: action.titleColor }]}>
-                  {action.title}
-                </Text>
-              </Pressable>
-            ))}
+            {actions.map(
+              action =>
+                action.visible !== false && (
+                  <Pressable
+                    key={action.id}
+                    style={styles.menuItem}
+                    onPress={() => {
+                      onPressAction(action.id)
+                      setMenuVisible(false)
+                    }}
+                  >
+                    {action.icon}
+                    <Text style={[styles.menuItemText, { color: action.titleColor }]}>
+                      {action.title}
+                    </Text>
+                  </Pressable>
+                )
+            )}
           </View>
         </Pressable>
       </Modal>
