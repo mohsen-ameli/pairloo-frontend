@@ -4,6 +4,7 @@ import io from "socket.io-client"
 import {
   ChatClientSocket,
   ConversationType,
+  LastMessageType,
   MessageType,
   ReplyTo,
 } from "@/src/types/socket/chat.type"
@@ -16,15 +17,16 @@ import Toast from "react-native-toast-message"
 import { router } from "expo-router"
 import { Attachment } from "../types/attachment.type"
 import { Alert, Platform } from "react-native"
+import { LinkedList, Node } from "../utils/linked-list"
 
 const unreadMsgStorage = createJSONStorage<{
   [conversationId: string]: number
 }>(() => AsyncStorage)
 export const unreadMessagesAtom = atomWithStorage("unread-messages", {}, unreadMsgStorage)
 
-export const conversationsAtom = atom<ConversationType[]>([])
+export const conversationsAtom = atom(new LinkedList<ConversationType | null>())
 
-export const currentConversationAtom = atom<ConversationType | null>(null)
+export const currentConversationAtom = atom(new Node<ConversationType | null>(null))
 
 export const activePostIdAtom = atom<string | null | undefined>(null)
 
@@ -49,6 +51,72 @@ export const highlightedMessageIdAtom = atom<string | null>(null)
 export const currentLongPressedMessageAtom = atom<ReplyTo | null>(null)
 
 export const editingMessageAtom = atom<ReplyTo | null>(null)
+
+// Update last message and move conversation to top when a new message is received or a message is edited/deleted
+const newMessageAffectsAtom = atom(
+  null,
+  async (get, set, message: LastMessageType, updateUnread: boolean = false) => {
+    if (!message) return
+
+    // update lastMessage
+    let currentConversation = get(currentConversationAtom)
+
+    // If user is not in the conversation
+    if (!currentConversation.value) {
+      let conversation = get(conversationsAtom).head
+      while (conversation) {
+        if (conversation.value?._id === message.conversationId) {
+          currentConversation = conversation
+          break
+        }
+        conversation = conversation.next
+      }
+
+      // update unread messages count
+      if (updateUnread) {
+        const unreadMsgs = await get(unreadMessagesAtom)
+        await set(unreadMessagesAtom, () => {
+          if (message.conversationId in unreadMsgs) {
+            return {
+              ...unreadMsgs,
+              [message.conversationId]: unreadMsgs[message.conversationId] + 1,
+            }
+          } else {
+            return {
+              ...unreadMsgs,
+              [message.conversationId]: 1,
+            }
+          }
+        })
+      }
+    }
+    if (!currentConversation.value) return
+
+    currentConversation.value.lastMessage = message
+
+    // move current conversation up to the top
+    set(conversationsAtom, list => {
+      if (currentConversation.value) {
+        if (currentConversation === list.head) return new LinkedList(currentConversation)
+        const prev = currentConversation.prev
+        const next = currentConversation.next
+        if (prev) {
+          prev.next = next
+        }
+        if (next) {
+          next.prev = prev
+        }
+        currentConversation.prev = null
+        if (list.head) {
+          currentConversation.next = list.head
+          list.head.prev = currentConversation
+        }
+        list.head = currentConversation
+      }
+      return new LinkedList(list.head)
+    })
+  }
+)
 
 export const initChatAtom = atom(null, async (get, set) => {
   const user = get(userAtom)
@@ -75,8 +143,8 @@ export const initChatAtom = atom(null, async (get, set) => {
   function cleanup() {
     get(chatSocketAtom)?.disconnect()
     set(chatSocketAtom, null)
-    set(conversationsAtom, [])
-    set(currentConversationAtom, null)
+    set(conversationsAtom, new LinkedList())
+    set(currentConversationAtom, new Node(null))
     set(messagesAtom, [])
     set(loadingAtom, false)
   }
@@ -119,15 +187,18 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   // Update the conversations list to include the new conversation
   socket.on("conversation", conversation => {
-    set(conversationsAtom, prev => {
-      const otherConversations = prev.filter(c => c._id !== conversation._id)
-      return [conversation, ...otherConversations]
+    set(conversationsAtom, list => {
+      list.append(conversation)
+      return new LinkedList(list.head)
     })
   })
 
   // Got all conversations
   socket.on("conversations", conversations => {
-    set(conversationsAtom, conversations)
+    const list = get(conversationsAtom)
+    for (const conversation of conversations) {
+      list.append(conversation)
+    }
     set(loadingAtom, false)
   })
 
@@ -142,7 +213,7 @@ export const initChatAtom = atom(null, async (get, set) => {
       return
     }
 
-    set(messagesAtom, messages)
+    set(messagesAtom, curr => [...curr, ...messages])
 
     const unreadMsgs = await get(unreadMessagesAtom)
     await set(unreadMessagesAtom, () => {
@@ -159,29 +230,24 @@ export const initChatAtom = atom(null, async (get, set) => {
 
   // Received a message from the server
   socket.on("message", async message => {
-    // Update last message
-    set(conversationsAtom, prev =>
-      prev.map(conversation => {
-        if (conversation._id === message.conversationId) {
-          return {
-            ...conversation,
-            lastMessage: {
-              ...message,
-              attachmentsCount: message.attachments ? message.attachments.length : 0,
-            },
-          }
-        }
-        return conversation
-      })
+    await set(
+      newMessageAffectsAtom,
+      {
+        ...message,
+        attachmentsCount: message.attachments ? message.attachments.length : 0,
+      },
+      true
     )
+
+    const currentConversation = get(currentConversationAtom)
+    if (!currentConversation.value) return
 
     // we received a message from other user
     if (message.sender._id !== userJwt._id) {
       set(messagesAtom, prev => [message, ...prev])
 
       // If user is not in the chat that received the message
-      const currentConversation = get(currentConversationAtom)
-      if (currentConversation?._id !== message.conversationId) {
+      if (currentConversation.value._id !== message.conversationId) {
         Toast.show({
           type: "newMessage",
           props: {
@@ -266,25 +332,17 @@ export const initChatAtom = atom(null, async (get, set) => {
     set(receivedMsgAtom, prev => !prev)
 
     // Update lastMessage if this is the last message
-    set(conversationsAtom, prev =>
-      prev.map(conversation => {
-        if (conversation._id === conversationId && conversation.lastMessage?._id === messageId) {
-          return {
-            ...conversation,
-            lastMessage: {
-              ...conversation.lastMessage!,
-              content,
-              updatedAt: new Date(updatedAt),
-              isEdited: true,
-            },
-          }
-        }
-        return conversation
-      })
-    )
+    const currentConversation = get(currentConversationAtom)
+    if (!currentConversation.value) return
+    const message = {
+      ...currentConversation.value.lastMessage!,
+      content,
+      updatedAt: new Date(updatedAt),
+    }
+    await set(newMessageAffectsAtom, message)
   })
 
-  socket.on("messageDeleted", ({ messageId, newLastMessage }) => {
+  socket.on("messageDeleted", async ({ messageId, newLastMessage }) => {
     // Remove the deleted message and clean up any replies to it
     set(messagesAtom, prev =>
       prev
@@ -299,20 +357,7 @@ export const initChatAtom = atom(null, async (get, set) => {
     )
 
     set(receivedMsgAtom, prev => !prev) // trigger re-render
-
-    // Update lastMessage if this was the last message
-    const currentConversation = get(currentConversationAtom)
-    set(conversationsAtom, prev =>
-      prev.map(conversation => {
-        if (
-          conversation._id === currentConversation?._id &&
-          conversation.lastMessage?._id === messageId
-        ) {
-          return { ...conversation, lastMessage: newLastMessage }
-        }
-        return conversation
-      })
-    )
+    await set(newMessageAffectsAtom, newLastMessage)
   })
 })
 
@@ -323,7 +368,7 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
   const socket = get(chatSocketAtom)
   const user = get(userAtom)
   const userSecure = await get(userSecureAtom)
-  const currentConversation = get(currentConversationAtom)
+  const currentConversation = get(currentConversationAtom).value
 
   if (!socket || !user || !userSecure || !currentConversation) return
   if (!editingMessage && !content && attachments.length === 0) return
@@ -415,13 +460,6 @@ export const sendAttachmentAtom = atom(null, async (get, set, option: "library" 
 
   if (!attachments) return
   set(chatAttachmentsAtom, attachments)
-
-  // const conversationId = get(currentConversationAtom)?._id
-  // socket.emit("newMessage", {
-  //   conversationId,
-  //   file: attachments[0].file,
-  //   mimeType: attachments[0].mimeType,
-  // })
 })
 
 // Delete a message in a conversation
@@ -478,5 +516,5 @@ export const cleanupChatAtom = atom(null, async (get, set) => {
   set(entireChatLoadedAtom, false)
   set(loadingAtom, false)
   set(messagesAtom, [])
-  set(currentConversationAtom, null)
+  set(currentConversationAtom, new Node(null))
 })

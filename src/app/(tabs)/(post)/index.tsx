@@ -1,4 +1,4 @@
-import { useAtom, useSetAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useRouter } from "expo-router"
 import { Text, View, RefreshControl, Pressable, ActivityIndicator } from "react-native"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
@@ -15,7 +15,6 @@ import FeedAdView from "@/src/components/FeedAdView"
 import { commonStyles } from "@/src/styles/common.styles"
 import { useEffect } from "react"
 import Toast from "react-native-toast-message"
-import { UserType } from "@/src/types/user.type"
 import { greetAtom } from "@/src/store/general-store"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
@@ -25,16 +24,8 @@ export default function Index() {
   const authFetch = useSetAtom(authFetchAtom)
   const queryClient = useQueryClient()
   const { data: posts, isError, isPending } = useQuery({ queryKey: ["feed"], queryFn: fetchPosts })
-  const { data: user } = useQuery({ queryKey: ["my-user"], queryFn: fetchMyUser })
-  const setUser = useSetAtom(userAtom)
+  const user = useAtomValue(userAtom)
   const [greet, setGreet] = useAtom(greetAtom)
-
-  async function fetchMyUser() {
-    const res = await authFetch("/api/users/my-user/")
-    const data: UserType = await res.json()
-    setUser(data)
-    return data
-  }
 
   // Greet the user
   useEffect(() => {

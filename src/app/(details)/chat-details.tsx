@@ -53,34 +53,26 @@ import Toast from "react-native-toast-message"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const scrollTargetIdAtom = atom<string | null>(null)
+const messageAtom = atom("")
+const canReviewAtom = atom(false)
 
 export default function ChatDetails() {
   const router = useRouter()
   const { conversationId } = useLocalSearchParams<{ conversationId?: string }>()
   const socket = useAtomValue(chatSocketAtom)
-  const message = useRef("")
-  const [inputEmpty, setInputEmpty] = useState(true)
-  const [inputHeight, setInputHeight] = useState<number>(40)
+
   const [messages, setMessages] = useAtom(messagesAtom)
-  const sendMessage = useSetAtom(sendMessageAtom)
+
   const userJwt = useAtomValue(userSecureAtom)
   const conversations = useAtomValue(conversationsAtom)
   const [currentConversation, setCurrentConversation] = useAtom(currentConversationAtom)
   const activePostId = useAtomValue(activePostIdAtom)
-  const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
-  const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
+
   const chatRef = useRef<FlatList>(null)
-  const inputRef = useRef<TextInput>(null!)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const [loading, setLoading] = useAtom(loadingAtom)
-  const attachments = useAtomValue(chatAttachmentsAtom)
-  const otherUser = useRef<{
-    _id: string
-    username: string
-    picture?: string | null | undefined
-    email: string
-  }>(undefined)
-  const [canReview, setCanReview] = useState(false)
+  const otherUserId = useRef<string | null>(null)
+  const [canReview, setCanReview] = useAtom(canReviewAtom)
   const [entireChatLoaded, setEntireChatLoaded] = useAtom(entireChatLoadedAtom)
   const receivedMsg = useAtomValue(receivedMsgAtom)
   const [scrollTargetId, setScrollTargetId] = useAtom(scrollTargetIdAtom)
@@ -88,6 +80,7 @@ export default function ChatDetails() {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const cleanupChat = useSetAtom(cleanupChatAtom)
   const insets = useSafeAreaInsets()
+  const inputRef = useRef<TextInput>(null!)
 
   // Handle automatic scrolling to replied messages
   useEffect(() => {
@@ -124,7 +117,7 @@ export default function ChatDetails() {
   useEffect(() => {
     if (canReview) return
     for (const msg of messages) {
-      if (msg.sender._id === otherUser.current?._id) {
+      if (msg.sender._id === otherUserId.current) {
         setCanReview(true)
         break
       }
@@ -136,27 +129,25 @@ export default function ChatDetails() {
     chatRef.current?.scrollToOffset({ offset: 0, animated: true })
   }, [receivedMsg])
 
-  // When a message is selected for editing, populate the input
-  useEffect(() => {
-    if (editingMessage && editingMessage.content) {
-      message.current = editingMessage.content
-      inputRef.current.focus()
-    }
-  }, [editingMessage])
-
   // To set the current conversation and load initial messages
   useFocusEffect(
     useCallback(() => {
+      if (!currentConversation.value) {
+        let conversation = conversations.head
+        while (conversation) {
+          if (conversation.value?._id === conversationId) {
+            setCurrentConversation(conversation)
+            break
+          }
+          conversation = conversation.next
+        }
+        return
+      }
       if (!socket || !socket.connected || !conversationId || !userJwt || messages.length > 0) return
 
-      // Find the current conversation
-      if (!currentConversation) {
-        const conversation = conversations.find(c => c._id === conversationId)
-        if (!conversation) return
-
-        setCurrentConversation(conversation)
-        otherUser.current = conversation.members.find(member => member._id !== userJwt._id)
-      }
+      otherUserId.current = currentConversation.value.members.find(
+        member => member._id !== userJwt._id
+      )?._id!
 
       setLoading(true)
       setEntireChatLoaded(false)
@@ -168,7 +159,15 @@ export default function ChatDetails() {
         start: 0,
         end: NUM_MESSAGES_TO_LOAD,
       })
-    }, [socket?.connected, conversationId, activePostId, conversations, messages.length, userJwt])
+    }, [
+      socket?.connected,
+      conversationId,
+      activePostId,
+      conversations.head,
+      messages.length,
+      userJwt,
+      currentConversation.value,
+    ])
   )
 
   // Cleanup on unmount
@@ -178,14 +177,6 @@ export default function ChatDetails() {
       cleanupChat()
     }
   }, [])
-
-  async function handleSendMessage() {
-    await sendMessage(message.current.trim())
-    message.current = ""
-    setInputEmpty(true)
-    inputRef.current.clear()
-    inputRef.current.focus()
-  }
 
   // Animate fake view height
   const fakeView = useAnimatedStyle(() => {
@@ -292,109 +283,7 @@ export default function ChatDetails() {
 
       <AttachmentPreview />
 
-      {/* Reply Preview */}
-      {replyingTo && (
-        <View style={chatStyles.replyPreviewContainer}>
-          <View style={chatStyles.replyPreviewHeader}>
-            <View style={chatStyles.replyPreviewContent}>
-              <View style={chatStyles.replyPreviewTextContainer}>
-                <Text style={chatStyles.replyPreviewLabel}>
-                  Replying to {replyingTo.sender.username}
-                </Text>
-                {replyingTo.content ? (
-                  <Text style={chatStyles.replyPreviewText} numberOfLines={2}>
-                    {replyingTo.content}
-                  </Text>
-                ) : replyingTo.attachmentsCount > 0 ? (
-                  <Text style={chatStyles.replyPreviewImageText}>Image</Text>
-                ) : null}
-              </View>
-            </View>
-            <Pressable
-              onPress={() => setReplyingTo(null)}
-              style={chatStyles.replyPreviewCloseButton}
-            >
-              <Feather name="x" size={18} color={colors.gray} />
-            </Pressable>
-          </View>
-        </View>
-      )}
-
-      {/* Editing Indicator */}
-      {editingMessage && (
-        <View style={chatStyles.editingIndicatorContainer}>
-          <Pressable
-            onPress={() => {
-              setEditingMessage(null)
-              message.current = ""
-            }}
-            style={{ backgroundColor: colors.light, padding: 4, borderRadius: 50 }}
-          >
-            <Feather name="x" size={18} color={colors.gray} />
-          </Pressable>
-          <Text style={{ color: colors.gray, fontSize: 12, flex: 1, marginLeft: 8 }}>
-            Editing message
-          </Text>
-        </View>
-      )}
-
-      {/* Input Area */}
-      <View style={chatStyles.inputOuterContainer}>
-        <View style={[commonStyles.container, chatStyles.inputContainer]}>
-          <Pressable
-            onPress={() => {
-              Keyboard.dismiss()
-              router.push({
-                pathname: "/attachment-picker",
-                params: { intent: "chat" },
-              })
-            }}
-            style={chatStyles.actionButton}
-          >
-            <Feather name="plus" size={24} color={colors.light} />
-          </Pressable>
-          {message.current.trim() === "" && canReview && !editingMessage && (
-            <Pressable
-              onPress={() =>
-                router.push({ pathname: "review-user", params: { id: otherUser.current?._id } })
-              }
-              style={chatStyles.actionButton}
-            >
-              <MaterialIcons name="rate-review" size={20} color={colors.light} />
-            </Pressable>
-          )}
-          <TextInput
-            style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
-            placeholder="Type a message..."
-            placeholderTextColor={colors.muted}
-            onChangeText={text => {
-              message.current = text
-              setInputEmpty(text.trim() === "")
-            }}
-            onContentSizeChange={event => {
-              setInputHeight(event.nativeEvent.contentSize.height)
-            }}
-            multiline
-            maxLength={500}
-            ref={inputRef}
-          />
-          {editingMessage ? (
-            <Pressable onPress={handleSendMessage} style={chatStyles.actionButton}>
-              <Feather name="send" size={22} color={colors.lightGray} />
-            </Pressable>
-          ) : (
-            <Pressable
-              style={[
-                chatStyles.actionButton,
-                { display: !inputEmpty || attachments.length > 0 ? "flex" : "none" },
-              ]}
-              onPress={handleSendMessage}
-            >
-              <Feather name="send" size={22} color={colors.lightGray} />
-            </Pressable>
-          )}
-        </View>
-      </View>
+      <InputArea inputRef={inputRef} otherUserId={otherUserId.current} />
 
       {/* Push the content up after keyboard appears */}
       <Animated.View style={[fakeView, { backgroundColor: colors.lightGray }]} />
@@ -742,5 +631,143 @@ function AttachmentPreview() {
         )}
       />
     </View>
+  )
+}
+
+function InputArea({
+  inputRef,
+  otherUserId,
+}: {
+  inputRef: React.RefObject<TextInput>
+  otherUserId: string | null
+}) {
+  const router = useRouter()
+  const [inputHeight, setInputHeight] = useState<number>(40)
+  const [message, setMessage] = useAtom(messageAtom)
+  const canReview = useAtomValue(canReviewAtom)
+  const sendMessage = useSetAtom(sendMessageAtom)
+  const attachments = useAtomValue(chatAttachmentsAtom)
+  const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
+  const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
+
+  async function handleSendMessage() {
+    await sendMessage(message.trim())
+    setMessage("")
+    inputRef.current.clear()
+    inputRef.current.focus()
+  }
+
+  // When a message is selected for editing, populate the input
+  useEffect(() => {
+    if (editingMessage && editingMessage.content) {
+      setMessage(editingMessage.content)
+      inputRef.current.focus()
+    }
+  }, [editingMessage])
+
+  return (
+    <>
+      {/* Reply Preview */}
+      {replyingTo && (
+        <View style={chatStyles.replyPreviewContainer}>
+          <View style={chatStyles.replyPreviewHeader}>
+            <View style={chatStyles.replyPreviewContent}>
+              <View style={chatStyles.replyPreviewTextContainer}>
+                <Text style={chatStyles.replyPreviewLabel}>
+                  Replying to {replyingTo.sender.username}
+                </Text>
+                {replyingTo.content ? (
+                  <Text style={chatStyles.replyPreviewText} numberOfLines={2}>
+                    {replyingTo.content}
+                  </Text>
+                ) : replyingTo.attachmentsCount > 0 ? (
+                  <Text style={chatStyles.replyPreviewImageText}>Image</Text>
+                ) : null}
+              </View>
+            </View>
+            <Pressable
+              onPress={() => setReplyingTo(null)}
+              style={chatStyles.replyPreviewCloseButton}
+            >
+              <Feather name="x" size={18} color={colors.gray} />
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {/* Editing Indicator */}
+      {editingMessage && (
+        <View style={chatStyles.editingIndicatorContainer}>
+          <Pressable
+            onPress={() => {
+              setEditingMessage(null)
+              setMessage("")
+              inputRef.current.clear()
+              inputRef.current.focus()
+            }}
+            style={{ backgroundColor: colors.light, padding: 4, borderRadius: 50 }}
+          >
+            <Feather name="x" size={18} color={colors.gray} />
+          </Pressable>
+          <Text style={{ color: colors.gray, fontSize: 12, flex: 1, marginLeft: 8 }}>
+            Editing message
+          </Text>
+        </View>
+      )}
+
+      {/* Input */}
+      <View style={chatStyles.inputOuterContainer}>
+        <View style={[commonStyles.container, chatStyles.inputContainer]}>
+          <Pressable
+            onPress={() => {
+              Keyboard.dismiss()
+              router.push({
+                pathname: "/attachment-picker",
+                params: { intent: "chat" },
+              })
+            }}
+            style={chatStyles.actionButton}
+          >
+            <Feather name="plus" size={24} color={colors.light} />
+          </Pressable>
+          {message.trim() === "" && canReview && !editingMessage && (
+            <Pressable
+              onPress={() => router.push({ pathname: "review-user", params: { id: otherUserId } })}
+              style={chatStyles.actionButton}
+            >
+              <MaterialIcons name="rate-review" size={20} color={colors.light} />
+            </Pressable>
+          )}
+          <TextInput
+            style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
+            placeholder="Type a message..."
+            placeholderTextColor={colors.muted}
+            value={message}
+            onChangeText={setMessage}
+            onContentSizeChange={event => {
+              setInputHeight(event.nativeEvent.contentSize.height)
+            }}
+            multiline
+            maxLength={500}
+            ref={inputRef}
+          />
+          {editingMessage ? (
+            <Pressable onPress={handleSendMessage} style={chatStyles.actionButton}>
+              <Feather name="send" size={22} color={colors.lightGray} />
+            </Pressable>
+          ) : (
+            <Pressable
+              style={[
+                chatStyles.actionButton,
+                { display: message.trim() !== "" || attachments.length > 0 ? "flex" : "none" },
+              ]}
+              onPress={handleSendMessage}
+            >
+              <Feather name="send" size={22} color={colors.lightGray} />
+            </Pressable>
+          )}
+        </View>
+      </View>
+    </>
   )
 }

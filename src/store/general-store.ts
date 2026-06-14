@@ -7,8 +7,6 @@ import { Attachment } from "../types/attachment.type"
 
 export const queryClientAtom = atom(new QueryClient())
 
-export const pathStore = atom("")
-
 // For image carousel to indicate if we are currently dragging or not
 export const isDraggingAtom = atom(false)
 

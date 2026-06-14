@@ -57,7 +57,6 @@ export default function useCustomHeader({
   isProfile?: boolean
   isSettings?: boolean
   includeBottomPadding?: boolean
-  isEditPost?: boolean
 }): ExtendedStackNavigationOptions {
   const insets = useSafeAreaInsets()
 
@@ -135,7 +134,7 @@ export default function useCustomHeader({
 
 function ChatHeader() {
   const DEFAULT_CHAT_TITLE = "General Chat"
-  const currentConversation = useAtomValue(currentConversationAtom)
+  const currentConversation = useAtomValue(currentConversationAtom).value
   const [activePostId, setActivePostId] = useAtom(activePostIdAtom)
   const user = useAtomValue(userSecureAtom)
   const socket = useAtomValue(chatSocketAtom)
@@ -175,9 +174,7 @@ function ChatHeader() {
     router.back()
   }
 
-  if (!socket || !user || !currentConversation) return <></>
-
-  const otherUser = currentConversation.members.find(member => member._id !== user._id)
+  const otherUser = currentConversation?.members.find(member => member._id !== user?._id)
 
   return (
     <View
@@ -207,89 +204,91 @@ function ChatHeader() {
         <Feather name="arrow-left" size={26} color={colors.dark} />
       </Pressable>
 
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-          justifyContent: isWeb ? "center" : "flex-start",
-        }}
-      >
-        {/* profile picture */}
-        <TouchableOpacity onPress={goToUserProfile}>
-          <Image
-            source={
-              otherUser?.picture && otherUser?.picture
-                ? { uri: otherUser?.picture }
-                : defaultProfilePicture
-            }
-            style={
-              currentConversation.contactedPosts.length > 0
-                ? styles.profileImageContacted
-                : styles.profileImageNotContacted
-            }
-          />
-        </TouchableOpacity>
-
-        {/* username and dropdown menu */}
-        <View style={{ gap: 2 }}>
-          <TouchableOpacity onPress={goToUserProfile} style={styles.otherProfileUsername}>
-            <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+      {socket && user && currentConversation && (
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+            justifyContent: isWeb ? "center" : "flex-start",
+          }}
+        >
+          {/* profile picture */}
+          <TouchableOpacity onPress={goToUserProfile}>
+            <Image
+              source={
+                otherUser?.picture && otherUser?.picture
+                  ? { uri: otherUser?.picture }
+                  : defaultProfilePicture
+              }
+              style={
+                currentConversation.contactedPosts.length > 0
+                  ? styles.profileImageContacted
+                  : styles.profileImageNotContacted
+              }
+            />
           </TouchableOpacity>
 
-          {currentConversation.contactedPosts.length > 0 && (
-            <DropdownMenu
-              anchor="bottom"
-              dropdownWidth={isWeb ? 400 : Dimensions.get("window").width - 120}
-              onPressAction={action => {
-                if (action === "general") {
-                  setActivePostId(null)
-                } else {
-                  setActivePostId(action)
-                }
-                setLoading(true)
-                setEntireChatLoaded(false)
-                setMessages([])
-              }}
-              actions={[
-                {
-                  id: "general",
-                  title: DEFAULT_CHAT_TITLE,
-                  titleColor: colors.dark,
-                },
-                ...currentConversation.contactedPosts.map(post => ({
-                  id: post.postId,
-                  title: post.title,
-                  titleColor: colors.dark,
-                })),
-              ]}
-            >
-              <View
-                style={{
-                  minWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
-                  maxWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
-                  paddingVertical: 8,
-                  paddingLeft: 6,
-                  paddingRight: 20,
-                  marginTop: 4,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                  borderRadius: 6,
-                  borderColor: colors.darkPurple,
-                  borderWidth: 1.5,
+          {/* username and dropdown menu */}
+          <View style={{ gap: 2 }}>
+            <TouchableOpacity onPress={goToUserProfile} style={styles.otherProfileUsername}>
+              <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
+            </TouchableOpacity>
+
+            {currentConversation.contactedPosts.length > 0 && (
+              <DropdownMenu
+                anchor="bottom"
+                dropdownWidth={isWeb ? 400 : Dimensions.get("window").width - 120}
+                onPressAction={action => {
+                  if (action === "general") {
+                    setActivePostId(null)
+                  } else {
+                    setActivePostId(action)
+                  }
+                  setLoading(true)
+                  setEntireChatLoaded(false)
+                  setMessages([])
                 }}
+                actions={[
+                  {
+                    id: "general",
+                    title: DEFAULT_CHAT_TITLE,
+                    titleColor: colors.dark,
+                  },
+                  ...currentConversation.contactedPosts.map(post => ({
+                    id: post.postId,
+                    title: post.title,
+                    titleColor: colors.dark,
+                  })),
+                ]}
               >
-                <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
-                <Text style={{ color: colors.dark, fontSize: 14 }} numberOfLines={1}>
-                  {activeChat}
-                </Text>
-              </View>
-            </DropdownMenu>
-          )}
+                <View
+                  style={{
+                    minWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
+                    maxWidth: isWeb ? 300 : Dimensions.get("window").width - 120,
+                    paddingVertical: 8,
+                    paddingLeft: 6,
+                    paddingRight: 20,
+                    marginTop: 4,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    borderRadius: 6,
+                    borderColor: colors.darkPurple,
+                    borderWidth: 1.5,
+                  }}
+                >
+                  <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
+                  <Text style={{ color: colors.dark, fontSize: 14 }} numberOfLines={1}>
+                    {activeChat}
+                  </Text>
+                </View>
+              </DropdownMenu>
+            )}
+          </View>
         </View>
-      </View>
+      )}
 
       {isWeb && <View style={{ width: 40, height: 40 }} />}
     </View>

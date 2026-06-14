@@ -41,6 +41,8 @@ export type GeneralUserProfileType = UserType & {
 export type UserSocialType = {
   followers: ProfileSocialUserType[]
   following: ProfileSocialUserType[]
+  followersCount: number
+  followingCount: number
 }
 
 export type ReviewsType = {

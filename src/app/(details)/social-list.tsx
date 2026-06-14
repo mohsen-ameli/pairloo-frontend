@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react"
-import { View, Text, Pressable, ActivityIndicator, Animated } from "react-native"
+import { View, Text, Pressable, ActivityIndicator, Animated, FlatList } from "react-native"
 import { Stack, useLocalSearchParams, useRouter } from "expo-router"
 import { useQuery } from "@tanstack/react-query"
 import { useSetAtom } from "jotai"
-import { FlashList } from "@shopify/flash-list"
 import { authFetchAtom } from "@/src/store/auth-store"
 import { UserSocialType } from "@/src/types/user.type"
 import { profileStyles } from "@/src/styles/profile.styles"
@@ -115,7 +114,7 @@ export default function SocialListPage() {
             </Pressable>
           </View>
 
-          <FlashList
+          <FlatList
             data={list}
             keyExtractor={item => item._id}
             showsVerticalScrollIndicator={false}

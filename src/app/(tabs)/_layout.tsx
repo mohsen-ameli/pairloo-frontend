@@ -1,17 +1,18 @@
-import { userAtom } from "@/src/store/auth-store"
+import { authFetchAtom, userAtom } from "@/src/store/auth-store"
 import { initChatAtom, unreadMessagesAtom } from "@/src/store/chat-store"
 import { initCreatePostAtom } from "@/src/store/create-post-store"
-import { pathStore } from "@/src/store/general-store"
 import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { Image } from "expo-image"
-import { Tabs, usePathname } from "expo-router"
-import { useAtomValue, useSetAtom } from "jotai"
+import { Tabs } from "expo-router"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useState } from "react"
 import { useAudioPlayer } from "expo-audio"
 import { notificationSoundAtom } from "@/src/store/general-store"
 import { Platform } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { useQuery } from "@tanstack/react-query"
+import { UserType } from "@/src/types/user.type"
 
 const audioSource = require("@/assets/audio/new-notification.mp3")
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
@@ -19,19 +20,29 @@ const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 export default function ProtectedLayout() {
   const initChatConnection = useSetAtom(initChatAtom)
   const initCreatePost = useSetAtom(initCreatePostAtom)
-  const pathname = usePathname()
-  const setPath = useSetAtom(pathStore)
   const unreadMessages = useAtomValue(unreadMessagesAtom)
   const [numUnreadMessages, setNumUnreadMessages] = useState(0)
   const player = useAudioPlayer(audioSource)
   const setNotificationSound = useSetAtom(notificationSoundAtom)
   const insets = useSafeAreaInsets()
+  const authFetch = useSetAtom(authFetchAtom)
+  const [user, setUser] = useAtom(userAtom)
+
+  useQuery({ queryKey: ["my-user"], queryFn: fetchMyUser })
+
+  async function fetchMyUser() {
+    const res = await authFetch("/api/users/my-user/")
+    const data: UserType = await res.json()
+    setUser(data)
+    return data
+  }
 
   useEffect(() => {
+    if (!user) return
     setNotificationSound(player)
     initChatConnection()
     initCreatePost()
-  }, [])
+  }, [user])
 
   useEffect(() => {
     if (!unreadMessages) {
@@ -41,10 +52,6 @@ export default function ProtectedLayout() {
     const total = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0)
     setNumUnreadMessages(total)
   }, [unreadMessages])
-
-  useEffect(() => {
-    setPath(pathname)
-  }, [pathname])
 
   return (
     <Tabs
