@@ -56,6 +56,12 @@ If you are running the app on a real device (either expo go or development build
 | npm run android / npm run ios / npx expo run:android / npx expo run:ios | Compiles native code, installs the app, starts Metro. | First build, after adding a native library, or after modifying a config plugin. |
 | npm run dev / npx expo start                                            | Starts only the Metro bundler.                        | Daily development when only changing JavaScript or TypeScript code.             |
 
+## Production
+
+On railway set the port under networking to 8081
+Custom build command: npx expo export --platform web
+Custom start command: npx expo serve
+
 # Notes
 
 When using our state management library, if the atom is using AsyncStorage or SecureStorage
