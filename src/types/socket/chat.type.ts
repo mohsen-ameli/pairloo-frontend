@@ -45,10 +45,13 @@ export type LastMessageType =
   | undefined
   | {
       _id: string
-      sender: SenderType
+      conversationId: string
       postId?: string
+      sender: SenderType
       content: string
       attachmentsCount: number
+      replyToDeleted?: boolean
+      isEdited?: boolean
       createdAt: Date
       updatedAt: Date
     }

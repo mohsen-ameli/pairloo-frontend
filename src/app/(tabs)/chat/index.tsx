@@ -1,6 +1,7 @@
 import { conversationStyles } from "@/src/styles/conversation.style"
 import {
   conversationsAtom,
+  currentConversationAtom,
   initChatAtom,
   loadingAtom,
   prepareChatAtom,
@@ -14,37 +15,22 @@ import { useFocusEffect, useRouter } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
-import { LastMessageType } from "@/src/types/socket/chat.type"
+import { ConversationType, LastMessageType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { useCallback } from "react"
 import { commonStyles } from "@/src/styles/common.styles"
+import { Node } from "@/src/utils/linked-list"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
 export default function index() {
-  const router = useRouter()
   const conversations = useAtomValue(conversationsAtom)
-  const user = useAtomValue(userSecureAtom)
-  const unreadMessages = useAtomValue(unreadMessagesAtom)
+
   const socket = useAtomValue(chatSocketAtom)
   const initChat = useSetAtom(initChatAtom)
   const loading = useAtomValue(loadingAtom)
-  const prepareChat = useSetAtom(prepareChatAtom)
-
-  function getLastMessagePreview(lastMessage: LastMessageType): string {
-    if (!lastMessage || !user) return ""
-
-    let contentPreview = ""
-    if (lastMessage.attachmentsCount > 0) {
-      contentPreview = "sent an attachment"
-    } else {
-      contentPreview = formatString(lastMessage.content, 32)
-    }
-
-    return `${lastMessage.sender.username}: ${contentPreview}`
-  }
 
   async function refresh() {
     await initChat()
@@ -86,69 +72,108 @@ export default function index() {
             </Text>
           </View>
         ) : (
-          conversations.map(conversation => {
-            let otherPerson
-            for (const member of conversation.members) {
-              if (member._id !== user?._id) {
-                otherPerson = member
-                break
-              }
-            }
-            if (!otherPerson) return null
-
-            return (
-              <Pressable
-                key={conversation._id}
-                style={[commonStyles.card, conversationStyles.item]}
-                onPress={() => {
-                  prepareChat(conversation.lastMessage?.postId)
-                  router.push({
-                    pathname: "/chat-details",
-                    params: { conversationId: conversation._id },
-                  })
-                }}
-              >
-                <Image
-                  source={
-                    otherPerson.picture ? { uri: otherPerson.picture } : defaultProfilePicture
-                  }
-                  style={conversationStyles.image}
-                />
-                <View>
-                  <Text style={conversationStyles.itemTitle}>{otherPerson.username}</Text>
-                  {conversation.lastMessage && (
-                    <Text style={conversationStyles.lastMessage}>
-                      {getLastMessagePreview(conversation.lastMessage)}
-                    </Text>
-                  )}
-                </View>
-                <View style={conversationStyles.timestampContainer}>
-                  <Text
-                    style={[
-                      conversationStyles.timestamp,
-                      {
-                        color: conversation._id in unreadMessages ? colors.purple : colors.gray,
-                        fontWeight: conversation._id in unreadMessages ? "500" : "400",
-                      },
-                    ]}
-                  >
-                    {sinceNow(conversation.lastMessage?.updatedAt)}
-                  </Text>
-                  <Text>
-                    {conversation._id in unreadMessages && unreadMessages[conversation._id] > 0 && (
-                      <View style={conversationStyles.unreadBadge}>
-                        <Text style={conversationStyles.unreadBadgeText}>
-                          {unreadMessages[conversation._id]}
-                        </Text>
-                      </View>
-                    )}
-                  </Text>
-                </View>
-              </Pressable>
-            )
-          })
+          <ConversationList />
         )}
       </ScrollView>
     </View>
   )
+}
+
+function ConversationList() {
+  const conversations = useAtomValue(conversationsAtom)
+  const setCurrentConversation = useSetAtom(currentConversationAtom)
+  const prepareChat = useSetAtom(prepareChatAtom)
+  const router = useRouter()
+  const user = useAtomValue(userSecureAtom)
+  const unreadMessages = useAtomValue(unreadMessagesAtom)
+
+  function getLastMessagePreview(lastMessage: LastMessageType): string {
+    if (!lastMessage || !user) return ""
+
+    let contentPreview = ""
+    if (lastMessage.attachmentsCount > 0) {
+      contentPreview = "sent an attachment"
+    } else {
+      contentPreview = formatString(lastMessage.content, 32)
+    }
+
+    return `${lastMessage.sender.username}: ${contentPreview}`
+  }
+
+  function goToChat(conversation: Node<ConversationType | null>) {
+    prepareChat(conversation.value?.lastMessage?.postId)
+    router.push({
+      pathname: "/chat-details",
+      params: { conversationId: conversation.value?._id },
+    })
+    setCurrentConversation(conversation)
+  }
+
+  if (!user) return null
+
+  return conversations.iterate(c => {
+    const conversation = c.value
+    if (!conversation) return null
+    let otherPerson
+    for (const member of conversation.members) {
+      if (member._id !== user._id) {
+        otherPerson = member
+        break
+      }
+    }
+    if (!otherPerson) return null
+
+    const isUnread = conversation._id in unreadMessages
+
+    return (
+      <Pressable
+        key={conversation._id}
+        style={[commonStyles.card, conversationStyles.item]}
+        onPress={() => goToChat(c)}
+      >
+        <Image
+          source={otherPerson.picture ? { uri: otherPerson.picture } : defaultProfilePicture}
+          style={conversationStyles.image}
+        />
+        <View style={conversationStyles.itemContent}>
+          <Text style={conversationStyles.itemTitle}>{otherPerson.username}</Text>
+          {conversation.lastMessage && (
+            <Text
+              style={[
+                conversationStyles.lastMessage,
+                {
+                  fontSize: isUnread ? 15 : 14,
+                  fontWeight: isUnread ? "700" : "400",
+                },
+              ]}
+            >
+              {getLastMessagePreview(conversation.lastMessage)}
+            </Text>
+          )}
+        </View>
+        <View style={conversationStyles.timestampContainer}>
+          <Text
+            style={[
+              conversationStyles.timestamp,
+              {
+                color: isUnread ? colors.purple : colors.gray,
+                fontWeight: isUnread ? "500" : "400",
+              },
+            ]}
+          >
+            {sinceNow(conversation.lastMessage?.updatedAt)}
+          </Text>
+          <Text>
+            {isUnread && (
+              <View style={conversationStyles.unreadBadge}>
+                <Text style={conversationStyles.unreadBadgeText}>
+                  {unreadMessages[conversation._id]}
+                </Text>
+              </View>
+            )}
+          </Text>
+        </View>
+      </Pressable>
+    )
+  })
 }

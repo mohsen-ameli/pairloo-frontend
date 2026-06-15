@@ -23,6 +23,9 @@ export const conversationStyles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 4,
   },
+  itemContent: {
+    maxWidth: "80%",
+  },
   lastMessage: {
     color: colors.dark,
   },
