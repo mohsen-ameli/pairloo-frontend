@@ -17,7 +17,6 @@ import { radiusMetersToZoom } from "@/src/utils/map-utils"
 import { useExpoMaps } from "@/src/utils/useExpoMaps"
 import MapUnavailable from "@/src/components/MapUnavailable"
 import { getStatusColor } from "@/src/utils/get-color"
-import { prepareChatAtom } from "@/src/store/chat-store"
 import { commonStyles } from "@/src/styles/common.styles"
 import WebGoogleMap from "@/src/components/WebGoogleMap"
 
@@ -27,7 +26,6 @@ export default function PostDetails() {
   const authFetch = useSetAtom(authFetchAtom)
   const socket = useAtomValue(chatSocketAtom)
   const user = useAtomValue(userSecureAtom)
-  const prepareChat = useSetAtom(prepareChatAtom)
   const queryClient = useQueryClient()
   const { maps, isExpoGo, isLoading } = useExpoMaps()
 
@@ -52,14 +50,7 @@ export default function PostDetails() {
   async function contactPoster() {
     if (!socket || !user || !post) return
 
-    socket.emit("newConversation", [user._id, post.userId], { postId: post._id, title: post.title })
-    socket.once("conversation", conversation => {
-      prepareChat(post._id)
-      router.dismissTo({
-        pathname: "/chat-details",
-        params: { conversationId: conversation._id },
-      })
-    })
+    socket.emit("getConversation", user._id, [user._id, post.userId], post._id)
 
     try {
       await authFetch("/api/posts/interaction", {

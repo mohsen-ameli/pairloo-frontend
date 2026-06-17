@@ -41,7 +41,12 @@ export const commonStyles = StyleSheet.create({
     paddingHorizontal: 16,
     padding: 16,
   },
-  dismissButton: { paddingVertical: 10, paddingLeft: 20, paddingRight: 10 },
+  dismissButton: {
+    backgroundColor: colors.lightGray,
+    borderRadius: 8,
+    padding: 4,
+    marginHorizontal: 10,
+  },
 
   // Search Modal
   searchContainer: {

@@ -344,6 +344,8 @@ export const pickImageAtom = atom(null, async (get, set) => {
     limit: MAX_POST_IMAGES - prevSettings.images.length,
   })
 
+  if (!attachments || attachments.length === 0) return
+
   await set(settingsAtom, { ...prevSettings, images: [...prevSettings.images, ...attachments] })
 
   set(loadingAtom, false)

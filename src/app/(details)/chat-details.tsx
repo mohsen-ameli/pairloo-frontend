@@ -4,13 +4,12 @@ import {
   Pressable,
   TextInput,
   Dimensions,
-  ActivityIndicator,
   TouchableOpacity,
   Keyboard,
-  FlatList,
+  ActivityIndicator,
 } from "react-native"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useLocalSearchParams, useRouter } from "expo-router/build/hooks"
+import { useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
 import {
@@ -24,14 +23,15 @@ import {
   imgIndexAtom,
   loadingAtom,
   messagesAtom,
-  receivedMsgAtom,
   replyingToAtom,
   sendMessageAtom,
   editingMessageAtom,
   activePostIdAtom,
   cleanupChatAtom,
+  receivedMsgAtom,
+  activeConversationIdAtom,
 } from "@/src/store/chat-store"
-import { colors } from "@/src/utils/colors"
+import { colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 import { MessageType, ReplyTo } from "@/src/types/socket/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
@@ -43,7 +43,7 @@ import { userSecureAtom } from "@/src/store/auth-store"
 import { chatStyles } from "@/src/styles/chat.styles"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { useFocusEffect } from "expo-router"
-import { FlashList } from "@shopify/flash-list"
+import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
 import { NUM_MESSAGES_TO_LOAD, TAB_HEIGHT } from "@/src/utils/constants"
@@ -58,7 +58,6 @@ const canReviewAtom = atom(false)
 
 export default function ChatDetails() {
   const router = useRouter()
-  const { conversationId } = useLocalSearchParams<{ conversationId?: string }>()
   const socket = useAtomValue(chatSocketAtom)
 
   const [messages, setMessages] = useAtom(messagesAtom)
@@ -67,8 +66,10 @@ export default function ChatDetails() {
   const conversations = useAtomValue(conversationsAtom)
   const [currentConversation, setCurrentConversation] = useAtom(currentConversationAtom)
   const activePostId = useAtomValue(activePostIdAtom)
+  const activeConversationId = useAtomValue(activeConversationIdAtom)
+  const replyingTo = useAtomValue(replyingToAtom)
 
-  const chatRef = useRef<FlatList>(null)
+  const chatRef = useRef<FlashListRef<MessageType>>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const [loading, setLoading] = useAtom(loadingAtom)
   const otherUserId = useRef<string | null>(null)
@@ -126,16 +127,19 @@ export default function ChatDetails() {
 
   // Scroll to bottom when a new message is received
   useEffect(() => {
-    chatRef.current?.scrollToOffset({ offset: 0, animated: true })
+    chatRef.current?.scrollToEnd({ animated: true })
   }, [receivedMsg])
 
   // To set the current conversation and load initial messages
   useFocusEffect(
     useCallback(() => {
+      if (!socket || !socket.connected || !activeConversationId || !userJwt || messages.length > 0)
+        return
+
       if (!currentConversation.value) {
         let conversation = conversations.head
         while (conversation) {
-          if (conversation.value?._id === conversationId) {
+          if (conversation.value?._id === activeConversationId) {
             setCurrentConversation(conversation)
             break
           }
@@ -143,7 +147,6 @@ export default function ChatDetails() {
         }
         return
       }
-      if (!socket || !socket.connected || !conversationId || !userJwt || messages.length > 0) return
 
       otherUserId.current = currentConversation.value.members.find(
         member => member._id !== userJwt._id
@@ -154,19 +157,19 @@ export default function ChatDetails() {
       setMessages([])
 
       socket.emit("getMessages", {
-        conversationId,
+        conversationId: activeConversationId,
         postId: activePostId,
         start: 0,
         end: NUM_MESSAGES_TO_LOAD,
       })
     }, [
       socket?.connected,
-      conversationId,
+      activeConversationId,
       activePostId,
       conversations.head,
       messages.length,
       userJwt,
-      currentConversation.value,
+      currentConversation,
     ])
   )
 
@@ -187,15 +190,15 @@ export default function ChatDetails() {
 
   const botAnimation = useAnimatedStyle(() => {
     return {
-      bottom: Math.abs(height.value) + TAB_HEIGHT + insets.bottom,
+      bottom: Math.abs(height.value) + TAB_HEIGHT + insets.bottom + (replyingTo ? 60 : 20),
     }
-  }, [])
+  }, [replyingTo])
 
   async function loadMoreMessages() {
     if (
       !socket ||
       !socket.connected ||
-      !conversationId ||
+      !activeConversationId ||
       entireChatLoaded ||
       loading ||
       !currentConversation
@@ -203,11 +206,12 @@ export default function ChatDetails() {
       return
     // if we have already sent a request to load more messages, don't send another one until we get a response
     socket.emit("getMessages", {
-      conversationId,
+      conversationId: activeConversationId,
       postId: activePostId,
       start: messages.length,
       end: messages.length + NUM_MESSAGES_TO_LOAD,
     })
+    setShowScrollToBottom(true)
   }
 
   if (loading) {
@@ -231,49 +235,75 @@ export default function ChatDetails() {
 
   return (
     <>
-      <View style={commonStyles.generalContainer}>
-        <FlatList
-          inverted
-          data={messages}
-          ref={chatRef}
-          keyboardDismissMode="interactive"
-          style={commonStyles.container}
-          keyExtractor={item => item._id}
-          onEndReached={loadMoreMessages}
-          removeClippedSubviews
-          getItemLayout={(_, index) => ({ length: 100, offset: 100 * index, index })}
-          renderItem={({ item, index }) => (
-            <>
-              <MessageItem
-                item={item}
-                messages={messages}
-                chatRef={chatRef}
-                inputRef={inputRef}
-                isOwnMessage={userJwt?._id === item.sender._id}
-              />
-              {/* Above the last message we show loading indicator since we'll be loading more chat messages */}
-              {index === messages.length - 1 && !entireChatLoaded && (
-                <ActivityIndicator
-                  style={{ paddingVertical: 8 }}
-                  size="small"
-                  color={colors.blue}
-                />
-              )}
-            </>
-          )}
-          ListFooterComponent={<View style={chatStyles.listFooter} />}
-          onScroll={event => {
-            const offsetY = event.nativeEvent.contentOffset.y
-            setShowScrollToBottom(offsetY > 1000)
-          }}
-        />
-      </View>
+      <FlashList
+        data={messages}
+        ref={chatRef}
+        keyboardDismissMode="interactive"
+        scrollEnabled
+        style={commonStyles.generalContainer}
+        contentContainerStyle={commonStyles.container}
+        keyExtractor={item => item._id}
+        onStartReached={loadMoreMessages}
+        maintainVisibleContentPosition={{
+          startRenderingFromBottom: true,
+        }}
+        keyboardShouldPersistTaps="always"
+        renderItem={({ item }) => (
+          <MessageItem
+            key={item._id}
+            item={item}
+            messages={messages}
+            chatRef={chatRef}
+            inputRef={inputRef}
+            isOwnMessage={userJwt?._id === item.sender._id}
+          />
+        )}
+        // Above the last message we show loading indicator since we'll be loading more chat messages
+        ListHeaderComponent={
+          !entireChatLoaded ? (
+            <ActivityIndicator style={{ paddingVertical: 8 }} size="small" color={colors.blue} />
+          ) : null
+        }
+        ListFooterComponent={<View style={chatStyles.listFooter} />}
+        onScroll={e => {
+          const y =
+            e.nativeEvent.contentSize.height -
+            e.nativeEvent.layoutMeasurement.height -
+            e.nativeEvent.contentOffset.y
+          if (y > 1000) {
+            if (!showScrollToBottom) setShowScrollToBottom(true)
+          } else {
+            if (showScrollToBottom) setShowScrollToBottom(false)
+          }
+        }}
+      />
 
       {/* Scroll to bottom button */}
       {showScrollToBottom && (
-        <Animated.View style={[{ position: "absolute", right: 20, zIndex: 2 }, botAnimation]}>
+        <Animated.View
+          style={
+            isWeb
+              ? [
+                  {
+                    position: "absolute",
+                    right: (Dimensions.get("window").width - webContainerWidth) / 2 - 80,
+                    bottom: TAB_HEIGHT + insets.bottom + 20,
+                    userSelect: "none",
+                    zIndex: 1,
+                  },
+                ]
+              : [
+                  botAnimation,
+                  {
+                    position: "absolute",
+                    right: 20,
+                    zIndex: 1,
+                  },
+                ]
+          }
+        >
           <TouchableOpacity
-            onPress={() => chatRef.current?.scrollToOffset({ offset: 0, animated: true })}
+            onPress={() => chatRef.current?.scrollToEnd({ animated: true })}
             style={chatStyles.scrollToBottomButton}
           >
             <Feather name="arrow-down" size={24} color={colors.dark} />
@@ -300,7 +330,7 @@ function MessageItem({
 }: {
   item: MessageType
   messages: MessageType[]
-  chatRef: React.RefObject<FlatList | null>
+  chatRef: React.RefObject<FlashListRef<MessageType> | null>
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
@@ -426,7 +456,10 @@ function MessageItem({
       </Animated.View>
 
       {/* Message content that swipes */}
-      <GestureDetector gesture={Gesture.Simultaneous(panGesture, longPressGesture)}>
+      <GestureDetector
+        gesture={Gesture.Simultaneous(panGesture, longPressGesture)}
+        touchAction="pan-y"
+      >
         <Animated.View
           style={[
             chatStyles.messageContentAnimated,
@@ -520,7 +553,7 @@ function MessageItem({
                   if (l === 1) {
                     width = 240
                   } else {
-                    width = 140
+                    width = Dimensions.get("window").width * (isWeb ? 0.1 : 0.3)
                   }
 
                   const hasMoreImages = l > 2
@@ -545,8 +578,6 @@ function MessageItem({
                           style={{
                             width: width,
                             height: width,
-                            maxWidth: 300,
-                            maxHeight: 300,
                             marginBottom: 5,
                           }}
                         />
@@ -625,7 +656,7 @@ function AttachmentPreview() {
                 setAttachments(attachments.filter(att => att.uri !== item.uri))
               }}
             >
-              <Feather name="x" size={20} color={colors.dark} />
+              <Feather name="x" size={24} color={colors.dark} />
             </Pressable>
           </View>
         )}
@@ -747,6 +778,7 @@ function InputArea({
             onContentSizeChange={event => {
               setInputHeight(event.nativeEvent.contentSize.height)
             }}
+            autoFocus
             multiline
             maxLength={500}
             ref={inputRef}

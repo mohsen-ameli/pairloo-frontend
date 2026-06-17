@@ -76,7 +76,7 @@ export default function EditPost() {
       includeFile: false,
       limit: MAX_POST_IMAGES - images.length,
     })
-    if (attachments.length > 0) {
+    if (attachments && attachments.length > 0) {
       setFormState(prev => ({
         ...prev,
         images: [

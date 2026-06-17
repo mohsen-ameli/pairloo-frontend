@@ -16,6 +16,7 @@ import {
 import { checkIfBlockedAtom, getBlockedAttemptsAtom, isBlockedAtom } from "@/src/store/device-store"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
+import { commonStyles } from "@/src/styles/common.styles"
 
 const INITIAL_PAGE_COUNT = 2
 
@@ -86,7 +87,7 @@ export default function LoginPage() {
 
   return (
     <CustomPager>
-      <View style={styles.pageContainer} key="0">
+      <View style={[commonStyles.container, styles.pageContainer]} key="0">
         <Text style={styles.title}>Welcome Back!</Text>
         <CustomInput
           title="Email Address"
@@ -112,7 +113,7 @@ export default function LoginPage() {
         </Link>
       </View>
 
-      <View style={styles.pageContainer} key="1">
+      <View style={[commonStyles.container, styles.pageContainer]} key="1">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
           title="Code"

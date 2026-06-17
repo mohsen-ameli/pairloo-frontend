@@ -65,9 +65,12 @@ export default function reviewUser() {
             position: "absolute",
             top: 0,
             right: 0,
-            padding: 4,
+            width: 40,
+            height: 40,
+            alignItems: "center",
+            justifyContent: "center",
             backgroundColor: colors.lightGray,
-            borderRadius: 20,
+            borderRadius: 60,
           }}
         >
           <Feather name="x" size={24} color={colors.darkGray} />

@@ -112,7 +112,7 @@ export default function LocationSelector({
               }}
               style={commonStyles.dismissButton}
             >
-              <Feather name="x" size={20} color={colors.dark} />
+              <Feather name="x" size={24} color={colors.dark} />
             </TouchableOpacity>
             <TextInput
               style={commonStyles.searchInput}

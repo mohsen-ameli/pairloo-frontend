@@ -564,7 +564,7 @@ export const setUserPictureAtom = atom(null, async (get, set, option: "library" 
   })
   const newUser = get(newUserAtom)
 
-  if (!attachments) return
+  if (!attachments || attachments.length === 0) return
 
   set(newUserAtom, {
     ...newUser,

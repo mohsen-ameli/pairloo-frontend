@@ -134,7 +134,7 @@ export default function useCustomHeader({
 
 function ChatHeader() {
   const DEFAULT_CHAT_TITLE = "General Chat"
-  const currentConversation = useAtomValue(currentConversationAtom).value
+  const currentConversation = useAtomValue(currentConversationAtom)
   const [activePostId, setActivePostId] = useAtom(activePostIdAtom)
   const user = useAtomValue(userSecureAtom)
   const socket = useAtomValue(chatSocketAtom)
@@ -148,17 +148,17 @@ function ChatHeader() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!currentConversation) return
+      if (!currentConversation.value) return
 
       if (activePostId) {
-        const activePost = currentConversation.contactedPosts.find(
+        const activePost = currentConversation.value.contactedPosts.find(
           post => post.postId === activePostId
         )
         setActiveChat(activePost ? activePost.title : DEFAULT_CHAT_TITLE)
       } else {
         setActiveChat(DEFAULT_CHAT_TITLE)
       }
-    }, [currentConversation, activePostId])
+    }, [currentConversation.value, activePostId])
   )
 
   function goToUserProfile() {
@@ -174,7 +174,7 @@ function ChatHeader() {
     router.back()
   }
 
-  const otherUser = currentConversation?.members.find(member => member._id !== user?._id)
+  const otherUser = currentConversation.value?.members.find(member => member._id !== user?._id)
 
   return (
     <View
@@ -204,7 +204,7 @@ function ChatHeader() {
         <Feather name="arrow-left" size={26} color={colors.dark} />
       </Pressable>
 
-      {socket && user && currentConversation && (
+      {socket && user && currentConversation.value && (
         <View
           style={{
             flex: 1,
@@ -223,7 +223,7 @@ function ChatHeader() {
                   : defaultProfilePicture
               }
               style={
-                currentConversation.contactedPosts.length > 0
+                currentConversation.value.contactedPosts.length > 0
                   ? styles.profileImageContacted
                   : styles.profileImageNotContacted
               }
@@ -236,7 +236,7 @@ function ChatHeader() {
               <Text style={styles.otherHeaderTitle}>{otherUser?.username}</Text>
             </TouchableOpacity>
 
-            {currentConversation.contactedPosts.length > 0 && (
+            {currentConversation.value.contactedPosts.length > 0 && (
               <DropdownMenu
                 anchor="bottom"
                 dropdownWidth={isWeb ? 400 : Dimensions.get("window").width - 120}
@@ -256,7 +256,7 @@ function ChatHeader() {
                     title: DEFAULT_CHAT_TITLE,
                     titleColor: colors.dark,
                   },
-                  ...currentConversation.contactedPosts.map(post => ({
+                  ...currentConversation.value.contactedPosts.map(post => ({
                     id: post.postId,
                     title: post.title,
                     titleColor: colors.dark,

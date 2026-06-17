@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { authFetchAtom, userAtom, userSecureAtom } from "./auth-store"
+import { authFetchAtom, userAtom } from "./auth-store"
 import { getAttachmentAtom } from "./general-store"
 import Toast from "react-native-toast-message"
 
@@ -105,6 +105,8 @@ export const setUserPfpAtom = atom(null, async (get, set, option: "library" | "c
     multi: false,
     includeFile: true,
   })
+
+  if (!attachments || attachments.length === 0) return
 
   set(editFieldsAtom, f => ({
     ...f,

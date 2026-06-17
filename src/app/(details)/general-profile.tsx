@@ -13,7 +13,6 @@ import { authFetchAtom, userSecureAtom } from "@/src/store/auth-store"
 import { profileStyles } from "@/src/styles/profile.styles"
 import CustomLabel from "@/src/components/CustomLabel"
 import { getStatusColor } from "@/src/utils/get-color"
-import { prepareChatAtom } from "@/src/store/chat-store"
 import { chatSocketAtom } from "@/src/store/socket-store"
 import { commonStyles } from "@/src/styles/common.styles"
 
@@ -22,7 +21,6 @@ export default function GeneralProfile() {
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
   const userSecure = useAtomValue(userSecureAtom)
-  const prepareChat = useSetAtom(prepareChatAtom)
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
     queryKey: ["user-profile-" + id],
@@ -77,14 +75,7 @@ export default function GeneralProfile() {
 
   function handleMessage() {
     if (!socket || !userSecure || !data) return
-    socket.emit("newConversation", [userSecure._id, id])
-    socket.once("conversation", conversation => {
-      prepareChat()
-      router.dismissTo({
-        pathname: "/chat-details",
-        params: { conversationId: conversation._id },
-      })
-    })
+    socket.emit("getConversation", userSecure._id, [userSecure._id, id])
   }
 
   useEffect(() => {

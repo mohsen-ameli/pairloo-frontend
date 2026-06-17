@@ -82,7 +82,7 @@ export type OtherUser = {
 }
 
 interface ServerToClientEvents {
-  conversation: (data: ConversationType) => void
+  conversation: (initiatorId: string, conversation: ConversationType, postId?: string) => void
   error: (message: string) => void
   messages: (data: MessageType[]) => void
   messageEdited: (data: {
@@ -94,7 +94,7 @@ interface ServerToClientEvents {
   conversations: (data: ConversationType[]) => void
   messageDeleted: (data: { messageId: string; newLastMessage: LastMessageType }) => void
   message: (data: MessageType) => void
-  connected: (data: string) => void
+  connected: () => void
 }
 
 interface ClientToServerEvents {
@@ -106,7 +106,7 @@ interface ClientToServerEvents {
     replyTo?: ReplyTo
   }) => void
   getConversations: () => void
-  newConversation: (memberIds: string[], post?: { postId: string; title: string }) => void
+  getConversation: (initiatorId: string, memberIds: string[], postId?: string) => void
   getMessages: (data: {
     conversationId: string
     postId?: string | null

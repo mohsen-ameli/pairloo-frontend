@@ -101,7 +101,7 @@ export default function PhoneNumber() {
               }}
               style={commonStyles.dismissButton}
             >
-              <Feather name="x" size={26} color={colors.dark} />
+              <Feather name="x" size={24} color={colors.dark} />
             </TouchableOpacity>
             <TextInput
               style={commonStyles.searchInput}

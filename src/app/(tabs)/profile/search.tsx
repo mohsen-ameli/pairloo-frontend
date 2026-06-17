@@ -4,11 +4,13 @@ import { colors } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { FlashList } from "@shopify/flash-list"
 import { Image } from "expo-image"
-import { Stack, useRouter } from "expo-router"
+import { useRouter } from "expo-router"
 import { useSetAtom } from "jotai"
-import { useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useState } from "react"
 import { Pressable, Text, TextInput, View } from "react-native"
 import { debounce } from "lodash"
+import { commonStyles } from "@/src/styles/common.styles"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -23,19 +25,10 @@ export default function SearchPage() {
       score: number
     }[]
   >([])
-  const inputRef = useRef<TextInput>(null!)
   const authFetch = useSetAtom(authFetchAtom)
   const [query, setQuery] = useState("")
   const [isInit, setIsInit] = useState(false)
   const router = useRouter()
-
-  useLayoutEffect(() => {
-    const timer = setTimeout(() => {
-      inputRef.current.focus()
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [])
 
   async function handleDebounceFn(query: string) {
     try {
@@ -64,56 +57,20 @@ export default function SearchPage() {
 
     debounceFn(query)
   }
-
-  function handleClear() {
-    inputRef.current.clear()
-    setResults([])
-    setQuery("")
-    debounceFn.cancel()
-    setIsInit(false)
-    inputRef.current.focus()
-  }
-
   return (
-    <>
-      <Stack.Screen
-        options={{
-          headerTitle: () => (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <TextInput
-                placeholder="Search for people..."
-                style={{
-                  color: colors.dark,
-                  flexGrow: 1,
-                  borderWidth: 1,
-                  borderColor: colors.borderGray,
-                  padding: 8,
-                  marginRight: 10,
-                  borderRadius: 5,
-                  fontSize: 16,
-                }}
-                onChangeText={handleSearch}
-                value={query}
-                ref={inputRef}
-              />
-              {query.length > 0 && (
-                <Pressable
-                  style={{
-                    position: "absolute",
-                    right: 14,
-                    backgroundColor: colors.lightGray,
-                    padding: 3,
-                    borderRadius: 5,
-                  }}
-                  onPress={handleClear}
-                >
-                  <Feather name="x" size={22} color={colors.darkGray} />
-                </Pressable>
-              )}
-            </View>
-          ),
-        }}
-      />
+    <SafeAreaView style={commonStyles.modalContainer}>
+      <View style={commonStyles.searchContainer}>
+        <Pressable style={commonStyles.dismissButton} onPress={() => router.back()}>
+          <Feather name="x" size={22} color={colors.darkGray} />
+        </Pressable>
+        <TextInput
+          placeholder="Search for people..."
+          style={commonStyles.searchInput}
+          onChangeText={handleSearch}
+          autoFocus
+          value={query}
+        />
+      </View>
 
       <View style={profileStyles.socialModalContainer}>
         <FlashList
@@ -122,6 +79,7 @@ export default function SearchPage() {
           contentContainerStyle={profileStyles.socialListContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           ListEmptyComponent={
             <View style={profileStyles.emptyStateContainer}>
               <Text style={profileStyles.emptyStateText}>{isInit && "No results found."}</Text>
@@ -129,12 +87,13 @@ export default function SearchPage() {
           }
           renderItem={({ item }) => (
             <Pressable
-              onPress={() =>
+              onPress={() => {
+                router.back()
                 router.push({
                   pathname: "(details)/general-profile",
                   params: { id: item._id },
                 })
-              }
+              }}
               style={profileStyles.socialRow}
             >
               <Image
@@ -153,6 +112,6 @@ export default function SearchPage() {
           )}
         />
       </View>
-    </>
+    </SafeAreaView>
   )
 }

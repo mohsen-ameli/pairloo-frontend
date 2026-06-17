@@ -11,7 +11,7 @@ import { sinceNow } from "@/src/utils/format-date"
 import { formatString } from "@/src/utils/format-string"
 import { userSecureAtom } from "@/src/store/auth-store"
 import { Image } from "expo-image"
-import { useFocusEffect, useRouter } from "expo-router"
+import { useRouter } from "expo-router"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Pressable, ScrollView, Text, View } from "react-native"
 import { colors } from "@/src/utils/colors"
@@ -19,7 +19,6 @@ import { ConversationType, LastMessageType } from "@/src/types/socket/chat.type"
 import { chatSocketAtom } from "@/src/store/socket-store"
 
 import LoadingIndicator from "@/src/components/LoadingIndicator"
-import { useCallback } from "react"
 import { commonStyles } from "@/src/styles/common.styles"
 import { Node } from "@/src/utils/linked-list"
 
@@ -32,16 +31,6 @@ export default function index() {
   const initChat = useSetAtom(initChatAtom)
   const loading = useAtomValue(loadingAtom)
 
-  async function refresh() {
-    await initChat()
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      refresh()
-    }, [])
-  )
-
   if (loading) {
     return (
       <View style={commonStyles.generalContainer}>
@@ -50,11 +39,11 @@ export default function index() {
     )
   }
 
-  if (!socket || !socket.connected) {
+  if (!socket) {
     return (
       <View style={commonStyles.generalContainer}>
-        <Text style={commonStyles.errorText}>An error occured. Please try again.</Text>
-        <Pressable style={commonStyles.retryButton} onPress={refresh}>
+        <Text style={commonStyles.errorText}>An error occurred. Please try again.</Text>
+        <Pressable style={commonStyles.retryButton} onPress={initChat}>
           <Text style={commonStyles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
@@ -101,11 +90,9 @@ function ConversationList() {
   }
 
   function goToChat(conversation: Node<ConversationType | null>) {
-    prepareChat(conversation.value?.lastMessage?.postId)
-    router.push({
-      pathname: "/chat-details",
-      params: { conversationId: conversation.value?._id },
-    })
+    if (!conversation.value) return
+    prepareChat(conversation.value._id, conversation.value.lastMessage?.postId)
+    router.push("/chat-details")
     setCurrentConversation(conversation)
   }
 

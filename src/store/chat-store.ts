@@ -28,6 +28,8 @@ export const conversationsAtom = atom(new LinkedList<ConversationType | null>())
 
 export const currentConversationAtom = atom(new Node<ConversationType | null>(null))
 
+export const activeConversationIdAtom = atom<string | null>(null)
+
 export const activePostIdAtom = atom<string | null | undefined>(null)
 
 export const messagesAtom = atom<MessageType[]>([])
@@ -96,34 +98,18 @@ const newMessageAffectsAtom = atom(
 
     // move current conversation up to the top
     set(conversationsAtom, list => {
-      if (currentConversation.value) {
-        if (currentConversation === list.head) return new LinkedList(currentConversation)
-        const prev = currentConversation.prev
-        const next = currentConversation.next
-        if (prev) {
-          prev.next = next
-        }
-        if (next) {
-          next.prev = prev
-        }
-        currentConversation.prev = null
-        if (list.head) {
-          currentConversation.next = list.head
-          list.head.prev = currentConversation
-        }
-        list.head = currentConversation
-      }
+      list.moveToFront(currentConversation)
       return new LinkedList(list.head)
     })
   }
 )
 
 export const initChatAtom = atom(null, async (get, set) => {
+  const currSocket = get(chatSocketAtom)
+  const currConversations = get(conversationsAtom)
   const user = get(userAtom)
   const userJwt = await get(userSecureAtom)
   if (!user || !userJwt) return
-  const currSocket = get(chatSocketAtom)
-  const currConversations = get(conversationsAtom)
   if (currSocket && (currSocket.connected || get(loadingAtom)) && currConversations.length > 0) {
     return
   }
@@ -143,6 +129,7 @@ export const initChatAtom = atom(null, async (get, set) => {
   function cleanup() {
     get(chatSocketAtom)?.disconnect()
     set(chatSocketAtom, null)
+    get(conversationsAtom).clear()
     set(conversationsAtom, new LinkedList())
     set(currentConversationAtom, new Node(null))
     set(messagesAtom, [])
@@ -185,20 +172,32 @@ export const initChatAtom = atom(null, async (get, set) => {
     }
   })
 
-  // Update the conversations list to include the new conversation
-  socket.on("conversation", conversation => {
+  socket.on("conversation", (initiatorId, conversation, postId) => {
+    // Append the conversation to the top of the list or update it if it already exists
     set(conversationsAtom, list => {
-      list.append(conversation)
+      list.appendAtHead(conversation)
       return new LinkedList(list.head)
     })
+
+    // If the current user initiated the conversation, navigate to the chat details screen
+    if (initiatorId === userJwt._id) {
+      set(prepareChatAtom, conversation._id, postId)
+
+      if (router.canDismiss()) {
+        router.dismissTo("/chat-details")
+      } else {
+        router.push("/chat-details")
+      }
+    }
   })
 
   // Got all conversations
   socket.on("conversations", conversations => {
-    const list = get(conversationsAtom)
+    const list = new LinkedList<ConversationType | null>()
     for (const conversation of conversations) {
       list.append(conversation)
     }
+    set(conversationsAtom, list)
     set(loadingAtom, false)
   })
 
@@ -213,7 +212,7 @@ export const initChatAtom = atom(null, async (get, set) => {
       return
     }
 
-    set(messagesAtom, curr => [...curr, ...messages])
+    set(messagesAtom, curr => [...messages, ...curr])
 
     const unreadMsgs = await get(unreadMessagesAtom)
     await set(unreadMessagesAtom, () => {
@@ -239,15 +238,21 @@ export const initChatAtom = atom(null, async (get, set) => {
       true
     )
 
-    const currentConversation = get(currentConversationAtom)
-    if (!currentConversation.value) return
-
     // we received a message from other user
     if (message.sender._id !== userJwt._id) {
-      set(messagesAtom, prev => [message, ...prev])
+      const currentConversation = get(currentConversationAtom)
+      const activePostId = get(activePostIdAtom)
+      // If user is currently in the same chat about the same post, append the message to the list
+      if (
+        currentConversation.value &&
+        currentConversation.value._id === message.conversationId &&
+        (activePostId === message.postId || (!activePostId && !message.postId))
+      ) {
+        set(messagesAtom, prev => [...prev, message])
+      }
 
       // If user is not in the chat that received the message
-      if (currentConversation.value._id !== message.conversationId) {
+      if (!currentConversation.value || currentConversation.value._id !== message.conversationId) {
         Toast.show({
           type: "newMessage",
           props: {
@@ -260,16 +265,12 @@ export const initChatAtom = atom(null, async (get, set) => {
                 : undefined,
           },
           onPress: () => {
-            set(prepareChatAtom, message.postId)
-            router.push({
-              pathname: "/chat-details",
-              params: { conversationId: message.conversationId },
-            })
-            socket.emit("getMessages", {
-              conversationId: message.conversationId,
-              start: 0,
-              end: NUM_MESSAGES_TO_LOAD,
-            })
+            socket.emit(
+              "getConversation",
+              userJwt._id,
+              [userJwt._id, message.sender._id],
+              message.postId
+            )
             Toast.hide()
           },
         })
@@ -280,20 +281,7 @@ export const initChatAtom = atom(null, async (get, set) => {
           player.seekTo(0)
           player.play()
         }
-        const unreadMsgs = await get(unreadMessagesAtom)
-        await set(unreadMessagesAtom, () => {
-          if (message.conversationId in unreadMsgs) {
-            return {
-              ...unreadMsgs,
-              [message.conversationId]: unreadMsgs[message.conversationId] + 1,
-            }
-          } else {
-            return {
-              ...unreadMsgs,
-              [message.conversationId]: 1,
-            }
-          }
-        })
+        return
       }
     }
 
@@ -432,7 +420,7 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
   }
 
   // Optimistically add the message to the list
-  set(messagesAtom, prev => [optimisticMessage, ...prev])
+  set(messagesAtom, prev => [...prev, optimisticMessage])
 
   socket.emit("newMessage", {
     conversationId,
@@ -458,7 +446,7 @@ export const sendAttachmentAtom = atom(null, async (get, set, option: "library" 
     includeFile: true,
   })
 
-  if (!attachments) return
+  if (!attachments || attachments.length === 0) return
   set(chatAttachmentsAtom, attachments)
 })
 
@@ -505,12 +493,17 @@ export const deleteMessageAtom = atom(
   }
 )
 
-export const prepareChatAtom = atom(null, async (get, set, postId?: string | null) => {
-  set(activePostIdAtom, postId)
-  set(loadingAtom, true)
-  set(entireChatLoadedAtom, false)
-  set(messagesAtom, [])
-})
+export const prepareChatAtom = atom(
+  null,
+  async (get, set, conversationId: string, postId?: string | null) => {
+    set(activeConversationIdAtom, conversationId)
+    set(activePostIdAtom, postId)
+    set(loadingAtom, true)
+    set(entireChatLoadedAtom, false)
+    set(messagesAtom, [])
+    set(currentConversationAtom, new Node(null))
+  }
+)
 
 export const cleanupChatAtom = atom(null, async (get, set) => {
   set(entireChatLoadedAtom, false)

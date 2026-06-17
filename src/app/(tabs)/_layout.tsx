@@ -76,7 +76,7 @@ export default function ProtectedLayout() {
       }}
     >
       <Tabs.Screen
-        name="(post)"
+        name="(home)"
         options={{
           title: "Home",
           headerShown: false,
@@ -139,9 +139,8 @@ function ProfileTab({ size }: { size: number }) {
       style={{
         width: size + 3,
         height: size + 3,
-        borderRadius: 25,
+        borderRadius: size + 3,
       }}
-      contentFit="contain"
     />
   )
 }

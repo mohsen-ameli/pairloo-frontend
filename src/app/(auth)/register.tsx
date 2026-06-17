@@ -27,6 +27,7 @@ import CustomPager from "@/src/components/CustomPager"
 import LocationSelector from "@/src/components/LocationSelector"
 import PhoneNumber from "@/src/components/PhoneNumber"
 import { debounce } from "lodash"
+import { commonStyles } from "@/src/styles/common.styles"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 const INITIAL_PAGE_COUNT = 6
@@ -198,7 +199,7 @@ export default function Register() {
 
   return (
     <CustomPager>
-      <View style={styles.pageContainer} key="0">
+      <View style={[commonStyles.container, styles.pageContainer]} key="0">
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
         {(errors?.phoneNumber || isBlocked) && (
@@ -209,7 +210,7 @@ export default function Register() {
         )}
       </View>
 
-      <View style={styles.pageContainer} key="1">
+      <View style={[commonStyles.container, styles.pageContainer]} key="1">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
           title="Code"
@@ -243,7 +244,7 @@ export default function Register() {
         </Pressable>
       </View>
 
-      <View style={styles.pageContainer} key="2">
+      <View style={[commonStyles.container, styles.pageContainer]} key="2">
         <Text
           style={{
             color: colors.dark,
@@ -275,7 +276,7 @@ export default function Register() {
         )}
       </View>
 
-      <View style={styles.pageContainer} key="3">
+      <View style={[commonStyles.container, styles.pageContainer]} key="3">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
           title="Code"
@@ -308,7 +309,7 @@ export default function Register() {
       </View>
 
       <ScrollView key="4" keyboardShouldPersistTaps="handled">
-        <View style={styles.pageContainer}>
+        <View style={[commonStyles.container, styles.pageContainer]}>
           <Text
             style={{
               color: colors.dark,
@@ -374,7 +375,7 @@ export default function Register() {
         </View>
       </ScrollView>
 
-      <View style={styles.pageContainer} key="5">
+      <View style={[commonStyles.container, styles.pageContainer]} key="5">
         <Text style={styles.title}>Finally, add a picture!</Text>
         <View style={styles.containerCenter}>
           <Pressable
