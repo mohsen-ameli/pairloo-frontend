@@ -260,7 +260,6 @@ export default function CreatePost() {
                     placeholder="Write as little or as much details as you want"
                     editable={!loading}
                     multiline
-                    autoFocus
                     numberOfLines={10}
                     textAlignVertical="top"
                     scrollEnabled

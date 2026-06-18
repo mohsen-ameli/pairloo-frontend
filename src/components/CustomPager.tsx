@@ -1,4 +1,4 @@
-import { Children, ReactNode, useEffect, useState } from "react"
+import { Children, ReactNode, useEffect } from "react"
 import { Dimensions, Keyboard, Pressable, Text, View } from "react-native"
 import { colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 import { useAtomValue } from "jotai"
@@ -16,20 +16,19 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 
+const containerWidth = Dimensions.get("window").width - 10
+
 export default function CustomPager({ children }: { children: ReactNode }) {
   const pageCount = useAtomValue(pageCountAtom)
   const pages = Children.toArray(children)
   const scrollOffset = useSharedValue(0)
   const translateX = useSharedValue(0)
-  const [containerWidth, setContainerWidth] = useState(0)
   const currPage = useAtomValue(currPageAtom)
   const flow = useAtomValue(flowAtom)
   const isAuthenticated = useAtomValue(userAtom) !== null
   const { height } = useGradualAnimation({ includeTabHeight: isAuthenticated })
 
   useEffect(() => {
-    if (!containerWidth) return
-
     translateX.value = withTiming(-currPage * containerWidth, {
       duration: 300,
       easing: Easing.out(Easing.quad),
@@ -38,7 +37,7 @@ export default function CustomPager({ children }: { children: ReactNode }) {
     scrollOffset.value = withTiming(currPage, {
       duration: 100,
     })
-  }, [containerWidth, currPage])
+  }, [currPage])
 
   const pagesAnimation = useAnimatedStyle(() => {
     return {
@@ -78,16 +77,13 @@ export default function CustomPager({ children }: { children: ReactNode }) {
       </View>
 
       {/* Pages */}
-      <View
-        style={{ flex: 1, paddingVertical: 0 }}
-        onLayout={event => setContainerWidth(event.nativeEvent.layout.width)}
-      >
+      <View style={{ flex: 1, paddingVertical: 0 }}>
         <Animated.View
           style={[
             {
               flex: 1,
               flexDirection: "row",
-              width: containerWidth ? containerWidth * pages.length : "100%",
+              width: containerWidth * pages.length,
             },
             pagesAnimation,
           ]}

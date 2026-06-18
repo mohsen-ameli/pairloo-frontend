@@ -44,11 +44,12 @@ const settings = {
 
 type SettingsType = typeof settings
 
+const DB_KEY = "create-post"
 function initDB() {
   return openDB("jotai", 1, {
     upgrade(db) {
-      if (!db.objectStoreNames.contains("store")) {
-        db.createObjectStore("store", { keyPath: "id" })
+      if (!db.objectStoreNames.contains(DB_KEY)) {
+        db.createObjectStore(DB_KEY)
       }
     },
   })
@@ -63,7 +64,7 @@ function postSettingsStorage(): AS<SettingsType> {
     getItem: async key => {
       if (Platform.OS === "web") {
         const db = await initDB()
-        const value = (await db.get("store", key)) as SettingsType
+        const value = (await db.get(DB_KEY, key)) as SettingsType
         if (!value) return settings
 
         for (const img of value.images) {
@@ -82,7 +83,7 @@ function postSettingsStorage(): AS<SettingsType> {
     setItem: async (key, value: SettingsType) => {
       if (Platform.OS === "web") {
         const db = await initDB()
-        await db.put("store", value, key)
+        await db.put(DB_KEY, value, key)
       } else {
         await AsyncStorage.setItem(key, JSON.stringify(value))
       }
@@ -90,7 +91,7 @@ function postSettingsStorage(): AS<SettingsType> {
     removeItem: async key => {
       if (Platform.OS === "web") {
         const db = await initDB()
-        await db.delete("store", key)
+        await db.delete(DB_KEY, key)
       } else {
         await AsyncStorage.removeItem(key)
       }
