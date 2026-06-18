@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 // @ts-ignore: Multi-platform file import
 import { setupAds } from "@/src/store/ad-store"
 import { KeyboardProvider } from "react-native-keyboard-controller"
-import { BASE_URL, NODE_ENV } from "@/src/utils/constants"
+import { BASE_URL, NODE_ENV, WEB_ADS_CLIENT_ID } from "@/src/utils/constants"
 import "./global.css"
 
 LogBox.ignoreAllLogs()
@@ -214,6 +214,7 @@ export default function RootLayout() {
       }}
     >
       <StatusBar style="auto" />
+      <meta name="google-adsense-account" content={WEB_ADS_CLIENT_ID} />
 
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>

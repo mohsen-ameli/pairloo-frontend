@@ -21,3 +21,4 @@ export const MAX_POST_IMAGES = 5
 
 export const ANDROID_ADS_UNIT_ID = process.env.EXPO_PUBLIC_ANDROID_ADS_UNIT_ID!
 export const IOS_ADS_UNIT_ID = process.env.EXPO_PUBLIC_IOS_ADS_UNIT_ID!
+export const WEB_ADS_CLIENT_ID = process.env.EXPO_PUBLIC_WEB_ADS_CLIENT_ID!
