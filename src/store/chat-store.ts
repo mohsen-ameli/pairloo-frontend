@@ -319,8 +319,6 @@ export const initChatAtom = atom(null, async (get, set) => {
       })
     )
 
-    set(receivedMsgAtom, prev => !prev)
-
     // Update lastMessage if this is the last message
     const currentConversation = get(currentConversationAtom)
     if (!currentConversation.value) return
@@ -346,7 +344,6 @@ export const initChatAtom = atom(null, async (get, set) => {
         })
     )
 
-    set(receivedMsgAtom, prev => !prev) // trigger re-render
     await set(newMessageAffectsAtom, newLastMessage)
   })
 
