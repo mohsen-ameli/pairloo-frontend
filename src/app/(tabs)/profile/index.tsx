@@ -141,7 +141,7 @@ export default function ProfileScreen() {
             {user.firstName} {user.lastName}
           </Text>
           <Text style={profileStyles.text}>@{user.username}</Text>
-          <Text style={profileStyles.textMd}>
+          <Text style={profileStyles.textGray}>
             Joined {new Date(user.createdAt).toLocaleDateString()}
           </Text>
         </View>
@@ -345,8 +345,8 @@ export default function ProfileScreen() {
                           <RatingStars value={r.rating} />
                         </View>
                         <View style={profileStyles.rowContainer}>
-                          <Text style={profileStyles.textSm}>@{r.reviewer.username}</Text>
-                          <Text style={profileStyles.textSm}>
+                          <Text style={profileStyles.textGray}>@{r.reviewer.username}</Text>
+                          <Text style={profileStyles.textGray}>
                             {formatDateDayMonthYear(r.createdAt.toString())}
                           </Text>
                         </View>

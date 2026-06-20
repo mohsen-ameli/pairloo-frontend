@@ -214,7 +214,8 @@ export default function RootLayout() {
       }}
     >
       <StatusBar style="auto" />
-      <meta name="google-adsense-account" content={WEB_ADS_CLIENT_ID} />
+
+      {Platform.OS === "web" && <meta name="google-adsense-account" content={WEB_ADS_CLIENT_ID} />}
 
       <KeyboardProvider>
         <QueryClientProvider client={queryClient}>

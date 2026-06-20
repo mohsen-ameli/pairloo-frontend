@@ -22,7 +22,7 @@ import {
   loadingAtom as chatLoadingAtom,
 } from "@/src/store/chat-store"
 import { resetRegistrationAtom, userSecureAtom } from "@/src/store/auth-store"
-import { currPageAtom, pageCountAtom } from "@/src/store/pager-store"
+import { currPageAtom } from "@/src/store/pager-store"
 import { savePostAtom, unsavePostAtom, savedPostIdsAtom } from "@/src/store/post-detail-store"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"
@@ -276,7 +276,7 @@ function ChatHeader() {
                     gap: 8,
                     borderRadius: 6,
                     borderColor: colors.darkPurple,
-                    borderWidth: 1.5,
+                    borderWidth: 2.5,
                   }}
                 >
                   <FontAwesome name="caret-down" size={20} color={colors.darkPurple} />
@@ -310,12 +310,11 @@ function CreatePostHeader() {
   const getNewQuestion = useSetAtom(getNewQuestionAtom)
   const loading = useAtomValue(createPostLoadingAtom)
   const currPage = useAtomValue(currPageAtom)
-  const pageCount = useAtomValue(pageCountAtom)
   const qna = useAtomValue(qnaAtom)
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      {0 < currPage && currPage <= pageCount - 3 && qna && qna[currPage].question.intention && (
+      {qna && currPage < qna.length && qna[currPage].question.intention && (
         <Pressable onPress={getNewQuestion} disabled={loading} style={{ padding: 6 }}>
           <Feather name="rotate-ccw" size={24} color={colors.dark} />
         </Pressable>

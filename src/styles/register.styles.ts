@@ -2,15 +2,10 @@ import { StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light,
-  },
   containerCenter: {
     flex: 1,
     alignItems: "center",
   },
-
   pageContainer: {
     flex: 1,
     gap: 10,
@@ -31,16 +26,8 @@ export const styles = StyleSheet.create({
   note: {
     color: colors.dark,
   },
-  verificationInfo: {
-    marginTop: 10,
-    color: colors.darkGray,
-  },
   resendText: {
     marginBottom: 20,
-  },
-  forgotLink: {
-    marginTop: 10,
-    alignSelf: "center",
   },
   avatarContainer: {
     position: "absolute",

@@ -57,7 +57,15 @@ export function formatDateDayMonthYear(dateString: string | Date) {
   const date = new Date(dateString)
   return date.toLocaleDateString(undefined, {
     day: "numeric",
-    month: "short",
+    month: "long",
     year: "numeric",
   })
+}
+
+export function areDifferentDays(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() !== date2.getFullYear() ||
+    date1.getMonth() !== date2.getMonth() ||
+    date1.getDate() !== date2.getDate()
+  )
 }

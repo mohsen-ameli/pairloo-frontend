@@ -1,4 +1,4 @@
-import { conversationStyles } from "@/src/styles/conversation.style"
+import { conversationStyles } from "@/src/styles/conversation.styles"
 import {
   conversationsAtom,
   currentConversationAtom,

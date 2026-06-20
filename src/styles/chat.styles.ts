@@ -2,12 +2,6 @@ import { Platform, StyleSheet } from "react-native"
 import { colors } from "@/src/utils/colors"
 
 export const chatStyles = StyleSheet.create({
-  notFoundContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.light,
-  },
   inputContainer: {
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -71,22 +65,6 @@ export const chatStyles = StyleSheet.create({
     paddingHorizontal: 4,
     marginVertical: 2,
   },
-  messageImage: {
-    width: 40,
-    height: 40,
-    // borderRadius: 20,
-  },
-  messageHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingLeft: 10,
-  },
-  messageUsername: {
-    fontSize: 14,
-    color: colors.dark,
-    fontWeight: "600",
-  },
   messageDate: {
     fontSize: 10,
     color: colors.gray,
@@ -127,11 +105,6 @@ export const chatStyles = StyleSheet.create({
     color: colors.gray,
     fontStyle: "italic",
   },
-  messageReplyThumbnail: {
-    width: 30,
-    height: 30,
-    borderRadius: 4,
-  },
   replyPreviewContainer: {
     backgroundColor: colors.light,
     paddingHorizontal: 10,
@@ -149,11 +122,6 @@ export const chatStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-  },
-  replyPreviewImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
   },
   replyPreviewTextContainer: {
     flex: 1,
@@ -241,13 +209,6 @@ export const chatStyles = StyleSheet.create({
     flex: 1,
     width: "100%",
   },
-  attachmentImage: {
-    width: 200,
-    height: 200,
-    maxWidth: 300,
-    maxHeight: 300,
-    borderRadius: 10,
-  },
   listFooter: {
     height: 16,
   },
@@ -310,5 +271,31 @@ export const chatStyles = StyleSheet.create({
     backgroundColor: colors.lightGray,
     padding: 10,
     borderRadius: 50,
+  },
+  typingIndicatorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    alignSelf: "flex-start",
+  },
+  typingDot: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    backgroundColor: colors.purple,
+  },
+  dateSeparatorContainer: {
+    alignSelf: "center",
+    backgroundColor: colors.lightGray,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  dateSeparatorText: {
+    fontSize: 12,
+    color: colors.dark,
   },
 })

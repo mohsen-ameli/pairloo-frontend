@@ -122,7 +122,7 @@ export default function GeneralProfile() {
             {data.firstName} {data.lastName}
           </Text>
           <Text style={profileStyles.text}>@{data.username}</Text>
-          <Text style={profileStyles.textMd}>
+          <Text style={profileStyles.textGray}>
             Joined {new Date(data.createdAt).toLocaleDateString()}
           </Text>
         </View>
