@@ -47,18 +47,6 @@ export const createPostStyles = StyleSheet.create({
     borderWidth: 1.5,
     backgroundColor: colors.lightGray,
   },
-  discardButton: {
-    backgroundColor: colors.purple,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 6,
-    marginBottom: 10,
-  },
-  discardButtonText: {
-    color: colors.light,
-    fontSize: 14,
-    fontWeight: "600",
-  },
   scrollView: {
     flex: 1,
     gap: 10,

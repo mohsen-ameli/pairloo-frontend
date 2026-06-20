@@ -36,7 +36,7 @@ import { colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 import { MessageType, ReplyTo } from "@/src/types/socket/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
-import { formatDate } from "@/src/utils/format-date"
+import { areDifferentDays, formatDate, formatDateDayMonthYear } from "@/src/utils/format-date"
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -262,15 +262,33 @@ export default function ChatDetails() {
           startRenderingFromBottom: true,
         }}
         keyboardShouldPersistTaps="always"
-        renderItem={({ item }) => (
-          <MessageItem
-            key={item._id}
-            item={item}
-            chatRef={chatRef}
-            inputRef={inputRef}
-            isOwnMessage={userJwt?._id === item.sender._id}
-          />
-        )}
+        renderItem={({ item, index }) => {
+          let showDateSeparator = true
+          if (index - 1 < messages.length && messages[index - 1]) {
+            showDateSeparator = areDifferentDays(
+              new Date(item.createdAt),
+              new Date(messages[index - 1].createdAt)
+            )
+          }
+          return (
+            <>
+              {showDateSeparator && (
+                <View style={chatStyles.dateSeparatorContainer}>
+                  <Text style={chatStyles.dateSeparatorText}>
+                    {formatDateDayMonthYear(item.createdAt)}
+                  </Text>
+                </View>
+              )}
+              <MessageItem
+                key={item._id}
+                item={item}
+                chatRef={chatRef}
+                inputRef={inputRef}
+                isOwnMessage={userJwt?._id === item.sender._id}
+              />
+            </>
+          )
+        }}
         // Above the last message we show loading indicator since we'll be loading more chat messages
         ListHeaderComponent={
           !entireChatLoaded ? (

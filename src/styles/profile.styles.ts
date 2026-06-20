@@ -24,11 +24,7 @@ export const profileStyles = StyleSheet.create({
     textAlign: "center",
     color: colors.dark,
   },
-  textSm: {
-    fontSize: 16,
-    color: colors.gray,
-  },
-  textMd: {
+  textGray: {
     fontSize: 16,
     color: colors.gray,
   },
@@ -163,24 +159,6 @@ export const profileStyles = StyleSheet.create({
     backgroundColor: colors.light,
     paddingHorizontal: 16,
   },
-  socialModalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 16,
-    gap: 12,
-  },
-  socialModalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colors.dark,
-    flexShrink: 1,
-  },
-  socialModalCloseButton: {
-    padding: 8,
-    borderRadius: 18,
-    backgroundColor: colors.lightGray,
-  },
   socialListContent: {
     paddingBottom: 24,
   },
@@ -221,13 +199,6 @@ export const profileStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  postCardFooterContent: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 8,
   },
   postTitle: {
     fontSize: 16,

@@ -1,46 +1,7 @@
 import { StyleSheet } from "react-native"
-import { boxShadow, colors } from "@/src/utils/colors"
+import { colors } from "@/src/utils/colors"
 
 export const styles = StyleSheet.create({
-  fabContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    pointerEvents: "box-none",
-  },
-  fabButton: {
-    backgroundColor: colors.errorRed,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 28,
-    width: 150,
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow,
-    elevation: 8,
-  },
-  fabText: {
-    color: colors.light,
-    fontWeight: "700",
-    fontSize: 18,
-    letterSpacing: 0.5,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: 80,
-  },
-  header: {
-    marginBottom: 12,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: colors.dark,
-  },
   section: {
     marginTop: 16,
   },

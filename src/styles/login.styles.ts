@@ -26,7 +26,4 @@ export const styles = StyleSheet.create({
   resendText: {
     marginBottom: 20,
   },
-  errorText: {
-    color: colors.errorRed,
-  },
 })
