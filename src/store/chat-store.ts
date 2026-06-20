@@ -40,6 +40,8 @@ export const loadingAtom = atom(false)
 
 export const entireChatLoadedAtom = atom(false)
 
+export const isTypingAtom = atom(false)
+
 export const receivedMsgAtom = atom(false) // used to trigger re-render when a new message is received
 
 export const imgIndexAtom = atom(0)
@@ -347,6 +349,20 @@ export const initChatAtom = atom(null, async (get, set) => {
     set(receivedMsgAtom, prev => !prev) // trigger re-render
     await set(newMessageAffectsAtom, newLastMessage)
   })
+
+  socket.on("typing", ({ userId, isTyping, conversationId, postId }) => {
+    const currentConversation = get(currentConversationAtom)
+    const activePostId = get(activePostIdAtom)
+    if (
+      userId !== userJwt._id &&
+      conversationId === currentConversation.value?._id &&
+      (activePostId === postId || (activePostId == null && postId == null))
+    ) {
+      set(isTypingAtom, isTyping)
+    } else {
+      set(isTypingAtom, false)
+    }
+  })
 })
 
 // Sends a message in a conversation
@@ -429,6 +445,8 @@ export const sendMessageAtom = atom(null, async (get, set, content: string) => {
     attachments,
     replyTo,
   })
+
+  socket.emit("isTyping", { conversationId, status: false })
 
   set(chatAttachmentsAtom, [])
   set(replyingToAtom, null)

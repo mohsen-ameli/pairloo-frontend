@@ -311,4 +311,18 @@ export const chatStyles = StyleSheet.create({
     padding: 10,
     borderRadius: 50,
   },
+  typingIndicatorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    alignSelf: "flex-start",
+  },
+  typingDot: {
+    height: 8,
+    width: 8,
+    borderRadius: 4,
+    backgroundColor: colors.purple,
+  },
 })

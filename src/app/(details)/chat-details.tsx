@@ -8,7 +8,7 @@ import {
   Keyboard,
   ActivityIndicator,
 } from "react-native"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "expo-router/build/hooks"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { Image } from "expo-image"
@@ -30,13 +30,22 @@ import {
   cleanupChatAtom,
   receivedMsgAtom,
   activeConversationIdAtom,
+  isTypingAtom,
 } from "@/src/store/chat-store"
 import { colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 import { MessageType, ReplyTo } from "@/src/types/socket/chat.type"
 import Feather from "@expo/vector-icons/Feather"
 import MaterialIcons from "@expo/vector-icons/MaterialIcons"
 import { formatDate } from "@/src/utils/format-date"
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import useGradualAnimation from "@/src/utils/gradual-animation"
 import { userSecureAtom } from "@/src/store/auth-store"
@@ -46,11 +55,12 @@ import { useFocusEffect } from "expo-router"
 import { FlashList, FlashListRef } from "@shopify/flash-list"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { scheduleOnRN } from "react-native-worklets"
-import { NUM_MESSAGES_TO_LOAD, TAB_HEIGHT } from "@/src/utils/constants"
+import { IS_TYPING_DEBOUNCE_TIME, NUM_MESSAGES_TO_LOAD, TAB_HEIGHT } from "@/src/utils/constants"
 import { atom } from "jotai"
 import { commonStyles } from "@/src/styles/common.styles"
 import Toast from "react-native-toast-message"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { debounce } from "lodash"
 
 const scrollTargetIdAtom = atom<string | null>(null)
 const messageAtom = atom("")
@@ -72,7 +82,12 @@ export default function ChatDetails() {
   const chatRef = useRef<FlashListRef<MessageType>>(null)
   const { height } = useGradualAnimation({ includeTabHeight: false })
   const [loading, setLoading] = useAtom(loadingAtom)
-  const otherUserId = useRef<string | null>(null)
+  const [otherUser, setOtherUser] = useState<{
+    _id: string
+    username: string
+    picture?: string | null | undefined
+    email: string
+  } | null>(null)
   const [canReview, setCanReview] = useAtom(canReviewAtom)
   const [entireChatLoaded, setEntireChatLoaded] = useAtom(entireChatLoadedAtom)
   const receivedMsg = useAtomValue(receivedMsgAtom)
@@ -80,6 +95,7 @@ export default function ChatDetails() {
   const setHighlightedMessageId = useSetAtom(highlightedMessageIdAtom)
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const cleanupChat = useSetAtom(cleanupChatAtom)
+  const isTyping = useAtomValue(isTypingAtom)
   const insets = useSafeAreaInsets()
   const inputRef = useRef<TextInput>(null!)
 
@@ -118,17 +134,17 @@ export default function ChatDetails() {
   useEffect(() => {
     if (canReview) return
     for (const msg of messages) {
-      if (msg.sender._id === otherUserId.current) {
+      if (msg.sender._id === otherUser?._id) {
         setCanReview(true)
         break
       }
     }
-  }, [messages])
+  }, [messages, otherUser])
 
   // Scroll to bottom when a new message is received
   useEffect(() => {
     chatRef.current?.scrollToEnd({ animated: true })
-  }, [receivedMsg])
+  }, [receivedMsg, isTyping])
 
   // To set the current conversation and load initial messages
   useFocusEffect(
@@ -148,9 +164,7 @@ export default function ChatDetails() {
         return
       }
 
-      otherUserId.current = currentConversation.value.members.find(
-        member => member._id !== userJwt._id
-      )?._id!
+      setOtherUser(currentConversation.value.members.find(member => member._id !== userJwt._id)!)
 
       setLoading(true)
       setEntireChatLoaded(false)
@@ -252,7 +266,6 @@ export default function ChatDetails() {
           <MessageItem
             key={item._id}
             item={item}
-            messages={messages}
             chatRef={chatRef}
             inputRef={inputRef}
             isOwnMessage={userJwt?._id === item.sender._id}
@@ -264,7 +277,13 @@ export default function ChatDetails() {
             <ActivityIndicator style={{ paddingVertical: 8 }} size="small" color={colors.blue} />
           ) : null
         }
-        ListFooterComponent={<View style={chatStyles.listFooter} />}
+        ListFooterComponent={
+          isTyping && otherUser && currentConversation.value ? (
+            <TypingIndicator />
+          ) : (
+            <View style={chatStyles.listFooter} />
+          )
+        }
         onScroll={e => {
           const y =
             e.nativeEvent.contentSize.height -
@@ -313,7 +332,7 @@ export default function ChatDetails() {
 
       <AttachmentPreview />
 
-      <InputArea inputRef={inputRef} otherUserId={otherUserId.current} />
+      {otherUser && <InputArea inputRef={inputRef} otherUserId={otherUser._id} />}
 
       {/* Push the content up after keyboard appears */}
       <Animated.View style={[fakeView, { backgroundColor: colors.lightGray }]} />
@@ -323,18 +342,17 @@ export default function ChatDetails() {
 
 function MessageItem({
   item,
-  messages,
   chatRef,
   inputRef,
   isOwnMessage,
 }: {
   item: MessageType
-  messages: MessageType[]
   chatRef: React.RefObject<FlashListRef<MessageType> | null>
   inputRef: React.RefObject<TextInput | null>
   isOwnMessage: boolean
 }) {
   const router = useRouter()
+  const messages = useAtomValue(messagesAtom)
   const setImgIdx = useSetAtom(imgIndexAtom)
   const setImages = useSetAtom(bigImageViewAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
@@ -345,7 +363,7 @@ function MessageItem({
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
 
   // scroll to the original replied message
-  const scrollToReplyMessage = () => {
+  function scrollToReplyMessage() {
     if (!item.replyTo || !chatRef.current) return
 
     const originalMessageIndex = messages.findIndex(msg => msg._id === item.replyTo?._id)
@@ -394,7 +412,7 @@ function MessageItem({
       }
     })
 
-  const handleLongPress = () => {
+  function handleLongPress() {
     Keyboard.dismiss()
     setHighlightedMessageId(item._id)
     setCurrentLongPressedMessage(item as ReplyTo)
@@ -680,12 +698,52 @@ function InputArea({
   const attachments = useAtomValue(chatAttachmentsAtom)
   const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
   const [replyingTo, setReplyingTo] = useAtom(replyingToAtom)
+  const socket = useAtomValue(chatSocketAtom)
+  const currentConversation = useAtomValue(currentConversationAtom)
+  const sentIsTypingRef = useRef(false)
+  const activePostId = useAtomValue(activePostIdAtom)
+
+  useEffect(() => {
+    return () => {
+      if (!currentConversation.value || !socket) return
+      socket.emit("isTyping", {
+        conversationId: currentConversation.value!._id,
+        status: false,
+      })
+      sentIsTypingRef.current = false
+    }
+  }, [])
+
+  function handleChange(text: string) {
+    setMessage(text)
+    if (!currentConversation.value || !socket || sentIsTypingRef.current) return
+    socket.emit("isTyping", {
+      conversationId: currentConversation.value._id,
+      postId: activePostId,
+      status: text.trim() !== "" && text.length > message.length, // Only send if the user is typing
+    })
+    sentIsTypingRef.current = true
+  }
+
+  const debounceFn = useMemo(
+    () =>
+      debounce(() => {
+        if (!currentConversation.value || !socket) return
+        socket.emit("isTyping", {
+          conversationId: currentConversation.value!._id,
+          status: false,
+        })
+        sentIsTypingRef.current = false
+      }, IS_TYPING_DEBOUNCE_TIME),
+    []
+  )
 
   async function handleSendMessage() {
     await sendMessage(message.trim())
     setMessage("")
     inputRef.current.clear()
     inputRef.current.focus()
+    sentIsTypingRef.current = false
   }
 
   // When a message is selected for editing, populate the input
@@ -774,7 +832,10 @@ function InputArea({
             placeholder="Type a message..."
             placeholderTextColor={colors.muted}
             value={message}
-            onChangeText={setMessage}
+            onChangeText={text => {
+              handleChange(text)
+              debounceFn()
+            }}
             onContentSizeChange={event => {
               setInputHeight(event.nativeEvent.contentSize.height)
             }}
@@ -801,5 +862,44 @@ function InputArea({
         </View>
       </View>
     </>
+  )
+}
+
+// Reference: https://www.aniui.dev/docs/typing-indicator
+function Dot({ delay }: { delay: number }) {
+  const translateY = useSharedValue(0)
+
+  useEffect(() => {
+    translateY.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(withTiming(-4, { duration: 500 }), withTiming(0, { duration: 500 })),
+        -1
+      )
+    )
+  }, [delay, translateY])
+
+  const style = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }))
+
+  return <Animated.View style={[chatStyles.typingDot, style]} />
+}
+
+export interface TypingIndicatorProps extends React.ComponentPropsWithoutRef<typeof View> {
+  className?: string
+}
+
+export function TypingIndicator({ className, ...props }: TypingIndicatorProps) {
+  return (
+    <View style={chatStyles.messageItem}>
+      <View style={[chatStyles.messageBubble, chatStyles.otherMessageBubble]}>
+        <View style={chatStyles.messageContent}>
+          <View style={chatStyles.typingIndicatorContainer} accessibilityLabel="Typing" {...props}>
+            <Dot delay={0} />
+            <Dot delay={250} />
+            <Dot delay={500} />
+          </View>
+        </View>
+      </View>
+    </View>
   )
 }
