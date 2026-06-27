@@ -138,9 +138,9 @@ export default function Index() {
           </Pressable>
         </View>
       )}
-      ListFooterComponent={
-        <ActivityIndicator size="large" color={colors.blue} style={{ marginVertical: 20 }} />
-      }
+      // ListFooterComponent={
+      //   <ActivityIndicator size="large" color={colors.blue} style={{ marginVertical: 20 }} />
+      // }
     />
   )
 }
