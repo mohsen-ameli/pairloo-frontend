@@ -8,11 +8,12 @@ import {
   ScrollView,
   Pressable,
   Platform,
+  TouchableOpacity,
 } from "react-native"
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import { useCallback, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { currPageAtom, flowAtom, pageCountAtom } from "@/src/store/pager-store"
-import { colors } from "@/src/utils/colors"
+import { baseColors, colors } from "@/src/utils/colors"
 import CustomInput from "@/src/components/CustomInput"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { createPostStyles } from "@/src/styles/create-post.styles"
@@ -34,7 +35,7 @@ import Octicons from "@expo/vector-icons/Octicons"
 import { MAX_POST_IMAGES, MINIMUM_SHORT_ANSWER_LENGTH } from "@/src/utils/constants"
 
 import { inputStyles } from "@/src/styles/input.styles"
-import { useFocusEffect, useRouter } from "expo-router"
+import { useRouter } from "expo-router"
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
 import { commonStyles } from "@/src/styles/common.styles"
@@ -185,9 +186,10 @@ export default function CreatePost() {
                     {options.map((option: string, idx: number) => {
                       const isSelected = answer.includes(option)
                       return (
-                        <TouchableWithoutFeedback
+                        <TouchableOpacity
                           key={option}
                           onPress={() => handleChange(i, option, question)}
+                          activeOpacity={0.6}
                         >
                           <View
                             style={[
@@ -202,7 +204,7 @@ export default function CreatePost() {
                               {option}
                             </Text>
                           </View>
-                        </TouchableWithoutFeedback>
+                        </TouchableOpacity>
                       )
                     })}
                     <CustomInput
@@ -244,7 +246,7 @@ export default function CreatePost() {
                           text={option}
                           textStyle={{
                             ...createPostStyles.mcqOptionText,
-                            color: colors.dark,
+                            color: isSelected ? baseColors.light : colors.dark,
                             textDecorationLine: "none",
                           }}
                         />
@@ -281,15 +283,7 @@ export default function CreatePost() {
             {/* Title */}
             <View style={createPostStyles.titleInputContainer}>
               <View style={{ flex: 1 }}>
-                <CustomInput
-                  title="Title"
-                  value={settings.title}
-                  onChangeText={text => {
-                    setSettings(async curr => ({ ...(await curr), title: text }))
-                  }}
-                  editable={!loading}
-                  mandatory
-                />
+                <TitleInput />
               </View>
               <Pressable onPress={generateTitle} disabled={loading} style={{ paddingBottom: 12 }}>
                 <Octicons name="sparkles-fill" size={24} color={colors.purple} />
@@ -297,16 +291,7 @@ export default function CreatePost() {
             </View>
 
             {/* Description */}
-            <CustomInput
-              title="Description"
-              value={settings.description}
-              multiline
-              onChangeText={async text => {
-                setSettings(async curr => ({ ...(await curr), description: text }))
-              }}
-              editable={!loading}
-              mandatory
-            />
+            <DescriptionInput />
 
             {/* Location */}
             <View>
@@ -418,6 +403,57 @@ export default function CreatePost() {
         </ScrollView>
       </CustomPager>
     </>
+  )
+}
+
+function TitleInput() {
+  const [settings, setSettings] = useAtom(settingsAtom)
+  const loading = useAtomValue(loadingAtom)
+  const [title, setTitle] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!title) {
+      setTitle(settings.title)
+    }
+  }, [settings.title])
+
+  return (
+    <CustomInput
+      title="Title"
+      value={title || ""}
+      onChangeText={text => {
+        setTitle(text)
+        setSettings(async curr => ({ ...(await curr), title: text }))
+      }}
+      editable={!loading}
+      mandatory
+    />
+  )
+}
+
+function DescriptionInput() {
+  const [settings, setSettings] = useAtom(settingsAtom)
+  const loading = useAtomValue(loadingAtom)
+  const [description, setDescription] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!description) {
+      setDescription(settings.description)
+    }
+  }, [settings.title, settings.description])
+
+  return (
+    <CustomInput
+      title="Description"
+      value={description || ""}
+      multiline
+      onChangeText={text => {
+        setDescription(text)
+        setSettings(async curr => ({ ...(await curr), description: text }))
+      }}
+      editable={!loading}
+      mandatory
+    />
   )
 }
 

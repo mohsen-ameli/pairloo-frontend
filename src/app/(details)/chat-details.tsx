@@ -776,7 +776,7 @@ function InputArea({
     <>
       {/* Reply Preview */}
       {replyingTo && (
-        <View style={chatStyles.replyPreviewContainer}>
+        <View style={[commonStyles.container, chatStyles.replyPreviewContainer]}>
           <View style={chatStyles.replyPreviewHeader}>
             <View style={chatStyles.replyPreviewContent}>
               <View style={chatStyles.replyPreviewTextContainer}>
@@ -792,10 +792,7 @@ function InputArea({
                 ) : null}
               </View>
             </View>
-            <Pressable
-              onPress={() => setReplyingTo(null)}
-              style={chatStyles.replyPreviewCloseButton}
-            >
+            <Pressable onPress={() => setReplyingTo(null)} style={commonStyles.dismissButton}>
               <Feather name="x" size={18} color={colors.gray} />
             </Pressable>
           </View>
@@ -804,7 +801,7 @@ function InputArea({
 
       {/* Editing Indicator */}
       {editingMessage && (
-        <View style={chatStyles.editingIndicatorContainer}>
+        <View style={[chatStyles.editingIndicatorContainer, commonStyles.container]}>
           <Pressable
             onPress={() => {
               setEditingMessage(null)
@@ -812,7 +809,7 @@ function InputArea({
               inputRef.current.clear()
               inputRef.current.focus()
             }}
-            style={{ backgroundColor: colors.light, padding: 4, borderRadius: 50 }}
+            style={commonStyles.dismissButton}
           >
             <Feather name="x" size={18} color={colors.gray} />
           </Pressable>
