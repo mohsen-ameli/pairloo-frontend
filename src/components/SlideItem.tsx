@@ -4,7 +4,7 @@ import { colors, isWeb } from "@/src/utils/colors"
 import Feather from "@expo/vector-icons/Feather"
 import { useAtomValue, useSetAtom } from "jotai"
 import { createPostRemoveImageAtom } from "@/src/store/create-post-store"
-import { imgIndexAtom } from "@/src/store/chat-store"
+import { bigImageViewAtom, imgIndexAtom } from "@/src/store/chat-store"
 import { useRouter } from "expo-router"
 import { commonStyles } from "@/src/styles/common.styles"
 import { isDraggingAtom } from "@/src/store/general-store"
@@ -15,12 +15,14 @@ export type PageType = "create" | "edit" | "view"
 export function SlideItem({
   index,
   src,
+  images,
   imgKey,
   editable = false,
   pageType,
 }: {
   index: number
   editable?: boolean
+  images: string[]
   src: string
   imgKey?: string
   pageType: PageType
@@ -30,6 +32,7 @@ export function SlideItem({
   const isDragging = useAtomValue(isDraggingAtom)
   const handleRemoveEdit = useSetAtom(editPostRemoveImageAtom)
   const handleRemoveCreate = useSetAtom(createPostRemoveImageAtom)
+  const setImages = useSetAtom(bigImageViewAtom)
 
   const handleRemove = () => {
     if (pageType === "edit") {
@@ -48,7 +51,8 @@ export function SlideItem({
       onPress={() => {
         if (isDragging) return
         setImgIdx(index)
-        router.push("/image-gallery")
+        router.push("/(util)/image-gallery")
+        setImages(images)
       }}
     >
       <Animated.Image style={commonStyles.cardImage} source={{ uri: src }} />

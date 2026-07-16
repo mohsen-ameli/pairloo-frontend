@@ -25,12 +25,11 @@ import { checkIfBlockedAtom, getBlockedAttemptsAtom, isBlockedAtom } from "@/src
 // @ts-ignore: Multi-platform file import
 import CustomPager from "@/src/components/CustomPager"
 import LocationSelector from "@/src/components/LocationSelector"
-import PhoneNumber from "@/src/components/PhoneNumber"
 import { debounce } from "lodash"
 import { commonStyles } from "@/src/styles/common.styles"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
-const INITIAL_PAGE_COUNT = 6
+const INITIAL_PAGE_COUNT = 4
 
 export default function Register() {
   const router = useRouter()
@@ -76,44 +75,38 @@ export default function Register() {
     checkIfBlocked()
   }, [])
 
-  useEffect(() => {
-    if (!newUser || !newUser.username) return
-    setUsernameChecking(true)
-    setUsernameValid(false)
-    debounceFn(newUser.username)
-  }, [newUser])
-
   // Set next/back functions based on current page
   useEffect(() => {
     if (!newUser) return
     setPageCount(INITIAL_PAGE_COUNT)
 
     let nextEnabled = false
+    // if (currPage === 0) {
+    //   if (newUser.phoneVerified) {
+    //     setCurrPage(1)
+    //   } else {
+    //     nextEnabled = newUser.phoneNumber.length > 0 && !isBlocked
+    //   }
+    // } else if (currPage === 1) {
+    //   if (newUser.phoneVerified) {
+    //     setCurrPage(2)
+    //   } else {
+    //     nextEnabled = newUser.phoneCode.length === 6 && !isBlocked
+    //   }
+    // }
     if (currPage === 0) {
-      if (newUser.phoneVerified) {
-        setCurrPage(1)
-      } else {
-        nextEnabled = newUser.phoneNumber.length > 0 && !isBlocked
-      }
-    } else if (currPage === 1) {
-      if (newUser.phoneVerified) {
-        setCurrPage(2)
-      } else {
-        nextEnabled = newUser.phoneCode.length === 6 && !isBlocked
-      }
-    } else if (currPage === 2) {
       if (newUser.emailVerified) {
-        setCurrPage(3)
+        setCurrPage(1)
       } else {
         nextEnabled = newUser.email.length > 0 && !isBlocked
       }
-    } else if (currPage === 3) {
+    } else if (currPage === 1) {
       if (newUser.emailVerified) {
-        setCurrPage(4)
+        setCurrPage(2)
       } else {
         nextEnabled = newUser.emailCode.length === 6 && !isBlocked
       }
-    } else if (currPage === 4) {
+    } else if (currPage === 2) {
       nextEnabled =
         newUser.username.length > 0 &&
         usernameValid &&
@@ -121,7 +114,7 @@ export default function Register() {
         newUser.firstName.length > 0 &&
         newUser.lastName.length > 0 &&
         newUser.locationId !== 0
-    } else if (currPage === 5) {
+    } else if (currPage === 3) {
       nextEnabled = true
     }
 
@@ -131,17 +124,18 @@ export default function Register() {
         setCurrPage(currPage - 1)
       },
       next: () => {
+        // if (currPage === 0) {
+        //   requestPhoneNumberVerification(false)
+        // } else if (currPage === 1) {
+        //   verifyPhoneNumberVerification()
+        // }
         if (currPage === 0) {
-          requestPhoneNumberVerification(false)
-        } else if (currPage === 1) {
-          verifyPhoneNumberVerification()
-        } else if (currPage === 2) {
           requestEmailVerification(true, false)
-        } else if (currPage === 3) {
+        } else if (currPage === 1) {
           verifyEmailVerification(true)
-        } else if (currPage === 4) {
+        } else if (currPage === 2) {
           verifyUserInfo()
-        } else if (currPage === 5) {
+        } else if (currPage === 3) {
           signUp()
         }
       },
@@ -150,13 +144,14 @@ export default function Register() {
 
   // Manual focus logic
   useEffect(() => {
-    if (currPage === 1 && phoneCodeRef.current) {
-      setTimeout(() => phoneCodeRef.current?.focus(), 500)
-    } else if (currPage === 2 && emailRef.current) {
+    // if (currPage === 1 && phoneCodeRef.current) {
+    //   setTimeout(() => phoneCodeRef.current?.focus(), 500)
+    // }
+    if (currPage === 0 && emailRef.current) {
       setTimeout(() => emailRef.current?.focus(), 500)
-    } else if (currPage === 3 && emailCodeRef.current) {
+    } else if (currPage === 1 && emailCodeRef.current) {
       setTimeout(() => emailCodeRef.current?.focus(), 500)
-    } else if (currPage === 4 && usernameRef.current) {
+    } else if (currPage === 2 && usernameRef.current) {
       setTimeout(() => usernameRef.current?.focus(), 500)
     }
   }, [currPage])
@@ -199,7 +194,7 @@ export default function Register() {
 
   return (
     <CustomPager>
-      <View style={[commonStyles.container, styles.pageContainer]} key="0">
+      {/* <View style={[commonStyles.container, styles.pageContainer]} key="0">
         <Text style={styles.title}>Phone Number</Text>
         <PhoneNumber />
         {(errors?.phoneNumber || isBlocked) && (
@@ -242,9 +237,9 @@ export default function Register() {
             {timeRemaining > 0 ? `Resend Code in ${timeRemaining} seconds` : "Resend Code"}
           </Text>
         </Pressable>
-      </View>
+      </View> */}
 
-      <View style={[commonStyles.container, styles.pageContainer]} key="2">
+      <View style={[commonStyles.container, styles.pageContainer]} key="0">
         <Text
           style={{
             color: colors.dark,
@@ -276,7 +271,7 @@ export default function Register() {
         )}
       </View>
 
-      <View style={[commonStyles.container, styles.pageContainer]} key="3">
+      <View style={[commonStyles.container, styles.pageContainer]} key="1">
         <Text style={styles.title}>Enter Verification Code</Text>
         <CustomInput
           title="Code"
@@ -308,7 +303,7 @@ export default function Register() {
         </Pressable>
       </View>
 
-      <ScrollView key="4" keyboardShouldPersistTaps="handled">
+      <ScrollView keyboardShouldPersistTaps="handled" key="2">
         <View style={[commonStyles.container, styles.pageContainer]}>
           <Text
             style={{
@@ -375,7 +370,7 @@ export default function Register() {
         </View>
       </ScrollView>
 
-      <View style={[commonStyles.container, styles.pageContainer]} key="5">
+      <View style={[commonStyles.container, styles.pageContainer]} key="3">
         <Text style={styles.title}>Finally, add a picture!</Text>
         <View style={styles.containerCenter}>
           <Pressable

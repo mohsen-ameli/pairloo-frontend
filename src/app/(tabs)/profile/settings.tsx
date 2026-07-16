@@ -186,10 +186,12 @@ export default function SettingsScreen() {
                     <Text style={styles.fieldLabel}>Last Name</Text>
                     <Text style={styles.fieldValue}>{user.lastName}</Text>
                   </View>
-                  <View style={styles.fieldRow}>
-                    <Text style={styles.fieldLabel}>Phone</Text>
-                    <Text style={styles.fieldValue}>{user.phoneNumber}</Text>
-                  </View>
+                  {user.phoneNumber && (
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>Phone</Text>
+                      <Text style={styles.fieldValue}>{user.phoneNumber}</Text>
+                    </View>
+                  )}
                   <View style={styles.fieldRow}>
                     <Text style={styles.fieldLabel}>Location</Text>
                     <Text style={styles.fieldValue}>

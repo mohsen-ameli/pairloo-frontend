@@ -125,7 +125,7 @@ export const signUpAtom = atom(null, async (get, set) => {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      phoneNumber: `+${userData.callingCode}${userData.phoneNumber}`,
+      // phoneNumber: `+${userData.callingCode}${userData.phoneNumber}`,
       country: userData.country,
       city: userData.city,
       state: userData.state,

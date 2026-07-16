@@ -65,6 +65,8 @@ import { debounce } from "lodash"
 const scrollTargetIdAtom = atom<string | null>(null)
 const messageAtom = atom("")
 const canReviewAtom = atom(false)
+const MAX_TEXT_INPUT_HEIGHT = 200
+const DEFAULT_INPUT_HEIGHT = 40
 
 export default function ChatDetails() {
   const router = useRouter()
@@ -343,7 +345,7 @@ export default function ChatDetails() {
             onPress={() => chatRef.current?.scrollToEnd({ animated: true })}
             style={chatStyles.scrollToBottomButton}
           >
-            <Feather name="arrow-down" size={24} color={colors.dark} />
+            <Feather name="arrow-down" size={24} color={colors.light} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -379,6 +381,12 @@ function MessageItem({
   const setScrollTargetId = useSetAtom(scrollTargetIdAtom)
   const translateX = useSharedValue(0)
   const maxSwipeDistance = Dimensions.get("window").width * 0.25
+
+  useFocusEffect(
+    useCallback(() => {
+      inputRef.current?.focus()
+    }, [])
+  )
 
   // scroll to the original replied message
   function scrollToReplyMessage() {
@@ -600,13 +608,8 @@ function MessageItem({
                       <Pressable
                         onPress={() => {
                           setImgIdx(idx)
-                          setImages(
-                            item.attachments!.map((att, id) => ({
-                              uri: att,
-                              id: id.toString(),
-                            }))
-                          )
-                          router.push("/image-gallery")
+                          setImages(item.attachments || [])
+                          router.push("/(util)/image-gallery")
                         }}
                       >
                         <Image
@@ -709,7 +712,7 @@ function InputArea({
   otherUserId: string | null
 }) {
   const router = useRouter()
-  const [inputHeight, setInputHeight] = useState<number>(40)
+  const [inputHeight, setInputHeight] = useState<number>(DEFAULT_INPUT_HEIGHT)
   const [message, setMessage] = useAtom(messageAtom)
   const canReview = useAtomValue(canReviewAtom)
   const sendMessage = useSetAtom(sendMessageAtom)
@@ -757,6 +760,7 @@ function InputArea({
   )
 
   async function handleSendMessage() {
+    setInputHeight(DEFAULT_INPUT_HEIGHT)
     await sendMessage(message.trim())
     setMessage("")
     inputRef.current.clear()
@@ -843,7 +847,14 @@ function InputArea({
             </Pressable>
           )}
           <TextInput
-            style={[chatStyles.input, { height: Math.max(40, inputHeight) }]}
+            style={[
+              chatStyles.input,
+              {
+                minHeight: DEFAULT_INPUT_HEIGHT,
+                maxHeight: MAX_TEXT_INPUT_HEIGHT,
+                height: inputHeight,
+              },
+            ]}
             placeholder="Type a message..."
             placeholderTextColor={colors.muted}
             value={message}
