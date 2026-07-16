@@ -1,11 +1,10 @@
-import { Dimensions, Platform, View } from "react-native"
+import { Dimensions, View } from "react-native"
 import { useSharedValue } from "react-native-reanimated"
 import Carousel, { ICarouselInstance, Pagination } from "react-native-reanimated-carousel"
 import { SlideItem } from "./SlideItem"
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { colors, isWeb, webContainerWidth } from "@/src/utils/colors"
 import { useSetAtom } from "jotai"
-import { bigImageViewAtom } from "@/src/store/chat-store"
 import { isDraggingAtom } from "@/src/store/general-store"
 import { PageType } from "./SlideItem"
 
@@ -26,19 +25,10 @@ export default function ImageCarousel({
 }) {
   const ref = useRef<ICarouselInstance>(null)
   const progress = useSharedValue(0)
-  const setImages = useSetAtom(bigImageViewAtom)
+
   const setIsDragging = useSetAtom(isDraggingAtom)
 
   const carouselWidth = (isWeb ? webContainerWidth : w) - widthOffset
-
-  useEffect(() => {
-    setImages(
-      images.map((att, id) => ({
-        uri: att,
-        id: id.toString(),
-      }))
-    )
-  }, [images])
 
   const onPressPagination = (index: number) => {
     ref.current?.scrollTo({
@@ -52,6 +42,7 @@ export default function ImageCarousel({
       <SlideItem
         index={0}
         src={images[0]}
+        images={images}
         imgKey={keys?.[0]}
         editable={editable}
         pageType={pageType}
@@ -91,6 +82,7 @@ export default function ImageCarousel({
           <SlideItem
             index={index}
             src={item}
+            images={images}
             imgKey={keys?.[index]}
             editable={editable}
             pageType={pageType}

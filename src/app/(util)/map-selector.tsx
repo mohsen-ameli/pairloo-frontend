@@ -28,6 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import CustomButton from "@/src/components/CustomButton"
 import { debounce } from "lodash"
 import WebGoogleMap from "@/src/components/WebGoogleMap"
+import isMetric from "@/src/utils/is-metric"
 
 type CameraEvent = {
   coordinates: {
@@ -112,10 +113,23 @@ export default function MapSelector() {
 
     let closeCity = "Location set."
     if (data) {
-      if (data.state_name) {
-        closeCity = `Near ${data.name}, ${data.state_name}, ${data.country_name}`
+      const unit = isMetric(user.country) ? "km" : "miles"
+
+      const distance = isMetric(user.country)
+        ? Math.round(region.current.distance / 1000)
+        : Math.round(region.current.distance / 1609.34)
+
+      let proximity = ""
+      if (distance === 0) {
+        proximity = "Close to"
       } else {
-        closeCity = `Near ${data.name}, ${data.country_name}`
+        proximity = `Within ${distance} ${unit} of`
+      }
+
+      if (data.state_name) {
+        closeCity = `${proximity} ${data.name}, ${data.state_name}, ${data.country_name}`
+      } else {
+        closeCity = `${proximity} ${data.name}, ${data.country_name}`
       }
     }
 

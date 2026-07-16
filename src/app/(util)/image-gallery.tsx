@@ -4,7 +4,6 @@ import {
   View,
   Text,
   ActivityIndicator,
-  Alert,
   type ViewStyle,
   type LayoutChangeEvent,
   Pressable,
@@ -29,14 +28,6 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons"
 
 const isZoomedAtom = atom(false)
 
-/**
- * Image item interface for gallery
- */
-export interface ImageItem {
-  id: string
-  uri: string
-}
-
 export default function ImageGallery({
   doubleTapScale = 2,
   minZoomScale = 1,
@@ -58,7 +49,7 @@ export default function ImageGallery({
   const { width: deviceWidth } = useWindowDimensions()
   const [currentIndex, setCurrentIndex] = useAtom(imgIndexAtom)
   const [containerHeight, setContainerHeight] = useState(0)
-  const flashListRef = useRef<FlashListRef<ImageItem> | null>(null)
+  const flashListRef = useRef<FlashListRef<string> | null>(null)
   const images = useAtomValue(bigImageViewAtom)
   const isZoomed = useAtomValue(isZoomedAtom)
   const router = useRouter()
@@ -117,7 +108,7 @@ export default function ImageGallery({
             />
           )}
           initialScrollIndex={currentIndex}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
@@ -137,22 +128,22 @@ export default function ImageGallery({
             data={images}
             horizontal
             showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.uri}
-            renderItem={({ item }) => (
+            keyExtractor={item => item}
+            renderItem={({ item, index }) => (
               <Pressable
                 onPress={() => {
-                  setCurrentIndex(parseInt(item.id))
-                  flashListRef.current?.scrollToIndex({ index: parseInt(item.id), animated: false })
+                  setCurrentIndex(index)
+                  flashListRef.current?.scrollToIndex({ index: index, animated: false })
                 }}
               >
                 <Image
-                  source={{ uri: item.uri }}
+                  source={{ uri: item }}
                   style={{
                     width: 30,
                     height: 60,
                     borderRadius: 4,
-                    marginHorizontal: parseInt(item.id) === currentIndex ? 10 : 1,
-                    opacity: parseInt(item.id) === currentIndex ? 1 : 0.5,
+                    marginHorizontal: index === currentIndex ? 10 : 1,
+                    opacity: index === currentIndex ? 1 : 0.5,
                   }}
                   allowDownscaling
                 />
@@ -207,7 +198,7 @@ function Menu() {
   async function saveImage(index: number) {
     if (Platform.OS === "web") {
       Object.assign(document.createElement("a"), {
-        href: images[index].uri,
+        href: images[index],
         download: `image_${Date.now()}.jpg`,
       }).click()
       return
@@ -217,7 +208,7 @@ function Menu() {
     destination.create()
 
     const image = images[index]
-    if (!image?.uri) {
+    if (!image) {
       Toast.show({ type: "error", text1: "Could not save image" })
       return
     }
@@ -234,7 +225,7 @@ function Menu() {
       }
 
       // Download image to cache directory first
-      const output = await File.downloadFileAsync(image.uri, destination)
+      const output = await File.downloadFileAsync(image, destination)
 
       // Save to media library
       await MediaLibrary.saveToLibraryAsync(output.uri)
@@ -303,14 +294,14 @@ function GalleryImageItem({
   imageGap,
   itemWidth,
 }: {
-  item: ImageItem
+  item: string
   index: number
   deviceWidth: number
   deviceHeight: number
   doubleTapScale: number
   minZoomScale: number
   maxZoomScale: number
-  flashListRef: React.RefObject<FlashListRef<ImageItem> | null>
+  flashListRef: React.RefObject<FlashListRef<string> | null>
   imageGap: number
   itemWidth: number
 }): React.JSX.Element {
@@ -342,7 +333,7 @@ function GalleryImageItem({
         onZoomStateChange={z => setIsZoomed(z)}
       >
         <Image
-          source={{ uri: item.uri }}
+          source={{ uri: item }}
           contentFit="contain"
           style={{
             width: deviceWidth,

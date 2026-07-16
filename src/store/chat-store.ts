@@ -46,7 +46,7 @@ export const receivedMsgAtom = atom(false) // used to trigger re-render when a n
 
 export const imgIndexAtom = atom(0)
 
-export const bigImageViewAtom = atom<{ uri: string; id: string }[]>([])
+export const bigImageViewAtom = atom<string[]>([])
 
 export const replyingToAtom = atom<ReplyTo | null>(null)
 
