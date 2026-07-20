@@ -84,6 +84,8 @@ export default function RootLayout() {
     isPostDetails: true,
     includeBottomPadding: true,
   })
+  const privacyPolicyOptions = useCustomHeader({ title: "Privacy Policy" })
+  const deleteAccountOptions = useCustomHeader({ title: "Delete Account" })
   const generalProfileOptions = useCustomHeader({ title: "" })
   const insets = useSafeAreaInsets()
 
@@ -276,6 +278,10 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)/login" options={loginOptions} />
               <Stack.Screen name="(auth)/forgot-email" options={forgotEmailOptions} />
             </Stack.Protected>
+
+            <Stack.Screen name="privacy-policy" options={privacyPolicyOptions} />
+            <Stack.Screen name="delete-account" options={deleteAccountOptions} />
+
             <Stack.Screen
               name="(util)/attachment-picker"
               options={{

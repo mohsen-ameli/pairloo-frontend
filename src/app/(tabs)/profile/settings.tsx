@@ -19,6 +19,7 @@ import {
 } from "@/src/store/settings-store"
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { commonStyles } from "@/src/styles/common.styles"
+import CustomCompactButton from "@/src/components/CustomCompactButton"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -202,13 +203,62 @@ export default function SettingsScreen() {
               )}
             </View>
           </View>
-        </ScrollView>
 
-        <View style={commonStyles.floatingButton}>
-          <CustomButton onPress={async () => await logout(true)} color={colors.errorRed}>
-            Log Out
-          </CustomButton>
-        </View>
+          {/* Other */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Other</Text>
+            <View style={styles.card}>
+              <View style={styles.fieldRow}>
+                <CustomCompactButton
+                  onPress={() => router.push("/privacy-policy")}
+                  color={colors.dark}
+                  outline
+                  width="100%"
+                >
+                  <Feather
+                    name="file-text"
+                    size={18}
+                    color={colors.dark}
+                    style={{ marginRight: 6 }}
+                  />
+                  Privacy Policy
+                </CustomCompactButton>
+              </View>
+
+              <View style={styles.fieldRow}>
+                <CustomCompactButton
+                  onPress={async () => await logout(true)}
+                  color={colors.errorRed}
+                  outline
+                  width="100%"
+                >
+                  <Feather
+                    name="log-out"
+                    size={18}
+                    color={colors.dark}
+                    style={{ marginRight: 6 }}
+                  />
+                  Log Out
+                </CustomCompactButton>
+              </View>
+              <View style={styles.fieldRow}>
+                <CustomCompactButton
+                  onPress={() => router.push("/delete-account")}
+                  color={colors.errorRed}
+                  width="100%"
+                >
+                  <Feather
+                    name="trash-2"
+                    size={18}
+                    color={colors.dark}
+                    style={{ marginRight: 6 }}
+                  />
+                  Delete Account
+                </CustomCompactButton>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
       </View>
     </>
   )
