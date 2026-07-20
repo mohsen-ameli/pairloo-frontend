@@ -73,4 +73,12 @@ export const styles = StyleSheet.create({
   avatarContainer: {
     position: "relative",
   },
+  privacyPolicyLink: {
+    marginTop: 18,
+  },
+  privacyPolicyText: {
+    fontSize: 14,
+    color: colors.purple,
+    textDecorationLine: "underline",
+  },
 })
