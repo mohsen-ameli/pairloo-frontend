@@ -85,8 +85,9 @@ export default function RootLayout() {
     includeBottomPadding: true,
   })
   const privacyPolicyOptions = useCustomHeader({ title: "Privacy Policy" })
+  const csaeStandardsOptions = useCustomHeader({ title: "CSAE Standards" })
   const deleteAccountOptions = useCustomHeader({ title: "Delete Account" })
-  const generalProfileOptions = useCustomHeader({ title: "" })
+  const generalProfileOptions = useCustomHeader({ title: "", isGeneralProfile: true })
   const insets = useSafeAreaInsets()
 
   const userJwt = useAtomValue(userSecureAtom)
@@ -247,6 +248,16 @@ export default function RootLayout() {
                 }}
               />
               <Stack.Screen
+                name="(util)/report"
+                options={{
+                  presentation: "modal",
+                  gestureDirection: "vertical",
+                  animation: "default",
+                  contentStyle: { backgroundColor: colors.light },
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
                 name="(util)/map-selector"
                 options={{
                   headerShown: false,
@@ -280,6 +291,7 @@ export default function RootLayout() {
             </Stack.Protected>
 
             <Stack.Screen name="privacy-policy" options={privacyPolicyOptions} />
+            <Stack.Screen name="csae-standards" options={csaeStandardsOptions} />
             <Stack.Screen name="delete-account" options={deleteAccountOptions} />
 
             <Stack.Screen

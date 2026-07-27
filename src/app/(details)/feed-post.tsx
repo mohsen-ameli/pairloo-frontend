@@ -67,7 +67,7 @@ export default function PostDetails() {
 
     router.push({
       pathname: "(details)/general-profile",
-      params: { id: post.userId },
+      params: { generalProfileId: post.userId },
     })
 
     try {

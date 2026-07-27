@@ -1,20 +1,19 @@
 import { View, ScrollView, Text, Linking, StyleSheet } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { commonStyles } from "@/src/styles/common.styles"
+import { policyStyles } from "@/src/styles/policy.styles"
 
 export default function PrivacyPolicy() {
   const insets = useSafeAreaInsets()
 
   return (
-    <ScrollView
-      style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.content}>
-        <Text style={styles.title}>Privacy Policy</Text>
-        <Text style={styles.lastUpdated}>Last Updated: July 17, 2026</Text>
+    <ScrollView style={commonStyles.generalContainer} showsVerticalScrollIndicator={false}>
+      <View style={commonStyles.container}>
+        <Text style={policyStyles.title}>Privacy Policy</Text>
+        <Text style={policyStyles.lastUpdated}>Last Updated: July 17, 2026</Text>
 
-        <Text style={styles.sectionTitle}>SUMMARY OF KEY POINTS</Text>
-        <Text style={styles.paragraph}>
+        <Text style={policyStyles.sectionTitle}>SUMMARY OF KEY POINTS</Text>
+        <Text style={policyStyles.paragraph}>
           Before diving into the details, here is a quick overview of how we handle your privacy at
           Pairloo:
         </Text>
@@ -49,7 +48,7 @@ export default function PrivacyPolicy() {
             <Text>
               You can reach our privacy team anytime at{" "}
               <Text
-                style={styles.link}
+                style={policyStyles.link}
                 onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
               >
                 mohsen.ameli83@gmail.com
@@ -201,10 +200,10 @@ export default function PrivacyPolicy() {
           text="If you reside in the EU, EEA, or UK, you have the right to file a complaint with your local data protection authority if you believe we have violated your privacy rights."
         />
 
-        <Text style={styles.paragraph}>
+        <Text style={policyStyles.paragraph}>
           To exercise any of these rights, please email us at{" "}
           <Text
-            style={styles.link}
+            style={policyStyles.link}
             onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
           >
             mohsen.ameli83@gmail.com
@@ -239,7 +238,7 @@ export default function PrivacyPolicy() {
           text="We may retain certain basic account information for longer periods if required by tax, legal, or accounting regulations."
         />
 
-        <Text style={styles.paragraph}>
+        <Text style={policyStyles.paragraph}>
           Once data is no longer needed, we securely delete or anonymize it so it can no longer be
           linked back to you.
         </Text>
@@ -267,11 +266,11 @@ export default function PrivacyPolicy() {
           text="Parents have the right to review the personal information we have collected from their child, request that we delete it, and refuse to allow further collection or use of the child's information."
         />
 
-        <Text style={styles.paragraph}>
+        <Text style={policyStyles.paragraph}>
           Parents who wish to exercise these rights or have questions about our youth privacy
           practices can contact us directly at{" "}
           <Text
-            style={styles.link}
+            style={policyStyles.link}
             onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
           >
             mohsen.ameli83@gmail.com
@@ -299,7 +298,7 @@ export default function PrivacyPolicy() {
           bold="Privacy Email:"
           text={
             <Text
-              style={styles.link}
+              style={policyStyles.link}
               onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
             >
               mohsen.ameli83@gmail.com
@@ -308,7 +307,7 @@ export default function PrivacyPolicy() {
         />
         <BulletPoint bold="Website:" text="https://www.pairloo.com" />
 
-        <Text style={styles.paragraph}>
+        <Text style={policyStyles.paragraph}>
           We review all privacy inquiries carefully and aim to respond to all requests within 14
           business days.
         </Text>
@@ -320,18 +319,18 @@ export default function PrivacyPolicy() {
 }
 
 const BulletPoint = ({ bold, text }: { bold: string; text: any }) => (
-  <View style={styles.bulletContainer}>
-    <Text style={styles.bulletDot}>•</Text>
-    <Text style={styles.paragraph}>
-      <Text style={styles.bold}>{bold}</Text> {typeof text === "string" ? text : text}
+  <View style={policyStyles.bulletContainer}>
+    <Text style={policyStyles.bulletDot}>•</Text>
+    <Text style={policyStyles.paragraph}>
+      <Text style={policyStyles.bold}>{bold}</Text> {typeof text === "string" ? text : text}
     </Text>
   </View>
 )
 
 const Section = ({ title, content }: { title: string; content: string }) => (
-  <View style={styles.section}>
-    <Text style={styles.heading}>{title}</Text>
-    <Text style={styles.paragraph}>{content}</Text>
+  <View style={policyStyles.section}>
+    <Text style={policyStyles.heading}>{title}</Text>
+    <Text style={policyStyles.paragraph}>{content}</Text>
   </View>
 )
 
@@ -342,84 +341,10 @@ const Subsection = ({
   title: string
   items: { bold: string; text: string }[]
 }) => (
-  <View style={styles.subsection}>
-    <Text style={styles.subheading}>{title}</Text>
+  <View style={policyStyles.subsection}>
+    <Text style={policyStyles.subheading}>{title}</Text>
     {items.map((item, idx) => (
       <BulletPoint key={idx} bold={item.bold} text={item.text} />
     ))}
   </View>
 )
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 8,
-    color: "#000",
-  },
-  lastUpdated: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 24,
-    color: "#666",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#000",
-  },
-  heading: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-    marginTop: 20,
-    color: "#000",
-  },
-  subheading: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 10,
-    marginTop: 12,
-    color: "#000",
-  },
-  paragraph: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: "#333",
-    marginBottom: 12,
-  },
-  bold: {
-    fontWeight: "600",
-    color: "#000",
-  },
-  bulletContainer: {
-    flexDirection: "row",
-    marginBottom: 10,
-  },
-  bulletDot: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginRight: 8,
-    color: "#666",
-  },
-  link: {
-    color: "#6366f1",
-    textDecorationLine: "underline",
-  },
-  section: {
-    marginTop: 8,
-  },
-  subsection: {
-    marginTop: 12,
-    marginBottom: 12,
-  },
-})

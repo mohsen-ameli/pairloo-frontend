@@ -204,9 +204,9 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-          {/* Other */}
+          {/* Policies */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Other</Text>
+            <Text style={styles.sectionTitle}>Policies</Text>
             <View style={styles.card}>
               <View style={styles.fieldRow}>
                 <CustomCompactButton
@@ -225,6 +225,29 @@ export default function SettingsScreen() {
                 </CustomCompactButton>
               </View>
 
+              <View style={styles.fieldRow}>
+                <CustomCompactButton
+                  onPress={() => router.push("/csae-standards")}
+                  color={colors.dark}
+                  outline
+                  width="100%"
+                >
+                  <Feather
+                    name="file-text"
+                    size={18}
+                    color={colors.dark}
+                    style={{ marginRight: 6 }}
+                  />
+                  CSAE standards
+                </CustomCompactButton>
+              </View>
+            </View>
+          </View>
+
+          {/* Authentication */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Authentication</Text>
+            <View style={styles.card}>
               <View style={styles.fieldRow}>
                 <CustomCompactButton
                   onPress={async () => await logout(true)}

@@ -17,13 +17,13 @@ import { chatSocketAtom } from "@/src/store/socket-store"
 import { commonStyles } from "@/src/styles/common.styles"
 
 export default function GeneralProfile() {
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { generalProfileId } = useLocalSearchParams<{ generalProfileId: string }>()
   const router = useRouter()
   const authFetch = useSetAtom(authFetchAtom)
   const userSecure = useAtomValue(userSecureAtom)
   const queryClient = useQueryClient()
   const { data, isError, isPending } = useQuery({
-    queryKey: ["user-profile-" + id],
+    queryKey: ["user-profile", generalProfileId],
     queryFn: fetchProfile,
   })
   const [activeView, setActiveView] = useState<"posts" | "reviews">("posts")
@@ -34,24 +34,24 @@ export default function GeneralProfile() {
   async function mutateUser(action: "follow" | "unfollow") {
     const res = await authFetch("/api/users/" + action, {
       method: "POST",
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ id: generalProfileId }),
     })
     if (!res.ok) {
       throw new Error("Failed to follow user")
     }
     const data = await res.json()
 
-    queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
+    queryClient.invalidateQueries({ queryKey: ["user-profile", generalProfileId] })
     queryClient.invalidateQueries({ queryKey: ["my-social"] })
     queryClient.invalidateQueries({ queryKey: ["my-user"] })
-    queryClient.invalidateQueries({ queryKey: ["user-social", id] })
+    queryClient.invalidateQueries({ queryKey: ["user-social", generalProfileId] })
     queryClient.invalidateQueries({ queryKey: ["user-social", userSecure?._id] })
 
     return data
   }
 
   async function fetchProfile() {
-    const res = await authFetch("/api/users/profile/" + id)
+    const res = await authFetch("/api/users/profile/" + generalProfileId)
     const data: GeneralUserProfileType = await res.json()
     return data
   }
@@ -60,22 +60,22 @@ export default function GeneralProfile() {
     data: reviews,
     isError: isReviewsError,
     isPending: isReviewsPending,
-  } = useQuery({ queryKey: ["reviews", id], queryFn: fetchMyReviews })
+  } = useQuery({ queryKey: ["reviews", generalProfileId], queryFn: fetchMyReviews })
 
   async function fetchMyReviews() {
-    const res = await authFetch("/api/users/reviews/" + id)
+    const res = await authFetch("/api/users/reviews/" + generalProfileId)
     const data: ReviewsType = await res.json()
     return data
   }
 
   async function refresh() {
-    queryClient.invalidateQueries({ queryKey: ["user-profile-" + id] })
-    queryClient.invalidateQueries({ queryKey: ["reviews", id] })
+    queryClient.invalidateQueries({ queryKey: ["user-profile", generalProfileId] })
+    queryClient.invalidateQueries({ queryKey: ["reviews", generalProfileId] })
   }
 
   function handleMessage() {
     if (!socket || !userSecure || !data) return
-    socket.emit("getConversation", userSecure._id, [userSecure._id, id])
+    socket.emit("getConversation", userSecure._id, [userSecure._id, generalProfileId])
   }
 
   useEffect(() => {
@@ -134,7 +134,7 @@ export default function GeneralProfile() {
             onPress={() =>
               router.push({
                 pathname: "(details)/social-list",
-                params: { type: "followers", id, username: data.username },
+                params: { type: "followers", id: generalProfileId, username: data.username },
               })
             }
           >
@@ -146,7 +146,7 @@ export default function GeneralProfile() {
             onPress={() =>
               router.push({
                 pathname: "(details)/social-list",
-                params: { type: "following", id, username: data.username },
+                params: { type: "following", id: generalProfileId, username: data.username },
               })
             }
           >
@@ -166,7 +166,7 @@ export default function GeneralProfile() {
 
         {/* Follow, unfollow buttons */}
         <View style={profileStyles.followContainer}>
-          {userSecure?._id !== id && (
+          {userSecure?._id !== generalProfileId && (
             <>
               {data.isFollowing ? (
                 <Pressable

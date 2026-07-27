@@ -43,6 +43,7 @@ export default function useCustomHeader({
   createPost = false,
   isPostDetails = false,
   isMyPostDetails = false,
+  isGeneralProfile = false,
   isProfile = false,
   isSettings = false,
   includeBottomPadding = false,
@@ -54,6 +55,7 @@ export default function useCustomHeader({
   createPost?: boolean
   isPostDetails?: boolean
   isMyPostDetails?: boolean
+  isGeneralProfile?: boolean
   isProfile?: boolean
   isSettings?: boolean
   includeBottomPadding?: boolean
@@ -115,6 +117,13 @@ export default function useCustomHeader({
     }
   }
 
+  if (isGeneralProfile) {
+    return {
+      ...options,
+      headerRight: () => <GeneralProfileHeader />,
+    }
+  }
+
   if (isProfile) {
     return {
       ...options,
@@ -165,7 +174,7 @@ function ChatHeader() {
     cleanupChat()
     router.push({
       pathname: "(details)/general-profile",
-      params: { id: otherUser?._id },
+      params: { generalProfileId: otherUser?._id },
     })
   }
 
@@ -329,6 +338,7 @@ function CreatePostHeader() {
 }
 
 function PostDetailsHeader() {
+  const router = useRouter()
   const { feedPostId } = useGlobalSearchParams<{ feedPostId: string }>()
   const savePost = useSetAtom(savePostAtom)
   const unsavePost = useSetAtom(unsavePostAtom)
@@ -336,30 +346,43 @@ function PostDetailsHeader() {
   const isPostSaved = feedPostId ? savedPostIds.includes(feedPostId) : false
 
   return (
-    <Pressable
-      style={{ padding: 6 }}
-      onPress={async () => {
-        if (!feedPostId) {
-          Toast.show({
-            type: "error",
-            text1: "Could not save post. Please try again later.",
+    <>
+      <Pressable
+        style={{ padding: 6 }}
+        onPress={() => {
+          router.push({
+            pathname: "/report",
+            params: { reportable: "post", postId: feedPostId },
           })
-          return
-        }
+        }}
+      >
+        <MaterialIcons name="report" size={24} color={colors.dark} />
+      </Pressable>
+      <Pressable
+        style={{ padding: 6 }}
+        onPress={async () => {
+          if (!feedPostId) {
+            Toast.show({
+              type: "error",
+              text1: "Could not save post. Please try again later.",
+            })
+            return
+          }
 
-        if (isPostSaved) {
-          await unsavePost(feedPostId)
-        } else {
-          await savePost(feedPostId)
-        }
-      }}
-    >
-      {isPostSaved ? (
-        <MaterialIcons name="bookmark" size={24} color={colors.purple} />
-      ) : (
-        <MaterialIcons name="bookmark-border" size={24} color={colors.dark} />
-      )}
-    </Pressable>
+          if (isPostSaved) {
+            await unsavePost(feedPostId)
+          } else {
+            await savePost(feedPostId)
+          }
+        }}
+      >
+        {isPostSaved ? (
+          <MaterialIcons name="bookmark" size={24} color={colors.purple} />
+        ) : (
+          <MaterialIcons name="bookmark-border" size={24} color={colors.dark} />
+        )}
+      </Pressable>
+    </>
   )
 }
 
@@ -373,6 +396,27 @@ function ProfileHeader() {
       </TouchableOpacity>
       <Pressable style={styles.settings} onPress={() => router.push("(tabs)/profile/settings")}>
         <Feather name="settings" size={24} color={colors.dark} />
+      </Pressable>
+    </View>
+  )
+}
+
+function GeneralProfileHeader() {
+  const router = useRouter()
+  const { generalProfileId } = useGlobalSearchParams<{ generalProfileId: string }>()
+
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <Pressable
+        style={{ padding: 6 }}
+        onPress={() => {
+          router.push({
+            pathname: "/report",
+            params: { reportable: "user", userId: generalProfileId },
+          })
+        }}
+      >
+        <MaterialIcons name="report" size={24} color={colors.dark} />
       </Pressable>
     </View>
   )
