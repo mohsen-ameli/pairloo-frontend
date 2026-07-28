@@ -70,7 +70,7 @@ export default function reviewUser() {
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: colors.lightGray,
-            borderRadius: 60,
+            borderRadius: 20,
           }}
         >
           <Feather name="x" size={24} color={colors.darkGray} />
@@ -91,6 +91,7 @@ export default function reviewUser() {
         placeholder="Write your review here..."
         placeholderTextColor={colors.muted}
         style={{
+          paddingTop: 10,
           minHeight: 200,
           width: "100%",
           marginTop: 20,

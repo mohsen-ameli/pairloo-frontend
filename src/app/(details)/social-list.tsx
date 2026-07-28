@@ -131,7 +131,7 @@ export default function SocialListPage() {
                 onPress={() =>
                   router.push({
                     pathname: "(details)/general-profile",
-                    params: { id: item._id },
+                    params: { generalProfileId: item._id },
                   })
                 }
                 style={profileStyles.socialRow}

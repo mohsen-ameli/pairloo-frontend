@@ -96,7 +96,7 @@ export default function LocationSelector({
         selectTextOnFocus={false}
         style={{ pointerEvents: "none" }}
       />
-      {errors ? <Text style={inputStyles.errors}>{errors}</Text> : null}
+      {Boolean(errors) ? <Text style={inputStyles.errors}>{errors}</Text> : null}
 
       <Modal
         visible={showModal}

@@ -5,14 +5,15 @@ import CustomButton from "../components/CustomButton"
 import { colors } from "../utils/colors"
 import Toast from "react-native-toast-message"
 import { useSetAtom } from "jotai"
-import { authFetchAtom } from "../store/auth-store"
+import { authFetchAtom, logOutAtom } from "../store/auth-store"
 
 export default function DeleteAccount() {
   const authFetch = useSetAtom(authFetchAtom)
+  const logout = useSetAtom(logOutAtom)
 
   async function requestDelete() {
     try {
-      const response = await authFetch("/api/auth/delete-account", {
+      const response = await authFetch("/api/users/delete-account", {
         method: "DELETE",
       })
 
@@ -22,6 +23,7 @@ export default function DeleteAccount() {
           text1: "Success",
           text2: "Account deleted successfully. We're sorry to see you go.",
         })
+        await logout()
       } else {
         Toast.show({
           type: "error",

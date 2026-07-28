@@ -2,7 +2,7 @@ import { atom } from "jotai"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as SecureStore from "expo-secure-store"
 import { atomWithStorage, createJSONStorage } from "jotai/utils"
-import { BASE_URL, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
+import { BASE_URL, MIN_AGE, VERIFICATION_RESEND_TIME } from "@/src/utils/constants"
 import { AuthErrorType, AuthResponseType, UserSecureType, UserType } from "@/src/types/user.type"
 import { chatSocketAtom, createPostSocketAtom } from "./socket-store"
 import z from "zod"
@@ -26,6 +26,7 @@ const newUser = {
   username: "",
   firstName: "",
   lastName: "",
+  birthdate: new Date(),
   picture: "",
   pictureBlob: null as Blob | null,
   pictureMimeType: "",
@@ -120,12 +121,20 @@ export const resetRegistrationAtom = atom(null, async (get, set) => {
 export const signUpAtom = atom(null, async (get, set) => {
   try {
     const userData = get(newUserAtom)
+
+    if (!userData.emailVerified) {
+      set(authErrorsAtom, { ...get(authErrorsAtom), emailVerify: "Email is not verified" })
+      set(currPageAtom, 1)
+      return
+    }
+
     const payload = {
       username: userData.username,
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
       // phoneNumber: `+${userData.callingCode}${userData.phoneNumber}`,
+      birthdate: userData.birthdate,
       country: userData.country,
       city: userData.city,
       state: userData.state,
@@ -204,6 +213,8 @@ export const logOutAtom = atom(null, async (get, set, showAlert: boolean = false
         credentials: "include",
       })
     }
+
+    router.replace("/")
   }
 
   if (!showAlert) {
@@ -252,6 +263,7 @@ export const requestEmailVerificationAtom = atom(
         ...errors,
         email: "Please enter a valid email address",
       })
+      set(currPageAtom, 0)
       return
     }
     email = email.trim().toLowerCase()
@@ -541,17 +553,40 @@ export const verifyUserInfoAtom = atom(null, async (get, set) => {
   const newUser = get(newUserAtom)
   if (!newUser.username) {
     set(authErrorsAtom, { ...errors, username: "Username is required" })
+    set(currPageAtom, 2)
     return
   } else if (!newUser.firstName) {
     set(authErrorsAtom, { ...errors, firstName: "First name is required" })
+    set(currPageAtom, 2)
     return
   } else if (!newUser.lastName) {
     set(authErrorsAtom, { ...errors, lastName: "Last name is required" })
+    set(currPageAtom, 2)
     return
   } else if (!newUser.locationId) {
     set(authErrorsAtom, { ...errors, location: "Location is required" })
+    set(currPageAtom, 2)
+    return
+  } else if (!newUser.birthdate) {
+    set(authErrorsAtom, { ...errors, birthdate: "Birthdate is required" })
+    set(currPageAtom, 2)
     return
   }
+
+  const today = new Date()
+  const birthdate = new Date(newUser.birthdate)
+  let age = today.getFullYear() - birthdate.getFullYear()
+  const monthDiff = today.getMonth() - birthdate.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
+    age--
+  }
+
+  if (age < MIN_AGE) {
+    set(authErrorsAtom, { ...errors, birthdate: "You must be at least 13 years old to register." })
+    set(currPageAtom, 2)
+    return
+  }
+
   set(currPageAtom, curr => curr + 1)
 })
 

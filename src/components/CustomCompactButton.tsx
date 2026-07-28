@@ -1,14 +1,6 @@
 import { boxShadow, colors } from "@/src/utils/colors"
 import React from "react"
-import {
-  Appearance,
-  DimensionValue,
-  Pressable,
-  PressableProps,
-  StyleProp,
-  Text,
-  ViewStyle,
-} from "react-native"
+import { DimensionValue, Pressable, PressableProps, StyleProp, Text, ViewStyle } from "react-native"
 
 interface CustomProps extends PressableProps {
   children: React.ReactNode
@@ -20,9 +12,7 @@ interface CustomProps extends PressableProps {
   style?: StyleProp<ViewStyle>
 }
 
-const colorScheme = Appearance.getColorScheme()
-
-export default function ({
+export default function CustomCompactButton({
   color,
   outline,
   width,
@@ -33,6 +23,7 @@ export default function ({
   ...rest
 }: CustomProps) {
   const backgroundColor = disabled ? colors.borderGray : color || colors.purple
+
   return (
     <Pressable
       style={[
@@ -42,6 +33,7 @@ export default function ({
           paddingVertical: 8,
           backgroundColor: outline ? "transparent" : backgroundColor,
           borderRadius: 6,
+          shadowColor: "transparent",
           borderWidth: outline ? 2 : 0,
           borderColor: color || colors.purple,
           alignItems: "center",

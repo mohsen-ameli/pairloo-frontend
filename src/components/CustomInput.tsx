@@ -1,5 +1,5 @@
 import React from "react"
-import { Text, TextInput, TextInputProps, View } from "react-native"
+import { DimensionValue, Text, TextInput, TextInputProps, View } from "react-native"
 import { colors } from "@/src/utils/colors"
 import { inputStyles } from "@/src/styles/input.styles"
 
@@ -10,6 +10,7 @@ interface Props extends TextInputProps {
   information?: React.ReactNode
   success?: React.ReactNode
   inputRef?: React.RefObject<TextInput>
+  width?: DimensionValue | undefined
   headerStyles?: TextInputProps["style"]
 }
 
@@ -21,10 +22,11 @@ export default function CustomInput({
   success,
   inputRef,
   headerStyles,
+  width = "auto",
   ...rest
 }: Props) {
   return (
-    <View>
+    <View style={{ width }}>
       {title && (
         <Text
           style={[
@@ -48,9 +50,9 @@ export default function CustomInput({
           rest.style,
         ]}
       />
-      {errors && <Text style={inputStyles.errors}>{errors}</Text>}
-      {information && <Text style={inputStyles.information}>{information}</Text>}
-      {success && <Text style={inputStyles.success}>{success}</Text>}
+      {Boolean(errors) ? <Text style={inputStyles.errors}>{errors}</Text> : null}
+      {Boolean(information) ? <Text style={inputStyles.information}>{information}</Text> : null}
+      {Boolean(success) ? <Text style={inputStyles.success}>{success}</Text> : null}
     </View>
   )
 }
