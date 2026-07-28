@@ -20,6 +20,7 @@ import {
 import LoadingIndicator from "@/src/components/LoadingIndicator"
 import { commonStyles } from "@/src/styles/common.styles"
 import CustomCompactButton from "@/src/components/CustomCompactButton"
+import { formatDateDayMonthYear } from "@/src/utils/format-date"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 
@@ -193,6 +194,14 @@ export default function SettingsScreen() {
                       <Text style={styles.fieldValue}>{user.phoneNumber}</Text>
                     </View>
                   )}
+                  {user.birthdate && (
+                    <View style={styles.fieldRow}>
+                      <Text style={styles.fieldLabel}>Birthdate</Text>
+                      <Text style={styles.fieldValue}>
+                        {formatDateDayMonthYear(user.birthdate)}
+                      </Text>
+                    </View>
+                  )}
                   <View style={styles.fieldRow}>
                     <Text style={styles.fieldLabel}>Location</Text>
                     <Text style={styles.fieldValue}>
@@ -201,6 +210,44 @@ export default function SettingsScreen() {
                   </View>
                 </>
               )}
+            </View>
+          </View>
+
+          {/* Authentication */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Authentication</Text>
+            <View style={styles.card}>
+              <View style={styles.fieldRow}>
+                <CustomCompactButton
+                  onPress={async () => await logout(true)}
+                  color={colors.errorRed}
+                  outline
+                  width="100%"
+                >
+                  <Feather
+                    name="log-out"
+                    size={18}
+                    color={colors.dark}
+                    style={{ marginRight: 6 }}
+                  />
+                  Log Out
+                </CustomCompactButton>
+              </View>
+              <View style={styles.fieldRow}>
+                <CustomCompactButton
+                  onPress={() => router.push("/delete-account")}
+                  color={colors.errorRed}
+                  width="100%"
+                >
+                  <Feather
+                    name="trash-2"
+                    size={18}
+                    color={colors.dark}
+                    style={{ marginRight: 6 }}
+                  />
+                  Delete Account
+                </CustomCompactButton>
+              </View>
             </View>
           </View>
 
@@ -238,45 +285,7 @@ export default function SettingsScreen() {
                     color={colors.dark}
                     style={{ marginRight: 6 }}
                   />
-                  CSAE standards
-                </CustomCompactButton>
-              </View>
-            </View>
-          </View>
-
-          {/* Authentication */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Authentication</Text>
-            <View style={styles.card}>
-              <View style={styles.fieldRow}>
-                <CustomCompactButton
-                  onPress={async () => await logout(true)}
-                  color={colors.errorRed}
-                  outline
-                  width="100%"
-                >
-                  <Feather
-                    name="log-out"
-                    size={18}
-                    color={colors.dark}
-                    style={{ marginRight: 6 }}
-                  />
-                  Log Out
-                </CustomCompactButton>
-              </View>
-              <View style={styles.fieldRow}>
-                <CustomCompactButton
-                  onPress={() => router.push("/delete-account")}
-                  color={colors.errorRed}
-                  width="100%"
-                >
-                  <Feather
-                    name="trash-2"
-                    size={18}
-                    color={colors.dark}
-                    style={{ marginRight: 6 }}
-                  />
-                  Delete Account
+                  CSAE Standards
                 </CustomCompactButton>
               </View>
             </View>

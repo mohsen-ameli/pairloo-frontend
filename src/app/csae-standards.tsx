@@ -13,7 +13,6 @@ export default function CsaeStandards() {
         <Text style={policyStyles.title}>CSAE Standards</Text>
         <Text style={policyStyles.lastUpdated}>Last Updated: July 27, 2026</Text>
 
-        <Text style={policyStyles.sectionTitle}>SUMMARY OF KEY POINTS</Text>
         <Text style={policyStyles.paragraph}>
           Pairloo is committed to protecting children and preventing child sexual abuse and
           exploitation on our platform. This page sets out our published standards, prohibited

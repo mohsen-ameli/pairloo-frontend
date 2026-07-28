@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { Pressable, ScrollView, Text, View } from "react-native"
+import { Platform, Pressable, ScrollView, Text, View } from "react-native"
 import CustomInput from "@/src/components/CustomInput"
 import { colors } from "@/src/utils/colors"
 import {
@@ -27,6 +27,9 @@ import CustomPager from "@/src/components/CustomPager"
 import LocationSelector from "@/src/components/LocationSelector"
 import { debounce } from "lodash"
 import { commonStyles } from "@/src/styles/common.styles"
+import DatePicker from "react-native-date-picker"
+import { formatDateDayMonthYear } from "@/src/utils/format-date"
+import { inputStyles } from "@/src/styles/input.styles"
 
 const defaultProfilePicture = require("@/assets/images/default_pfp.png")
 const INITIAL_PAGE_COUNT = 4
@@ -38,11 +41,11 @@ export default function Register() {
   const [newUser, setNewUser] = useAtom(newUserAtom)
   const [errors, setErrors] = useAtom(authErrorsAtom)
   const timeRemaining = useAtomValue(resendTimerAtom)
-  const getBlockedAttempts = useAtomValue(getBlockedAttemptsAtom)
-  const [flow, setFlow] = useAtom(flowAtom)
+  // const getBlockedAttempts = useAtomValue(getBlockedAttemptsAtom)
+  const setFlow = useSetAtom(flowAtom)
   const [currPage, setCurrPage] = useAtom(currPageAtom)
-  const requestPhoneNumberVerification = useSetAtom(requestPhoneNumberVerificationAtom)
-  const verifyPhoneNumberVerification = useSetAtom(verifyPhoneNumberVerificationAtom)
+  // const requestPhoneNumberVerification = useSetAtom(requestPhoneNumberVerificationAtom)
+  // const verifyPhoneNumberVerification = useSetAtom(verifyPhoneNumberVerificationAtom)
   const requestEmailVerification = useSetAtom(requestEmailVerificationAtom)
   const verifyEmailVerification = useSetAtom(verifyEmailCodeAtom)
   const verifyUserInfo = useSetAtom(verifyUserInfoAtom)
@@ -52,9 +55,10 @@ export default function Register() {
   const isBlocked = useAtomValue(isBlockedAtom)
   const [usernameChecking, setUsernameChecking] = useState(false)
   const [usernameValid, setUsernameValid] = useState(false)
+  const [open, setOpen] = useState(false)
 
   // Refs for manual focus
-  const phoneCodeRef = useRef<TextInput>(null!)
+  // const phoneCodeRef = useRef<TextInput>(null!)
   const emailRef = useRef<TextInput>(null!)
   const emailCodeRef = useRef<TextInput>(null!)
   const usernameRef = useRef<TextInput>(null!)
@@ -113,7 +117,8 @@ export default function Register() {
         !usernameChecking &&
         newUser.firstName.length > 0 &&
         newUser.lastName.length > 0 &&
-        newUser.locationId !== 0
+        newUser.locationId !== 0 &&
+        newUser.birthdate !== null
     } else if (currPage === 3) {
       nextEnabled = true
     }
@@ -260,7 +265,6 @@ export default function Register() {
           }}
           value={newUser.email}
           inputRef={emailRef}
-          defaultValue={newUser.email}
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
@@ -366,6 +370,125 @@ export default function Register() {
               setErrors({ ...errors, location: "" })
             }}
           />
+          {/* birthdate */}
+          {Platform.OS === "web" ? (
+            <>
+              <Text style={[inputStyles.header, { fontSize: 16, fontWeight: "600" }]}>
+                Birthdate<Text style={inputStyles.mandatory}> *</Text>
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 10,
+                  flex: 1,
+                }}
+              >
+                <CustomInput
+                  title="Day"
+                  placeholder="DD"
+                  width="32%"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  onChangeText={text => {
+                    const day = parseInt(text, 10)
+                    if (!isNaN(day)) {
+                      if (day < 1 || day > 31) {
+                        setErrors({ ...errors, birthdate: "Please enter a valid day." })
+                      } else {
+                        setErrors({ ...errors, birthdate: "" })
+                        setNewUser(prevUser => {
+                          const newDate = new Date(prevUser.birthdate || new Date())
+                          newDate.setDate(day)
+                          return { ...prevUser, birthdate: newDate }
+                        })
+                      }
+                    } else {
+                      setErrors({ ...errors, birthdate: "Please enter a valid day." })
+                    }
+                  }}
+                />
+                <CustomInput
+                  title="Month"
+                  placeholder="MM"
+                  width="32%"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  onChangeText={text => {
+                    const month = parseInt(text, 10)
+                    if (!isNaN(month)) {
+                      if (month < 1 || month > 12) {
+                        setErrors({ ...errors, birthdate: "Please enter a valid month." })
+                      } else {
+                        setErrors({ ...errors, birthdate: "" })
+                        setNewUser(prevUser => {
+                          const newDate = new Date(prevUser.birthdate)
+                          newDate.setMonth(month - 1)
+                          return { ...prevUser, birthdate: newDate }
+                        })
+                      }
+                    } else {
+                      setErrors({ ...errors, birthdate: "Please enter a valid month." })
+                    }
+                  }}
+                />
+                <CustomInput
+                  title="Year"
+                  placeholder="YYYY"
+                  width="32%"
+                  keyboardType="numeric"
+                  maxLength={4}
+                  onChangeText={text => {
+                    const year = parseInt(text, 10)
+                    if (!isNaN(year)) {
+                      const currentYear = new Date().getFullYear()
+                      if (year < 1900 || year > currentYear) {
+                        setErrors({ ...errors, birthdate: "Please enter a valid year." })
+                      } else {
+                        setErrors({ ...errors, birthdate: "" })
+                        setNewUser(prevUser => {
+                          const newDate = new Date(prevUser.birthdate)
+                          newDate.setFullYear(year)
+                          return { ...prevUser, birthdate: newDate }
+                        })
+                      }
+                    } else {
+                      setErrors({ ...errors, birthdate: "Please enter a valid year." })
+                    }
+                  }}
+                />
+              </View>
+              {errors && <Text style={inputStyles.errors}>{errors.birthdate}</Text>}
+            </>
+          ) : (
+            <>
+              <Pressable style={{ width: "100%" }} onPress={() => setOpen(true)}>
+                <CustomInput
+                  title="Birthdate"
+                  value={formatDateDayMonthYear(newUser.birthdate)}
+                  mandatory
+                  editable={false}
+                  selectTextOnFocus={false}
+                  errors={errors?.birthdate}
+                  style={{ pointerEvents: "none" }}
+                />
+              </Pressable>
+              <DatePicker
+                modal
+                mode="date"
+                open={open}
+                date={newUser.birthdate}
+                onConfirm={date => {
+                  setOpen(false)
+                  setNewUser({ ...newUser, birthdate: date })
+                  setErrors({ ...errors, birthdate: "" })
+                }}
+                onCancel={() => {
+                  setOpen(false)
+                }}
+              />
+            </>
+          )}
+
           <View style={{ height: 200 }} />
         </View>
       </ScrollView>

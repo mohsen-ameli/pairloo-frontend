@@ -13,6 +13,7 @@ export type UserType = null | {
   username: string
   firstName: string
   lastName: string
+  birthdate: Date
   picture: string
   phoneNumber: string
   country: string
@@ -75,6 +76,7 @@ export type UserSecureType = null | {
 export type AuthErrorType = {
   username?: string
   firstName?: string
+  birthdate?: string
   lastName?: string
   location?: string
   email?: string

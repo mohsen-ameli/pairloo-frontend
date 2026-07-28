@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, Linking, StyleSheet } from "react-native"
+import { View, ScrollView, Text, Linking } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { commonStyles } from "@/src/styles/common.styles"
 import { policyStyles } from "@/src/styles/policy.styles"
@@ -12,7 +12,6 @@ export default function PrivacyPolicy() {
         <Text style={policyStyles.title}>Privacy Policy</Text>
         <Text style={policyStyles.lastUpdated}>Last Updated: July 17, 2026</Text>
 
-        <Text style={policyStyles.sectionTitle}>SUMMARY OF KEY POINTS</Text>
         <Text style={policyStyles.paragraph}>
           Before diving into the details, here is a quick overview of how we handle your privacy at
           Pairloo:
@@ -20,15 +19,15 @@ export default function PrivacyPolicy() {
 
         <BulletPoint
           bold="What personal information do we collect?"
-          text="We collect your name, email address, location data, device information."
+          text="We collect your full name, email address, location data, birthdate, device information."
         />
         <BulletPoint
           bold="Do we process any sensitive personal information?"
-          text="Yes, we process precise location data to help you connect with nearby users, and we process information from minors (strictly governed by parental consent)."
+          text="Yes, we process precise location data to help you connect with nearby users."
         />
         <BulletPoint
           bold="Do we collect information from third parties?"
-          text="Yes, if you choose to connect your Pairloo account with your Gmail account, we receive basic profile data from them."
+          text="Yes, if you choose to connect your Pairloo account with your Gmail account, we receive basic profile data from them, such as email address, name, and a profile picture."
         />
         <BulletPoint
           bold="How do we use your information?"
@@ -49,9 +48,9 @@ export default function PrivacyPolicy() {
               You can reach our privacy team anytime at{" "}
               <Text
                 style={policyStyles.link}
-                onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
+                onPress={() => Linking.openURL("mailto:app@pairloo.com")}
               >
-                mohsen.ameli83@gmail.com
+                app@pairloo.com
               </Text>
               .
             </Text>
@@ -202,11 +201,8 @@ export default function PrivacyPolicy() {
 
         <Text style={policyStyles.paragraph}>
           To exercise any of these rights, please email us at{" "}
-          <Text
-            style={policyStyles.link}
-            onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
-          >
-            mohsen.ameli83@gmail.com
+          <Text style={policyStyles.link} onPress={() => Linking.openURL("mailto:app@pairloo.com")}>
+            app@pairloo.com
           </Text>
           .
         </Text>
@@ -269,11 +265,8 @@ export default function PrivacyPolicy() {
         <Text style={policyStyles.paragraph}>
           Parents who wish to exercise these rights or have questions about our youth privacy
           practices can contact us directly at{" "}
-          <Text
-            style={policyStyles.link}
-            onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
-          >
-            mohsen.ameli83@gmail.com
+          <Text style={policyStyles.link} onPress={() => Linking.openURL("mailto:app@pairloo.com")}>
+            app@pairloo.com
           </Text>
           . If we discover we have inadvertently collected data from a child without proper consent,
           we will delete that information immediately.
@@ -299,9 +292,9 @@ export default function PrivacyPolicy() {
           text={
             <Text
               style={policyStyles.link}
-              onPress={() => Linking.openURL("mailto:mohsen.ameli83@gmail.com")}
+              onPress={() => Linking.openURL("mailto:app@pairloo.com")}
             >
-              mohsen.ameli83@gmail.com
+              app@pairloo.com
             </Text>
           }
         />

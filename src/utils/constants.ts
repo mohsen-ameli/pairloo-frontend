@@ -4,6 +4,8 @@ export const NODE_ENV = process.env.NODE_ENV!
 export const BASE_URL = process.env.EXPO_PUBLIC_SERVER_URL!
 export const WS_BASE_URL = process.env.EXPO_PUBLIC_WS_SERVER_URL!
 
+export const MIN_AGE = 13
+
 export const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY!
 
 export const VERIFICATION_RESEND_TIME = NODE_ENV === "development" ? 5 : 60 // seconds
